@@ -1,0 +1,161 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="SpinDeck — a fast, ad-free wheel of names with multiple wheels, a timer, and counters. Built for streamers, teachers, and creators. No ads, no tracking, no login." />
+<meta name="theme-color" content="#0f1226" />
+<title>SpinDeck — Ad-free Wheel of Names + Creator Tools</title>
+<link rel="stylesheet" href="css/styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E" />
+
+<!-- SpinDeck: a better, ad-free wheel of names with multiple wheels, timer & counters.
+     Zero backend. Everything lives in your browser (localStorage). -->
+
+<div id="app" data-view="wheel">
+  <!-- ============ Top bar ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◉</span>
+      <span class="brand-name">SpinDeck</span>
+      <span class="brand-tag">no ads · no login · your data stays local</span>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Tools">
+      <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">🎡 Wheel</button>
+      <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">⏱ Timer</button>
+      <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">🔢 Counters</button>
+    </nav>
+
+    <div class="topbar-actions">
+      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">🌙</button>
+      <button id="presentBtn" class="icon-btn" title="Presentation mode (F)" aria-label="Presentation mode">⛶</button>
+      <div class="menu">
+        <button id="menuBtn" class="icon-btn" title="More" aria-haspopup="true" aria-label="More options">⋯</button>
+        <div id="menuPanel" class="menu-panel" hidden>
+          <button data-action="export">⬇️ Export all (JSON)</button>
+          <button data-action="import">⬆️ Import (JSON)</button>
+          <button data-action="share">🔗 Copy share link (this wheel)</button>
+          <button data-action="reset">🗑️ Reset everything</button>
+          <a href="README.md" target="_blank" rel="noopener">❔ About / help</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ WHEEL VIEW ============ -->
+  <main class="view view-wheel" data-view-panel="wheel">
+    <!-- Left: editor -->
+    <section class="panel editor" aria-label="Wheel entries and settings">
+      <div class="wheel-switcher">
+        <label class="sr-only" for="wheelSelect">Active wheel</label>
+        <select id="wheelSelect" title="Switch wheel"></select>
+        <button id="newWheelBtn" class="mini-btn" title="New wheel">＋</button>
+        <button id="renameWheelBtn" class="mini-btn" title="Rename wheel">✎</button>
+        <button id="deleteWheelBtn" class="mini-btn" title="Delete wheel">🗑</button>
+      </div>
+
+      <div class="editor-head">
+        <span id="entryCount" class="entry-count">0 entries</span>
+        <div class="editor-tools">
+          <button id="shuffleBtn" class="mini-btn" title="Shuffle order">🔀</button>
+          <button id="sortBtn" class="mini-btn" title="Sort A→Z">↕</button>
+          <button id="dedupeBtn" class="mini-btn" title="Remove duplicates">⧉</button>
+        </div>
+      </div>
+
+      <textarea id="entries" class="entries" spellcheck="false"
+        placeholder="One name per line…&#10;&#10;Tip: weight an entry with *N&#10;Alice*3   (3× more likely)&#10;Bob"></textarea>
+
+      <div class="editor-options">
+        <label class="opt"><input type="checkbox" id="removeWinner" /> Remove winner after each spin</label>
+        <label class="opt"><input type="checkbox" id="soundOn" checked /> Sound</label>
+        <label class="opt"><input type="checkbox" id="confettiOn" checked /> Confetti</label>
+        <label class="opt slider-opt">
+          Spin length <output id="spinLenOut">5s</output>
+          <input type="range" id="spinLen" min="2" max="12" step="1" value="5" />
+        </label>
+      </div>
+    </section>
+
+    <!-- Center: the wheel -->
+    <section class="panel stage" aria-label="The wheel">
+      <div class="wheel-wrap">
+        <canvas id="wheel" width="720" height="720" role="img" aria-label="Spinning wheel of names"></canvas>
+        <div class="pointer" aria-hidden="true"></div>
+        <button id="spinBtn" class="spin-hub" aria-label="Spin the wheel">SPIN</button>
+      </div>
+      <p class="hint">Press <kbd>Space</kbd> to spin · <kbd>F</kbd> for presentation mode</p>
+    </section>
+
+    <!-- Right: history -->
+    <aside class="panel history" aria-label="Winner history">
+      <div class="history-head">
+        <h2>Results</h2>
+        <button id="clearHistory" class="mini-btn" title="Clear results">clear</button>
+      </div>
+      <ol id="historyList" class="history-list" aria-live="polite"></ol>
+    </aside>
+  </main>
+
+  <!-- ============ TIMER VIEW ============ -->
+  <main class="view view-timer" data-view-panel="timer" hidden>
+    <section class="panel tool-panel timer-panel">
+      <div class="seg-toggle" role="tablist" aria-label="Timer mode">
+        <button class="seg is-active" data-timer-mode="countdown" role="tab">Countdown</button>
+        <button class="seg" data-timer-mode="stopwatch" role="tab">Stopwatch</button>
+      </div>
+
+      <div id="timerDisplay" class="big-clock">05:00</div>
+
+      <div id="countdownSetup" class="timer-setup">
+        <div class="preset-row">
+          <button class="chip" data-secs="60">1:00</button>
+          <button class="chip" data-secs="180">3:00</button>
+          <button class="chip" data-secs="300">5:00</button>
+          <button class="chip" data-secs="600">10:00</button>
+          <button class="chip" data-secs="900">15:00</button>
+        </div>
+        <div class="custom-time">
+          <input type="number" id="mmIn" min="0" max="599" value="5" aria-label="Minutes" /> :
+          <input type="number" id="ssIn" min="0" max="59" value="0" aria-label="Seconds" />
+          <button id="setTimeBtn" class="mini-btn">Set</button>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button id="timerStart" class="btn primary">Start</button>
+        <button id="timerPause" class="btn">Pause</button>
+        <button id="timerReset" class="btn">Reset</button>
+      </div>
+      <label class="opt"><input type="checkbox" id="timerBeep" checked /> Beep when countdown ends</label>
+    </section>
+  </main>
+
+  <!-- ============ COUNTER VIEW ============ -->
+  <main class="view view-counter" data-view-panel="counter" hidden>
+    <section class="panel tool-panel counter-panel">
+      <div class="counter-head">
+        <h2>Counters</h2>
+        <button id="addCounter" class="btn primary">＋ New counter</button>
+      </div>
+      <p class="muted">Track spins, slot pulls, score, deaths — anything. Saved locally.</p>
+      <div id="counterGrid" class="counter-grid"></div>
+    </section>
+  </main>
+
+  <!-- ============ Winner modal ============ -->
+  <div id="winnerModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="winnerName">
+      <p class="modal-eyebrow">Winner</p>
+      <p id="winnerName" class="modal-winner"></p>
+      <div class="modal-actions">
+        <button id="winnerRemove" class="btn">Remove from wheel</button>
+        <button id="winnerClose" class="btn primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" class="confetti-canvas" aria-hidden="true"></canvas>
+  <input type="file" id="importFile" accept="application/json" hidden />
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script type="module" src="js/app.js"></script>

@@ -1,3 +1,108 @@
-# Tools
+# 🎡 SpinDeck
 
-Staticly-hosted browser tools. First project: **SpinDeck** — an ad-free wheel of names with a timer and counters.
+**A faster, ad-free wheel of names — plus the creator toolkit around it.**
+Multiple wheels, a timer, and counters, all in one page. No ads, no login, no tracking.
+Everything you create lives in *your* browser.
+
+Built as an open, more functional alternative to wheelofnames.com, aimed at the people
+who actually lean on these tools every day: **streamers, YouTubers, and teachers.**
+
+---
+
+## Why it exists
+
+The incumbent works, but it's ad-supported, single-purpose, and hasn't evolved much.
+A "council" of user archetypes (streamer, teacher, designer, engineer, PM, accessibility,
+privacy, and a skeptic keeping scope honest) met to decide what a better version should be.
+Their verdict shaped everything below.
+
+The guiding principles they agreed on:
+
+- **No ads, ever.** The site is a zero-backend static app, so it costs almost nothing to run.
+  That's what makes an honest "no ads" promise possible. Monetization, *if* it ever comes,
+  is an optional Pro tier (cloud sync, branding, teams) — never ads.
+- **More than a wheel.** Creators juggle a wheel *and* a timer *and* a tally counter.
+  SpinDeck puts all three in one tab.
+- **Your data is yours.** No accounts, no servers, no analytics. Everything is in
+  `localStorage`, with one-click export/import and shareable links.
+
+---
+
+## Features (v1)
+
+### 🎡 The wheel
+- Smooth 60fps canvas spin with real easing and a satisfying tick + winner fanfare.
+- **Multiple named wheels** — build "Period 1", "Subscribers", "Games to play" once,
+  switch between them in a click. All saved automatically.
+- **Weighted entries** — `Alice*3` makes Alice three times as likely. Duplicates get their own slice.
+- **Remove winner after spin** — perfect for classroom cold-calls and elimination giveaways.
+- Editor tools: shuffle, sort, de-duplicate, live entry/slice count.
+- **Winner history** with timestamps, per wheel.
+- Auto-assigned harmonious colors.
+
+### ⏱ Timer
+- **Countdown** (with quick presets + custom time) and **stopwatch** modes.
+- Drift-free (timestamp-based), giant readable clock, optional end beep.
+- Great for speedrun segments, "you have 5 minutes" challenges, and buzzer rounds.
+
+### 🔢 Counters
+- Unlimited named tally counters — spins, slot pulls, score, deaths, anything.
+- Custom step size, reset, and a counter named "Spins" auto-increments when you spin the wheel.
+
+### ✨ Everywhere
+- **Presentation mode** (`F`) — hides all the editing chrome for a clean on-stream look.
+- Dark / light themes, adjustable spin length, mute, confetti toggle.
+- **Keyboard**: `Space` spins, `F` presents, `Esc` closes.
+- **Import / export** all your data as JSON, and **copy a share link** for any single wheel.
+- Accessible: screen-reader winner announcements, `prefers-reduced-motion` respected, keyboard-first.
+
+---
+
+## Run it
+
+It's a pure static site — no build step, no dependencies.
+
+```bash
+# any static server works, e.g.
+npx http-server -p 8123
+# then open http://localhost:8123
+```
+
+Or just open `index.html` over a local server (ES modules need `http://`, not `file://`).
+
+### Deploy free
+Push to any static host — **GitHub Pages, Netlify, Vercel, Cloudflare Pages**. No config needed.
+
+---
+
+## Project layout
+
+```
+index.html        # markup + layout
+css/styles.css    # theme tokens, layout, components (light + dark)
+js/app.js         # orchestrator: wires UI ↔ storage ↔ tools
+js/wheel.js       # canvas wheel: parsing, drawing, weighted spin, easing
+js/storage.js     # localStorage state, import/export, share encoding
+js/timer.js       # countdown + stopwatch
+js/counter.js     # tally counters
+js/sound.js       # WebAudio tick / fanfare / beep (no audio files shipped)
+js/confetti.js    # canvas confetti burst
+```
+
+---
+
+## Roadmap (parked by the council for later)
+
+| Next up (cheap, likely soon) | Pro / v2 |
+| --- | --- |
+| Team/group maker (split N names into groups) | Cloud sync & accounts |
+| Custom slice images | Team wheels / collaboration |
+| Greenscreen / overlay export for OBS | Custom branding & themes |
+| Twitch/YouTube chat → auto-populate entries | Native mobile app |
+
+---
+
+## Privacy
+
+No accounts. No servers. No tracking or analytics. Your wheels, counters, and settings
+never leave your browser. Clear them any time from the ⋯ menu → *Reset everything*.
