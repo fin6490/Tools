@@ -1,14 +1,14 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260730b";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730b";
-import * as sound from "./sound.js?v=20260730b";
-import { burst } from "./confetti.js?v=20260730b";
-import { initTimer } from "./timer.js?v=20260730b";
-import { initCounters } from "./counter.js?v=20260730b";
-import { initGroups } from "./groups.js?v=20260730b";
-import { initImages } from "./images.js?v=20260730b";
-import { initScores } from "./scores.js?v=20260730b";
-import { initSlots } from "./slots.js?v=20260730b";
+import * as store from "./storage.js?v=20260730c";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730c";
+import * as sound from "./sound.js?v=20260730c";
+import { burst } from "./confetti.js?v=20260730c";
+import { initTimer } from "./timer.js?v=20260730c";
+import { initCounters } from "./counter.js?v=20260730c";
+import { initGroups } from "./groups.js?v=20260730c";
+import { initImages } from "./images.js?v=20260730c";
+import { initScores } from "./scores.js?v=20260730c";
+import { initSlots } from "./slots.js?v=20260730c";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -419,7 +419,7 @@ populateWheelSelect();
 loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
-initScores(document);
+initScores(document, { toast });
 slots = initSlots(document, { soundOn: () => state.soundOn });
 initImages(document, {
   getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),

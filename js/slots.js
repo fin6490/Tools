@@ -1,8 +1,8 @@
 // slots.js — multiple vertical reels side by side, spun together (slot machine).
-import { parseEntries } from "./wheel.js?v=20260730b";
-import { getState, save } from "./storage.js?v=20260730b";
-import * as sound from "./sound.js?v=20260730b";
-import { burst } from "./confetti.js?v=20260730b";
+import { parseEntries } from "./wheel.js?v=20260730c";
+import { getState, save } from "./storage.js?v=20260730c";
+import * as sound from "./sound.js?v=20260730c";
+import { burst } from "./confetti.js?v=20260730c";
 
 class SlotReel {
   constructor(canvas) {
@@ -166,18 +166,27 @@ export function initSlots(root, { soundOn = () => true } = {}) {
 
       const frame = document.createElement("div");
       frame.className = "slot-frame";
+      frame.title = "Click to spin just this reel";
       const canvas = document.createElement("canvas");
       frame.appendChild(canvas);
 
       const result = document.createElement("div");
       result.className = "slot-result";
 
-      slot.append(src, frame, result);
+      const spinOneBtn = document.createElement("button");
+      spinOneBtn.className = "mini-btn slot-spin-one";
+      spinOneBtn.textContent = "Spin";
+
+      slot.append(src, frame, result, spinOneBtn);
       reelsWrap.appendChild(slot);
 
       const reel = new SlotReel(canvas);
       const entry = { reel, sourceId, resultEl: result, sel };
       reel.setItems(itemsFor(sourceId));
+
+      // Spin just this one reel (click the reel or its Spin button).
+      frame.addEventListener("click", () => spinOne(entry));
+      spinOneBtn.addEventListener("click", () => spinOne(entry));
 
       sel.addEventListener("change", () => {
         entry.sourceId = sel.value;
@@ -197,6 +206,16 @@ export function initSlots(root, { soundOn = () => true } = {}) {
 
   function relayout() {
     reels.forEach((r) => { r.reel.fit(); r.reel.setItems(itemsFor(r.sourceId)); });
+  }
+
+  function spinOne(entry) {
+    if (entry.reel.spinning) return;
+    entry.resultEl.textContent = "";
+    entry.reel.soundOn = soundOn();
+    entry.reel.spin(2.6, 0, (label) => {
+      entry.resultEl.textContent = label || "—";
+      if (label) burst(60);
+    });
   }
 
   function spinAll() {

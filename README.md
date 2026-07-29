@@ -52,6 +52,7 @@ The guiding principles they agreed on:
 - A **row of vertical reels** side by side that spin together, slot-machine style.
 - Choose how many reels (2–6) and point each one at any of your saved wheels — spin one list many times, or mix different lists (names + challenges + numbers) into a combo.
 - Staggered stops, a gold payline, and a result under each reel.
+- **Spin all** at once, or **spin one reel at a time** (click a reel, or its Spin button).
 
 ### Team / group maker
 - Split any list of names into **random, balanced teams** — sizes differ by at most one.
@@ -62,9 +63,10 @@ The guiding principles they agreed on:
 - The classroom/stream staple the original wheel handles poorly.
 
 ### Scoreboard
-- Keep score for **board games, darts, card nights** — any number of players.
-- Each player has an editable score (type it directly — handy for darts' 501), plus **± buttons** with a custom step and **quick +1 / +5 / +10** chips.
-- Live ranking with badges and a highlighted leader; **Sort**, **New game** (reset scores, keep players), and per-player remove.
+Three modes for any number of players:
+- **Freeplay** — a generic running score: editable value, **± buttons** with a custom step, **quick +1 / +5 / +10** chips, live ranking, and a highlighted leader. Good for board games and card nights.
+- **Race to target** — set a target; first player to reach it is flagged the winner.
+- **Darts (X01)** — a proper darts counter: pick **301 / 501 / 701** (or custom), optional **double-out**, then enter each turn total (0–180) to count down to zero. Handles **bust** (over-throw and, with double-out, leaving 1) reverting the turn, shows **3-dart average** and darts thrown, ranks by remaining, auto-advances turns, crowns the **leg winner**, and has **Undo** and **New leg**.
 
 ### Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.

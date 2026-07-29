@@ -23,6 +23,11 @@ const DEFAULTS = () => ({
   groups: { text: "", mode: "count", num: 4 },
   players: [], // { id, name, score, step }
   slots: { count: 3, sources: [] },
+  scoring: {
+    mode: "free", // "free" | "target" | "darts"
+    target: 50,
+    darts: { start: 501, doubleOut: false, active: 0, winnerId: null, undo: [], p: {} },
+  },
 });
 
 let state = load();
