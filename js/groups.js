@@ -24,7 +24,7 @@ function partition(names, count) {
   return buckets;
 }
 
-export function initGroups(root, { getWheelText } = {}) {
+export function initGroups(root, { getWheelText, onSendTeams } = {}) {
   const ta = root.querySelector("#groupNames");
   const numInput = root.querySelector("#groupNum");
   const numLabel = root.querySelector("#groupNumLabel");
@@ -34,6 +34,7 @@ export function initGroups(root, { getWheelText } = {}) {
   const resultHead = root.querySelector(".groups-result-head");
   const summary = root.querySelector("#groupsSummary");
   const copyBtn = root.querySelector("#copyGroups");
+  const sendBtn = root.querySelector("#sendToWheels");
 
   const state = getState();
   if (!state.groups) state.groups = { text: "", mode: "count", num: 4 };
@@ -120,19 +121,34 @@ export function initGroups(root, { getWheelText } = {}) {
   makeBtn.addEventListener("click", make);
   root.querySelector("#rerollGroups").addEventListener("click", make);
 
+  // Read the (possibly renamed) teams currently on screen.
+  function currentTeams() {
+    return Array.from(grid.querySelectorAll(".group-card")).map((c) => ({
+      name: c.querySelector(".c-name").value.trim() || "Team",
+      members: Array.from(c.querySelectorAll("li")).map((li) => li.textContent),
+    }));
+  }
+
+  function flash(btn, label) {
+    const original = btn.textContent;
+    btn.textContent = label;
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  }
+
   copyBtn.addEventListener("click", () => {
-    const cards = grid.querySelectorAll(".group-card");
-    if (!cards.length) return;
-    const text = Array.from(cards)
-      .map((c) => {
-        const title = c.querySelector(".c-name").value;
-        const mem = Array.from(c.querySelectorAll("li")).map((li) => "  - " + li.textContent).join("\n");
-        return `${title}\n${mem}`;
-      })
+    const teams = currentTeams();
+    if (!teams.length) return;
+    const text = teams
+      .map((t) => `${t.name}\n${t.members.map((m) => "  - " + m).join("\n")}`)
       .join("\n\n");
     navigator.clipboard?.writeText(text);
-    const original = copyBtn.textContent;
-    copyBtn.textContent = "✓ Copied";
-    setTimeout(() => { copyBtn.textContent = original; }, 1500);
+    flash(copyBtn, "✓ Copied");
+  });
+
+  sendBtn.addEventListener("click", () => {
+    const teams = currentTeams();
+    if (!teams.length || !onSendTeams) return;
+    onSendTeams(teams);
+    flash(sendBtn, "✓ Sent");
   });
 }

@@ -342,4 +342,18 @@ populateWheelSelect();
 loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
-initGroups(document, { getWheelText: () => store.activeWheel().text });
+initGroups(document, {
+  getWheelText: () => store.activeWheel().text,
+  onSendTeams: (teams) => {
+    // Turn each team into its own saved wheel, then jump to the Wheel view.
+    teams.forEach((t) => {
+      const w = store.newWheel(t.name);
+      w.text = t.members.join("\n");
+    });
+    store.save();
+    populateWheelSelect();
+    loadActiveWheelIntoEditor();
+    document.querySelector('[data-view-btn="wheel"]').click();
+    toast(`Created ${teams.length} wheel${teams.length === 1 ? "" : "s"} — one per team`);
+  },
+});
