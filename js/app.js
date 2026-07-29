@@ -1,13 +1,13 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js";
-import { Wheel, parseEntries, parseLine } from "./wheel.js";
-import * as sound from "./sound.js";
-import { burst } from "./confetti.js";
-import { initTimer } from "./timer.js";
-import { initCounters } from "./counter.js";
-import { initGroups } from "./groups.js";
-import { initImages } from "./images.js";
-import { initScores } from "./scores.js";
+import * as store from "./storage.js?v=20260729b";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260729b";
+import * as sound from "./sound.js?v=20260729b";
+import { burst } from "./confetti.js?v=20260729b";
+import { initTimer } from "./timer.js?v=20260729b";
+import { initCounters } from "./counter.js?v=20260729b";
+import { initGroups } from "./groups.js?v=20260729b";
+import { initImages } from "./images.js?v=20260729b";
+import { initScores } from "./scores.js?v=20260729b";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");

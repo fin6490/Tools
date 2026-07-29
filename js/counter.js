@@ -1,5 +1,5 @@
 // counter.js — multiple named tally counters (spins, score, deaths, slot pulls…).
-import { getState, save } from "./storage.js";
+import { getState, save } from "./storage.js?v=20260729b";
 
 export function initCounters(root) {
   const grid = root.querySelector("#counterGrid");
