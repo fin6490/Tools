@@ -63,10 +63,13 @@ The guiding principles they agreed on:
 - The classroom/stream staple the original wheel handles poorly.
 
 ### Scoreboard
-Three modes for any number of players:
-- **Freeplay** — a generic running score: editable value, **± buttons** with a custom step, **quick +1 / +5 / +10** chips, live ranking, and a highlighted leader. Good for board games and card nights.
-- **Race to target** — set a target; first player to reach it is flagged the winner.
-- **Darts (X01)** — a proper darts counter: pick **301 / 501 / 701** (or custom), optional **double-out**, then enter each turn total (0–180) to count down to zero. Handles **bust** (over-throw and, with double-out, leaving 1) reverting the turn, shows **3-dart average** and darts thrown, ranks by remaining, auto-advances turns, crowns the **leg winner**, and has **Undo** and **New leg**.
+Several modes for any number of players:
+- **Freeplay** — a generic running score: editable value, **± buttons** with a custom step, **quick +1 / +5 / +10** chips, live ranking, highlighted leader. Good for board games and card nights.
+- **Race to target** — set a target (presets incl. **121 / Cribbage**); first player to reach it wins.
+- **Golf (low)** — same scoring, but the **lowest** score leads/wins.
+- **Rounds** — set a number of rounds; step through them, and when they're done the **highest total wins**.
+- **Darts (X01)** — a proper darts counter: pick **301 / 501 / 701** (or custom), optional **double-out**, then enter each turn total (0–180) to count down to zero. Handles **bust** (over-throw and, with double-out, leaving 1) reverting the turn, shows **3-dart average** and darts thrown, ranks by remaining, auto-advances turns, crowns the **leg winner**, with **Undo** and **New leg**.
+- **Cricket** — the standard darts board (20–15 + Bull). Tap a number to add a mark (three closes it); closed numbers score their value against anyone who hasn't closed them. Live points, win detection (all closed + ahead), and **Undo**.
 
 ### Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.

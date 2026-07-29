@@ -24,9 +24,11 @@ const DEFAULTS = () => ({
   players: [], // { id, name, score, step }
   slots: { count: 3, sources: [] },
   scoring: {
-    mode: "free", // "free" | "target" | "darts"
+    mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
+    rounds: { total: 5, current: 1 },
     darts: { start: 501, doubleOut: false, active: 0, winnerId: null, undo: [], p: {} },
+    cricket: { winnerId: null, marks: {}, points: {}, undo: [] },
   },
 });
 

@@ -258,7 +258,10 @@
       <div class="seg-toggle scores-mode" role="tablist" aria-label="Scoring mode">
         <button class="seg is-active" data-score-mode="free" role="tab">Freeplay</button>
         <button class="seg" data-score-mode="target" role="tab">Race to target</button>
+        <button class="seg" data-score-mode="golf" role="tab">Golf (low)</button>
+        <button class="seg" data-score-mode="rounds" role="tab">Rounds</button>
         <button class="seg" data-score-mode="darts" role="tab">Darts (X01)</button>
+        <button class="seg" data-score-mode="cricket" role="tab">Cricket</button>
       </div>
       <div id="scoreSetup" class="score-setup"></div>
       <p id="scoreHint" class="muted"></p>
@@ -314,5 +317,5 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260730c' index.html js | xargs sed -i 's/?v=20260730c/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260730c"></script>
+       grep -rl '?v=20260730d' index.html js | xargs sed -i 's/?v=20260730d/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260730d"></script>
