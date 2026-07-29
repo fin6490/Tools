@@ -45,6 +45,7 @@ The guiding principles they agreed on:
 - Two modes: **by number of teams** or **by team size**.
 - One-click **Load current wheel** to reuse names you already typed (weights are stripped).
 - Editable team names, **re-roll** for a fresh shuffle, and **copy** the result as text.
+- **🎡 To wheels** turns each team into its own saved wheel in one click — great for "spin within the winning team."
 - The classroom/stream staple the original wheel handles poorly.
 
 ### ⏱ Timer
@@ -104,7 +105,7 @@ js/confetti.js    # canvas confetti burst
 | Next up (cheap, likely soon) | Pro / v2 |
 | --- | --- |
 | Custom slice images | Cloud sync & accounts |
-| Send teams straight to new wheels | Team wheels / collaboration |
+| Elimination bracket mode | Team wheels / collaboration |
 | Greenscreen / overlay export for OBS | Custom branding & themes |
 | Twitch/YouTube chat → auto-populate entries | Native mobile app |
 
