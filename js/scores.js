@@ -1,6 +1,6 @@
 // scores.js — a multiplayer scoreboard for board games, darts, card nights, etc.
 // Players + running scores, editable directly or via +/- (custom step).
-import { getState, save } from "./storage.js?v=20260730a";
+import { getState, save } from "./storage.js?v=20260730b";
 
 export function initScores(root) {
   const grid = root.querySelector("#scoreGrid");
