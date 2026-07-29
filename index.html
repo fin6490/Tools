@@ -280,4 +280,10 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 
-<script type="module" src="js/app.js"></script>
+<!-- Cache-busting: GitHub Pages caches JS for 10 min, so a fresh page can
+     otherwise run stale scripts after a deploy. The ?v= token appears on the
+     entry script AND on every import in js/*.js — it MUST be identical
+     everywhere (mismatched tokens would load duplicate module copies).
+     Bump it whenever any JS changes:
+       grep -rl '?v=20260729b' index.html js | xargs sed -i 's/?v=20260729b/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260729b"></script>
