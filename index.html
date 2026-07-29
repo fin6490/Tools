@@ -72,6 +72,7 @@
       <button class="tab" data-view-btn="slots" role="tab" aria-selected="false">Slots</button>
       <button class="tab" data-view-btn="groups" role="tab" aria-selected="false">Groups</button>
       <button class="tab" data-view-btn="scores" role="tab" aria-selected="false">Scores</button>
+      <button class="tab" data-view-btn="numbers" role="tab" aria-selected="false">Numbers</button>
       <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">Timer</button>
       <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">Counters</button>
     </nav>
@@ -174,6 +175,33 @@
       <div id="slotReels" class="slot-reels"></div>
       <div class="slots-footer">
         <button id="slotsSpin" class="btn primary slots-spin" aria-label="Spin all reels">Spin all</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ NUMBERS VIEW ============ -->
+  <main class="view view-numbers" data-view-panel="numbers" hidden>
+    <section class="panel tool-panel numbers-panel">
+      <div class="counter-head"><h2>Random numbers</h2></div>
+      <p class="muted">Pick a range and how many to draw. Turn on “no repeats” for lottery-style draws.</p>
+      <div class="numbers-controls">
+        <label class="score-setup-item">Min <input type="number" id="numMin" class="setup-num" value="1" /></label>
+        <label class="score-setup-item">Max <input type="number" id="numMax" class="setup-num" value="100" /></label>
+        <label class="score-setup-item">How many <input type="number" id="numCount" class="setup-num" min="1" value="1" /></label>
+        <label class="opt"><input type="checkbox" id="numUnique" /> No repeats</label>
+      </div>
+      <div class="numbers-presets">
+        <button class="chip" data-preset="dice">Dice (1–6)</button>
+        <button class="chip" data-preset="d20">D20</button>
+        <button class="chip" data-preset="coin">Coin flip</button>
+        <button class="chip" data-preset="h100">1–100</button>
+        <button class="chip" data-preset="lottery">Lottery (6 of 49)</button>
+      </div>
+      <button id="numGenerate" class="btn primary numbers-go">Generate</button>
+      <div id="numResult" class="numbers-result" aria-live="polite"></div>
+      <div class="numbers-foot">
+        <span id="numMeta" class="muted"></span>
+        <button id="numCopy" class="mini-btn" hidden>Copy</button>
       </div>
     </section>
   </main>
@@ -317,5 +345,5 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260730d' index.html js | xargs sed -i 's/?v=20260730d/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260730d"></script>
+       grep -rl '?v=20260730e' index.html js | xargs sed -i 's/?v=20260730e/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260730e"></script>

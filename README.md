@@ -71,6 +71,11 @@ Several modes for any number of players:
 - **Darts (X01)** — a proper darts counter: pick **301 / 501 / 701** (or custom), optional **double-out**, then enter each turn total (0–180) to count down to zero. Handles **bust** (over-throw and, with double-out, leaving 1) reverting the turn, shows **3-dart average** and darts thrown, ranks by remaining, auto-advances turns, crowns the **leg winner**, with **Undo** and **New leg**.
 - **Cricket** — the standard darts board (20–15 + Bull). Tap a number to add a mark (three closes it); closed numbers score their value against anyone who hasn't closed them. Live points, win detection (all closed + ahead), and **Undo**.
 
+### Random numbers
+- Pick a **range** (min/max) and **how many** to draw; **no repeats** for lottery-style draws.
+- One-tap presets: **Dice (1–6)**, **D20**, **Coin flip** (Heads/Tails), **1–100**, **Lottery (6 of 49)**.
+- Shows sum + mean for multi-draws, and a copy button.
+
 ### Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.
 - Drift-free (timestamp-based), giant readable clock, optional end beep.
@@ -118,6 +123,7 @@ js/timer.js # countdown + stopwatch
 js/counter.js # tally counters
 js/scores.js # multiplayer scoreboard
 js/slots.js # multiple slot reels
+js/numbers.js # random number generator
 js/groups.js # random balanced team maker
 js/images.js # per-slice image manager (upload + downscale)
 js/sound.js # WebAudio tick / fanfare / beep (no audio files shipped)

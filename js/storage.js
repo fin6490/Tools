@@ -23,6 +23,7 @@ const DEFAULTS = () => ({
   groups: { text: "", mode: "count", num: 4 },
   players: [], // { id, name, score, step }
   slots: { count: 3, sources: [] },
+  numbers: { min: 1, max: 100, count: 1, unique: false },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
