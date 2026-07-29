@@ -91,6 +91,7 @@ Several modes for any number of players:
 - Dark / light themes, adjustable spin length, mute, confetti toggle.
 - **Keyboard**: `Space` spins, `F` presents, `Esc` closes.
 - **Import / export** all your data as JSON, and **copy a share link** for any single wheel.
+- **Works offline** — a service worker caches the app shell, so once you've opened it, it keeps working with no connection.
 - Accessible: screen-reader winner announcements, `prefers-reduced-motion` respected, keyboard-first.
 
 ---
@@ -129,6 +130,7 @@ js/groups.js # random balanced team maker
 js/images.js # per-slice image manager (upload + downscale)
 js/sound.js # WebAudio tick / fanfare / beep (no audio files shipped)
 js/confetti.js # canvas confetti burst
+sw.js # service worker (offline app-shell cache)
 ```
 
 ---
@@ -148,3 +150,9 @@ js/confetti.js # canvas confetti burst
 
 No accounts. No servers. No tracking or analytics. Your wheels, counters, and settings
 never leave your browser. Clear them any time from the ⋯ menu *Reset everything*.
+
+---
+
+## License
+
+[MIT](LICENSE) — free to use, modify, and self-host.
