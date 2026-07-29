@@ -1,10 +1,57 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="SpinDeck — a fast, ad-free wheel of names with multiple wheels, a timer, and counters. Built for streamers, teachers, and creators. No ads, no tracking, no login." />
+<title>SpinDeck — Free, Ad-Free Wheel of Names, Timer & Team Picker</title>
+<meta name="description" content="SpinDeck is a fast, ad-free wheel of names with multiple wheels, weighted entries, custom colours & images, elimination mode, a random team maker, a timer, and counters. No ads, no login, no tracking — everything stays in your browser. Made for streamers, YouTubers, and teachers." />
+<meta name="keywords" content="wheel of names, random name picker, spinner wheel, random picker, team generator, group maker, classroom picker, giveaway wheel, random wheel, decision wheel, ad-free wheel of names, stream tools, countdown timer, tally counter" />
+<meta name="author" content="SpinDeck" />
 <meta name="theme-color" content="#0f1226" />
-<title>SpinDeck — Ad-free Wheel of Names + Creator Tools</title>
+<link rel="canonical" href="https://fin6490.github.io/Tools/" />
+
+<!-- Open Graph (Facebook, Discord, LinkedIn, etc.) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SpinDeck" />
+<meta property="og:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Tools" />
+<meta property="og:description" content="A fast, ad-free wheel of names — plus a timer, counters, a random team maker, elimination mode, and custom colours & images. No ads, no login. Everything stays in your browser." />
+<meta property="og:url" content="https://fin6490.github.io/Tools/" />
+<meta property="og:image" content="https://fin6490.github.io/Tools/assets/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="SpinDeck — an ad-free wheel of names with a colourful spinning wheel" />
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Tools" />
+<meta name="twitter:description" content="A fast, ad-free wheel of names — plus a timer, counters, team maker, elimination mode, and custom colours & images. No ads, no login." />
+<meta name="twitter:image" content="https://fin6490.github.io/Tools/assets/og-image.png" />
+
 <link rel="stylesheet" href="css/styles.css" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+
+<!-- Structured data for search engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SpinDeck",
+  "url": "https://fin6490.github.io/Tools/",
+  "description": "A fast, ad-free wheel of names with multiple wheels, weighted entries, custom colours and images, elimination mode, a random team maker, a timer, and counters. No ads, no login, no tracking.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Wheel of names with weighted entries",
+    "Multiple saved wheels",
+    "Per-entry custom colours and images",
+    "Elimination mode",
+    "Random team / group maker",
+    "Countdown timer and stopwatch",
+    "Tally counters"
+  ]
+}
+</script>
 
 <!-- SpinDeck: a better, ad-free wheel of names with multiple wheels, timer & counters.
      Zero backend. Everything lives in your browser (localStorage). -->
@@ -12,11 +59,11 @@
 <div id="app" data-view="wheel">
   <!-- ============ Top bar ============ -->
   <header class="topbar">
-    <div class="brand">
+    <h1 class="brand">
       <span class="brand-mark" aria-hidden="true">◉</span>
       <span class="brand-name">SpinDeck</span>
       <span class="brand-tag">no ads · no login · your data stays local</span>
-    </div>
+    </h1>
 
     <nav class="tabs" role="tablist" aria-label="Tools">
       <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">🎡 Wheel</button>

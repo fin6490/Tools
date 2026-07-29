@@ -1,8 +1,12 @@
 # 🎡 SpinDeck
 
+### ▶ Live: **https://fin6490.github.io/Tools/**
+
 **A faster, ad-free wheel of names — plus the creator toolkit around it.**
 Multiple wheels, a timer, and counters, all in one page. No ads, no login, no tracking.
 Everything you create lives in *your* browser.
+
+![SpinDeck](assets/og-image.png)
 
 Built as an open, more functional alternative to wheelofnames.com, aimed at the people
 who actually lean on these tools every day: **streamers, YouTubers, and teachers.**
