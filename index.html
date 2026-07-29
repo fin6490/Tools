@@ -20,6 +20,7 @@
 
     <nav class="tabs" role="tablist" aria-label="Tools">
       <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">🎡 Wheel</button>
+      <button class="tab" data-view-btn="groups" role="tab" aria-selected="false">👥 Groups</button>
       <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">⏱ Timer</button>
       <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">🔢 Counters</button>
     </nav>
@@ -126,6 +127,41 @@
         <button id="timerReset" class="btn">Reset</button>
       </div>
       <label class="opt"><input type="checkbox" id="timerBeep" checked /> Beep when countdown ends</label>
+    </section>
+  </main>
+
+  <!-- ============ GROUPS VIEW ============ -->
+  <main class="view view-groups" data-view-panel="groups" hidden>
+    <section class="panel tool-panel groups-panel">
+      <div class="counter-head">
+        <h2>Team / group maker</h2>
+        <button id="loadFromWheel" class="mini-btn" title="Copy the current wheel's names in here">↺ Load current wheel</button>
+      </div>
+      <p class="muted">Split a list of names into random, balanced teams.</p>
+
+      <textarea id="groupNames" class="entries" spellcheck="false"
+        placeholder="One name per line…"></textarea>
+
+      <div class="groups-controls">
+        <div class="seg-toggle" role="tablist" aria-label="Split mode">
+          <button class="seg is-active" data-group-mode="count" role="tab">By number of teams</button>
+          <button class="seg" data-group-mode="size" role="tab">By team size</button>
+        </div>
+        <label class="group-num">
+          <span id="groupNumLabel">How many teams?</span>
+          <input type="number" id="groupNum" min="1" max="100" value="4" />
+        </label>
+        <button id="makeGroups" class="btn primary">Make teams 🎲</button>
+      </div>
+
+      <div class="groups-result-head" hidden>
+        <span id="groupsSummary" class="muted"></span>
+        <div class="editor-tools">
+          <button id="rerollGroups" class="mini-btn" title="Shuffle again">🎲 Re-roll</button>
+          <button id="copyGroups" class="mini-btn" title="Copy result as text">⧉ Copy</button>
+        </div>
+      </div>
+      <div id="groupsGrid" class="counter-grid" aria-live="polite"></div>
     </section>
   </main>
 

@@ -3,10 +3,12 @@ name: Deploy to GitHub Pages
 # Publishes the static site so it can be tested at
 # https://fin6490.github.io/Tools/
 on:
+  # Deploy only from the default branch — the github-pages environment
+  # rejects deploys from other branches, so feature branches would just
+  # produce noisy failing checks. Use "Run workflow" for manual deploys.
   push:
     branches:
       - main
-      - claude/wheel-of-names-redesign-dg6fyv
   workflow_dispatch:
 
 permissions:

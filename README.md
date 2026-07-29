@@ -40,6 +40,13 @@ The guiding principles they agreed on:
 - **Winner history** with timestamps, per wheel.
 - Auto-assigned harmonious colors.
 
+### 👥 Team / group maker
+- Split any list of names into **random, balanced teams** — sizes differ by at most one.
+- Two modes: **by number of teams** or **by team size**.
+- One-click **Load current wheel** to reuse names you already typed (weights are stripped).
+- Editable team names, **re-roll** for a fresh shuffle, and **copy** the result as text.
+- The classroom/stream staple the original wheel handles poorly.
+
 ### ⏱ Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.
 - Drift-free (timestamp-based), giant readable clock, optional end beep.
@@ -85,6 +92,7 @@ js/wheel.js       # canvas wheel: parsing, drawing, weighted spin, easing
 js/storage.js     # localStorage state, import/export, share encoding
 js/timer.js       # countdown + stopwatch
 js/counter.js     # tally counters
+js/groups.js      # random balanced team maker
 js/sound.js       # WebAudio tick / fanfare / beep (no audio files shipped)
 js/confetti.js    # canvas confetti burst
 ```
@@ -95,8 +103,8 @@ js/confetti.js    # canvas confetti burst
 
 | Next up (cheap, likely soon) | Pro / v2 |
 | --- | --- |
-| Team/group maker (split N names into groups) | Cloud sync & accounts |
-| Custom slice images | Team wheels / collaboration |
+| Custom slice images | Cloud sync & accounts |
+| Send teams straight to new wheels | Team wheels / collaboration |
 | Greenscreen / overlay export for OBS | Custom branding & themes |
 | Twitch/YouTube chat → auto-populate entries | Native mobile app |
 
