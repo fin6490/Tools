@@ -85,8 +85,30 @@ export class Wheel {
     this.lastTickBoundary = null;
     this.onWinner = null;
     this.soundOn = true;
+    this.images = {};             // label -> dataURL
+    this._imgCache = new Map();   // dataURL -> HTMLImageElement
     this._fitToDisplay();
     window.addEventListener("resize", () => { this._fitToDisplay(); this.draw(); });
+  }
+
+  // Associate label -> image dataURL. Preloads so slices redraw when ready.
+  setImages(map) {
+    this.images = map || {};
+    Object.values(this.images).forEach((src) => {
+      if (src && !this._imgCache.has(src)) {
+        const img = new Image();
+        img.onload = () => this.draw();
+        img.src = src;
+        this._imgCache.set(src, img);
+      }
+    });
+  }
+
+  _imageFor(label) {
+    const src = this.images[label];
+    if (!src) return null;
+    const img = this._imgCache.get(src);
+    return img && img.complete && img.naturalWidth ? img : null;
   }
 
   _fitToDisplay() {
@@ -137,19 +159,44 @@ export class Wheel {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // label
+      // label (+ optional slice image)
       ctx.save();
       ctx.rotate(s.mid);
+      const slice = s.a1 - s.a0;
+
+      const img = this._imageFor(s.label);
+      let labelEndX = r - 16;
+      if (img) {
+        // Circular-cropped image near the rim; label pulled inward.
+        const imgSize = Math.max(20, Math.min(slice * r * 0.85, r * 0.26));
+        const imgCx = r - imgSize / 2 - 10;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(imgCx, 0, imgSize / 2, 0, TAU);
+        ctx.closePath();
+        ctx.clip();
+        const ar = img.naturalWidth / img.naturalHeight;
+        let dw = imgSize, dh = imgSize;
+        if (ar > 1) dw = imgSize * ar; else dh = imgSize / ar; // cover
+        ctx.drawImage(img, imgCx - dw / 2, -dh / 2, dw, dh);
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(imgCx, 0, imgSize / 2, 0, TAU);
+        ctx.strokeStyle = "rgba(0,0,0,.25)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        labelEndX = imgCx - imgSize / 2 - 8;
+      }
+
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillStyle = s.textColor || "#12142b";
-      const slice = s.a1 - s.a0;
       const fontSize = Math.max(10, Math.min(size * 0.04, (slice * r) * 0.6));
       ctx.font = `700 ${fontSize}px system-ui, sans-serif`;
-      const maxChars = Math.max(4, Math.floor((r - 44) / (fontSize * 0.58)));
+      const maxChars = Math.max(3, Math.floor((labelEndX - 28) / (fontSize * 0.58)));
       let label = s.label;
       if (label.length > maxChars) label = label.slice(0, maxChars - 1) + "…";
-      ctx.fillText(label, r - 16, 0);
+      ctx.fillText(label, labelEndX, 0);
       ctx.restore();
     });
 
