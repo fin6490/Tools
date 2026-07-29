@@ -1,6 +1,6 @@
-# 🎡 SpinDeck
+# SpinDeck
 
-### ▶ Live: **https://fin6490.github.io/Tools/**
+### Live: **https://fin6490.github.io/Tools/**
 
 **A faster, ad-free wheel of names — plus the creator toolkit around it.**
 Multiple wheels, a timer, and counters, all in one page. No ads, no login, no tracking.
@@ -23,54 +23,59 @@ Their verdict shaped everything below.
 The guiding principles they agreed on:
 
 - **No ads, ever.** The site is a zero-backend static app, so it costs almost nothing to run.
-  That's what makes an honest "no ads" promise possible. Monetization, *if* it ever comes,
-  is an optional Pro tier (cloud sync, branding, teams) — never ads.
+ That's what makes an honest "no ads" promise possible. Monetization, *if* it ever comes,
+ is an optional Pro tier (cloud sync, branding, teams) — never ads.
 - **More than a wheel.** Creators juggle a wheel *and* a timer *and* a tally counter.
-  SpinDeck puts all three in one tab.
+ SpinDeck puts all three in one tab.
 - **Your data is yours.** No accounts, no servers, no analytics. Everything is in
-  `localStorage`, with one-click export/import and shareable links.
+ `localStorage`, with one-click export/import and shareable links.
 
 ---
 
 ## Features (v1)
 
-### 🎡 The wheel
+### The wheel
 - Smooth 60fps canvas spin with real easing and a satisfying tick + winner fanfare.
 - **Multiple named wheels** — build "Period 1", "Subscribers", "Games to play" once,
-  switch between them in a click. All saved automatically.
+ switch between them in a click. All saved automatically.
 - **Weighted entries** — `Alice*3` makes Alice three times as likely. Duplicates get their own slice.
 - **Per-entry custom colours** — add a hex code to any line (`Bob #ff5a5f`, or `Cara *2 #0af` with a weight). Label text auto-picks black or white for contrast; entries without a colour keep the harmonious auto palette.
-- **Per-slice images** — the 🖼 button opens an image manager; upload a picture for any name and it renders (circular-cropped) on that slice. Images are downscaled and stored locally.
+- **Per-slice images** — the Images button opens an image manager; upload a picture for any name and it renders (circular-cropped) on that slice. Images are downscaled and stored locally.
 - **Remove winner after spin** — perfect for classroom cold-calls and elimination giveaways.
 - Editor tools: shuffle, sort, de-duplicate, live entry/slice count.
 - **Winner history** with timestamps, per wheel.
-- **🏆 Elimination mode** — each spin knocks out the pick; keep spinning until one name is left and it's crowned Champion. Perfect for tournaments and "last one standing" bits.
-- **🎰 Reel style** — flip the picker to a horizontal "Wheel of Fortune" strip that spins sideways. It uses a rectangle instead of a circle, so it fits far more names comfortably. Per-wheel setting.
+- **Elimination mode** — each spin knocks out the pick; keep spinning until one name is left and it's crowned Champion. Perfect for tournaments and "last one standing" bits.
+- **Reel style** — flip the picker to a horizontal "Wheel of Fortune" strip that spins sideways. It uses a rectangle instead of a circle, so it fits far more names comfortably. Per-wheel setting.
 - Auto-assigned harmonious colors.
 
-### 👥 Team / group maker
+### Slot reels
+- A **row of vertical reels** side by side that spin together, slot-machine style.
+- Choose how many reels (2–6) and point each one at any of your saved wheels — spin one list many times, or mix different lists (names + challenges + numbers) into a combo.
+- Staggered stops, a gold payline, and a result under each reel.
+
+### Team / group maker
 - Split any list of names into **random, balanced teams** — sizes differ by at most one.
 - Two modes: **by number of teams** or **by team size**.
 - One-click **Load current wheel** to reuse names you already typed (weights are stripped).
 - Editable team names, **re-roll** for a fresh shuffle, and **copy** the result as text.
-- **🎡 To wheels** turns each team into its own saved wheel in one click — great for "spin within the winning team."
+- **To wheels** turns each team into its own saved wheel in one click — great for "spin within the winning team."
 - The classroom/stream staple the original wheel handles poorly.
 
-### 🏅 Scoreboard
+### Scoreboard
 - Keep score for **board games, darts, card nights** — any number of players.
 - Each player has an editable score (type it directly — handy for darts' 501), plus **± buttons** with a custom step and **quick +1 / +5 / +10** chips.
-- Live ranking with 🥇🥈🥉 badges and a highlighted leader; **Sort**, **New game** (reset scores, keep players), and per-player remove.
+- Live ranking with badges and a highlighted leader; **Sort**, **New game** (reset scores, keep players), and per-player remove.
 
-### ⏱ Timer
+### Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.
 - Drift-free (timestamp-based), giant readable clock, optional end beep.
 - Great for speedrun segments, "you have 5 minutes" challenges, and buzzer rounds.
 
-### 🔢 Counters
+### Counters
 - Unlimited named tally counters — spins, slot pulls, score, deaths, anything.
 - Custom step size, reset, and a counter named "Spins" auto-increments when you spin the wheel.
 
-### ✨ Everywhere
+### Everywhere
 - **Presentation mode** (`F`) — hides all the editing chrome for a clean on-stream look.
 - Dark / light themes, adjustable spin length, mute, confetti toggle.
 - **Keyboard**: `Space` spins, `F` presents, `Esc` closes.
@@ -99,18 +104,19 @@ Push to any static host — **GitHub Pages, Netlify, Vercel, Cloudflare Pages**.
 ## Project layout
 
 ```
-index.html        # markup + layout
-css/styles.css    # theme tokens, layout, components (light + dark)
-js/app.js         # orchestrator: wires UI ↔ storage ↔ tools
-js/wheel.js       # canvas wheel: parsing, drawing, weighted spin, easing
-js/storage.js     # localStorage state, import/export, share encoding
-js/timer.js       # countdown + stopwatch
-js/counter.js     # tally counters
-js/scores.js      # multiplayer scoreboard
-js/groups.js      # random balanced team maker
-js/images.js      # per-slice image manager (upload + downscale)
-js/sound.js       # WebAudio tick / fanfare / beep (no audio files shipped)
-js/confetti.js    # canvas confetti burst
+index.html # markup + layout
+css/styles.css # theme tokens, layout, components (light + dark)
+js/app.js # orchestrator: wires UI storage tools
+js/wheel.js # canvas wheel: parsing, drawing, weighted spin, easing
+js/storage.js # localStorage state, import/export, share encoding
+js/timer.js # countdown + stopwatch
+js/counter.js # tally counters
+js/scores.js # multiplayer scoreboard
+js/slots.js # multiple slot reels
+js/groups.js # random balanced team maker
+js/images.js # per-slice image manager (upload + downscale)
+js/sound.js # WebAudio tick / fanfare / beep (no audio files shipped)
+js/confetti.js # canvas confetti burst
 ```
 
 ---
@@ -122,11 +128,11 @@ js/confetti.js    # canvas confetti burst
 | Save/name custom palettes | Cloud sync & accounts |
 | Open Graph preview image (share previews) | Team wheels / collaboration |
 | Greenscreen / overlay export for OBS | Custom branding & themes |
-| Twitch/YouTube chat → auto-populate entries | Native mobile app |
+| Twitch/YouTube chat auto-populate entries | Native mobile app |
 
 ---
 
 ## Privacy
 
 No accounts. No servers. No tracking or analytics. Your wheels, counters, and settings
-never leave your browser. Clear them any time from the ⋯ menu → *Reset everything*.
+never leave your browser. Clear them any time from the ⋯ menu *Reset everything*.

@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://fin6490.github.io/Tools/assets/og-image.png" />
 
 <link rel="stylesheet" href="css/styles.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <link rel="manifest" href="site.webmanifest" />
 
@@ -60,30 +60,37 @@
   <!-- ============ Top bar ============ -->
   <header class="topbar">
     <h1 class="brand">
-      <span class="brand-mark" aria-hidden="true">◉</span>
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><rect x="1" y="1" width="30" height="30" rx="8" fill="#ff5b52"/><path d="M12 9L24 16L12 23Z" fill="#2b0b09"/></svg>
+      </span>
       <span class="brand-name">SpinDeck</span>
-      <span class="brand-tag">no ads · no login · your data stays local</span>
+      <span class="brand-tag">no ads · no accounts · runs entirely in your browser</span>
     </h1>
 
     <nav class="tabs" role="tablist" aria-label="Tools">
-      <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">🎡 Wheel</button>
-      <button class="tab" data-view-btn="groups" role="tab" aria-selected="false">👥 Groups</button>
-      <button class="tab" data-view-btn="scores" role="tab" aria-selected="false">🏅 Scores</button>
-      <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">⏱ Timer</button>
-      <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">🔢 Counters</button>
+      <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">Wheel</button>
+      <button class="tab" data-view-btn="slots" role="tab" aria-selected="false">Slots</button>
+      <button class="tab" data-view-btn="groups" role="tab" aria-selected="false">Groups</button>
+      <button class="tab" data-view-btn="scores" role="tab" aria-selected="false">Scores</button>
+      <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">Timer</button>
+      <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">Counters</button>
     </nav>
 
     <div class="topbar-actions">
-      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">🌙</button>
-      <button id="presentBtn" class="icon-btn" title="Presentation mode (F)" aria-label="Presentation mode">⛶</button>
+      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
+      </button>
+      <button id="presentBtn" class="icon-btn" title="Presentation mode (F)" aria-label="Presentation mode">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
       <div class="menu">
         <button id="menuBtn" class="icon-btn" title="More" aria-haspopup="true" aria-label="More options">⋯</button>
         <div id="menuPanel" class="menu-panel" hidden>
-          <button data-action="export">⬇️ Export all (JSON)</button>
-          <button data-action="import">⬆️ Import (JSON)</button>
-          <button data-action="share">🔗 Copy share link (this wheel)</button>
-          <button data-action="reset">🗑️ Reset everything</button>
-          <a href="README.md" target="_blank" rel="noopener">❔ About / help</a>
+          <button data-action="export">Export all (JSON)</button>
+          <button data-action="import">Import (JSON)</button>
+          <button data-action="share">Copy share link (this wheel)</button>
+          <button data-action="reset">Reset everything</button>
+          <a href="README.md" target="_blank" rel="noopener">About / help</a>
         </div>
       </div>
     </div>
@@ -96,18 +103,18 @@
       <div class="wheel-switcher">
         <label class="sr-only" for="wheelSelect">Active wheel</label>
         <select id="wheelSelect" title="Switch wheel"></select>
-        <button id="newWheelBtn" class="mini-btn" title="New wheel">＋</button>
-        <button id="renameWheelBtn" class="mini-btn" title="Rename wheel">✎</button>
-        <button id="deleteWheelBtn" class="mini-btn" title="Delete wheel">🗑</button>
+        <button id="newWheelBtn" class="mini-btn" title="New wheel">New</button>
+        <button id="renameWheelBtn" class="mini-btn" title="Rename wheel">Rename</button>
+        <button id="deleteWheelBtn" class="mini-btn" title="Delete wheel">Delete</button>
       </div>
 
       <div class="editor-head">
         <span id="entryCount" class="entry-count">0 entries</span>
         <div class="editor-tools">
-          <button id="imagesBtn" class="mini-btn" title="Add images to slices">🖼</button>
-          <button id="shuffleBtn" class="mini-btn" title="Shuffle order">🔀</button>
-          <button id="sortBtn" class="mini-btn" title="Sort A→Z">↕</button>
-          <button id="dedupeBtn" class="mini-btn" title="Remove duplicates">⧉</button>
+          <button id="imagesBtn" class="mini-btn" title="Add images to slices">Images</button>
+          <button id="shuffleBtn" class="mini-btn" title="Shuffle order">Shuffle</button>
+          <button id="sortBtn" class="mini-btn" title="Sort A to Z">Sort</button>
+          <button id="dedupeBtn" class="mini-btn" title="Remove duplicates">Unique</button>
         </div>
       </div>
 
@@ -115,7 +122,7 @@
         placeholder="One name per line…&#10;&#10;Tips:&#10;Alice*3          weight (3× more likely)&#10;Bob #ff5a5f      custom colour&#10;Cara *2 #0af     both"></textarea>
 
       <div class="editor-options">
-        <label class="opt"><input type="checkbox" id="eliminationMode" /> 🏆 Elimination mode <span class="opt-hint">(spin to knock out — last one wins)</span></label>
+        <label class="opt"><input type="checkbox" id="eliminationMode" /> Elimination mode <span class="opt-hint">(spin to knock out — last one wins)</span></label>
         <label class="opt"><input type="checkbox" id="removeWinner" /> Remove winner after each spin</label>
         <label class="opt"><input type="checkbox" id="soundOn" checked /> Sound</label>
         <label class="opt"><input type="checkbox" id="confettiOn" checked /> Confetti</label>
@@ -129,8 +136,8 @@
     <!-- Center: the wheel -->
     <section class="panel stage" aria-label="The wheel">
       <div class="style-toggle seg-toggle" role="tablist" aria-label="Picker style">
-        <button class="seg is-active" data-wheel-style="wheel" role="tab">🎡 Wheel</button>
-        <button class="seg" data-wheel-style="reel" role="tab">🎰 Reel</button>
+        <button class="seg is-active" data-wheel-style="wheel" role="tab">Wheel</button>
+        <button class="seg" data-wheel-style="reel" role="tab">Reel</button>
       </div>
       <div class="wheel-wrap">
         <canvas id="wheel" width="720" height="720" role="img" aria-label="Spinning wheel of names"></canvas>
@@ -149,6 +156,26 @@
       </div>
       <ol id="historyList" class="history-list" aria-live="polite"></ol>
     </aside>
+  </main>
+
+  <!-- ============ SLOTS VIEW ============ -->
+  <main class="view view-slots" data-view-panel="slots" hidden>
+    <section class="panel tool-panel slots-panel">
+      <div class="slots-head">
+        <h2>Slot reels</h2>
+      </div>
+      <p class="muted">Several reels side by side — spin them all at once. Point each reel at any of your saved wheels.</p>
+      <div class="slots-controls">
+        <label>Reels
+          <input type="number" id="slotCount" min="2" max="6" value="3" />
+        </label>
+        <button id="slotSameSource" class="mini-btn" title="Point every reel at the same wheel">Match all to first</button>
+      </div>
+      <div id="slotReels" class="slot-reels"></div>
+      <div class="slots-footer">
+        <button id="slotsSpin" class="btn primary slots-spin" aria-label="Spin all reels">Spin all</button>
+      </div>
+    </section>
   </main>
 
   <!-- ============ TIMER VIEW ============ -->
@@ -190,7 +217,7 @@
     <section class="panel tool-panel groups-panel">
       <div class="counter-head">
         <h2>Team / group maker</h2>
-        <button id="loadFromWheel" class="mini-btn" title="Copy the current wheel's names in here">↺ Load current wheel</button>
+        <button id="loadFromWheel" class="mini-btn" title="Copy the current wheel's names in here">Load current wheel</button>
       </div>
       <p class="muted">Split a list of names into random, balanced teams.</p>
 
@@ -206,15 +233,15 @@
           <span id="groupNumLabel">How many teams?</span>
           <input type="number" id="groupNum" min="1" max="100" value="4" />
         </label>
-        <button id="makeGroups" class="btn primary">Make teams 🎲</button>
+        <button id="makeGroups" class="btn primary">Make teams</button>
       </div>
 
       <div class="groups-result-head" hidden>
         <span id="groupsSummary" class="muted"></span>
         <div class="editor-tools">
-          <button id="rerollGroups" class="mini-btn" title="Shuffle again">🎲 Re-roll</button>
-          <button id="copyGroups" class="mini-btn" title="Copy result as text">⧉ Copy</button>
-          <button id="sendToWheels" class="mini-btn" title="Create a wheel for each team">🎡 To wheels</button>
+          <button id="rerollGroups" class="mini-btn" title="Shuffle again">Re-roll</button>
+          <button id="copyGroups" class="mini-btn" title="Copy result as text">Copy</button>
+          <button id="sendToWheels" class="mini-btn" title="Create a wheel for each team">To wheels</button>
         </div>
       </div>
       <div id="groupsGrid" class="counter-grid" aria-live="polite"></div>
@@ -227,9 +254,9 @@
       <div class="counter-head">
         <h2>Scoreboard</h2>
         <div class="scores-actions">
-          <button id="sortScores" class="mini-btn" title="Sort players by score">↕ Sort</button>
-          <button id="newGame" class="mini-btn" title="Reset every score to 0">↺ New game</button>
-          <button id="addPlayer" class="btn primary">＋ Add player</button>
+          <button id="sortScores" class="mini-btn" title="Sort players by score">Sort</button>
+          <button id="newGame" class="mini-btn" title="Reset every score to 0">New game</button>
+          <button id="addPlayer" class="btn primary">Add player</button>
         </div>
       </div>
       <p class="muted">Keep score for board games, darts, card nights — anything. Edit a score directly, or use the buttons. Saved locally.</p>
@@ -242,7 +269,7 @@
     <section class="panel tool-panel counter-panel">
       <div class="counter-head">
         <h2>Counters</h2>
-        <button id="addCounter" class="btn primary">＋ New counter</button>
+        <button id="addCounter" class="btn primary">New counter</button>
       </div>
       <p class="muted">Track spins, slot pulls, score, deaths — anything. Saved locally.</p>
       <div id="counterGrid" class="counter-grid"></div>
@@ -285,5 +312,5 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260729b' index.html js | xargs sed -i 's/?v=20260729b/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260729b"></script>
+       grep -rl '?v=20260730a' index.html js | xargs sed -i 's/?v=20260730a/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260730a"></script>

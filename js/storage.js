@@ -22,6 +22,7 @@ const DEFAULTS = () => ({
   counters: [{ id: crypto.randomUUID(), name: "Spins", value: 0, step: 1 }],
   groups: { text: "", mode: "count", num: 4 },
   players: [], // { id, name, score, step }
+  slots: { count: 3, sources: [] },
 });
 
 let state = load();
