@@ -38,6 +38,7 @@ The guiding principles they agreed on:
 - **Remove winner after spin** — perfect for classroom cold-calls and elimination giveaways.
 - Editor tools: shuffle, sort, de-duplicate, live entry/slice count.
 - **Winner history** with timestamps, per wheel.
+- **🏆 Elimination mode** — each spin knocks out the pick; keep spinning until one name is left and it's crowned Champion. Perfect for tournaments and "last one standing" bits.
 - Auto-assigned harmonious colors.
 
 ### 👥 Team / group maker
@@ -105,7 +106,7 @@ js/confetti.js    # canvas confetti burst
 | Next up (cheap, likely soon) | Pro / v2 |
 | --- | --- |
 | Custom slice images | Cloud sync & accounts |
-| Elimination bracket mode | Team wheels / collaboration |
+| Per-entry custom colors | Team wheels / collaboration |
 | Greenscreen / overlay export for OBS | Custom branding & themes |
 | Twitch/YouTube chat → auto-populate entries | Native mobile app |
 
