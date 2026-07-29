@@ -1,6 +1,6 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
 import * as store from "./storage.js";
-import { Wheel, parseEntries } from "./wheel.js";
+import { Wheel, parseEntries, parseLine } from "./wheel.js";
 import * as sound from "./sound.js";
 import { burst } from "./confetti.js";
 import { initTimer } from "./timer.js";
@@ -251,7 +251,7 @@ modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = 
 function removeFromWheel(name) {
   const w = store.activeWheel();
   const lines = w.text.split("\n");
-  const idx = lines.findIndex((l) => l.trim().replace(/\s*\*\s*\d+$/, "").trim() === name);
+  const idx = lines.findIndex((l) => l.trim() && parseLine(l).label === name);
   if (idx !== -1) lines.splice(idx, 1);
   w.text = lines.join("\n");
   entriesEl.value = w.text;
