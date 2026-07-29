@@ -6,6 +6,12 @@ function ac() {
   return ctx;
 }
 
+// Create/resume the audio context inside a user gesture so mobile
+// (esp. iOS) allows sound that actually fires later, in a rAF callback.
+export function unlock() {
+  try { ac(); } catch {}
+}
+
 // Short "tick" as the wheel passes a peg.
 export function tick(volume = 0.08) {
   try {

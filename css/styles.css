@@ -137,7 +137,7 @@ body {
 
 /* ===== Stage / wheel ===== */
 .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
-.wheel-wrap { position: relative; width: min(62vh, 620px); aspect-ratio: 1; }
+.wheel-wrap { position: relative; width: min(62vh, 92vw, 620px); aspect-ratio: 1; }
 #wheel { width: 100%; height: 100%; display: block; }
 .pointer {
   position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
@@ -268,10 +268,24 @@ body {
   .editor, .history { max-width: 640px; margin: 0 auto; width: 100%; }
   .stage { order: -1; }
 }
-@media (max-width: 620px) {
+@media (max-width: 720px) {
+  /* Let the top bar wrap: brand + actions on row 1, tabs on their own row. */
+  .topbar { flex-wrap: wrap; row-gap: 10px; padding: 10px 12px; gap: 10px; }
   .brand-tag { display: none; }
-  .tabs { gap: 2px; }
+  .topbar-actions { margin-left: auto; }
+  .tabs { order: 3; flex-basis: 100%; margin: 0; flex-wrap: wrap; justify-content: center; gap: 4px; }
   .tab { padding: 7px 12px; font-size: 14px; }
+
+  /* Fit the single-column layout inside narrow viewports. Grid items
+     default to min-width:auto, so the wheel's fixed size would otherwise
+     stretch the whole column past the screen. */
+  .view { padding: 12px; gap: 12px; }
+  .panel { min-width: 0; }
+  .wheel-wrap { width: min(62vh, 84vw, 620px); }
+}
+@media (max-width: 400px) {
+  .tab { padding: 6px 9px; font-size: 13px; }
+  .icon-btn { width: 36px; height: 36px; font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .modal-card { animation: none; }

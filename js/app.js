@@ -161,12 +161,17 @@ $("#soundOn").checked = state.soundOn;
 $("#confettiOn").checked = state.confettiOn;
 
 /* ---------- Spin + winner ---------- */
+// Unlock audio on the very first interaction anywhere (mobile autoplay policy).
+["pointerdown", "keydown"].forEach((ev) =>
+  window.addEventListener(ev, () => sound.unlock(), { once: true })
+);
+
 let counters; // set after init
 function doSpin() {
   if (wheel.spinning) return;
   const w = store.activeWheel();
   if (!parseEntries(w.text).length) return toast("Add some names first");
-  sound; // ensure audio context can start on user gesture
+  sound.unlock(); // start audio within this gesture (mobile needs this)
   wheel.spin(state.spinLen);
   if (counters) counters.incrementSpins();
 }
