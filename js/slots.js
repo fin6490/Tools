@@ -1,8 +1,8 @@
 // slots.js — multiple vertical reels side by side, spun together (slot machine).
-import { parseEntries } from "./wheel.js?v=20260730e";
-import { getState, save } from "./storage.js?v=20260730e";
-import * as sound from "./sound.js?v=20260730e";
-import { burst } from "./confetti.js?v=20260730e";
+import { parseEntries } from "./wheel.js?v=20260730f";
+import { getState, save } from "./storage.js?v=20260730f";
+import * as sound from "./sound.js?v=20260730f";
+import { burst } from "./confetti.js?v=20260730f";
 
 class SlotReel {
   constructor(canvas) {
@@ -208,27 +208,57 @@ export function initSlots(root, { soundOn = () => true } = {}) {
     reels.forEach((r) => { r.reel.fit(); r.reel.setItems(itemsFor(r.sourceId)); });
   }
 
+  function record(text) {
+    if (!text) return;
+    const s = state();
+    if (!s.history) s.history = [];
+    s.history.unshift({ text, at: Date.now() });
+    if (s.history.length > 100) s.history.length = 100;
+    save();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = root.querySelector("#slotHistory");
+    if (!list) return;
+    const hist = state().history || [];
+    list.innerHTML = "";
+    hist.forEach((h, i) => {
+      const li = document.createElement("li");
+      if (i === 0) li.className = "latest";
+      const t = document.createElement("span"); t.textContent = h.text;
+      const time = document.createElement("span");
+      time.className = "h-time";
+      time.textContent = new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      li.append(t, time);
+      list.appendChild(li);
+    });
+  }
+
   function spinOne(entry) {
     if (entry.reel.spinning) return;
     entry.resultEl.textContent = "";
     entry.reel.soundOn = soundOn();
     entry.reel.spin(2.6, 0, (label) => {
       entry.resultEl.textContent = label || "—";
-      if (label) burst(60);
+      if (label) { burst(60); record(label); }
     });
   }
 
   function spinAll() {
     if (reels.some((r) => r.reel.spinning)) return;
     let remaining = reels.length;
-    let anyWinner = false;
+    const results = new Array(reels.length).fill(null);
     reels.forEach((r, i) => {
       r.resultEl.textContent = "";
       r.reel.soundOn = soundOn();
       r.reel.spin(2.4 + i * 0.35, i * 0.18, (label) => {
         r.resultEl.textContent = label || "—";
-        if (label) anyWinner = true;
-        if (--remaining === 0 && anyWinner) burst(90);
+        results[i] = label;
+        if (--remaining === 0) {
+          const got = results.filter(Boolean);
+          if (got.length) { burst(90); record(got.join(" · ")); }
+        }
       });
     });
   }
@@ -253,7 +283,11 @@ export function initSlots(root, { soundOn = () => true } = {}) {
   });
 
   spinBtn.addEventListener("click", spinAll);
+  root.querySelector("#slotClear").addEventListener("click", () => {
+    state().history = []; save(); renderHistory();
+  });
 
   build();
+  renderHistory();
   return { relayout, spinAll, rebuild: build };
 }

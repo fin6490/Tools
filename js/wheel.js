@@ -1,5 +1,5 @@
 // wheel.js — the spinning wheel: parsing, drawing, weighted spin, easing.
-import * as sound from "./sound.js?v=20260730e";
+import * as sound from "./sound.js?v=20260730f";
 
 const TAU = Math.PI * 2;
 const POINTER = -Math.PI / 2; // pointer sits at the top (12 o'clock)
