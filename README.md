@@ -87,7 +87,7 @@ Several modes for any number of players:
 - Custom step size, reset, and a counter named "Spins" auto-increments when you spin the wheel.
 
 ### Everywhere
-- **Presentation mode** (`F`) — hides all the editing chrome for a clean on-stream look.
+- **Fullscreen focus mode** (`F`, or the ⛶ button) — works on **any** tool (wheel, slots, numbers, counters, timer…): requests real browser fullscreen, hides the chrome, and enlarges the action for a clean on-stream / distraction-free look. `Esc` or ✕ exits.
 - Dark / light themes, adjustable spin length, mute, confetti toggle.
 - **Keyboard**: `Space` spins, `F` presents, `Esc` closes.
 - **Import / export** all your data as JSON, and **copy a share link** for any single wheel.

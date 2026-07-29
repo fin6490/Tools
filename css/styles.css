@@ -409,15 +409,45 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 .confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 55; }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 2px solid var(--accent); color: var(--ink); padding: 12px 20px; border-radius: 10px; box-shadow: var(--shadow); z-index: 70; font-size: 14px; }
 
-/* ===== Presentation mode ===== */
-#app[data-present="true"] .topbar,
+/* ===== Fullscreen / focus mode (works on any tab) ===== */
+#present-exit { position: fixed; top: 16px; right: 16px; z-index: 30; }
+#app[data-present="true"] .topbar { display: none; }
+/* Center the active tool, strip panel chrome, fill the screen. */
+#app[data-present="true"] .view { padding: 0; min-height: 100vh; place-items: center; align-content: center; }
+#app[data-present="true"] .panel { border: 0; box-shadow: none; background: transparent; width: 100%; max-width: 1100px; }
+/* Hide descriptions / secondary headings across tools. */
+#app[data-present="true"] .muted,
+#app[data-present="true"] .hint,
+#app[data-present="true"] .counter-head > h2,
+#app[data-present="true"] .slots-head { display: none; }
+
+/* Wheel */
 #app[data-present="true"] .editor,
 #app[data-present="true"] .history,
-#app[data-present="true"] .hint { display: none; }
-#app[data-present="true"] .view-wheel { grid-template-columns: 1fr; padding: 0; }
-#app[data-present="true"] .stage { min-height: 100vh; }
-#app[data-present="true"] .wheel-wrap { width: min(88vh, 88vw); }
-#present-exit { position: fixed; top: 16px; right: 16px; z-index: 30; }
+#app[data-present="true"] .style-toggle { display: none; }
+#app[data-present="true"] .view-wheel { grid-template-columns: 1fr; }
+#app[data-present="true"] .stage { min-height: 100vh; justify-content: center; }
+#app[data-present="true"] .wheel-wrap { width: min(86vh, 92vw); }
+#app[data-present="true"][data-wheelstyle="reel"] .wheel-wrap { width: 94vw; height: min(52vh, 420px); }
+
+/* Slots — hide dropdowns, per-reel buttons, controls, results; big reels. */
+#app[data-present="true"] .slots-controls,
+#app[data-present="true"] .slot-source,
+#app[data-present="true"] .slot-spin-one,
+#app[data-present="true"] .slots-results { display: none; }
+#app[data-present="true"] .slot { width: auto; }
+#app[data-present="true"] .slot-frame { width: min(22vw, 190px); height: min(66vh, 620px); }
+
+/* Numbers — huge result, keep controls + generate. */
+#app[data-present="true"] .num-chip.solo { font-size: clamp(90px, 30vh, 320px); }
+#app[data-present="true"] .num-chip { font-size: clamp(40px, 9vh, 90px); }
+
+/* Counters — bigger tallies. */
+#app[data-present="true"] .counter-value { font-size: clamp(64px, 13vh, 150px); }
+#app[data-present="true"] .counter-grid { gap: 20px; }
+
+/* Timer — the clock is already large; just let it breathe. */
+#app[data-present="true"] .big-clock { font-size: clamp(90px, 26vh, 300px); }
 
 /* ===== Responsive ===== */
 @media (max-width: 1040px) {

@@ -1,15 +1,15 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260730f";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730f";
-import * as sound from "./sound.js?v=20260730f";
-import { burst } from "./confetti.js?v=20260730f";
-import { initTimer } from "./timer.js?v=20260730f";
-import { initCounters } from "./counter.js?v=20260730f";
-import { initGroups } from "./groups.js?v=20260730f";
-import { initImages } from "./images.js?v=20260730f";
-import { initScores } from "./scores.js?v=20260730f";
-import { initSlots } from "./slots.js?v=20260730f";
-import { initNumbers } from "./numbers.js?v=20260730f";
+import * as store from "./storage.js?v=20260730g";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730g";
+import * as sound from "./sound.js?v=20260730g";
+import { burst } from "./confetti.js?v=20260730g";
+import { initTimer } from "./timer.js?v=20260730g";
+import { initCounters } from "./counter.js?v=20260730g";
+import { initGroups } from "./groups.js?v=20260730g";
+import { initImages } from "./images.js?v=20260730g";
+import { initScores } from "./scores.js?v=20260730g";
+import { initSlots } from "./slots.js?v=20260730g";
+import { initNumbers } from "./numbers.js?v=20260730g";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -312,25 +312,40 @@ $("#clearHistory").addEventListener("click", () => {
   store.save(); renderHistory();
 });
 
-/* ---------- Presentation mode ---------- */
+/* ---------- Fullscreen / focus mode (works on any tab) ---------- */
 function togglePresent(force) {
   const on = force !== undefined ? force : app.dataset.present !== "true";
   app.dataset.present = on ? "true" : "false";
-  if (on && app.dataset.view !== "wheel") {
-    document.querySelector('[data-view-btn="wheel"]').click();
+
+  // Real browser fullscreen (best-effort — needs a user gesture; CSS focus
+  // mode still applies if it's blocked).
+  if (on) {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen?.().catch(() => {});
   }
+
   if (on && !$("#present-exit")) {
     const b = document.createElement("button");
     b.id = "present-exit"; b.className = "icon-btn"; b.textContent = "✕";
-    b.title = "Exit presentation (Esc)";
+    b.title = "Exit fullscreen (Esc)";
     b.addEventListener("click", () => togglePresent(false));
     app.appendChild(b);
   } else if (!on && $("#present-exit")) {
     $("#present-exit").remove();
   }
-  wheel._fitToDisplay(); wheel.draw();
+
+  // Canvases need to re-measure for their new size.
+  requestAnimationFrame(() => {
+    wheel._fitToDisplay(); wheel.draw();
+    if (slots && app.dataset.view === "slots") slots.relayout();
+  });
 }
 $("#presentBtn").addEventListener("click", () => togglePresent());
+// Keep our state in sync if the user leaves fullscreen via Esc / browser UI.
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && app.dataset.present === "true") togglePresent(false);
+});
 
 /* ---------- Keyboard ---------- */
 document.addEventListener("keydown", (e) => {
