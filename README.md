@@ -53,6 +53,7 @@ The guiding principles they agreed on:
 - Choose how many reels (2–6) and point each one at any of your saved wheels — spin one list many times, or mix different lists (names + challenges + numbers) into a combo.
 - Staggered stops, a gold payline, and a result under each reel.
 - **Spin all** at once, or **spin one reel at a time** (click a reel, or its Spin button).
+- A **Results** log records each spin (the combo from Spin all, or a single reel), with timestamps and a clear button.
 
 ### Team / group maker
 - Split any list of names into **random, balanced teams** — sizes differ by at most one.
