@@ -56,6 +56,7 @@
       <div class="editor-head">
         <span id="entryCount" class="entry-count">0 entries</span>
         <div class="editor-tools">
+          <button id="imagesBtn" class="mini-btn" title="Add images to slices">🖼</button>
           <button id="shuffleBtn" class="mini-btn" title="Shuffle order">🔀</button>
           <button id="sortBtn" class="mini-btn" title="Sort A→Z">↕</button>
           <button id="dedupeBtn" class="mini-btn" title="Remove duplicates">⧉</button>
@@ -192,8 +193,21 @@
     </div>
   </div>
 
+  <!-- ============ Slice images modal ============ -->
+  <div id="imagesModal" class="modal" hidden>
+    <div class="modal-card images-card" role="dialog" aria-modal="true" aria-labelledby="imagesTitle">
+      <div class="images-head">
+        <h2 id="imagesTitle">Slice images</h2>
+        <button id="imagesClose" class="icon-btn" aria-label="Close">✕</button>
+      </div>
+      <p class="muted">Add a picture to any name — it shows on that slice. Stored locally in your browser.</p>
+      <div id="imagesList" class="images-list"></div>
+    </div>
+  </div>
+
   <canvas id="confetti" class="confetti-canvas" aria-hidden="true"></canvas>
   <input type="file" id="importFile" accept="application/json" hidden />
+  <input type="file" id="sliceImageFile" accept="image/*" hidden />
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 

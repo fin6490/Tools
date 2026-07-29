@@ -6,6 +6,7 @@ import { burst } from "./confetti.js";
 import { initTimer } from "./timer.js";
 import { initCounters } from "./counter.js";
 import { initGroups } from "./groups.js";
+import { initImages } from "./images.js";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -47,6 +48,7 @@ const wheelSelect = $("#wheelSelect");
 function refreshWheel() {
   const w = store.activeWheel();
   wheel.soundOn = state.soundOn;
+  wheel.setImages(w.images || {});
   wheel.setSegments(parseEntries(w.text));
   updateEntryCount(w.text);
 }
@@ -314,7 +316,9 @@ document.addEventListener("keydown", (e) => {
   } else if (e.key.toLowerCase() === "f" && !typing) {
     togglePresent();
   } else if (e.key === "Escape") {
+    const imagesModal = $("#imagesModal");
     if (!modal.hidden) modal.hidden = true;
+    else if (!imagesModal.hidden) imagesModal.hidden = true;
     else if (app.dataset.present === "true") togglePresent(false);
     else closeMenu();
   }
@@ -392,6 +396,13 @@ populateWheelSelect();
 loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
+initImages(document, {
+  getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),
+  getMap: () => (store.activeWheel().images ||= {}),
+  persist: () => store.save(),
+  onChange: () => refreshWheel(),
+  toast,
+});
 initGroups(document, {
   getWheelText: () => store.activeWheel().text,
   onSendTeams: (teams) => {

@@ -7,6 +7,7 @@ const DEFAULT_WHEEL = () => ({
   text: "Alice\nBob\nCharlie\nDiana\nEvan\nFiona",
   removeWinner: false,
   elimination: false,
+  images: {}, // { label: dataURL }
   history: [], // { name, at }
 });
 
