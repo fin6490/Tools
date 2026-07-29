@@ -1,17 +1,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SpinDeck — Free, Ad-Free Wheel of Names, Timer & Team Picker</title>
-<meta name="description" content="SpinDeck is a fast, ad-free wheel of names with multiple wheels, weighted entries, custom colours & images, elimination mode, a random team maker, a timer, and counters. No ads, no login, no tracking — everything stays in your browser. Made for streamers, YouTubers, and teachers." />
-<meta name="keywords" content="wheel of names, random name picker, spinner wheel, random picker, team generator, group maker, classroom picker, giveaway wheel, random wheel, decision wheel, ad-free wheel of names, stream tools, countdown timer, tally counter" />
+<title>SpinDeck — Free, Ad-Free Wheel of Names, Slots, Scoreboard & Timer</title>
+<meta name="description" content="SpinDeck is a fast, ad-free creator toolkit: a wheel of names with multiple wheels, weighted entries, colours & images and elimination mode, plus slot reels, a scoreboard (darts & cricket), a random team maker, a random number generator, a timer, and counters. No ads, no login, no tracking — everything stays in your browser, and it works offline." />
+<meta name="keywords" content="wheel of names, random name picker, spinner wheel, random picker, slot machine, team generator, group maker, classroom picker, giveaway wheel, decision wheel, ad-free wheel of names, scoreboard, darts counter, cricket darts, random number generator, dice roller, stream tools, countdown timer, tally counter" />
 <meta name="author" content="SpinDeck" />
-<meta name="theme-color" content="#0f1226" />
+<meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://fin6490.github.io/Tools/" />
 
 <!-- Open Graph (Facebook, Discord, LinkedIn, etc.) -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDeck" />
-<meta property="og:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Tools" />
-<meta property="og:description" content="A fast, ad-free wheel of names — plus a timer, counters, a random team maker, elimination mode, and custom colours & images. No ads, no login. Everything stays in your browser." />
+<meta property="og:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Toolkit" />
+<meta property="og:description" content="A fast, ad-free wheel of names — plus slot reels, a scoreboard (darts & cricket), a random team maker, a random number generator, a timer, and counters. No ads, no login. Everything stays in your browser, and it works offline." />
 <meta property="og:url" content="https://fin6490.github.io/Tools/" />
 <meta property="og:image" content="https://fin6490.github.io/Tools/assets/og-image.png" />
 <meta property="og:image:width" content="1200" />
@@ -20,8 +20,8 @@
 
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Tools" />
-<meta name="twitter:description" content="A fast, ad-free wheel of names — plus a timer, counters, team maker, elimination mode, and custom colours & images. No ads, no login." />
+<meta name="twitter:title" content="SpinDeck — Free, Ad-Free Wheel of Names + Creator Toolkit" />
+<meta name="twitter:description" content="A fast, ad-free wheel of names — plus slot reels, a scoreboard (darts & cricket), a team maker, a random number generator, a timer, and counters. No ads, no login." />
 <meta name="twitter:image" content="https://fin6490.github.io/Tools/assets/og-image.png" />
 
 <link rel="stylesheet" href="css/styles.css" />
@@ -36,7 +36,7 @@
   "@type": "WebApplication",
   "name": "SpinDeck",
   "url": "https://fin6490.github.io/Tools/",
-  "description": "A fast, ad-free wheel of names with multiple wheels, weighted entries, custom colours and images, elimination mode, a random team maker, a timer, and counters. No ads, no login, no tracking.",
+  "description": "A fast, ad-free creator toolkit: a wheel of names with multiple wheels, weighted entries, custom colours and images and elimination mode, plus slot reels, a scoreboard (darts and cricket), a random team maker, a random number generator, a timer, and counters. No ads, no login, no tracking, works offline.",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any (web browser)",
   "browserRequirements": "Requires JavaScript",
@@ -46,9 +46,14 @@
     "Multiple saved wheels",
     "Per-entry custom colours and images",
     "Elimination mode",
+    "Slot reels (slot-machine spinners)",
+    "Scoreboard with darts (X01) and cricket",
     "Random team / group maker",
+    "Random number generator",
     "Countdown timer and stopwatch",
-    "Tally counters"
+    "Tally counters",
+    "Fullscreen focus mode",
+    "Works offline"
   ]
 }
 </script>
@@ -354,3 +359,12 @@
      Bump it whenever any JS changes:
        grep -rl '?v=20260730g' index.html js | xargs sed -i 's/?v=20260730g/?v=NEWTOKEN/g' -->
 <script type="module" src="js/app.js?v=20260730g"></script>
+
+<!-- Register the service worker so SpinDeck loads and runs offline. -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+</script>
