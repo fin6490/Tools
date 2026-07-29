@@ -6,6 +6,7 @@ const DEFAULT_WHEEL = () => ({
   name: "My Wheel",
   text: "Alice\nBob\nCharlie\nDiana\nEvan\nFiona",
   removeWinner: false,
+  elimination: false,
   history: [], // { name, at }
 });
 

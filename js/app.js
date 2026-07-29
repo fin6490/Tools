@@ -73,6 +73,7 @@ function loadActiveWheelIntoEditor() {
   const w = store.activeWheel();
   entriesEl.value = w.text;
   $("#removeWinner").checked = !!w.removeWinner;
+  $("#eliminationMode").checked = !!w.elimination;
   refreshWheel();
   renderHistory();
 }
@@ -143,6 +144,9 @@ $("#dedupeBtn").addEventListener("click", () => {
 $("#removeWinner").addEventListener("change", (e) => {
   store.activeWheel().removeWinner = e.target.checked; store.save();
 });
+$("#eliminationMode").addEventListener("change", (e) => {
+  store.activeWheel().elimination = e.target.checked; store.save();
+});
 $("#soundOn").addEventListener("change", (e) => { state.soundOn = e.target.checked; wheel.soundOn = state.soundOn; store.save(); });
 $("#confettiOn").addEventListener("change", (e) => { state.confettiOn = e.target.checked; store.save(); });
 const spinLen = $("#spinLen");
@@ -175,19 +179,70 @@ wheel.onWinner = (name) => {
   store.save();
   renderHistory();
 
-  if (state.confettiOn) burst();
-  if (state.soundOn) sound.fanfare();
-  showWinner(name);
+  if (w.elimination) {
+    handleElimination(w, name);
+  } else {
+    if (state.confettiOn) burst();
+    if (state.soundOn) sound.fanfare();
+    showResult("winner", name);
+    if (w.removeWinner) setTimeout(() => removeFromWheel(name), 50);
+  }
 };
 
-const modal = $("#winnerModal");
-function showWinner(name) {
-  $("#winnerName").textContent = name;
-  modal.hidden = false;
-  $("#winnerClose").focus();
+// Elimination mode: each spin knocks out the pick; the last one standing wins.
+function handleElimination(w, name) {
+  const remainingAfter = parseEntries(w.text).length - 1;
+  removeFromWheel(name);
+  if (remainingAfter <= 1) {
+    // With one (or none) left, crown the survivor without another spin.
+    const survivors = parseEntries(store.activeWheel().text);
+    const champ = survivors.length ? survivors[0].label : name;
+    if (state.confettiOn) burst();
+    if (state.soundOn) sound.fanfare();
+    showResult("champion", champ);
+  } else {
+    if (state.soundOn) sound.tick();
+    showResult("eliminated", name, remainingAfter);
+  }
 }
-$("#winnerClose").addEventListener("click", () => { modal.hidden = true; });
-$("#winnerRemove").addEventListener("click", () => {
+
+const modal = $("#winnerModal");
+const winnerRemoveBtn = $("#winnerRemove");
+const winnerCloseBtn = $("#winnerClose");
+
+function showResult(kind, name, remaining) {
+  const eyebrow = $("#modalEyebrow");
+  const sub = $("#modalSub");
+  const card = modal.querySelector(".modal-card");
+  card.classList.remove("champion", "eliminated");
+  $("#winnerName").textContent = name;
+
+  if (kind === "eliminated") {
+    card.classList.add("eliminated");
+    eyebrow.textContent = "❌ Eliminated";
+    sub.hidden = false;
+    sub.textContent = `${remaining} still in the running`;
+    winnerRemoveBtn.hidden = true;
+    winnerCloseBtn.textContent = "Keep going →";
+  } else if (kind === "champion") {
+    card.classList.add("champion");
+    eyebrow.textContent = "🏆 Champion";
+    sub.hidden = false;
+    sub.textContent = "last one standing";
+    winnerRemoveBtn.hidden = true;
+    winnerCloseBtn.textContent = "🎉 Done";
+  } else {
+    eyebrow.textContent = "Winner";
+    sub.hidden = true;
+    winnerRemoveBtn.hidden = false;
+    winnerCloseBtn.textContent = "Close";
+  }
+  modal.hidden = false;
+  winnerCloseBtn.focus();
+}
+
+winnerCloseBtn.addEventListener("click", () => { modal.hidden = true; });
+winnerRemoveBtn.addEventListener("click", () => {
   removeFromWheel($("#winnerName").textContent);
   modal.hidden = true;
 });
@@ -203,16 +258,6 @@ function removeFromWheel(name) {
   store.save();
   refreshWheel();
 }
-
-// auto-remove after spin if the option is on
-const _origOnWinner = wheel.onWinner;
-wheel.onWinner = (name, i) => {
-  _origOnWinner(name, i);
-  if (store.activeWheel().removeWinner) {
-    // small delay so the winner is still visible under the pointer briefly
-    setTimeout(() => removeFromWheel(name), 50);
-  }
-};
 
 /* ---------- History ---------- */
 function renderHistory() {

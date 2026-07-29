@@ -66,6 +66,7 @@
         placeholder="One name per line…&#10;&#10;Tip: weight an entry with *N&#10;Alice*3   (3× more likely)&#10;Bob"></textarea>
 
       <div class="editor-options">
+        <label class="opt"><input type="checkbox" id="eliminationMode" /> 🏆 Elimination mode <span class="opt-hint">(spin to knock out — last one wins)</span></label>
         <label class="opt"><input type="checkbox" id="removeWinner" /> Remove winner after each spin</label>
         <label class="opt"><input type="checkbox" id="soundOn" checked /> Sound</label>
         <label class="opt"><input type="checkbox" id="confettiOn" checked /> Confetti</label>
@@ -181,8 +182,9 @@
   <!-- ============ Winner modal ============ -->
   <div id="winnerModal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="winnerName">
-      <p class="modal-eyebrow">Winner</p>
+      <p id="modalEyebrow" class="modal-eyebrow">Winner</p>
       <p id="winnerName" class="modal-winner"></p>
+      <p id="modalSub" class="modal-sub" hidden></p>
       <div class="modal-actions">
         <button id="winnerRemove" class="btn">Remove from wheel</button>
         <button id="winnerClose" class="btn primary">Close</button>

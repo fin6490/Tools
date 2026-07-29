@@ -238,7 +238,15 @@ body {
 @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .modal-eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: 3px; font-size: 12px; margin: 0 0 6px; }
 .modal-winner { font-size: clamp(32px, 6vw, 60px); font-weight: 800; margin: 0 0 22px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; word-break: break-word; }
+.modal-sub { color: var(--ink-dim); font-size: 15px; margin: -12px 0 22px; }
 .modal-actions { display: flex; gap: 12px; justify-content: center; }
+/* Elimination knock-out: red accent, no confetti. */
+.modal-card.eliminated .modal-winner { background: none; -webkit-text-fill-color: var(--danger); color: var(--danger); }
+.modal-card.eliminated .modal-eyebrow { color: var(--danger); }
+/* Champion: gold accent. */
+.modal-card.champion .modal-winner { background: linear-gradient(135deg, var(--warn), #ff9e3d); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.modal-card.champion .modal-eyebrow { color: var(--warn); }
+.opt-hint { color: var(--muted); font-size: 12px; }
 
 /* ===== Confetti + toast ===== */
 .confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 55; }
