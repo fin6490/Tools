@@ -253,13 +253,18 @@
     <section class="panel tool-panel scores-panel">
       <div class="counter-head">
         <h2>Scoreboard</h2>
-        <div class="scores-actions">
-          <button id="sortScores" class="mini-btn" title="Sort players by score">Sort</button>
-          <button id="newGame" class="mini-btn" title="Reset every score to 0">New game</button>
-          <button id="addPlayer" class="btn primary">Add player</button>
-        </div>
+        <button id="addPlayer" class="btn primary">Add player</button>
       </div>
-      <p class="muted">Keep score for board games, darts, card nights — anything. Edit a score directly, or use the buttons. Saved locally.</p>
+      <div class="seg-toggle scores-mode" role="tablist" aria-label="Scoring mode">
+        <button class="seg is-active" data-score-mode="free" role="tab">Freeplay</button>
+        <button class="seg" data-score-mode="target" role="tab">Race to target</button>
+        <button class="seg" data-score-mode="golf" role="tab">Golf (low)</button>
+        <button class="seg" data-score-mode="rounds" role="tab">Rounds</button>
+        <button class="seg" data-score-mode="darts" role="tab">Darts (X01)</button>
+        <button class="seg" data-score-mode="cricket" role="tab">Cricket</button>
+      </div>
+      <div id="scoreSetup" class="score-setup"></div>
+      <p id="scoreHint" class="muted"></p>
       <div id="scoreGrid" class="score-grid"></div>
     </section>
   </main>
@@ -312,5 +317,5 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260730b' index.html js | xargs sed -i 's/?v=20260730b/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260730b"></script>
+       grep -rl '?v=20260730d' index.html js | xargs sed -i 's/?v=20260730d/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260730d"></script>

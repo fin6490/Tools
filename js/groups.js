@@ -1,5 +1,5 @@
 // groups.js — split a list of names into random, balanced teams.
-import { getState, save } from "./storage.js?v=20260730b";
+import { getState, save } from "./storage.js?v=20260730d";
 
 // Drop a trailing "*N" weight so wheel entries load cleanly as one person each.
 const stripWeight = (line) => line.replace(/\s*\*\s*\d+\s*$/, "").trim();

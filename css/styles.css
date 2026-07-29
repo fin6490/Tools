@@ -298,6 +298,43 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 .s-chips { display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 .s-chip { border: 2px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 5px 11px; cursor: pointer; font-size: 13px; font-weight: 700; font-family: var(--mono); }
 .s-chip:hover { border-color: var(--accent-2); }
+.scores-mode { margin: 12px 0 4px; flex-wrap: wrap; }
+.score-setup { margin: 8px 0; }
+.score-setup-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.score-setup-item { display: flex; align-items: center; gap: 6px; color: var(--ink-dim); font-size: 14px; }
+.setup-num { width: 78px; background: var(--panel-2); color: var(--ink); border: 2px solid var(--line); border-radius: 8px; padding: 7px; text-align: center; font-family: var(--mono); }
+.score-card.reached { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
+.score-card.reached .rank { color: var(--good); }
+/* Darts */
+.darts-card.active { border-color: var(--accent-2); box-shadow: 0 0 0 2px var(--accent-2) inset; }
+.darts-card.winner { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.darts-rem { margin: 2px 0 2px; }
+.darts-meta { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+.darts-turn { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+.darts-input { width: 92px; background: var(--panel); color: var(--ink); border: 2px solid var(--line); border-radius: 8px; padding: 8px; text-align: center; font-family: var(--mono); font-size: 18px; -moz-appearance: textfield; }
+.darts-input::-webkit-outer-spin-button, .darts-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.darts-turn .btn { padding: 8px 14px; }
+.darts-badge { margin-top: 10px; font-family: var(--mono); font-weight: 800; letter-spacing: 1px; color: var(--gold); }
+/* Cricket */
+.cricket-wrap { overflow-x: auto; margin-top: 12px; }
+.cricket-table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
+.cricket-table th, .cricket-table td { text-align: center; }
+.cricket-table thead th { padding: 0 4px; min-width: 84px; }
+.cricket-table thead th.winner .cricket-name { color: var(--gold); }
+.cricket-name { width: 100%; background: transparent; border: 0; color: var(--ink); text-align: center; font-weight: 700; font-family: var(--mono); font-size: 14px; }
+.cricket-name:focus { outline: 1px solid var(--line); border-radius: 6px; }
+.cricket-num { font-family: var(--mono); font-weight: 800; color: var(--ink-dim); padding-right: 6px; text-align: right; min-width: 44px; }
+.cricket-cell {
+  width: 84px; height: 46px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel-2);
+  color: var(--ink); font-family: var(--mono); font-weight: 800; font-size: 22px; cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,.4); transition: transform .08s, box-shadow .08s, border-color .12s;
+}
+.cricket-cell:hover { border-color: var(--accent-2); }
+.cricket-cell:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.4); }
+.cricket-cell.closed { background: var(--accent-2); color: var(--accent-2-ink); border-color: transparent; }
+.cricket-cell:disabled { opacity: .7; cursor: default; }
+.cricket-points-row th { color: var(--ink-dim); font-family: var(--mono); text-align: right; padding-right: 6px; }
+.cricket-points { font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--gold); }
 
 /* ===== Slots (multiple reels) ===== */
 .slots-panel { width: min(1120px, 97vw); }
@@ -312,10 +349,13 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 .slot-reels { display: flex; gap: 14px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin: 16px 0; }
 .slot { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 150px; }
 .slot-frame {
-  position: relative; width: 150px; height: 300px; border-radius: 12px; overflow: hidden;
+  position: relative; width: 150px; height: 300px; border-radius: 12px; overflow: hidden; cursor: pointer;
   border: 4px solid var(--line); background: #0c0a10;
   box-shadow: inset 0 0 26px rgba(0,0,0,.7), 0 5px 0 rgba(0,0,0,.45);
+  transition: border-color .12s;
 }
+.slot-frame:hover { border-color: var(--accent-2); }
+.slot-spin-one { width: 100%; }
 .slot-frame canvas { width: 100%; height: 100%; display: block; }
 .slot-source { width: 100%; }
 .slot-source select { width: 100%; }
