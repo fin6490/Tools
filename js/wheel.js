@@ -1,5 +1,5 @@
 // wheel.js — the spinning wheel: parsing, drawing, weighted spin, easing.
-import * as sound from "./sound.js?v=20260730a";
+import * as sound from "./sound.js?v=20260730b";
 
 const TAU = Math.PI * 2;
 const POINTER = -Math.PI / 2; // pointer sits at the top (12 o'clock)
@@ -172,7 +172,7 @@ export class Wheel {
       ctx.fillStyle = "rgba(124,133,189,.9)";
       ctx.font = `600 ${Math.round(size * 0.045)}px system-ui, sans-serif`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("Add names on the left →", cx, cy);
+      ctx.fillText("Add some names to spin", cx, cy);
       ctx.restore();
       return;
     }
@@ -264,7 +264,7 @@ export class Wheel {
       ctx.fillStyle = "rgba(124,133,189,.9)";
       ctx.font = `600 ${Math.round(h * 0.16)}px system-ui, sans-serif`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("Add names on the left →", w / 2, h / 2);
+      ctx.fillText("Add some names to spin", w / 2, h / 2);
       return;
     }
 
