@@ -87,9 +87,32 @@ export class Wheel {
     this.soundOn = true;
     this.images = {};             // label -> dataURL
     this._imgCache = new Map();   // dataURL -> HTMLImageElement
+    this.mode = "wheel";          // "wheel" (round) | "reel" (horizontal strip)
+    this.reelOffset = 0;
+    this._cells = [];
     this._fitToDisplay();
     window.addEventListener("resize", () => { this._fitToDisplay(); this.draw(); });
   }
+
+  // Switch between the round wheel and the horizontal "reel" (Wheel of
+  // Fortune) style, which uses a rectangle so it fits far more entries.
+  setMode(mode) {
+    this.mode = mode === "reel" ? "reel" : "wheel";
+    this._fitToDisplay();
+    this.draw();
+  }
+
+  // Expand segments into per-cell entries (weight = repeats) for the reel.
+  _buildCells() {
+    const cells = [];
+    this.segments.forEach((s, i) => {
+      const n = Math.min(Math.max(1, s.weight | 0), 20);
+      for (let k = 0; k < n; k++) cells.push({ seg: s, idx: i });
+    });
+    this._cells = cells;
+  }
+
+  _cellW() { return Math.max(90, Math.min(170, this._w / 5)); }
 
   // Associate label -> image dataURL. Preloads so slices redraw when ready.
   setImages(map) {
@@ -114,20 +137,31 @@ export class Wheel {
   _fitToDisplay() {
     // Match backing store to the CSS box for crisp text on HiDPI.
     const rect = this.canvas.getBoundingClientRect();
-    const size = Math.max(200, Math.min(rect.width || 600, rect.height || 600));
     const dpr = window.devicePixelRatio || 1;
-    this.canvas.width = size * dpr;
-    this.canvas.height = size * dpr;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this._size = size;
+    if (this.mode === "reel") {
+      const w = Math.max(200, rect.width || 600);
+      const h = Math.max(80, rect.height || 150);
+      this.canvas.width = w * dpr;
+      this.canvas.height = h * dpr;
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this._w = w; this._h = h;
+    } else {
+      const size = Math.max(200, Math.min(rect.width || 600, rect.height || 600));
+      this.canvas.width = size * dpr;
+      this.canvas.height = size * dpr;
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this._size = size;
+    }
   }
 
   setSegments(segs) {
     this.segments = segs;
+    this._buildCells();
     this.draw();
   }
 
   draw() {
+    if (this.mode === "reel") return this.drawReel();
     const ctx = this.ctx;
     const size = this._size;
     const cx = size / 2, cy = size / 2, r = size / 2 - 6;
@@ -220,9 +254,116 @@ export class Wheel {
     return this.segments.length - 1;
   }
 
+  // ===== Reel (horizontal Wheel-of-Fortune) rendering =====
+  drawReel() {
+    const ctx = this.ctx;
+    const w = this._w, h = this._h;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!this._cells.length) {
+      ctx.fillStyle = "rgba(124,133,189,.9)";
+      ctx.font = `600 ${Math.round(h * 0.16)}px system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("Add names on the left →", w / 2, h / 2);
+      return;
+    }
+
+    const cells = this._cells;
+    const cellW = this._cellW();
+    const start = Math.floor(this.reelOffset / cellW) - 1;
+    const end = start + Math.ceil(w / cellW) + 2;
+    const fontSize = Math.min(h * 0.16, cellW * 0.24, 22);
+
+    for (let p = start; p <= end; p++) {
+      const cell = cells[((p % cells.length) + cells.length) % cells.length];
+      const s = cell.seg;
+      const x = p * cellW - this.reelOffset;
+      ctx.fillStyle = s.color;
+      ctx.fillRect(x, 0, cellW, h);
+      ctx.strokeStyle = "rgba(0,0,0,.22)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, 0.5, cellW - 1, h - 1);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x + 2, 0, cellW - 4, h); ctx.clip();
+      ctx.fillStyle = s.textColor || "#12142b";
+      ctx.font = `700 ${fontSize}px system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      let label = s.label;
+      const maxChars = Math.max(3, Math.floor((cellW - 12) / (fontSize * 0.56)));
+      if (label.length > maxChars) label = label.slice(0, maxChars - 1) + "…";
+      ctx.fillText(label, x + cellW / 2, h / 2);
+      ctx.restore();
+    }
+
+    // Edge fades for depth.
+    const fadeW = Math.min(90, w * 0.16);
+    const lg = ctx.createLinearGradient(0, 0, fadeW, 0);
+    lg.addColorStop(0, "rgba(10,12,30,.55)"); lg.addColorStop(1, "rgba(10,12,30,0)");
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, fadeW, h);
+    const rg = ctx.createLinearGradient(w - fadeW, 0, w, 0);
+    rg.addColorStop(0, "rgba(10,12,30,0)"); rg.addColorStop(1, "rgba(10,12,30,.55)");
+    ctx.fillStyle = rg; ctx.fillRect(w - fadeW, 0, fadeW, h);
+
+    // Center pointer.
+    const cxp = w / 2;
+    ctx.strokeStyle = "rgba(255,202,92,.95)";
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cxp, 6); ctx.lineTo(cxp, h - 6); ctx.stroke();
+    ctx.fillStyle = "#ffca5c";
+    ctx.beginPath(); ctx.moveTo(cxp - 11, -1); ctx.lineTo(cxp + 11, -1); ctx.lineTo(cxp, 17); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cxp - 11, h + 1); ctx.lineTo(cxp + 11, h + 1); ctx.lineTo(cxp, h - 17); ctx.closePath(); ctx.fill();
+  }
+
+  _spinReel(durationSec) {
+    const cells = this._cells;
+    const cellW = this._cellW();
+    const winSeq = Math.floor(Math.random() * cells.length);
+    const winnerIdx = cells[winSeq].idx;
+    const win = this.segments[winnerIdx];
+
+    const loops = 8 + Math.floor(Math.random() * 4);
+    const jitter = (Math.random() * 0.6 - 0.3) * cellW;
+    const targetSeq = winSeq + loops * cells.length;
+    const target = targetSeq * cellW + cellW / 2 - this._w / 2 + jitter;
+    const from = this.reelOffset;
+    const delta = target - from;
+    const dur = durationSec * 1000;
+    const start = performance.now();
+    this._lastReelCell = null;
+    const ease = (t) => 1 - Math.pow(1 - t, 4);
+
+    const frame = (now) => {
+      const t = Math.min(1, (now - start) / dur);
+      this.reelOffset = from + delta * ease(t);
+      this._maybeTickReel(cellW);
+      this.drawReel();
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        this.spinning = false;
+        const span = cells.length * cellW;
+        this.reelOffset = ((this.reelOffset % span) + span) % span;
+        this.drawReel();
+        if (this.onWinner) this.onWinner(win.label, winnerIdx);
+      }
+    };
+    requestAnimationFrame(frame);
+  }
+
+  _maybeTickReel(cellW) {
+    if (!this.soundOn) return;
+    const centerP = Math.floor((this.reelOffset + this._w / 2) / cellW);
+    if (this._lastReelCell !== centerP) {
+      if (this._lastReelCell !== null) sound.tick();
+      this._lastReelCell = centerP;
+    }
+  }
+
   spin(durationSec = 5) {
     if (this.spinning || !this.segments.length) return;
     this.spinning = true;
+    if (this.mode === "reel") { this._spinReel(durationSec); return; }
     const winnerIdx = this._pickWinner();
     const win = this.segments[winnerIdx];
 

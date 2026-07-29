@@ -7,6 +7,7 @@ const DEFAULT_WHEEL = () => ({
   text: "Alice\nBob\nCharlie\nDiana\nEvan\nFiona",
   removeWinner: false,
   elimination: false,
+  style: "wheel", // "wheel" | "reel"
   images: {}, // { label: dataURL }
   history: [], // { name, at }
 });
@@ -20,6 +21,7 @@ const DEFAULTS = () => ({
   wheels: [DEFAULT_WHEEL()],
   counters: [{ id: crypto.randomUUID(), name: "Spins", value: 0, step: 1 }],
   groups: { text: "", mode: "count", num: 4 },
+  players: [], // { id, name, score, step }
 });
 
 let state = load();
@@ -41,12 +43,25 @@ function load() {
 }
 
 let saveTimer = null;
+function writeNow() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+}
 export function save() {
   // debounce — the editor can fire on every keystroke
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
-  }, 150);
+  saveTimer = setTimeout(writeNow, 150);
+}
+// Write immediately, cancelling any pending debounce.
+export function flush() {
+  clearTimeout(saveTimer);
+  writeNow();
+}
+// Never lose a pending change when the tab is closed/hidden or reloaded.
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flush();
+  });
 }
 
 export function getState() { return state; }

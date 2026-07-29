@@ -7,6 +7,7 @@ import { initTimer } from "./timer.js";
 import { initCounters } from "./counter.js";
 import { initGroups } from "./groups.js";
 import { initImages } from "./images.js";
+import { initScores } from "./scores.js";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -76,9 +77,28 @@ function loadActiveWheelIntoEditor() {
   entriesEl.value = w.text;
   $("#removeWinner").checked = !!w.removeWinner;
   $("#eliminationMode").checked = !!w.elimination;
+  applyStyle(w.style || "wheel");
   refreshWheel();
   renderHistory();
 }
+
+// Switch the picker between round wheel and horizontal reel.
+function applyStyle(style) {
+  const s = style === "reel" ? "reel" : "wheel";
+  app.dataset.wheelstyle = s;
+  document.querySelectorAll("[data-wheel-style]").forEach((b) =>
+    b.classList.toggle("is-active", b.dataset.wheelStyle === s)
+  );
+  wheel.setMode(s);
+}
+document.querySelectorAll("[data-wheel-style]").forEach((b) =>
+  b.addEventListener("click", () => {
+    store.activeWheel().style = b.dataset.wheelStyle;
+    store.save();
+    applyStyle(b.dataset.wheelStyle);
+    refreshWheel();
+  })
+);
 
 wheelSelect.addEventListener("change", () => {
   state.activeWheelId = wheelSelect.value;
@@ -178,6 +198,7 @@ function doSpin() {
   if (counters) counters.incrementSpins();
 }
 $("#spinBtn").addEventListener("click", doSpin);
+$("#spinReel").addEventListener("click", doSpin);
 
 wheel.onWinner = (name) => {
   const w = store.activeWheel();
@@ -396,6 +417,7 @@ populateWheelSelect();
 loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
+initScores(document);
 initImages(document, {
   getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),
   getMap: () => (store.activeWheel().images ||= {}),

@@ -68,6 +68,7 @@
     <nav class="tabs" role="tablist" aria-label="Tools">
       <button class="tab is-active" data-view-btn="wheel" role="tab" aria-selected="true">🎡 Wheel</button>
       <button class="tab" data-view-btn="groups" role="tab" aria-selected="false">👥 Groups</button>
+      <button class="tab" data-view-btn="scores" role="tab" aria-selected="false">🏅 Scores</button>
       <button class="tab" data-view-btn="timer" role="tab" aria-selected="false">⏱ Timer</button>
       <button class="tab" data-view-btn="counter" role="tab" aria-selected="false">🔢 Counters</button>
     </nav>
@@ -127,11 +128,16 @@
 
     <!-- Center: the wheel -->
     <section class="panel stage" aria-label="The wheel">
+      <div class="style-toggle seg-toggle" role="tablist" aria-label="Picker style">
+        <button class="seg is-active" data-wheel-style="wheel" role="tab">🎡 Wheel</button>
+        <button class="seg" data-wheel-style="reel" role="tab">🎰 Reel</button>
+      </div>
       <div class="wheel-wrap">
         <canvas id="wheel" width="720" height="720" role="img" aria-label="Spinning wheel of names"></canvas>
         <div class="pointer" aria-hidden="true"></div>
         <button id="spinBtn" class="spin-hub" aria-label="Spin the wheel">SPIN</button>
       </div>
+      <button id="spinReel" class="btn primary reel-spin" aria-label="Spin the reel">SPIN</button>
       <p class="hint">Press <kbd>Space</kbd> to spin · <kbd>F</kbd> for presentation mode</p>
     </section>
 
@@ -212,6 +218,22 @@
         </div>
       </div>
       <div id="groupsGrid" class="counter-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <!-- ============ SCORES VIEW ============ -->
+  <main class="view view-scores" data-view-panel="scores" hidden>
+    <section class="panel tool-panel scores-panel">
+      <div class="counter-head">
+        <h2>Scoreboard</h2>
+        <div class="scores-actions">
+          <button id="sortScores" class="mini-btn" title="Sort players by score">↕ Sort</button>
+          <button id="newGame" class="mini-btn" title="Reset every score to 0">↺ New game</button>
+          <button id="addPlayer" class="btn primary">＋ Add player</button>
+        </div>
+      </div>
+      <p class="muted">Keep score for board games, darts, card nights — anything. Edit a score directly, or use the buttons. Saved locally.</p>
+      <div id="scoreGrid" class="score-grid"></div>
     </section>
   </main>
 

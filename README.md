@@ -45,6 +45,7 @@ The guiding principles they agreed on:
 - Editor tools: shuffle, sort, de-duplicate, live entry/slice count.
 - **Winner history** with timestamps, per wheel.
 - **🏆 Elimination mode** — each spin knocks out the pick; keep spinning until one name is left and it's crowned Champion. Perfect for tournaments and "last one standing" bits.
+- **🎰 Reel style** — flip the picker to a horizontal "Wheel of Fortune" strip that spins sideways. It uses a rectangle instead of a circle, so it fits far more names comfortably. Per-wheel setting.
 - Auto-assigned harmonious colors.
 
 ### 👥 Team / group maker
@@ -54,6 +55,11 @@ The guiding principles they agreed on:
 - Editable team names, **re-roll** for a fresh shuffle, and **copy** the result as text.
 - **🎡 To wheels** turns each team into its own saved wheel in one click — great for "spin within the winning team."
 - The classroom/stream staple the original wheel handles poorly.
+
+### 🏅 Scoreboard
+- Keep score for **board games, darts, card nights** — any number of players.
+- Each player has an editable score (type it directly — handy for darts' 501), plus **± buttons** with a custom step and **quick +1 / +5 / +10** chips.
+- Live ranking with 🥇🥈🥉 badges and a highlighted leader; **Sort**, **New game** (reset scores, keep players), and per-player remove.
 
 ### ⏱ Timer
 - **Countdown** (with quick presets + custom time) and **stopwatch** modes.
@@ -100,6 +106,7 @@ js/wheel.js       # canvas wheel: parsing, drawing, weighted spin, easing
 js/storage.js     # localStorage state, import/export, share encoding
 js/timer.js       # countdown + stopwatch
 js/counter.js     # tally counters
+js/scores.js      # multiplayer scoreboard
 js/groups.js      # random balanced team maker
 js/images.js      # per-slice image manager (upload + downscale)
 js/sound.js       # WebAudio tick / fanfare / beep (no audio files shipped)
