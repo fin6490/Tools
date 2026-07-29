@@ -1,6 +1,6 @@
 // scores.js — a multiplayer scoreboard for board games, darts, card nights, etc.
 // Players + running scores, editable directly or via +/- (custom step).
-import { getState, save } from "./storage.js?v=20260729b";
+import { getState, save } from "./storage.js?v=20260730a";
 
 export function initScores(root) {
   const grid = root.querySelector("#scoreGrid");
@@ -23,7 +23,7 @@ export function initScores(root) {
     ps.forEach((p) => grid.appendChild(card(p, rankOf.get(p.id), top, ps.length, allEqual)));
   }
 
-  function medal(rank) { return ["🥇", "🥈", "🥉"][rank] || `#${rank + 1}`; }
+  function medal(rank) { return `#${rank + 1}`; }
 
   function card(p, rank, top, n, allEqual) {
     const el = document.createElement("div");

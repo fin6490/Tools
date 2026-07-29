@@ -1,13 +1,14 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260729b";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260729b";
-import * as sound from "./sound.js?v=20260729b";
-import { burst } from "./confetti.js?v=20260729b";
-import { initTimer } from "./timer.js?v=20260729b";
-import { initCounters } from "./counter.js?v=20260729b";
-import { initGroups } from "./groups.js?v=20260729b";
-import { initImages } from "./images.js?v=20260729b";
-import { initScores } from "./scores.js?v=20260729b";
+import * as store from "./storage.js?v=20260730a";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730a";
+import * as sound from "./sound.js?v=20260730a";
+import { burst } from "./confetti.js?v=20260730a";
+import { initTimer } from "./timer.js?v=20260730a";
+import { initCounters } from "./counter.js?v=20260730a";
+import { initGroups } from "./groups.js?v=20260730a";
+import { initImages } from "./images.js?v=20260730a";
+import { initScores } from "./scores.js?v=20260730a";
+import { initSlots } from "./slots.js?v=20260730a";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -16,7 +17,6 @@ const state = store.getState();
 /* ---------- Theme ---------- */
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme;
-  $("#themeToggle").textContent = state.theme === "dark" ? "🌙" : "☀️";
 }
 $("#themeToggle").addEventListener("click", () => {
   state.theme = state.theme === "dark" ? "light" : "dark";
@@ -38,6 +38,7 @@ document.querySelectorAll("[data-view-btn]").forEach((btn) =>
       p.hidden = p.dataset.viewPanel !== view;
     });
     if (view === "wheel") wheel.draw();
+    if (view === "slots" && slots) slots.relayout(); // reels need sizing once visible
   })
 );
 
@@ -189,6 +190,7 @@ $("#confettiOn").checked = state.confettiOn;
 );
 
 let counters; // set after init
+let slots;    // set after init
 function doSpin() {
   if (wheel.spinning) return;
   const w = store.activeWheel();
@@ -247,18 +249,18 @@ function showResult(kind, name, remaining) {
 
   if (kind === "eliminated") {
     card.classList.add("eliminated");
-    eyebrow.textContent = "❌ Eliminated";
+    eyebrow.textContent = "Eliminated";
     sub.hidden = false;
     sub.textContent = `${remaining} still in the running`;
     winnerRemoveBtn.hidden = true;
-    winnerCloseBtn.textContent = "Keep going →";
+    winnerCloseBtn.textContent = "Keep going";
   } else if (kind === "champion") {
     card.classList.add("champion");
-    eyebrow.textContent = "🏆 Champion";
+    eyebrow.textContent = "Champion";
     sub.hidden = false;
     sub.textContent = "last one standing";
     winnerRemoveBtn.hidden = true;
-    winnerCloseBtn.textContent = "🎉 Done";
+    winnerCloseBtn.textContent = "Done";
   } else {
     eyebrow.textContent = "Winner";
     sub.hidden = true;
@@ -418,6 +420,7 @@ loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
 initScores(document);
+slots = initSlots(document, { soundOn: () => state.soundOn });
 initImages(document, {
   getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),
   getMap: () => (store.activeWheel().images ||= {}),
