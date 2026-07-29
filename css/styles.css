@@ -218,6 +218,20 @@ body {
 .link-btn { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 12px; text-decoration: underline; }
 .link-btn:hover { color: var(--danger); }
 
+/* ===== Groups / team maker ===== */
+.groups-panel { width: min(900px, 96vw); display: flex; flex-direction: column; gap: 14px; }
+.groups-panel .entries { min-height: 150px; }
+.groups-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.group-num { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); font-size: 14px; }
+.group-num input { width: 74px; background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 16px; text-align: center; }
+.groups-controls .btn { margin-left: auto; }
+.groups-result-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.group-card { text-align: left; }
+.group-card .c-name { text-align: left; font-size: 16px; color: var(--ink); }
+.group-count { font-size: 12px; margin-bottom: 8px; }
+.group-members { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.group-members li { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 14px; }
+
 /* ===== Modal ===== */
 .modal { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(6, 8, 22, .6); z-index: 60; backdrop-filter: blur(4px); }
 .modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 34px 44px; text-align: center; box-shadow: var(--shadow); max-width: 90vw; animation: pop .3s ease; }

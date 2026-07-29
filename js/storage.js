@@ -17,6 +17,7 @@ const DEFAULTS = () => ({
   activeWheelId: null,
   wheels: [DEFAULT_WHEEL()],
   counters: [{ id: crypto.randomUUID(), name: "Spins", value: 0, step: 1 }],
+  groups: { text: "", mode: "count", num: 4 },
 });
 
 let state = load();

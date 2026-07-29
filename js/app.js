@@ -5,6 +5,7 @@ import * as sound from "./sound.js";
 import { burst } from "./confetti.js";
 import { initTimer } from "./timer.js";
 import { initCounters } from "./counter.js";
+import { initGroups } from "./groups.js";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -341,3 +342,4 @@ populateWheelSelect();
 loadActiveWheelIntoEditor();
 initTimer(document);
 counters = initCounters(document);
+initGroups(document, { getWheelText: () => store.activeWheel().text });
