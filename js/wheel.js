@@ -11,23 +11,62 @@ function colorFor(i, total) {
   return `hsl(${hue}, 70%, ${light}%)`;
 }
 
-// Parse the textarea into weighted segments.
-// "Alice*3" -> weight 3. Blank lines ignored. Duplicates keep their own slice.
+// Pick readable label text (dark or white) for a given hex slice color.
+function textOn(hex) {
+  let h = hex.slice(1);
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "#12142b" : "#ffffff";
+}
+
+// Parse one line into its label, weight and optional custom colour.
+// Trailing "*N" (weight) and "#hex" (colour) tokens may appear in any order:
+//   "Alice"            -> label Alice, weight 1
+//   "Alice*3"          -> weight 3
+//   "Alice #ff0000"    -> custom red
+//   "Alice *2 #0af"    -> weight 2, custom colour
+export function parseLine(raw) {
+  let label = raw.trim();
+  let weight = 1;
+  let color = null;
+  let changed = true;
+  while (changed && label) {
+    changed = false;
+    let m = label.match(/\*\s*(\d+)\s*$/);
+    if (m && Number(m[1]) > 0) {
+      weight = Number(m[1]);
+      label = label.slice(0, m.index).trim();
+      changed = true;
+      continue;
+    }
+    m = label.match(/(?:^|\s)(#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3}))$/);
+    if (m) {
+      color = m[1].toLowerCase();
+      label = label.slice(0, m.index).trim();
+      changed = true;
+    }
+  }
+  return { label, weight, color };
+}
+
+// Parse the textarea into weighted segments. Blank lines ignored;
+// duplicates keep their own slice.
 export function parseEntries(text) {
   const segs = [];
   text.split("\n").forEach((raw) => {
-    const line = raw.trim();
-    if (!line) return;
-    let label = line, weight = 1;
-    const m = line.match(/^(.*?)\s*\*\s*(\d+)$/);
-    if (m && Number(m[2]) > 0) { label = m[1].trim(); weight = Number(m[2]); }
+    if (!raw.trim()) return;
+    const { label, weight, color } = parseLine(raw);
     if (!label) return;
-    segs.push({ label, weight });
+    segs.push({ label, weight, custom: color });
   });
   const total = segs.reduce((s, x) => s + x.weight, 0) || 1;
   let acc = 0;
   segs.forEach((s, i) => {
-    s.color = colorFor(i, segs.length);
+    s.color = s.custom || colorFor(i, segs.length);
+    s.textColor = s.custom ? textOn(s.custom) : "#12142b";
     s.a0 = (acc / total) * TAU;
     acc += s.weight;
     s.a1 = (acc / total) * TAU;
@@ -103,7 +142,7 @@ export class Wheel {
       ctx.rotate(s.mid);
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#12142b";
+      ctx.fillStyle = s.textColor || "#12142b";
       const slice = s.a1 - s.a0;
       const fontSize = Math.max(10, Math.min(size * 0.04, (slice * r) * 0.6));
       ctx.font = `700 ${fontSize}px system-ui, sans-serif`;

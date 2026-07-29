@@ -35,6 +35,7 @@ The guiding principles they agreed on:
 - **Multiple named wheels** — build "Period 1", "Subscribers", "Games to play" once,
   switch between them in a click. All saved automatically.
 - **Weighted entries** — `Alice*3` makes Alice three times as likely. Duplicates get their own slice.
+- **Per-entry custom colours** — add a hex code to any line (`Bob #ff5a5f`, or `Cara *2 #0af` with a weight). Label text auto-picks black or white for contrast; entries without a colour keep the harmonious auto palette.
 - **Remove winner after spin** — perfect for classroom cold-calls and elimination giveaways.
 - Editor tools: shuffle, sort, de-duplicate, live entry/slice count.
 - **Winner history** with timestamps, per wheel.
@@ -106,7 +107,7 @@ js/confetti.js    # canvas confetti burst
 | Next up (cheap, likely soon) | Pro / v2 |
 | --- | --- |
 | Custom slice images | Cloud sync & accounts |
-| Per-entry custom colors | Team wheels / collaboration |
+| Save/name custom palettes | Team wheels / collaboration |
 | Greenscreen / overlay export for OBS | Custom branding & themes |
 | Twitch/YouTube chat → auto-populate entries | Native mobile app |
 
