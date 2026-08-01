@@ -6,7 +6,7 @@
 export const SUPPORT = {
   // Tip jar: paste a Ko-fi / Buy Me a Coffee / PayPal.me link to enable the button.
   // e.g. "https://ko-fi.com/spindeck"
-  tipUrl: "",
+  tipUrl: "https://ko-fi.com/spindecks",
 
   // Waitlist: paste a form endpoint that accepts a POST (Formspree, Getform, Basin…)
   // e.g. "https://formspree.io/f/abcdwxyz". Collects emails with no backend of your own.
