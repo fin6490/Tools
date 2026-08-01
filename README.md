@@ -1,6 +1,6 @@
 # SpinDecks
 
-### Live: **https://fin6490.github.io/Tools/**
+### Live: **https://spindecks.app/**
 
 **A faster, ad-free wheel of names — plus the creator toolkit around it.**
 Multiple wheels, a timer, and counters, all in one page. No ads, no login, no tracking.
