@@ -117,7 +117,7 @@ body {
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -251,7 +251,9 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 .counter-head { display: flex; align-items: center; justify-content: space-between; }
 .counter-head h2 { margin: 0; }
 .muted { color: var(--muted); font-size: 14px; }
-.counter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 14px; }
+/* auto-fit + a capped max keeps cards a sensible width and centres them, so a
+   single counter (or a partial last row) sits in the middle, not hard-left. */
+.counter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 220px)); gap: 14px; margin-top: 14px; justify-content: center; }
 .counter-card { background: var(--panel-2); border: 2px solid var(--line); border-radius: var(--radius); padding: 16px; text-align: center; }
 .counter-card input.c-name { width: 100%; background: transparent; border: 0; color: var(--ink-dim); text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 .counter-card input.c-name:focus { outline: 1px solid var(--line); border-radius: 6px; }

@@ -388,8 +388,8 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260801b' index.html js | xargs sed -i 's/?v=20260801b/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260801b"></script>
+       grep -rl '?v=20260801c' index.html js | xargs sed -i 's/?v=20260801c/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260801c"></script>
 
 <!-- Register the service worker so SpinDecks loads and runs offline. -->
 <script>
