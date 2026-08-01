@@ -103,7 +103,7 @@ export function exportAll() {
 
 export function importAll(json) {
   const parsed = JSON.parse(json);
-  if (!parsed || !Array.isArray(parsed.wheels)) throw new Error("Not a SpinDeck file");
+  if (!parsed || !Array.isArray(parsed.wheels)) throw new Error("Not a SpinDecks file");
   state = { ...DEFAULTS(), ...parsed };
   save();
   return state;

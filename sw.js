@@ -1,8 +1,8 @@
-// sw.js — SpinDeck service worker.
+// sw.js — SpinDecks service worker.
 // Strategy: network-first for navigations and same-origin GETs, falling back
 // to the cache when offline; the app shell is pre-cached on install so a cold
 // offline load still works. Bump CACHE when shipping new assets.
-const CACHE = "spindeck-v20260801a";
+const CACHE = "spindeck-v20260801b";
 
 // Core shell — enough to boot the app offline. JS modules are cached lazily
 // on first fetch (they carry ?v= tokens, so a bump naturally re-fetches them).

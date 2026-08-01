@@ -1,16 +1,16 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801a";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801a";
-import * as sound from "./sound.js?v=20260801a";
-import { burst } from "./confetti.js?v=20260801a";
-import { initTimer } from "./timer.js?v=20260801a";
-import { initCounters } from "./counter.js?v=20260801a";
-import { initGroups } from "./groups.js?v=20260801a";
-import { initImages } from "./images.js?v=20260801a";
-import { initScores } from "./scores.js?v=20260801a";
-import { initSlots } from "./slots.js?v=20260801a";
-import { initNumbers } from "./numbers.js?v=20260801a";
-import { initSupport } from "./support.js?v=20260801a";
+import * as store from "./storage.js?v=20260801b";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801b";
+import * as sound from "./sound.js?v=20260801b";
+import { burst } from "./confetti.js?v=20260801b";
+import { initTimer } from "./timer.js?v=20260801b";
+import { initCounters } from "./counter.js?v=20260801b";
+import { initGroups } from "./groups.js?v=20260801b";
+import { initImages } from "./images.js?v=20260801b";
+import { initScores } from "./scores.js?v=20260801b";
+import { initSlots } from "./slots.js?v=20260801b";
+import { initNumbers } from "./numbers.js?v=20260801b";
+import { initSupport } from "./support.js?v=20260801b";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -404,7 +404,7 @@ $("#importFile").addEventListener("change", (e) => {
   const reader = new FileReader();
   reader.onload = () => {
     try { store.importAll(reader.result); location.reload(); }
-    catch { toast("That doesn't look like a SpinDeck backup"); }
+    catch { toast("That doesn't look like a SpinDecks backup"); }
   };
   reader.readAsText(file);
 });
