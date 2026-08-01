@@ -83,6 +83,9 @@
     </nav>
 
     <div class="topbar-actions">
+      <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
+        <span class="tip-top-emoji" aria-hidden="true">🍺</span><span class="tip-top-label">Buy me a pint</span>
+      </a>
       <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
       </button>
@@ -388,8 +391,8 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260801e' index.html js | xargs sed -i 's/?v=20260801e/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260801e"></script>
+       grep -rl '?v=20260801f' index.html js | xargs sed -i 's/?v=20260801f/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260801f"></script>
 
 <!-- Register the service worker so SpinDecks loads and runs offline. -->
 <script>
