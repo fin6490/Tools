@@ -63,6 +63,13 @@ export function initSupport(root, { toast } = {}) {
     tipBlock.hidden = false;
   }
 
+  // Top-bar "Buy me a pint" CTA — same link, revealed only when configured.
+  const tipTop = root.querySelector("#tipTopBtn");
+  if (tipTop && SUPPORT.tipUrl) {
+    tipTop.href = SUPPORT.tipUrl;
+    tipTop.hidden = false;
+  }
+
   // Waitlist: real submit when an endpoint exists, mailto fallback, else "coming soon".
   const canPost = !!SUPPORT.waitlistEndpoint;
   const canMail = !SUPPORT.waitlistEndpoint && !!SUPPORT.contactEmail;
