@@ -1,15 +1,16 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260730g";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260730g";
-import * as sound from "./sound.js?v=20260730g";
-import { burst } from "./confetti.js?v=20260730g";
-import { initTimer } from "./timer.js?v=20260730g";
-import { initCounters } from "./counter.js?v=20260730g";
-import { initGroups } from "./groups.js?v=20260730g";
-import { initImages } from "./images.js?v=20260730g";
-import { initScores } from "./scores.js?v=20260730g";
-import { initSlots } from "./slots.js?v=20260730g";
-import { initNumbers } from "./numbers.js?v=20260730g";
+import * as store from "./storage.js?v=20260801a";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801a";
+import * as sound from "./sound.js?v=20260801a";
+import { burst } from "./confetti.js?v=20260801a";
+import { initTimer } from "./timer.js?v=20260801a";
+import { initCounters } from "./counter.js?v=20260801a";
+import { initGroups } from "./groups.js?v=20260801a";
+import { initImages } from "./images.js?v=20260801a";
+import { initScores } from "./scores.js?v=20260801a";
+import { initSlots } from "./slots.js?v=20260801a";
+import { initNumbers } from "./numbers.js?v=20260801a";
+import { initSupport } from "./support.js?v=20260801a";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -192,6 +193,7 @@ $("#confettiOn").checked = state.confettiOn;
 
 let counters; // set after init
 let slots;    // set after init
+let support;  // set after init
 function doSpin() {
   if (wheel.spinning) return;
   const w = store.activeWheel();
@@ -357,6 +359,7 @@ document.addEventListener("keydown", (e) => {
   } else if (e.key === "Escape") {
     const imagesModal = $("#imagesModal");
     if (!modal.hidden) modal.hidden = true;
+    else if (support && support.isOpen()) support.close();
     else if (!imagesModal.hidden) imagesModal.hidden = true;
     else if (app.dataset.present === "true") togglePresent(false);
     else closeMenu();
@@ -373,7 +376,11 @@ menuPanel.addEventListener("click", (e) => {
   const action = e.target.dataset.action;
   if (!action) return;
   closeMenu();
-  if (action === "export") {
+  if (action === "install") {
+    support.install();
+  } else if (action === "support") {
+    support.open();
+  } else if (action === "export") {
     download("spindeck-backup.json", store.exportAll());
     toast("Backup downloaded");
   } else if (action === "import") {
@@ -438,6 +445,7 @@ counters = initCounters(document);
 initScores(document, { toast });
 initNumbers(document);
 slots = initSlots(document, { soundOn: () => state.soundOn });
+support = initSupport(document, { toast });
 initImages(document, {
   getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),
   getMap: () => (store.activeWheel().images ||= {}),
