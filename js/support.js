@@ -1,4 +1,4 @@
-// support.js — PWA install prompt, the "SpinDeck Pro" waitlist, and a tip jar.
+// support.js — PWA install prompt, the "SpinDecks Pro" waitlist, and a tip jar.
 // All zero-backend: the waitlist posts to a form service you own (e.g. Formspree)
 // and the tip jar just links out to Ko-fi / Buy Me a Coffee / PayPal. Fill in the
 // three values below to switch each feature on — until then the UI stays tidy
@@ -33,7 +33,7 @@ export function initSupport(root, { toast } = {}) {
   window.addEventListener("appinstalled", () => {
     deferredPrompt = null;
     if (installBtn) installBtn.hidden = true;
-    toast?.("Installed — find SpinDeck on your home screen");
+    toast?.("Installed — find SpinDecks on your home screen");
   });
 
   async function install() {
@@ -78,8 +78,8 @@ export function initSupport(root, { toast } = {}) {
     if (!email) return;
 
     if (canMail) {
-      const subject = encodeURIComponent("SpinDeck Pro waitlist");
-      const body = encodeURIComponent(`Please add me to the SpinDeck Pro waitlist: ${email}`);
+      const subject = encodeURIComponent("SpinDecks Pro waitlist");
+      const body = encodeURIComponent(`Please add me to the SpinDecks Pro waitlist: ${email}`);
       window.location.href = `mailto:${SUPPORT.contactEmail}?subject=${subject}&body=${body}`;
       return;
     }

@@ -1,4 +1,4 @@
-# SpinDeck
+# SpinDecks
 
 ### Live: **https://fin6490.github.io/Tools/**
 
@@ -6,7 +6,7 @@
 Multiple wheels, a timer, and counters, all in one page. No ads, no login, no tracking.
 Everything you create lives in *your* browser.
 
-![SpinDeck](assets/og-image.png)
+![SpinDecks](assets/og-image.png)
 
 Built as an open, more functional alternative to wheelofnames.com, aimed at the people
 who actually lean on these tools every day: **streamers, YouTubers, and teachers.**
@@ -26,7 +26,7 @@ The guiding principles they agreed on:
  That's what makes an honest "no ads" promise possible. Monetization, *if* it ever comes,
  is an optional Pro tier (cloud sync, branding, teams) — never ads.
 - **More than a wheel.** Creators juggle a wheel *and* a timer *and* a tally counter.
- SpinDeck puts all three in one tab.
+ SpinDecks puts all three in one tab.
 - **Your data is yours.** No accounts, no servers, no analytics. Everything is in
  `localStorage`, with one-click export/import and shareable links.
 
@@ -137,7 +137,7 @@ sw.js # service worker (offline app-shell cache)
 
 ### Enabling the waitlist & tip jar
 
-The ⋯ menu's **SpinDeck Pro & support** dialog holds a Pro-features waitlist and a
+The ⋯ menu's **SpinDecks Pro & support** dialog holds a Pro-features waitlist and a
 tip jar. Both are zero-backend — they work by pointing at free hosted services you
 own. Open `js/support.js` and fill in the `SUPPORT` block at the top:
 

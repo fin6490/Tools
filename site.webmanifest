@@ -1,7 +1,7 @@
 {
   "id": "/Tools/",
-  "name": "SpinDeck — Wheel of Names & Creator Tools",
-  "short_name": "SpinDeck",
+  "name": "SpinDecks — Wheel of Names & Creator Tools",
+  "short_name": "SpinDecks",
   "description": "Ad-free wheel of names plus slot reels, a scoreboard (darts & cricket), a team maker, a random number generator, a timer, and counters. No ads, no login, works offline.",
   "start_url": "./",
   "scope": "./",
@@ -22,7 +22,7 @@
       "sizes": "1200x630",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "SpinDeck — an ad-free wheel of names and creator toolkit"
+      "label": "SpinDecks — an ad-free wheel of names and creator toolkit"
     }
   ]
 }
