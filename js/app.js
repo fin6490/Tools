@@ -1,16 +1,16 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801d";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801d";
-import * as sound from "./sound.js?v=20260801d";
-import { burst } from "./confetti.js?v=20260801d";
-import { initTimer } from "./timer.js?v=20260801d";
-import { initCounters } from "./counter.js?v=20260801d";
-import { initGroups } from "./groups.js?v=20260801d";
-import { initImages } from "./images.js?v=20260801d";
-import { initScores } from "./scores.js?v=20260801d";
-import { initSlots } from "./slots.js?v=20260801d";
-import { initNumbers } from "./numbers.js?v=20260801d";
-import { initSupport } from "./support.js?v=20260801d";
+import * as store from "./storage.js?v=20260801e";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801e";
+import * as sound from "./sound.js?v=20260801e";
+import { burst } from "./confetti.js?v=20260801e";
+import { initTimer } from "./timer.js?v=20260801e";
+import { initCounters } from "./counter.js?v=20260801e";
+import { initGroups } from "./groups.js?v=20260801e";
+import { initImages } from "./images.js?v=20260801e";
+import { initScores } from "./scores.js?v=20260801e";
+import { initSlots } from "./slots.js?v=20260801e";
+import { initNumbers } from "./numbers.js?v=20260801e";
+import { initSupport } from "./support.js?v=20260801e";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
