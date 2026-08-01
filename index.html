@@ -92,6 +92,8 @@
       <div class="menu">
         <button id="menuBtn" class="icon-btn" title="More" aria-haspopup="true" aria-label="More options">⋯</button>
         <div id="menuPanel" class="menu-panel" hidden>
+          <button id="installBtn" data-action="install" hidden>Install app</button>
+          <button data-action="support">SpinDeck Pro &amp; support</button>
           <button data-action="export">Export all (JSON)</button>
           <button data-action="import">Import (JSON)</button>
           <button data-action="share">Copy share link (this wheel)</button>
@@ -346,6 +348,35 @@
     </div>
   </div>
 
+  <!-- ============ SpinDeck Pro & support modal ============ -->
+  <div id="supportModal" class="modal" hidden>
+    <div class="modal-card support-card" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+      <div class="images-head">
+        <h2 id="supportTitle">SpinDeck <span class="pro-badge">Pro</span></h2>
+        <button id="supportClose" class="icon-btn" aria-label="Close">✕</button>
+      </div>
+      <p class="muted support-lead">SpinDeck is free and ad-free, and always will be. An optional Pro tier is on the way for creators who want more — here's what's planned.</p>
+      <ul class="pro-list">
+        <li><span class="pro-soon">Soon</span> Cloud sync — your wheels on every device</li>
+        <li><span class="pro-soon">Soon</span> Custom branding — your logo and colours on the wheel</li>
+        <li><span class="pro-soon">Soon</span> Stream overlays — drop the wheel straight into OBS</li>
+        <li><span class="pro-soon">Soon</span> Team wheels — shared lists for classrooms and teams</li>
+      </ul>
+
+      <form id="waitForm" class="wait-form">
+        <label class="sr-only" for="waitEmail">Email for the Pro waitlist</label>
+        <input id="waitEmail" class="wait-input" type="email" required placeholder="you@example.com" autocomplete="email" />
+        <button type="submit" class="btn primary">Join the waitlist</button>
+      </form>
+      <p id="waitNote" class="muted wait-note" hidden></p>
+
+      <div id="tipBlock" class="tip-block" hidden>
+        <p class="muted">Enjoying it? A small tip keeps it running and ad-free — entirely optional.</p>
+        <a id="tipBtn" class="btn tip-btn">Leave a tip</a>
+      </div>
+    </div>
+  </div>
+
   <canvas id="confetti" class="confetti-canvas" aria-hidden="true"></canvas>
   <input type="file" id="importFile" accept="application/json" hidden />
   <input type="file" id="sliceImageFile" accept="image/*" hidden />
@@ -357,8 +388,8 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260730g' index.html js | xargs sed -i 's/?v=20260730g/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260730g"></script>
+       grep -rl '?v=20260801a' index.html js | xargs sed -i 's/?v=20260801a/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260801a"></script>
 
 <!-- Register the service worker so SpinDeck loads and runs offline. -->
 <script>

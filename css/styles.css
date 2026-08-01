@@ -394,6 +394,28 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 .modal-card.champion .modal-eyebrow { color: var(--gold); }
 .opt-hint { color: var(--muted); font-size: 12px; }
 
+/* ===== SpinDeck Pro & support modal ===== */
+.support-card { text-align: left; width: 460px; max-width: 92vw; padding: 26px 28px; }
+.pro-badge { color: var(--gold); }
+.support-lead { margin: 6px 0 18px; font-size: 14px; line-height: 1.5; }
+.pro-list { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 11px; }
+.pro-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-dim); }
+.pro-soon {
+  flex: none; font-family: var(--mono); font-size: 10px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase; color: #2b0b09; background: var(--gold);
+  padding: 2px 7px; border-radius: 999px;
+}
+.wait-form { display: flex; gap: 8px; margin: 0; }
+.wait-input {
+  flex: 1; min-width: 0; background: var(--panel-2); color: var(--ink);
+  border: 2px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px;
+}
+.wait-input:focus { outline: none; border-color: var(--accent); }
+.wait-note { margin: 10px 0 0; font-size: 14px; }
+.tip-block { margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--line); }
+.tip-block p { margin: 0 0 12px; font-size: 14px; }
+.tip-btn { display: inline-block; text-decoration: none; text-align: center; }
+
 /* ===== Slice images modal ===== */
 .images-card { text-align: left; width: min(460px, 92vw); padding: 22px 24px; }
 .images-head { display: flex; align-items: center; justify-content: space-between; }

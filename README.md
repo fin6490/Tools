@@ -92,6 +92,7 @@ Several modes for any number of players:
 - **Keyboard**: `Space` spins, `F` presents, `Esc` closes.
 - **Import / export** all your data as JSON, and **copy a share link** for any single wheel.
 - **Works offline** — a service worker caches the app shell, so once you've opened it, it keeps working with no connection.
+- **Installable** — it's a PWA, so you can add it to your phone home screen or desktop (an "Install app" item appears in the ⋯ menu on supported browsers) and launch it in its own window.
 - Accessible: screen-reader winner announcements, `prefers-reduced-motion` respected, keyboard-first.
 
 ---
@@ -130,8 +131,24 @@ js/groups.js # random balanced team maker
 js/images.js # per-slice image manager (upload + downscale)
 js/sound.js # WebAudio tick / fanfare / beep (no audio files shipped)
 js/confetti.js # canvas confetti burst
+js/support.js # PWA install prompt, Pro waitlist, tip jar (config at top)
 sw.js # service worker (offline app-shell cache)
 ```
+
+### Enabling the waitlist & tip jar
+
+The ⋯ menu's **SpinDeck Pro & support** dialog holds a Pro-features waitlist and a
+tip jar. Both are zero-backend — they work by pointing at free hosted services you
+own. Open `js/support.js` and fill in the `SUPPORT` block at the top:
+
+- **`tipUrl`** — a Ko-fi / Buy Me a Coffee / PayPal.me link. Leave blank to hide the tip button.
+- **`waitlistEndpoint`** — a form endpoint that accepts a `POST` (e.g. Formspree, Getform, Basin).
+ Collects emails with no server of your own. Leave blank to hide the form.
+- **`contactEmail`** — optional fallback: with no endpoint set, the waitlist button becomes a
+ pre-filled `mailto:` to this address.
+
+Until you fill these in, the dialog stays tidy: the tip button is hidden and the waitlist
+shows a friendly "opens soon" note instead of a broken form.
 
 ---
 

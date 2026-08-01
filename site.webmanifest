@@ -1,15 +1,28 @@
 {
+  "id": "/Tools/",
   "name": "SpinDeck — Wheel of Names & Creator Tools",
   "short_name": "SpinDeck",
-  "description": "Ad-free wheel of names with a timer, counters, team maker, elimination mode, and custom colours & images. No ads, no login.",
+  "description": "Ad-free wheel of names plus slot reels, a scoreboard (darts & cricket), a team maker, a random number generator, a timer, and counters. No ads, no login, works offline.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0f1226",
-  "theme_color": "#0f1226",
+  "orientation": "any",
+  "lang": "en",
+  "categories": ["productivity", "education", "utilities"],
+  "background_color": "#17131d",
+  "theme_color": "#17131d",
   "icons": [
     { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "SpinDeck — an ad-free wheel of names and creator toolkit"
+    }
   ]
 }
