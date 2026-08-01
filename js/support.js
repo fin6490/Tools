@@ -10,7 +10,7 @@ export const SUPPORT = {
 
   // Waitlist: paste a form endpoint that accepts a POST (Formspree, Getform, Basin…)
   // e.g. "https://formspree.io/f/abcdwxyz". Collects emails with no backend of your own.
-  waitlistEndpoint: "",
+  waitlistEndpoint: "https://formspree.io/f/xzdnlkjp",
 
   // Optional fallback: if there's no endpoint above, a contact email here turns the
   // waitlist button into a pre-filled mailto. Leave blank to just show "coming soon".
