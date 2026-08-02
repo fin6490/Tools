@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Random Number Generator — Pick a Number in a Range | SpinDecks</title>
-<meta name="description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
+<title>Online Chess Clock — Free Multiplayer Game Timer | SpinDecks</title>
+<meta name="description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/random-number-generator/" />
+<link rel="canonical" href="https://spindecks.app/chess-clock/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Random Number Generator — Pick a Number in a Range | SpinDecks" />
-<meta property="og:description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/random-number-generator/" />
+<meta property="og:title" content="Online Chess Clock — Free Multiplayer Game Timer | SpinDecks" />
+<meta property="og:description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/chess-clock/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Random Number Generator — Pick a Number in a Range | SpinDecks" />
-<meta name="twitter:description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
+<meta name="twitter:title" content="Online Chess Clock — Free Multiplayer Game Timer | SpinDecks" />
+<meta name="twitter:description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260801m" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Random number generator",
-  "url": "https://spindecks.app/random-number-generator/",
+  "name": "Multiplayer chess clock",
+  "url": "https://spindecks.app/chess-clock/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Can I draw numbers without repeats?",
+      "name": "How many players does it support?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — tick “no repeats” and every number in the draw will be unique, ideal for raffles and lotteries."
+        "text": "From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn."
       }
     },
     {
       "@type": "Question",
-      "name": "Is the randomness fair?",
+      "name": "Does it support increment (Fischer timing)?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. It uses your browser’s cryptographic random source, so every number in the range is equally likely."
+        "text": "Yes — set an increment in seconds and that time is added to a player's bank after each move they make."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I flip a coin or roll dice?",
+      "name": "What happens when a player runs out of time?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — one-tap presets cover a coin flip (Heads/Tails), a six-sided die, a D20, 1–100 and a 6-of-49 lottery."
+        "text": "Their clock flags at zero and the turn passes on to the next player who still has time."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I draw lots of numbers at once?",
+      "name": "Will the screen stay on during a game?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — set “how many” to draw a batch, and you’ll get the sum and mean alongside the numbers."
+        "text": "Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it work offline?",
+      "name": "Is it accurate?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Once the page has loaded once, it keeps working with no connection."
+        "text": "Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift."
       }
     }
   ]
@@ -99,7 +99,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="numbers">
+<div id="app" data-view="chessclock">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -111,14 +111,14 @@
       <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
       <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
       <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
-      <a class="tab is-active" data-view-btn="numbers" href="/random-number-generator/" aria-current="page">Numbers</a>
+      <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
       <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
       <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
       <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
-      <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
+      <a class="tab is-active" data-view-btn="chessclock" href="/chess-clock/" aria-current="page">Chess clock</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -223,7 +223,7 @@
   </main>
 
   <!-- NUMBERS -->
-  <main class="view view-numbers" data-view-panel="numbers">
+  <main class="view view-numbers" data-view-panel="numbers" hidden>
     <section class="panel tool-panel numbers-panel">
       <div class="counter-head"><h2>Random numbers</h2></div>
       <p class="muted">Pick a range and how many to draw. Turn on “no repeats” for lottery-style draws.</p>
@@ -450,7 +450,7 @@
   </main>
 
   <!-- CHESS CLOCK (multi-player game clock) -->
-  <main class="view view-chessclock" data-view-panel="chessclock" hidden>
+  <main class="view view-chessclock" data-view-panel="chessclock">
     <section class="panel tool-panel cc-panel">
       <div id="ccSetup" class="cc-setup">
         <label class="score-setup-item">Players <input type="number" id="ccCount" class="setup-num" min="2" max="6" value="2" /></label>
@@ -519,42 +519,42 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Random number generator</h1>
-      <p class="tool-intro">Pick a random number in any range, or draw several at once. Set a minimum and maximum, choose how many numbers to draw, and turn on “no repeats” for lottery-style draws. One-tap presets cover dice, a coin flip and a 6-of-49 lottery.</p>
+      <h1>Multiplayer chess clock</h1>
+      <p class="tool-intro">A free game clock for 2 to 6 players. Give everyone a time bank, put the phone in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move — perfect for chess, and for keeping turn-hoggers honest in any board game.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Set the minimum and maximum for your range.</li>
-        <li>Choose how many numbers to draw, and tick “no repeats” if each should be unique.</li>
-        <li>Press Generate — or tap a preset like Dice, D20 or Coin flip.</li>
-        <li>For multiple draws you’ll see the sum and mean, and a copy button for the results.</li>
+        <li>Set the number of players (2–6), minutes each, and any increment in seconds.</li>
+        <li>Press “Start clock” — the first player's timer counts down.</li>
+        <li>Each player taps their own area to end their turn and start the next player's clock.</li>
+        <li>Pause or reset any time; turn on “Keep screen awake” so it doesn't sleep mid-game.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Teachers:</strong> pick a random question number, page or seat in seconds.</li>
-        <li><strong>Prize draws:</strong> draw random ticket numbers with no repeats for a fair raffle.</li>
-        <li><strong>Games:</strong> roll dice, flip a coin or generate lottery numbers without any physical kit.</li>
+        <li><strong>Chess players:</strong> a proper two-player clock with increment, no app to install.</li>
+        <li><strong>Board gamers:</strong> put every player on a clock to speed up a slow game — up to six at once.</li>
+        <li><strong>Anyone:</strong> a shared, fair turn timer for any game where people take turns.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>Can I draw numbers without repeats?</summary>
-          <p>Yes — tick “no repeats” and every number in the draw will be unique, ideal for raffles and lotteries.</p>
+          <summary>How many players does it support?</summary>
+          <p>From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn.</p>
         </details>
         <details>
-          <summary>Is the randomness fair?</summary>
-          <p>Yes. It uses your browser’s cryptographic random source, so every number in the range is equally likely.</p>
+          <summary>Does it support increment (Fischer timing)?</summary>
+          <p>Yes — set an increment in seconds and that time is added to a player's bank after each move they make.</p>
         </details>
         <details>
-          <summary>Can I flip a coin or roll dice?</summary>
-          <p>Yes — one-tap presets cover a coin flip (Heads/Tails), a six-sided die, a D20, 1–100 and a 6-of-49 lottery.</p>
+          <summary>What happens when a player runs out of time?</summary>
+          <p>Their clock flags at zero and the turn passes on to the next player who still has time.</p>
         </details>
         <details>
-          <summary>Can I draw lots of numbers at once?</summary>
-          <p>Yes — set “how many” to draw a batch, and you’ll get the sum and mean alongside the numbers.</p>
+          <summary>Will the screen stay on during a game?</summary>
+          <p>Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it.</p>
         </details>
         <details>
-          <summary>Does it work offline?</summary>
-          <p>Yes. Once the page has loaded once, it keeps working with no connection.</p>
+          <summary>Is it accurate?</summary>
+          <p>Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift.</p>
         </details>
       </div>
     </section>

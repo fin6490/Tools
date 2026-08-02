@@ -447,6 +447,25 @@ const PANELS = String.raw`  <!-- WHEEL -->
       <div id="fpResult" class="fp-result" aria-live="polite"></div>
       <ol id="fpOrderList" class="fp-order-list" aria-live="polite" hidden></ol>
     </section>
+  </main>
+
+  <!-- CHESS CLOCK (multi-player game clock) -->
+  <main class="view view-chessclock" data-view-panel="chessclock" hidden>
+    <section class="panel tool-panel cc-panel">
+      <div id="ccSetup" class="cc-setup">
+        <label class="score-setup-item">Players <input type="number" id="ccCount" class="setup-num" min="2" max="6" value="2" /></label>
+        <label class="score-setup-item">Minutes each <input type="number" id="ccMin" class="setup-num" min="1" max="180" value="5" /></label>
+        <label class="score-setup-item">Increment (sec) <input type="number" id="ccInc" class="setup-num" min="0" max="60" value="0" /></label>
+        <button id="ccStart" class="btn primary">Start clock</button>
+        <p class="muted">Tap your area to end your turn. Each player's clock counts down; an optional increment is added after every move.</p>
+      </div>
+      <div id="ccBoard" class="cc-board" hidden></div>
+      <div id="ccControls" class="cc-controls" hidden>
+        <button id="ccPause" class="btn">Pause</button>
+        <button id="ccReset" class="btn">Reset</button>
+        <label class="opt"><input type="checkbox" id="ccWake" /> Keep screen awake</label>
+      </div>
+    </section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
