@@ -5,8 +5,8 @@
 //   rounds  — fixed number of rounds, highest total wins
 //   darts   — X01 (501/301/701) countdown with bust + double-out
 //   cricket — standard darts cricket (20..15 + bull), marks + points
-import { getState, save } from "./storage.js?v=20260801k";
-import { burst } from "./confetti.js?v=20260801k";
+import { getState, save } from "./storage.js?v=20260801l";
+import { burst } from "./confetti.js?v=20260801l";
 
 const CRICKET_TARGETS = [20, 19, 18, 17, 16, 15, "B"];
 const CRICKET_VALUE = { 20: 20, 19: 19, 18: 18, 17: 17, 16: 16, 15: 15, B: 25 };
@@ -23,7 +23,9 @@ export function initScores(root, { toast } = {}) {
     const s = getState();
     if (!s.scoring) s.scoring = {};
     const c = s.scoring;
-    c.mode = c.mode || "free";
+    // Darts scoreboard defaults to darts; generic scoring moved to the score pad.
+    c.mode = c.mode || "darts";
+    if (c.mode !== "darts" && c.mode !== "cricket") c.mode = "darts";
     c.target = c.target ?? 50;
     c.rounds = c.rounds || { total: 5, current: 1 };
     c.darts = c.darts || { start: 501, doubleOut: false, active: 0, winnerId: null, undo: [], p: {} };

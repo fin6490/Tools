@@ -1,19 +1,20 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801k";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801k";
-import * as sound from "./sound.js?v=20260801k";
-import { burst } from "./confetti.js?v=20260801k";
-import { initTimer } from "./timer.js?v=20260801k";
-import { initCounters } from "./counter.js?v=20260801k";
-import { initGroups } from "./groups.js?v=20260801k";
-import { initImages } from "./images.js?v=20260801k";
-import { initScores } from "./scores.js?v=20260801k";
-import { initSlots } from "./slots.js?v=20260801k";
-import { initNumbers } from "./numbers.js?v=20260801k";
-import { initDice } from "./dice.js?v=20260801k";
-import { initFirstPlayer } from "./firstplayer.js?v=20260801k";
-import { initSupport } from "./support.js?v=20260801k";
-import { ROUTES } from "./routes.js?v=20260801k";
+import * as store from "./storage.js?v=20260801l";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801l";
+import * as sound from "./sound.js?v=20260801l";
+import { burst } from "./confetti.js?v=20260801l";
+import { initTimer } from "./timer.js?v=20260801l";
+import { initCounters } from "./counter.js?v=20260801l";
+import { initGroups } from "./groups.js?v=20260801l";
+import { initImages } from "./images.js?v=20260801l";
+import { initScores } from "./scores.js?v=20260801l";
+import { initSlots } from "./slots.js?v=20260801l";
+import { initNumbers } from "./numbers.js?v=20260801l";
+import { initDice } from "./dice.js?v=20260801l";
+import { initFirstPlayer } from "./firstplayer.js?v=20260801l";
+import { initScorepad } from "./scorepad.js?v=20260801l";
+import { initSupport } from "./support.js?v=20260801l";
+import { ROUTES } from "./routes.js?v=20260801l";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -510,6 +511,7 @@ initScores(document, { toast });
 initNumbers(document);
 initDice(document);
 initFirstPlayer(document);
+initScorepad(document, { toast });
 slots = initSlots(document, { soundOn: () => state.soundOn });
 support = initSupport(document, { toast });
 initImages(document, {

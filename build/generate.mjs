@@ -312,25 +312,61 @@ const PANELS = String.raw`  <!-- WHEEL -->
     </section>
   </main>
 
-  <!-- SCORES -->
+  <!-- DARTS (scores view — darts X01 + cricket; general scoring lives in Score pad) -->
   <main class="view view-scores" data-view-panel="scores" hidden>
     <section class="panel tool-panel scores-panel">
       <div class="counter-head">
-        <h2>Scoreboard</h2>
+        <h2>Darts scoreboard</h2>
         <button id="addPlayer" class="btn primary">Add player</button>
       </div>
-      <div class="seg-toggle scores-mode" role="tablist" aria-label="Scoring mode">
-        <button class="seg is-active" data-score-mode="free" role="tab">Freeplay</button>
-        <button class="seg" data-score-mode="target" role="tab">Race to target</button>
-        <button class="seg" data-score-mode="golf" role="tab">Golf (low)</button>
-        <button class="seg" data-score-mode="rounds" role="tab">Rounds</button>
-        <button class="seg" data-score-mode="darts" role="tab">Darts (X01)</button>
+      <div class="seg-toggle scores-mode" role="tablist" aria-label="Darts game">
+        <button class="seg is-active" data-score-mode="darts" role="tab">Darts (X01)</button>
         <button class="seg" data-score-mode="cricket" role="tab">Cricket</button>
       </div>
       <div id="scoreSetup" class="score-setup"></div>
       <p id="scoreHint" class="muted"></p>
       <div id="scoreGrid" class="score-grid"></div>
     </section>
+  </main>
+
+  <!-- SCORE PAD (generic multi-player, multi-round) -->
+  <main class="view view-scorepad" data-view-panel="scorepad" hidden>
+    <section class="panel tool-panel scorepad-panel">
+      <div class="sp-toolbar">
+        <label class="sr-only" for="spGame">Game</label>
+        <select id="spGame" title="Switch game"></select>
+        <button id="spNewGame" class="mini-btn">New game</button>
+        <button id="spRenameGame" class="mini-btn">Rename</button>
+        <button id="spDupGame" class="mini-btn">Duplicate</button>
+        <button id="spDeleteGame" class="mini-btn">Delete</button>
+      </div>
+      <div class="sp-controls">
+        <button id="spAddRound" class="btn primary">Add round</button>
+        <button id="spAddPlayer" class="mini-btn">Add player</button>
+        <button id="spUndo" class="mini-btn">Undo</button>
+        <button id="spExport" class="mini-btn">Export CSV</button>
+        <label class="opt"><input type="checkbox" id="spLowWins" /> Lowest wins</label>
+        <label class="opt"><input type="checkbox" id="spWake" /> Keep screen awake</label>
+      </div>
+      <div id="spTableWrap" class="sp-table-wrap">
+        <table id="spTable" class="sp-table"></table>
+      </div>
+    </section>
+    <div id="spKeypad" class="sp-keypad" hidden>
+      <div class="sp-keypad-head">
+        <span id="spKeypadWho" class="sp-keypad-who"></span>
+        <span id="spKeypadValue" class="sp-keypad-value">0</span>
+      </div>
+      <div class="sp-keys">
+        <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+        <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+        <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+        <button data-key="sign">±</button><button data-key="0">0</button><button data-key="back">⌫</button>
+        <button data-key="clear" class="sp-key-wide">Clear</button>
+        <button data-key="next" class="sp-key-wide">Next</button>
+        <button data-key="done" class="sp-key-wide primary">Done</button>
+      </div>
+    </div>
   </main>
 
   <!-- COUNTER -->

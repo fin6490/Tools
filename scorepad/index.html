@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks</title>
-<meta name="description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
+<title>Score Pad — Free Board Game Score Keeper | SpinDecks</title>
+<meta name="description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/countdown-timer/" />
+<link rel="canonical" href="https://spindecks.app/scorepad/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks" />
-<meta property="og:description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
-<meta property="og:url" content="https://spindecks.app/countdown-timer/" />
+<meta property="og:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
+<meta property="og:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
+<meta property="og:url" content="https://spindecks.app/scorepad/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks" />
-<meta name="twitter:description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
+<meta name="twitter:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
+<meta name="twitter:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260801l" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Countdown timer",
-  "url": "https://spindecks.app/countdown-timer/",
+  "name": "Board game score pad",
+  "url": "https://spindecks.app/scorepad/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is the timer accurate?",
+      "name": "What games is the score pad for?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — it’s timestamp-based, so it stays accurate even if the tab is in the background, with no drift."
+        "text": "Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the darts scoreboard."
       }
     },
     {
       "@type": "Question",
-      "name": "Can the class see it from a distance?",
+      "name": "Can the highest or lowest score win?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. The clock is deliberately huge, and fullscreen mode makes it fill the screen for projectors."
+        "text": "Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it beep when it finishes?",
+      "name": "Will my scores stay on my phone if the screen locks?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It can — there’s an optional end beep you can switch on or off."
+        "text": "Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser."
       }
     },
     {
       "@type": "Question",
-      "name": "Is there a stopwatch too?",
+      "name": "Can I keep more than one game going?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — switch to Stopwatch mode to count up from zero."
+        "text": "Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players."
       }
     },
     {
       "@type": "Question",
-      "name": "Do I need to install anything?",
+      "name": "Can I get the scores out?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. It runs in your browser, free and ad-free, and works offline after the first visit."
+        "text": "Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file."
       }
     }
   ]
@@ -99,7 +99,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="timer">
+<div id="app" data-view="scorepad">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -112,12 +112,12 @@
       <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
       <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
       <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
-      <a class="tab is-active" data-view-btn="timer" href="/countdown-timer/" aria-current="page">Timer</a>
+      <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
       <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
-      <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
+      <a class="tab is-active" data-view-btn="scorepad" href="/scorepad/" aria-current="page">Score pad</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -249,7 +249,7 @@
   </main>
 
   <!-- TIMER -->
-  <main class="view view-timer" data-view-panel="timer">
+  <main class="view view-timer" data-view-panel="timer" hidden>
     <section class="panel tool-panel timer-panel">
       <div class="seg-toggle" role="tablist" aria-label="Timer mode">
         <button class="seg is-active" data-timer-mode="countdown" role="tab">Countdown</button>
@@ -329,7 +329,7 @@
   </main>
 
   <!-- SCORE PAD (generic multi-player, multi-round) -->
-  <main class="view view-scorepad" data-view-panel="scorepad" hidden>
+  <main class="view view-scorepad" data-view-panel="scorepad">
     <section class="panel tool-panel scorepad-panel">
       <div class="sp-toolbar">
         <label class="sr-only" for="spGame">Game</label>
@@ -499,42 +499,42 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Countdown timer</h1>
-      <p class="tool-intro">A big, clear countdown timer for lessons, tasks, games and streams. Pick a preset or set a custom time, and watch a giant, readable clock count down — with an optional beep when it hits zero. There’s a stopwatch mode too.</p>
+      <h1>Board game score pad</h1>
+      <p class="tool-intro">A free, general-purpose score pad for any board or card game — players across the top, rounds down the side, running totals that keep themselves. Tap a cell to enter a score on a big keypad, undo mistakes, and keep the screen awake at the table. Save as many games as you like.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Choose a preset (1, 3, 5, 10, 15 minutes) or type a custom time.</li>
-        <li>Press Start — the clock is large enough to read from across a room.</li>
-        <li>Pause, resume or reset at any time; switch to Stopwatch to count up instead.</li>
-        <li>Go fullscreen for a distraction-free display on a projector or second screen.</li>
+        <li>Add your players (rename them by tapping the name).</li>
+        <li>Tap “Add round”, then tap any cell to enter that player’s score on the keypad.</li>
+        <li>Running totals update at the bottom; the leader is highlighted — flip “Lowest wins” for golf-style games.</li>
+        <li>Save multiple games, duplicate one to replay with the same players, and export a game as CSV.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Teachers:</strong> time a starter, a task or a test with a clock the whole class can see from the back.</li>
-        <li><strong>Streamers:</strong> run a “starting soon” or break countdown, in fullscreen or on a green-screen background for OBS.</li>
-        <li><strong>Anyone:</strong> time a workout, a presentation or a game round without hunting for your phone.</li>
+        <li><strong>Board gamers:</strong> keep score for Wingspan, Catan, rummy or any game — on the phone at the table.</li>
+        <li><strong>Card players:</strong> track rounds and running totals without pen and paper.</li>
+        <li><strong>Families:</strong> a simple, shared score sheet everyone can see, that survives a screen lock.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>Is the timer accurate?</summary>
-          <p>Yes — it’s timestamp-based, so it stays accurate even if the tab is in the background, with no drift.</p>
+          <summary>What games is the score pad for?</summary>
+          <p>Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the <a href="/darts-scoreboard/">darts scoreboard</a>.</p>
         </details>
         <details>
-          <summary>Can the class see it from a distance?</summary>
-          <p>Yes. The clock is deliberately huge, and fullscreen mode makes it fill the screen for projectors.</p>
+          <summary>Can the highest or lowest score win?</summary>
+          <p>Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest.</p>
         </details>
         <details>
-          <summary>Does it beep when it finishes?</summary>
-          <p>It can — there’s an optional end beep you can switch on or off.</p>
+          <summary>Will my scores stay on my phone if the screen locks?</summary>
+          <p>Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser.</p>
         </details>
         <details>
-          <summary>Is there a stopwatch too?</summary>
-          <p>Yes — switch to Stopwatch mode to count up from zero.</p>
+          <summary>Can I keep more than one game going?</summary>
+          <p>Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players.</p>
         </details>
         <details>
-          <summary>Do I need to install anything?</summary>
-          <p>No. It runs in your browser, free and ad-free, and works offline after the first visit.</p>
+          <summary>Can I get the scores out?</summary>
+          <p>Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file.</p>
         </details>
       </div>
     </section>

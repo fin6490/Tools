@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801k",
+  token: "20260801l",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -75,7 +75,7 @@ export const TOOLS = [
   {
     slug: "darts-scoreboard",
     view: "scores",
-    nav: "Scores",
+    nav: "Darts",
     title: "Darts Scoreboard — Free Online 501 & Cricket Scorer | SpinDecks",
     description:
       "Free online darts scoreboard for 501 and cricket. Track multiple players, bust handling and running totals on any device. No ads, no sign-up, works offline.",
@@ -94,7 +94,7 @@ export const TOOLS = [
       ["Clubs", "run legs quickly with automatic totals, averages and bust handling."],
     ],
     faq: [
-      ["What darts games does it support?", "X01 (501, 301, 701 or a custom start) with optional double-out, and Cricket (20–15 plus the bull). It also has general Freeplay, target, golf and rounds modes for other games."],
+      ["What darts games does it support?", "X01 (501, 301, 701 or a custom start) with optional double-out, and Cricket (20–15 plus the bull). For any other game, use the <a href=\"/scorepad/\">score pad</a> — a general players-and-rounds scorer."],
       ["Does it handle busts and double-out?", "Yes. Going below zero — or leaving 1, or finishing on a non-double when double-out is on — reverts the turn automatically."],
       ["Does it show my average?", "Yes — it tracks your three-dart average and darts thrown as you play, and ranks players by remaining score."],
       ["Is it free and ad-free?", "Completely. No sign-up, no ads, and it works offline once loaded."],
@@ -275,16 +275,45 @@ export const TOOLS = [
       ["Does it work on a phone?", "It’s designed for phones — big buttons, one-handed, and the touch picker uses multi-touch. It works on desktop too via Count and Names modes."],
     ],
   },
+  {
+    slug: "scorepad",
+    view: "scorepad",
+    nav: "Score pad",
+    title: "Score Pad — Free Board Game Score Keeper | SpinDecks",
+    description:
+      "A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login.",
+    h1: "Board game score pad",
+    intro:
+      "A free, general-purpose score pad for any board or card game — players across the top, rounds down the side, running totals that keep themselves. Tap a cell to enter a score on a big keypad, undo mistakes, and keep the screen awake at the table. Save as many games as you like.",
+    steps: [
+      "Add your players (rename them by tapping the name).",
+      "Tap “Add round”, then tap any cell to enter that player’s score on the keypad.",
+      "Running totals update at the bottom; the leader is highlighted — flip “Lowest wins” for golf-style games.",
+      "Save multiple games, duplicate one to replay with the same players, and export a game as CSV.",
+    ],
+    whoFor: [
+      ["Board gamers", "keep score for Wingspan, Catan, rummy or any game — on the phone at the table."],
+      ["Card players", "track rounds and running totals without pen and paper."],
+      ["Families", "a simple, shared score sheet everyone can see, that survives a screen lock."],
+    ],
+    faq: [
+      ["What games is the score pad for?", "Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the <a href=\"/darts-scoreboard/\">darts scoreboard</a>."],
+      ["Can the highest or lowest score win?", "Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest."],
+      ["Will my scores stay on my phone if the screen locks?", "Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser."],
+      ["Can I keep more than one game going?", "Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players."],
+      ["Can I get the scores out?", "Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file."],
+    ],
+  },
 ];
 
 // The hub (/) — not a tool, a landing page linking to everything.
 export const HUB = {
   title: "SpinDecks — Free Ad-Free Random Pickers, Timers & Scoreboards",
   description:
-    "Free tools for teachers, streamers and board gamers: wheel of names, random team maker, darts scoreboard, number generator, timer, counters and slot reels. No ads, no login, works offline.",
+    "Free tools that just work: wheel of names, dice roller, random team maker, darts scoreboard, number generator, timer, counters and more. No ads, no login, works offline.",
   h1: "Free, ad-free tools that just work",
   intro:
-    "SpinDecks is a set of simple, fast tools for teachers, streamers and games nights. No ads, no accounts, no tracking — everything runs in your browser and works offline. Pick a tool to get started.",
+    "SpinDecks is a set of simple, fast tools for whatever you need to pick, time or count. No ads, no accounts, no tracking — everything runs in your browser and works offline. Pick a tool to get started.",
 };
 
 // Legal / info pages. Sole trader; contact via hello@spindecks.app.

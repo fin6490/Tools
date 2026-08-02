@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Split a list into random teams or groups instantly. Set team size or team count, reuse your saved lists, and re-roll for a fresh shuffle. Free, ad-free, no login." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801k" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801l" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -110,13 +110,14 @@
     <nav class="tabs" role="tablist" aria-label="Tools">
       <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
       <a class="tab is-active" data-view-btn="groups" href="/random-team-generator/" aria-current="page">Teams</a>
-      <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Scores</a>
+      <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
       <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
       <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
       <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
+      <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -310,25 +311,61 @@
     </section>
   </main>
 
-  <!-- SCORES -->
+  <!-- DARTS (scores view — darts X01 + cricket; general scoring lives in Score pad) -->
   <main class="view view-scores" data-view-panel="scores" hidden>
     <section class="panel tool-panel scores-panel">
       <div class="counter-head">
-        <h2>Scoreboard</h2>
+        <h2>Darts scoreboard</h2>
         <button id="addPlayer" class="btn primary">Add player</button>
       </div>
-      <div class="seg-toggle scores-mode" role="tablist" aria-label="Scoring mode">
-        <button class="seg is-active" data-score-mode="free" role="tab">Freeplay</button>
-        <button class="seg" data-score-mode="target" role="tab">Race to target</button>
-        <button class="seg" data-score-mode="golf" role="tab">Golf (low)</button>
-        <button class="seg" data-score-mode="rounds" role="tab">Rounds</button>
-        <button class="seg" data-score-mode="darts" role="tab">Darts (X01)</button>
+      <div class="seg-toggle scores-mode" role="tablist" aria-label="Darts game">
+        <button class="seg is-active" data-score-mode="darts" role="tab">Darts (X01)</button>
         <button class="seg" data-score-mode="cricket" role="tab">Cricket</button>
       </div>
       <div id="scoreSetup" class="score-setup"></div>
       <p id="scoreHint" class="muted"></p>
       <div id="scoreGrid" class="score-grid"></div>
     </section>
+  </main>
+
+  <!-- SCORE PAD (generic multi-player, multi-round) -->
+  <main class="view view-scorepad" data-view-panel="scorepad" hidden>
+    <section class="panel tool-panel scorepad-panel">
+      <div class="sp-toolbar">
+        <label class="sr-only" for="spGame">Game</label>
+        <select id="spGame" title="Switch game"></select>
+        <button id="spNewGame" class="mini-btn">New game</button>
+        <button id="spRenameGame" class="mini-btn">Rename</button>
+        <button id="spDupGame" class="mini-btn">Duplicate</button>
+        <button id="spDeleteGame" class="mini-btn">Delete</button>
+      </div>
+      <div class="sp-controls">
+        <button id="spAddRound" class="btn primary">Add round</button>
+        <button id="spAddPlayer" class="mini-btn">Add player</button>
+        <button id="spUndo" class="mini-btn">Undo</button>
+        <button id="spExport" class="mini-btn">Export CSV</button>
+        <label class="opt"><input type="checkbox" id="spLowWins" /> Lowest wins</label>
+        <label class="opt"><input type="checkbox" id="spWake" /> Keep screen awake</label>
+      </div>
+      <div id="spTableWrap" class="sp-table-wrap">
+        <table id="spTable" class="sp-table"></table>
+      </div>
+    </section>
+    <div id="spKeypad" class="sp-keypad" hidden>
+      <div class="sp-keypad-head">
+        <span id="spKeypadWho" class="sp-keypad-who"></span>
+        <span id="spKeypadValue" class="sp-keypad-value">0</span>
+      </div>
+      <div class="sp-keys">
+        <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+        <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+        <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+        <button data-key="sign">±</button><button data-key="0">0</button><button data-key="back">⌫</button>
+        <button data-key="clear" class="sp-key-wide">Clear</button>
+        <button data-key="next" class="sp-key-wide">Next</button>
+        <button data-key="done" class="sp-key-wide primary">Done</button>
+      </div>
+    </div>
   </main>
 
   <!-- COUNTER -->
@@ -511,13 +548,14 @@
         <p class="footer-head">Tools</p>
         <a href="/wheel-of-names/">Wheel of names</a>
         <a href="/random-team-generator/">Team generator</a>
-        <a href="/darts-scoreboard/">Darts scoreboard</a>
+        <a href="/darts-scoreboard/">Tally counter</a>
         <a href="/random-number-generator/">Random numbers</a>
         <a href="/countdown-timer/">Countdown timer</a>
         <a href="/tally-counter/">Tally counter</a>
         <a href="/slot-machine/">Slot reels</a>
         <a href="/dice-roller/">Tally counter</a>
         <a href="/first-player-picker/">Tally counter</a>
+        <a href="/scorepad/">Tally counter</a>
       </nav>
       <nav class="footer-col" aria-label="More">
         <p class="footer-head">More</p>
@@ -529,7 +567,7 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-<script type="module" src="/js/app.js?v=20260801k"></script>
+<script type="module" src="/js/app.js?v=20260801l"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

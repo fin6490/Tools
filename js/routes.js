@@ -44,6 +44,11 @@ export const ROUTES = {
     "slug": "first-player-picker",
     "title": "Who Goes First? Free First Player Picker | SpinDecks",
     "description": "Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free."
+  },
+  "scorepad": {
+    "slug": "scorepad",
+    "title": "Score Pad — Free Board Game Score Keeper | SpinDecks",
+    "description": "A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login."
   }
 };
 
