@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801i",
+  token: "20260801j",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -215,6 +215,35 @@ export const TOOLS = [
       ["Can I spin one reel at a time?", "Yes — spin them all together, or click a single reel (or its Spin button) to spin just that one."],
       ["Does it keep a history?", "Yes — every spin is recorded in a results log with a timestamp, which you can clear any time."],
       ["Is it free?", "Yes — free, ad-free and offline-capable, like the rest of SpinDecks."],
+    ],
+  },
+  {
+    slug: "dice-roller",
+    view: "dice",
+    nav: "Dice",
+    title: "Dice Roller — Roll 3d6, d20 & Any Dice Notation | SpinDecks",
+    description:
+      "Free online dice roller with standard notation: 3d6+2, 4d6kh3, 2d20kh1. Roll any dice for RPGs and board games. Fair, fast, ad-free, works offline.",
+    h1: "Dice roller",
+    intro:
+      "A free online dice roller that understands standard dice notation — type something like <code>3d6+2</code>, <code>4d6kh3</code> or <code>2d20kh1</code> and it rolls fairly using your browser’s cryptographic random source. Or just tap a die. Great for D&D, RPGs and board games.",
+    steps: [
+      "Type dice notation in the box (e.g. <code>2d6+4</code>), or tap a quick die like d20.",
+      "Press Roll or hit Enter — you’ll see each die, the total, and any dropped dice struck through.",
+      "Use the presets: Stat roll (<code>4d6kh3</code>), Advantage (<code>2d20kh1</code>) and Disadvantage (<code>2d20kl1</code>).",
+      "Your last 20 rolls are kept in the history below.",
+    ],
+    whoFor: [
+      ["RPG players", "roll stats, attacks and saves with proper notation, keep/drop and advantage."],
+      ["Board gamers", "roll any dice you’re missing from the box, on the phone at the table."],
+      ["Teachers", "demonstrate probability with a fair, transparent roller that shows every die."],
+    ],
+    faq: [
+      ["What dice notation is supported?", "Standard notation: a count and die size like <code>3d6</code>, an optional modifier like <code>+2</code>, and keep/drop such as <code>kh</code> (keep highest), <code>kl</code> (keep lowest), <code>dh</code> and <code>dl</code>. You can combine terms, e.g. <code>1d8+2d6-1</code>. <code>d%</code> is percentile (d100)."],
+      ["How do I roll with advantage?", "Roll <code>2d20kh1</code> for advantage (keep the highest of two d20) or <code>2d20kl1</code> for disadvantage (keep the lowest)."],
+      ["How do I roll D&D stats?", "Use <code>4d6kh3</code> — it rolls four six-sided dice and keeps the highest three, showing the dropped die struck through."],
+      ["Is the roller fair?", "Yes. Every die uses <code>crypto.getRandomValues</code> with bias removed, so all faces are equally likely."],
+      ["Does it work offline?", "Yes — once loaded it works with no connection, and your roll history is stored only in your browser."],
     ],
   },
 ];

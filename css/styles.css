@@ -138,7 +138,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -619,4 +619,41 @@ a.tab { display: inline-flex; align-items: center; }
 @media (max-width: 640px) {
   .footer-cols { grid-template-columns: 1fr 1fr; }
   .footer-col:first-child { grid-column: 1 / -1; }
+}
+
+/* ===== Dice roller ===== */
+.dice-panel { width: min(560px, 94vw); text-align: center; }
+.dice-panel .counter-head { justify-content: center; }
+.dice-input-row { display: flex; gap: 8px; margin: 12px 0 4px; }
+.dice-input {
+  flex: 1; min-width: 0; background: var(--panel-2); color: var(--ink);
+  border: 2px solid var(--line); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-size: 18px; font-family: var(--mono); letter-spacing: 1px;
+}
+.dice-input:focus { outline: none; border-color: var(--accent); }
+.dice-error { color: var(--danger); font-size: 13px; margin: 4px 0 0; min-height: 1em; }
+.dice-quick, .dice-presets { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; }
+.dice-presets { margin-top: 4px; }
+.dice-result { min-height: 120px; margin: 14px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.dice-total {
+  font-family: var(--mono); font-weight: 800; font-size: clamp(56px, 14vw, 96px);
+  color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums;
+}
+.dice-total.pop { animation: dice-pop .28s ease; }
+@keyframes dice-pop { from { transform: scale(.7); opacity: .4; } to { transform: scale(1); opacity: 1; } }
+.dice-breakdown { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.dice-group { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.die-chip {
+  display: inline-grid; place-items: center; min-width: 38px; height: 38px; padding: 0 8px;
+  background: var(--panel-2); border: 2px solid var(--line); border-radius: 9px;
+  font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--ink);
+}
+.die-chip.dropped { color: var(--muted); text-decoration: line-through; opacity: .6; }
+.dice-op { font-family: var(--mono); color: var(--muted); font-size: 20px; }
+.dice-mod { font-family: var(--mono); font-weight: 700; font-size: 18px; color: var(--ink-dim); }
+.dice-history-wrap { margin-top: 18px; text-align: left; }
+.dice-history-wrap .history-head { justify-content: space-between; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-total.pop { animation: none; }
 }
