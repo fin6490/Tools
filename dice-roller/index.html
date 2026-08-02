@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Random Number Generator — Pick a Number in a Range | SpinDecks</title>
-<meta name="description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
+<title>Dice Roller — Roll 3d6, d20 &amp; Any Dice Notation | SpinDecks</title>
+<meta name="description" content="Free online dice roller with standard notation: 3d6+2, 4d6kh3, 2d20kh1. Roll any dice for RPGs and board games. Fair, fast, ad-free, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/random-number-generator/" />
+<link rel="canonical" href="https://spindecks.app/dice-roller/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Random Number Generator — Pick a Number in a Range | SpinDecks" />
-<meta property="og:description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/random-number-generator/" />
+<meta property="og:title" content="Dice Roller — Roll 3d6, d20 &amp; Any Dice Notation | SpinDecks" />
+<meta property="og:description" content="Free online dice roller with standard notation: 3d6+2, 4d6kh3, 2d20kh1. Roll any dice for RPGs and board games. Fair, fast, ad-free, works offline." />
+<meta property="og:url" content="https://spindecks.app/dice-roller/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Random Number Generator — Pick a Number in a Range | SpinDecks" />
-<meta name="twitter:description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
+<meta name="twitter:title" content="Dice Roller — Roll 3d6, d20 &amp; Any Dice Notation | SpinDecks" />
+<meta name="twitter:description" content="Free online dice roller with standard notation: 3d6+2, 4d6kh3, 2d20kh1. Roll any dice for RPGs and board games. Fair, fast, ad-free, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260801j" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Random number generator",
-  "url": "https://spindecks.app/random-number-generator/",
+  "name": "Dice roller",
+  "url": "https://spindecks.app/dice-roller/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,34 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Can I draw numbers without repeats?",
+      "name": "What dice notation is supported?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — tick “no repeats” and every number in the draw will be unique, ideal for raffles and lotteries."
+        "text": "Standard notation: a count and die size like 3d6, an optional modifier like +2, and keep/drop such as kh (keep highest), kl (keep lowest), dh and dl. You can combine terms, e.g. 1d8+2d6-1. d% is percentile (d100)."
       }
     },
     {
       "@type": "Question",
-      "name": "Is the randomness fair?",
+      "name": "How do I roll with advantage?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. It uses your browser’s cryptographic random source, so every number in the range is equally likely."
+        "text": "Roll 2d20kh1 for advantage (keep the highest of two d20) or 2d20kl1 for disadvantage (keep the lowest)."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I flip a coin or roll dice?",
+      "name": "How do I roll D&D stats?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — one-tap presets cover a coin flip (Heads/Tails), a six-sided die, a D20, 1–100 and a 6-of-49 lottery."
+        "text": "Use 4d6kh3 — it rolls four six-sided dice and keeps the highest three, showing the dropped die struck through."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I draw lots of numbers at once?",
+      "name": "Is the roller fair?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — set “how many” to draw a batch, and you’ll get the sum and mean alongside the numbers."
+        "text": "Yes. Every die uses crypto.getRandomValues with bias removed, so all faces are equally likely."
       }
     },
     {
@@ -91,7 +91,7 @@
       "name": "Does it work offline?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Once the page has loaded once, it keeps working with no connection."
+        "text": "Yes — once loaded it works with no connection, and your roll history is stored only in your browser."
       }
     }
   ]
@@ -99,7 +99,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="numbers">
+<div id="app" data-view="dice">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -111,11 +111,11 @@
       <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
       <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
       <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Scores</a>
-      <a class="tab is-active" data-view-btn="numbers" href="/random-number-generator/" aria-current="page">Numbers</a>
+      <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
       <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
-      <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
+      <a class="tab is-active" data-view-btn="dice" href="/dice-roller/" aria-current="page">Dice</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -220,7 +220,7 @@
   </main>
 
   <!-- NUMBERS -->
-  <main class="view view-numbers" data-view-panel="numbers">
+  <main class="view view-numbers" data-view-panel="numbers" hidden>
     <section class="panel tool-panel numbers-panel">
       <div class="counter-head"><h2>Random numbers</h2></div>
       <p class="muted">Pick a range and how many to draw. Turn on “no repeats” for lottery-style draws.</p>
@@ -343,7 +343,7 @@
   </main>
 
   <!-- DICE -->
-  <main class="view view-dice" data-view-panel="dice" hidden>
+  <main class="view view-dice" data-view-panel="dice">
     <section class="panel tool-panel dice-panel">
       <div class="counter-head"><h2>Dice roller</h2></div>
       <p class="muted">Type dice notation like <code>3d6+2</code>, <code>4d6kh3</code> or <code>2d20kh1</code> — or tap a die below.</p>
@@ -428,42 +428,42 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Random number generator</h1>
-      <p class="tool-intro">Pick a random number in any range, or draw several at once. Set a minimum and maximum, choose how many numbers to draw, and turn on “no repeats” for lottery-style draws. One-tap presets cover dice, a coin flip and a 6-of-49 lottery.</p>
+      <h1>Dice roller</h1>
+      <p class="tool-intro">A free online dice roller that understands standard dice notation — type something like <code>3d6+2</code>, <code>4d6kh3</code> or <code>2d20kh1</code> and it rolls fairly using your browser’s cryptographic random source. Or just tap a die. Great for D&D, RPGs and board games.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Set the minimum and maximum for your range.</li>
-        <li>Choose how many numbers to draw, and tick “no repeats” if each should be unique.</li>
-        <li>Press Generate — or tap a preset like Dice, D20 or Coin flip.</li>
-        <li>For multiple draws you’ll see the sum and mean, and a copy button for the results.</li>
+        <li>Type dice notation in the box (e.g. <code>2d6+4</code>), or tap a quick die like d20.</li>
+        <li>Press Roll or hit Enter — you’ll see each die, the total, and any dropped dice struck through.</li>
+        <li>Use the presets: Stat roll (<code>4d6kh3</code>), Advantage (<code>2d20kh1</code>) and Disadvantage (<code>2d20kl1</code>).</li>
+        <li>Your last 20 rolls are kept in the history below.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Teachers:</strong> pick a random question number, page or seat in seconds.</li>
-        <li><strong>Prize draws:</strong> draw random ticket numbers with no repeats for a fair raffle.</li>
-        <li><strong>Games:</strong> roll dice, flip a coin or generate lottery numbers without any physical kit.</li>
+        <li><strong>RPG players:</strong> roll stats, attacks and saves with proper notation, keep/drop and advantage.</li>
+        <li><strong>Board gamers:</strong> roll any dice you’re missing from the box, on the phone at the table.</li>
+        <li><strong>Teachers:</strong> demonstrate probability with a fair, transparent roller that shows every die.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>Can I draw numbers without repeats?</summary>
-          <p>Yes — tick “no repeats” and every number in the draw will be unique, ideal for raffles and lotteries.</p>
+          <summary>What dice notation is supported?</summary>
+          <p>Standard notation: a count and die size like <code>3d6</code>, an optional modifier like <code>+2</code>, and keep/drop such as <code>kh</code> (keep highest), <code>kl</code> (keep lowest), <code>dh</code> and <code>dl</code>. You can combine terms, e.g. <code>1d8+2d6-1</code>. <code>d%</code> is percentile (d100).</p>
         </details>
         <details>
-          <summary>Is the randomness fair?</summary>
-          <p>Yes. It uses your browser’s cryptographic random source, so every number in the range is equally likely.</p>
+          <summary>How do I roll with advantage?</summary>
+          <p>Roll <code>2d20kh1</code> for advantage (keep the highest of two d20) or <code>2d20kl1</code> for disadvantage (keep the lowest).</p>
         </details>
         <details>
-          <summary>Can I flip a coin or roll dice?</summary>
-          <p>Yes — one-tap presets cover a coin flip (Heads/Tails), a six-sided die, a D20, 1–100 and a 6-of-49 lottery.</p>
+          <summary>How do I roll D&D stats?</summary>
+          <p>Use <code>4d6kh3</code> — it rolls four six-sided dice and keeps the highest three, showing the dropped die struck through.</p>
         </details>
         <details>
-          <summary>Can I draw lots of numbers at once?</summary>
-          <p>Yes — set “how many” to draw a batch, and you’ll get the sum and mean alongside the numbers.</p>
+          <summary>Is the roller fair?</summary>
+          <p>Yes. Every die uses <code>crypto.getRandomValues</code> with bias removed, so all faces are equally likely.</p>
         </details>
         <details>
           <summary>Does it work offline?</summary>
-          <p>Yes. Once the page has loaded once, it keeps working with no connection.</p>
+          <p>Yes — once loaded it works with no connection, and your roll history is stored only in your browser.</p>
         </details>
       </div>
     </section>

@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Split a list into random teams or groups instantly. Set team size or team count, reuse your saved lists, and re-roll for a fresh shuffle. Free, ad-free, no login." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801i" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801j" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -115,6 +115,7 @@
       <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
+      <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -340,6 +341,41 @@
       <div id="counterGrid" class="counter-grid"></div>
     </section>
   </main>
+
+  <!-- DICE -->
+  <main class="view view-dice" data-view-panel="dice" hidden>
+    <section class="panel tool-panel dice-panel">
+      <div class="counter-head"><h2>Dice roller</h2></div>
+      <p class="muted">Type dice notation like <code>3d6+2</code>, <code>4d6kh3</code> or <code>2d20kh1</code> — or tap a die below.</p>
+      <div class="dice-input-row">
+        <input id="diceNotation" class="dice-input" type="text" spellcheck="false" autocomplete="off" placeholder="e.g. 3d6+2" aria-label="Dice notation" />
+        <button id="diceRoll" class="btn primary">Roll</button>
+      </div>
+      <p id="diceError" class="dice-error" role="alert" hidden></p>
+      <div class="dice-quick" aria-label="Quick dice">
+        <button class="chip" data-die="4">d4</button>
+        <button class="chip" data-die="6">d6</button>
+        <button class="chip" data-die="8">d8</button>
+        <button class="chip" data-die="10">d10</button>
+        <button class="chip" data-die="12">d12</button>
+        <button class="chip" data-die="20">d20</button>
+        <button class="chip" data-die="100">d100</button>
+      </div>
+      <div class="dice-presets">
+        <button class="chip" data-dice="4d6kh3">Stat roll</button>
+        <button class="chip" data-dice="2d20kh1">Advantage</button>
+        <button class="chip" data-dice="2d20kl1">Disadvantage</button>
+      </div>
+      <div id="diceResult" class="dice-result" aria-live="polite"></div>
+      <div class="dice-history-wrap">
+        <div class="history-head">
+          <h2>Rolls</h2>
+          <button id="diceClear" class="mini-btn" title="Clear roll history">clear</button>
+        </div>
+        <ol id="diceHistory" class="history-list" aria-live="polite"></ol>
+      </div>
+    </section>
+  </main>
   <div id="winnerModal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="winnerName">
       <p id="modalEyebrow" class="modal-eyebrow">Winner</p>
@@ -446,6 +482,7 @@
         <a href="/countdown-timer/">Countdown timer</a>
         <a href="/tally-counter/">Tally counter</a>
         <a href="/slot-machine/">Slot reels</a>
+        <a href="/dice-roller/">Tally counter</a>
       </nav>
       <nav class="footer-col" aria-label="More">
         <p class="footer-head">More</p>
@@ -457,7 +494,7 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-<script type="module" src="/js/app.js?v=20260801i"></script>
+<script type="module" src="/js/app.js?v=20260801j"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

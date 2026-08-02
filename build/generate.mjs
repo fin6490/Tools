@@ -343,6 +343,41 @@ const PANELS = String.raw`  <!-- WHEEL -->
       <p class="muted">Track spins, slot pulls, score, deaths — anything. Saved locally.</p>
       <div id="counterGrid" class="counter-grid"></div>
     </section>
+  </main>
+
+  <!-- DICE -->
+  <main class="view view-dice" data-view-panel="dice" hidden>
+    <section class="panel tool-panel dice-panel">
+      <div class="counter-head"><h2>Dice roller</h2></div>
+      <p class="muted">Type dice notation like <code>3d6+2</code>, <code>4d6kh3</code> or <code>2d20kh1</code> — or tap a die below.</p>
+      <div class="dice-input-row">
+        <input id="diceNotation" class="dice-input" type="text" spellcheck="false" autocomplete="off" placeholder="e.g. 3d6+2" aria-label="Dice notation" />
+        <button id="diceRoll" class="btn primary">Roll</button>
+      </div>
+      <p id="diceError" class="dice-error" role="alert" hidden></p>
+      <div class="dice-quick" aria-label="Quick dice">
+        <button class="chip" data-die="4">d4</button>
+        <button class="chip" data-die="6">d6</button>
+        <button class="chip" data-die="8">d8</button>
+        <button class="chip" data-die="10">d10</button>
+        <button class="chip" data-die="12">d12</button>
+        <button class="chip" data-die="20">d20</button>
+        <button class="chip" data-die="100">d100</button>
+      </div>
+      <div class="dice-presets">
+        <button class="chip" data-dice="4d6kh3">Stat roll</button>
+        <button class="chip" data-dice="2d20kh1">Advantage</button>
+        <button class="chip" data-dice="2d20kl1">Disadvantage</button>
+      </div>
+      <div id="diceResult" class="dice-result" aria-live="polite"></div>
+      <div class="dice-history-wrap">
+        <div class="history-head">
+          <h2>Rolls</h2>
+          <button id="diceClear" class="mini-btn" title="Clear roll history">clear</button>
+        </div>
+        <ol id="diceHistory" class="history-list" aria-live="polite"></ol>
+      </div>
+    </section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
