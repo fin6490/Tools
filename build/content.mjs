@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801m",
+  token: "20260801n",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -331,6 +331,35 @@ export const TOOLS = [
       ["What happens when a player runs out of time?", "Their clock flags at zero and the turn passes on to the next player who still has time."],
       ["Will the screen stay on during a game?", "Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it."],
       ["Is it accurate?", "Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift."],
+    ],
+  },
+  {
+    slug: "tournament-bracket",
+    view: "bracket",
+    nav: "Bracket",
+    title: "Tournament Bracket Generator — Knockout, League & Groups | SpinDecks",
+    description:
+      "Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up.",
+    h1: "Tournament bracket generator",
+    intro:
+      "Make a tournament in seconds. Paste your players or teams and pick a format — a single-elimination <strong>knockout</strong> bracket, a round-robin <strong>league</strong> with a live standings table, or <strong>group stages</strong> that feed into a knockout. Seed by order or at random, then tap winners and results as you play.",
+    steps: [
+      "Type one player or team per line, and choose Keep order or Random seeds.",
+      "Pick a format: Knockout, League, or Groups.",
+      "Press Generate — for a knockout, tap a name in each match to advance them; for a league or groups, tap W / D / W to record results and the table updates.",
+      "In Groups, set how many teams qualify, then “Build knockout from qualifiers” to play it out.",
+    ],
+    whoFor: [
+      ["Games nights & clubs", "run a quick knockout or a full round-robin for any number of players."],
+      ["Esports & sports", "seed a bracket, track a league table, or do groups-then-knockout like a real cup."],
+      ["Classrooms", "organise a fair class tournament without drawing brackets by hand."],
+    ],
+    faq: [
+      ["What tournament formats are supported?", "Single-elimination <strong>knockout</strong> (with byes when the count isn't a power of two), round-robin <strong>league</strong> with a points table, and <strong>group stages</strong> — round-robin groups where the top teams qualify for a knockout."],
+      ["Can I seed randomly?", "Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed."],
+      ["How do I record results?", "In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly."],
+      ["Does it handle odd numbers of teams?", "Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin."],
+      ["Are my brackets saved?", "Yes — the entrants, format and results stay in your browser, and it all works offline."],
     ],
   },
 ];
