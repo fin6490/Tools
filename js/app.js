@@ -1,16 +1,17 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801g";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801g";
-import * as sound from "./sound.js?v=20260801g";
-import { burst } from "./confetti.js?v=20260801g";
-import { initTimer } from "./timer.js?v=20260801g";
-import { initCounters } from "./counter.js?v=20260801g";
-import { initGroups } from "./groups.js?v=20260801g";
-import { initImages } from "./images.js?v=20260801g";
-import { initScores } from "./scores.js?v=20260801g";
-import { initSlots } from "./slots.js?v=20260801g";
-import { initNumbers } from "./numbers.js?v=20260801g";
-import { initSupport } from "./support.js?v=20260801g";
+import * as store from "./storage.js?v=20260801h";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801h";
+import * as sound from "./sound.js?v=20260801h";
+import { burst } from "./confetti.js?v=20260801h";
+import { initTimer } from "./timer.js?v=20260801h";
+import { initCounters } from "./counter.js?v=20260801h";
+import { initGroups } from "./groups.js?v=20260801h";
+import { initImages } from "./images.js?v=20260801h";
+import { initScores } from "./scores.js?v=20260801h";
+import { initSlots } from "./slots.js?v=20260801h";
+import { initNumbers } from "./numbers.js?v=20260801h";
+import { initSupport } from "./support.js?v=20260801h";
+import { ROUTES } from "./routes.js?v=20260801h";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -26,23 +27,65 @@ $("#themeToggle").addEventListener("click", () => {
 });
 applyTheme();
 
-/* ---------- View tabs ---------- */
-document.querySelectorAll("[data-view-btn]").forEach((btn) =>
-  btn.addEventListener("click", () => {
-    const view = btn.dataset.viewBtn;
-    app.dataset.view = view;
-    document.querySelectorAll("[data-view-btn]").forEach((b) => {
-      const on = b === btn;
-      b.classList.toggle("is-active", on);
-      b.setAttribute("aria-selected", on ? "true" : "false");
-    });
-    document.querySelectorAll("[data-view-panel]").forEach((p) => {
-      p.hidden = p.dataset.viewPanel !== view;
-    });
-    if (view === "wheel") wheel.draw();
-    if (view === "slots" && slots) slots.relayout(); // reels need sizing once visible
-  })
-);
+/* ---------- View tabs / client routing ----------
+   Each tool has its own real URL (/wheel-of-names, /darts-scoreboard, …) and
+   ships a full static page. The tabs are genuine <a href> links, so they work
+   with JS off and middle-click; with JS on we soft-navigate between the tools
+   that are already in this page's DOM, updating the URL, title and canonical
+   without a full reload. The generator set the starting view on #app. */
+const INITIAL_VIEW = app.dataset.view || "wheel";
+const VIEW_BY_SLUG = Object.fromEntries(Object.entries(ROUTES).map(([v, r]) => [r.slug, v]));
+
+function applyHead(view) {
+  const r = ROUTES[view];
+  if (!r) return;
+  document.title = r.title;
+  const canon = $('link[rel="canonical"]');
+  if (canon) canon.href = location.origin + "/" + r.slug;
+  const desc = $('meta[name="description"]');
+  if (desc) desc.content = r.description;
+}
+
+function showView(view) {
+  app.dataset.view = view;
+  document.querySelectorAll("[data-view-btn]").forEach((b) => {
+    const on = b.dataset.viewBtn === view;
+    b.classList.toggle("is-active", on);
+    if (on) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
+  document.querySelectorAll("[data-view-panel]").forEach((p) => {
+    p.hidden = p.dataset.viewPanel !== view;
+  });
+  // The SEO prose only matches the page you actually landed on; hide it once
+  // you soft-navigate elsewhere (a reload/deep-link shows the right copy).
+  const copy = document.querySelector(".tool-copy");
+  if (copy) copy.hidden = view !== INITIAL_VIEW;
+  if (view === "wheel") wheel.draw();
+  if (view === "slots" && slots) slots.relayout(); // reels need sizing once visible
+}
+
+function navigate(view, push) {
+  if (!ROUTES[view]) return;
+  showView(view);
+  applyHead(view);
+  if (push) history.pushState({ view }, "", "/" + ROUTES[view].slug);
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll("a[data-view-btn]").forEach((a) => {
+  a.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; // let new-tab / new-window through
+    const view = a.dataset.viewBtn;
+    if (!ROUTES[view]) return;
+    e.preventDefault();
+    navigate(view, true);
+  });
+});
+window.addEventListener("popstate", () => {
+  const slug = location.pathname.replace(/^\/|\/$/g, "");
+  navigate(VIEW_BY_SLUG[slug] || INITIAL_VIEW, false);
+});
 
 /* ---------- Wheel ---------- */
 const wheel = new Wheel($("#wheel"));
@@ -483,7 +526,10 @@ initGroups(document, {
     store.save();
     populateWheelSelect();
     loadActiveWheelIntoEditor();
-    document.querySelector('[data-view-btn="wheel"]').click();
+    navigate("wheel", true);
     toast(`Created ${teams.length} wheel${teams.length === 1 ? "" : "s"} — one per team`);
   },
 });
+
+// Activate whichever view this page loaded as (generator set #app data-view).
+showView(INITIAL_VIEW);

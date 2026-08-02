@@ -2,16 +2,16 @@
 // Strategy: network-first for navigations and same-origin GETs, falling back
 // to the cache when offline; the app shell is pre-cached on install so a cold
 // offline load still works. Bump CACHE when shipping new assets.
-const CACHE = "spindeck-v20260801g";
+const CACHE = "spindeck-v20260801h";
 
-// Core shell — enough to boot the app offline. JS modules are cached lazily
-// on first fetch (they carry ?v= tokens, so a bump naturally re-fetches them).
+// Core shell — enough to boot the app offline. Tool-page HTML and JS modules
+// are cached lazily on first visit (JS carries ?v= tokens, so a bump re-fetches).
 const SHELL = [
-  "./",
-  "./index.html",
-  "./css/styles.css",
-  "./site.webmanifest",
-  "./assets/apple-touch-icon.png",
+  "/",
+  "/index.html",
+  "/css/styles.css",
+  "/site.webmanifest",
+  "/assets/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -50,7 +50,8 @@ self.addEventListener("fetch", (event) => {
         return res;
       })
       .catch(() =>
-        caches.match(req).then((hit) => hit || caches.match("./index.html"))
+        // Offline: serve the cached page/asset, else fall back to the hub.
+        caches.match(req).then((hit) => hit || caches.match("/index.html"))
       )
   );
 });
