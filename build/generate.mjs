@@ -64,7 +64,7 @@ ${ld}`;
 function tabs(active) {
   const items = TOOLS.map((t) => {
     const on = t.view === active;
-    return `      <a class="tab${on ? " is-active" : ""}" data-view-btn="${t.view}" href="/${t.slug}"${on ? ' aria-current="page"' : ""}>${t.nav}</a>`;
+    return `      <a class="tab${on ? " is-active" : ""}" data-view-btn="${t.view}" href="/${t.slug}/"${on ? ' aria-current="page"' : ""}>${t.nav}</a>`;
   }).join("\n");
   return `<nav class="tabs" role="tablist" aria-label="Tools">\n${items}\n    </nav>`;
 }
@@ -100,7 +100,7 @@ function topbar(active) {
           <button data-action="import">Import (JSON)</button>
           <button data-action="share">Copy share link (this wheel)</button>
           <button data-action="reset">Reset everything</button>
-          <a href="/about">About / help</a>
+          <a href="/about/">About / help</a>
         </div>
       </div>
     </div>
@@ -112,13 +112,13 @@ function simpleHeader() {
   return `<header class="topbar topbar-simple">
     ${BRAND}
     <nav class="tabs" aria-label="Tools">
-${TOOLS.map((t) => `      <a class="tab" href="/${t.slug}">${t.nav}</a>`).join("\n")}
+${TOOLS.map((t) => `      <a class="tab" href="/${t.slug}/">${t.nav}</a>`).join("\n")}
     </nav>
   </header>`;
 }
 
 function footer() {
-  const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}">${t.nav === "Numbers" ? "Random numbers" : t.nav === "Scores" ? "Darts scoreboard" : t.nav === "Teams" ? "Team generator" : t.nav === "Slots" ? "Slot reels" : t.nav === "Wheel" ? "Wheel of names" : t.nav === "Timer" ? "Countdown timer" : "Tally counter"}</a>`).join("\n        ");
+  const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${t.nav === "Numbers" ? "Random numbers" : t.nav === "Scores" ? "Darts scoreboard" : t.nav === "Teams" ? "Team generator" : t.nav === "Slots" ? "Slot reels" : t.nav === "Wheel" ? "Wheel of names" : t.nav === "Timer" ? "Countdown timer" : "Tally counter"}</a>`).join("\n        ");
   return `<footer class="site-footer">
     <div class="footer-cols">
       <div class="footer-col">
@@ -131,9 +131,9 @@ function footer() {
       </nav>
       <nav class="footer-col" aria-label="More">
         <p class="footer-head">More</p>
-        <a href="/about">About</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
         <a href="https://ko-fi.com/spindecks" target="_blank" rel="noopener">Support / tip</a>
       </nav>
     </div>
@@ -432,7 +432,7 @@ function toolJsonLd(t) {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: t.h1,
-    url: `${SITE.origin}/${t.slug}`,
+    url: `${SITE.origin}/${t.slug}/`,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
     browserRequirements: "Requires JavaScript",
@@ -461,7 +461,7 @@ function write(path, html) {
 }
 
 function toolPage(t) {
-  const h = head({ title: t.title, description: t.description, canonicalPath: "/" + t.slug, jsonld: toolJsonLd(t) });
+  const h = head({ title: t.title, description: t.description, canonicalPath: "/" + t.slug + "/", jsonld: toolJsonLd(t) });
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -482,7 +482,7 @@ ${SW_REG}
 }
 
 function hubPage() {
-  const cards = TOOLS.map((t) => `      <a class="hub-card" href="/${t.slug}">
+  const cards = TOOLS.map((t) => `      <a class="hub-card" href="/${t.slug}/">
         <span class="hub-card-title">${t.h1.replace(/ —.*/, "")}</span>
         <span class="hub-card-desc">${t.intro.split(". ")[0]}.</span>
       </a>`).join("\n");
@@ -514,7 +514,7 @@ ${SW_REG}
 </html>`;
 }
 
-function staticPage({ slug, title, description, h1 }, bodyHtml, canonical = "/" + slug) {
+function staticPage({ slug, title, description, h1 }, bodyHtml, canonical = "/" + slug + "/") {
   const h = head({ title, description, canonicalPath: canonical });
   return `<!doctype html>
 <html lang="en">
@@ -591,9 +591,9 @@ ${SW_REG}
 /* ---------- sitemap / robots ---------- */
 
 function sitemap() {
-  const urls = ["/", ...TOOLS.map((t) => "/" + t.slug), "/about", "/privacy", "/terms"];
+  const urls = ["/", ...TOOLS.map((t) => "/" + t.slug + "/"), "/about/", "/privacy/", "/terms/"];
   const body = urls
-    .map((u) => `  <url>\n    <loc>${SITE.origin}${u === "/" ? "/" : u}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`)
+    .map((u) => `  <url>\n    <loc>${SITE.origin}${u}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`)
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
 }

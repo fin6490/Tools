@@ -1,17 +1,17 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801h";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801h";
-import * as sound from "./sound.js?v=20260801h";
-import { burst } from "./confetti.js?v=20260801h";
-import { initTimer } from "./timer.js?v=20260801h";
-import { initCounters } from "./counter.js?v=20260801h";
-import { initGroups } from "./groups.js?v=20260801h";
-import { initImages } from "./images.js?v=20260801h";
-import { initScores } from "./scores.js?v=20260801h";
-import { initSlots } from "./slots.js?v=20260801h";
-import { initNumbers } from "./numbers.js?v=20260801h";
-import { initSupport } from "./support.js?v=20260801h";
-import { ROUTES } from "./routes.js?v=20260801h";
+import * as store from "./storage.js?v=20260801i";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801i";
+import * as sound from "./sound.js?v=20260801i";
+import { burst } from "./confetti.js?v=20260801i";
+import { initTimer } from "./timer.js?v=20260801i";
+import { initCounters } from "./counter.js?v=20260801i";
+import { initGroups } from "./groups.js?v=20260801i";
+import { initImages } from "./images.js?v=20260801i";
+import { initScores } from "./scores.js?v=20260801i";
+import { initSlots } from "./slots.js?v=20260801i";
+import { initNumbers } from "./numbers.js?v=20260801i";
+import { initSupport } from "./support.js?v=20260801i";
+import { ROUTES } from "./routes.js?v=20260801i";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -41,7 +41,7 @@ function applyHead(view) {
   if (!r) return;
   document.title = r.title;
   const canon = $('link[rel="canonical"]');
-  if (canon) canon.href = location.origin + "/" + r.slug;
+  if (canon) canon.href = location.origin + "/" + r.slug + "/";
   const desc = $('meta[name="description"]');
   if (desc) desc.content = r.description;
 }
@@ -69,7 +69,7 @@ function navigate(view, push) {
   if (!ROUTES[view]) return;
   showView(view);
   applyHead(view);
-  if (push) history.pushState({ view }, "", "/" + ROUTES[view].slug);
+  if (push) history.pushState({ view }, "", "/" + ROUTES[view].slug + "/");
   window.scrollTo(0, 0);
 }
 
