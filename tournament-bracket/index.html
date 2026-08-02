@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Score Pad — Free Board Game Score Keeper | SpinDecks</title>
-<meta name="description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
+<title>Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks</title>
+<meta name="description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/scorepad/" />
+<link rel="canonical" href="https://spindecks.app/tournament-bracket/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
-<meta property="og:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
-<meta property="og:url" content="https://spindecks.app/scorepad/" />
+<meta property="og:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
+<meta property="og:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
+<meta property="og:url" content="https://spindecks.app/tournament-bracket/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
-<meta name="twitter:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
+<meta name="twitter:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
+<meta name="twitter:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260801n" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Board game score pad",
-  "url": "https://spindecks.app/scorepad/",
+  "name": "Tournament bracket generator",
+  "url": "https://spindecks.app/tournament-bracket/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What games is the score pad for?",
+      "name": "What tournament formats are supported?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the darts scoreboard."
+        "text": "Single-elimination knockout (with byes when the count isn't a power of two), round-robin league with a points table, and group stages — round-robin groups where the top teams qualify for a knockout."
       }
     },
     {
       "@type": "Question",
-      "name": "Can the highest or lowest score win?",
+      "name": "Can I seed randomly?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest."
+        "text": "Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed."
       }
     },
     {
       "@type": "Question",
-      "name": "Will my scores stay on my phone if the screen locks?",
+      "name": "How do I record results?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser."
+        "text": "In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I keep more than one game going?",
+      "name": "Does it handle odd numbers of teams?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players."
+        "text": "Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I get the scores out?",
+      "name": "Are my brackets saved?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file."
+        "text": "Yes — the entrants, format and results stay in your browser, and it all works offline."
       }
     }
   ]
@@ -99,7 +99,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="scorepad">
+<div id="app" data-view="bracket">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -117,9 +117,9 @@
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
       <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
-      <a class="tab is-active" data-view-btn="scorepad" href="/scorepad/" aria-current="page">Score pad</a>
+      <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
       <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
-      <a class="tab" data-view-btn="bracket" href="/tournament-bracket/">Bracket</a>
+      <a class="tab is-active" data-view-btn="bracket" href="/tournament-bracket/" aria-current="page">Bracket</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -331,7 +331,7 @@
   </main>
 
   <!-- SCORE PAD (generic multi-player, multi-round) -->
-  <main class="view view-scorepad" data-view-panel="scorepad">
+  <main class="view view-scorepad" data-view-panel="scorepad" hidden>
     <section class="panel tool-panel scorepad-panel">
       <div class="sp-toolbar">
         <label class="sr-only" for="spGame">Game</label>
@@ -470,7 +470,7 @@
   </main>
 
   <!-- BRACKET (tournament generator: knockout / league / groups) -->
-  <main class="view view-bracket" data-view-panel="bracket" hidden>
+  <main class="view view-bracket" data-view-panel="bracket">
     <section class="panel tool-panel bracket-panel">
       <div class="bk-setup">
         <div class="seg-toggle" role="tablist" aria-label="Format">
@@ -544,42 +544,42 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Board game score pad</h1>
-      <p class="tool-intro">A free, general-purpose score pad for any board or card game — players across the top, rounds down the side, running totals that keep themselves. Tap a cell to enter a score on a big keypad, undo mistakes, and keep the screen awake at the table. Save as many games as you like.</p>
+      <h1>Tournament bracket generator</h1>
+      <p class="tool-intro">Make a tournament in seconds. Paste your players or teams and pick a format — a single-elimination <strong>knockout</strong> bracket, a round-robin <strong>league</strong> with a live standings table, or <strong>group stages</strong> that feed into a knockout. Seed by order or at random, then tap winners and results as you play.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Add your players (rename them by tapping the name).</li>
-        <li>Tap “Add round”, then tap any cell to enter that player’s score on the keypad.</li>
-        <li>Running totals update at the bottom; the leader is highlighted — flip “Lowest wins” for golf-style games.</li>
-        <li>Save multiple games, duplicate one to replay with the same players, and export a game as CSV.</li>
+        <li>Type one player or team per line, and choose Keep order or Random seeds.</li>
+        <li>Pick a format: Knockout, League, or Groups.</li>
+        <li>Press Generate — for a knockout, tap a name in each match to advance them; for a league or groups, tap W / D / W to record results and the table updates.</li>
+        <li>In Groups, set how many teams qualify, then “Build knockout from qualifiers” to play it out.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Board gamers:</strong> keep score for Wingspan, Catan, rummy or any game — on the phone at the table.</li>
-        <li><strong>Card players:</strong> track rounds and running totals without pen and paper.</li>
-        <li><strong>Families:</strong> a simple, shared score sheet everyone can see, that survives a screen lock.</li>
+        <li><strong>Games nights & clubs:</strong> run a quick knockout or a full round-robin for any number of players.</li>
+        <li><strong>Esports & sports:</strong> seed a bracket, track a league table, or do groups-then-knockout like a real cup.</li>
+        <li><strong>Classrooms:</strong> organise a fair class tournament without drawing brackets by hand.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>What games is the score pad for?</summary>
-          <p>Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the <a href="/darts-scoreboard/">darts scoreboard</a>.</p>
+          <summary>What tournament formats are supported?</summary>
+          <p>Single-elimination <strong>knockout</strong> (with byes when the count isn't a power of two), round-robin <strong>league</strong> with a points table, and <strong>group stages</strong> — round-robin groups where the top teams qualify for a knockout.</p>
         </details>
         <details>
-          <summary>Can the highest or lowest score win?</summary>
-          <p>Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest.</p>
+          <summary>Can I seed randomly?</summary>
+          <p>Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed.</p>
         </details>
         <details>
-          <summary>Will my scores stay on my phone if the screen locks?</summary>
-          <p>Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser.</p>
+          <summary>How do I record results?</summary>
+          <p>In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly.</p>
         </details>
         <details>
-          <summary>Can I keep more than one game going?</summary>
-          <p>Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players.</p>
+          <summary>Does it handle odd numbers of teams?</summary>
+          <p>Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin.</p>
         </details>
         <details>
-          <summary>Can I get the scores out?</summary>
-          <p>Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file.</p>
+          <summary>Are my brackets saved?</summary>
+          <p>Yes — the entrants, format and results stay in your browser, and it all works offline.</p>
         </details>
       </div>
     </section>

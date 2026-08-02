@@ -466,6 +466,30 @@ const PANELS = String.raw`  <!-- WHEEL -->
         <label class="opt"><input type="checkbox" id="ccWake" /> Keep screen awake</label>
       </div>
     </section>
+  </main>
+
+  <!-- BRACKET (tournament generator: knockout / league / groups) -->
+  <main class="view view-bracket" data-view-panel="bracket" hidden>
+    <section class="panel tool-panel bracket-panel">
+      <div class="bk-setup">
+        <div class="seg-toggle" role="tablist" aria-label="Format">
+          <button class="seg is-active" data-bk-format="knockout" role="tab">Knockout</button>
+          <button class="seg" data-bk-format="league" role="tab">League</button>
+          <button class="seg" data-bk-format="groups" role="tab">Groups</button>
+        </div>
+        <textarea id="bkEntrants" class="entries" spellcheck="false" placeholder="One player or team per line…"></textarea>
+        <div class="bk-opts">
+          <div class="seg-toggle" role="tablist" aria-label="Seeding">
+            <button class="seg is-active" data-bk-seed="order" role="tab">Keep order</button>
+            <button class="seg" data-bk-seed="random" role="tab">Random seeds</button>
+          </div>
+          <label id="bkGroupsOpt" class="score-setup-item" hidden>Groups <input type="number" id="bkGroupCount" class="setup-num" min="2" max="8" value="2" /></label>
+          <label id="bkQualOpt" class="score-setup-item" hidden>Qualify <input type="number" id="bkQualify" class="setup-num" min="1" max="4" value="2" /></label>
+          <button id="bkGenerate" class="btn primary">Generate</button>
+        </div>
+      </div>
+      <div id="bkResult" class="bk-result" aria-live="polite"></div>
+    </section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

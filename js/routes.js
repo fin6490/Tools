@@ -54,6 +54,11 @@ export const ROUTES = {
     "slug": "chess-clock",
     "title": "Online Chess Clock — Free Multiplayer Game Timer | SpinDecks",
     "description": "A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline."
+  },
+  "bracket": {
+    "slug": "tournament-bracket",
+    "title": "Tournament Bracket Generator — Knockout, League & Groups | SpinDecks",
+    "description": "Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up."
   }
 };
 

@@ -138,7 +138,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -790,3 +790,45 @@ a.tab { display: inline-flex; align-items: center; }
 .cc-zone.active .cc-time { color: var(--accent); }
 .cc-zone.flagged .cc-time { color: var(--danger); }
 .cc-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ===== Tournament bracket ===== */
+.bracket-panel { width: min(920px, 96vw); }
+.bk-setup { display: flex; flex-direction: column; gap: 12px; }
+.bk-setup .entries { min-height: 130px; }
+.bk-opts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.bk-result { margin-top: 16px; }
+.bk-note { text-align: center; }
+
+/* Knockout */
+.bk-knockout { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; align-items: stretch; }
+.bk-round { display: flex; flex-direction: column; justify-content: space-around; gap: 12px; min-width: 150px; }
+.bk-round-title { font-family: var(--mono); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+.bk-match { display: flex; flex-direction: column; border: 2px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.bk-slot { text-align: left; padding: 9px 11px; background: var(--panel-2); border: 0; border-bottom: 1px solid var(--line); color: var(--ink); cursor: pointer; font-size: 14px; font-family: var(--mono); }
+.bk-slot:last-child { border-bottom: 0; }
+.bk-slot:hover:not(:disabled) { background: var(--panel); }
+.bk-slot.won { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
+.bk-slot.bye { color: var(--muted); font-style: italic; }
+.bk-slot:disabled { cursor: default; }
+.bk-champion { text-align: center; font-family: var(--mono); font-weight: 800; font-size: 24px; color: var(--gold); margin-top: 16px; }
+.bk-champion-label { display: block; color: var(--muted); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+
+/* Standings + fixtures (league / groups) */
+.bk-standings { width: 100%; border-collapse: collapse; font-family: var(--mono); margin-bottom: 10px; }
+.bk-standings th, .bk-standings td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: center; font-size: 14px; }
+.bk-standings thead th { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.bk-standings .bk-team { text-align: left; }
+.bk-standings .bk-pts { font-weight: 800; color: var(--accent); }
+.bk-standings .bk-qualify td { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.bk-group { margin-bottom: 22px; }
+.bk-group-title { font-family: var(--mono); font-size: 15px; margin: 0 0 8px; color: var(--ink); }
+.bk-fixtures { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+.bk-fixture { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.bk-fx-name { font-size: 14px; }
+.bk-fixture > .bk-fx-name:first-child { text-align: right; }
+.bk-fx-name.win { font-weight: 800; color: var(--accent); }
+.bk-res-group { display: inline-flex; gap: 3px; }
+.bk-res { width: 30px; height: 30px; border: 2px solid var(--line); background: var(--panel-2); color: var(--ink-dim); border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: var(--mono); }
+.bk-res.sel.h, .bk-res.sel.a { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.bk-res.sel.d { background: var(--muted); color: var(--bg); border-color: var(--muted); }
+.bk-build { margin-top: 12px; }
