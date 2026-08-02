@@ -801,14 +801,15 @@ a.tab { display: inline-flex; align-items: center; }
 
 /* Knockout */
 .bk-knockout { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; align-items: stretch; }
-.bk-round { display: flex; flex-direction: column; justify-content: space-around; gap: 12px; min-width: 150px; }
+.bk-round { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
+.bk-round-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
 .bk-round-title { font-family: var(--mono); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
 .bk-match { display: flex; flex-direction: column; border: 2px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
 .bk-slot { text-align: left; padding: 9px 11px; background: var(--panel-2); border: 0; border-bottom: 1px solid var(--line); color: var(--ink); cursor: pointer; font-size: 14px; font-family: var(--mono); }
 .bk-slot:last-child { border-bottom: 0; }
 .bk-slot:hover:not(:disabled) { background: var(--panel); }
 .bk-slot.won { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
-.bk-slot.bye { color: var(--muted); font-style: italic; }
+.bk-slot.bye, .bk-slot.tbd { color: var(--muted); font-style: italic; }
 .bk-slot:disabled { cursor: default; }
 .bk-champion { text-align: center; font-family: var(--mono); font-weight: 800; font-size: 24px; color: var(--gold); margin-top: 16px; }
 .bk-champion-label { display: block; color: var(--muted); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }

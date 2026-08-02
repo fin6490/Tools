@@ -3,7 +3,7 @@
 //   league   — round-robin fixtures + a live standings table
 //   groups   — round-robin groups, top N qualify, then build a knockout
 // State (entrants, seeds, results) persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801n";
+import { getState, save } from "./storage.js?v=20260801o";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id" + Math.random().toString(36).slice(2));
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const r = new Uint32Array(1); crypto.getRandomValues(r); const j = r[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -107,10 +107,17 @@ export function initBracket(root) {
   }
 
   /* ================= KNOCKOUT ================= */
+  // Standard bracket seed order for a given size, e.g. 4 -> [1,4,3,2]. Placing
+  // entrants by seed means byes (the highest seed numbers) face the top seeds,
+  // so byes are spread out and never paired against each other.
+  function seedPositions(size) {
+    let s = [1, 2];
+    while (s.length < size) { const m = s.length * 2 + 1; const n = []; for (const x of s) n.push(x, m - x); s = n; }
+    return s;
+  }
   function koRounds(comp, results) {
     const size = nextPow2(comp.length);
-    let cur = comp.map((c) => c.id);
-    while (cur.length < size) cur.push(null);
+    let cur = seedPositions(size).map((seed) => (seed <= comp.length ? comp[seed - 1].id : null));
     const rounds = []; let r = 0;
     while (cur.length > 1) {
       const matches = [];
@@ -145,7 +152,10 @@ export function initBracket(root) {
       h.className = "bk-round-title";
       h.textContent = ri === rounds.length - 1 ? "Final" : rounds.length - ri === 2 ? "Semis" : `Round ${ri + 1}`;
       col.appendChild(h);
-      matches.forEach((m) => col.appendChild(koMatch(m, ri)));
+      const body = document.createElement("div");
+      body.className = "bk-round-body"; // spaced separately from the title so matches line up across rounds
+      matches.forEach((m) => body.appendChild(koMatch(m, ri)));
+      col.appendChild(body);
       wrap.appendChild(col);
     });
     resultEl.appendChild(wrap);
@@ -161,8 +171,11 @@ export function initBracket(root) {
     el.className = "bk-match";
     [m.a, m.b].forEach((id) => {
       const slot = document.createElement("button");
-      slot.className = "bk-slot" + (id && m.winner === id ? " won" : "") + (!id ? " bye" : "");
-      slot.textContent = id ? name(id) : "bye";
+      // A null slot in round 0 is a genuine bye; in later rounds it's a winner
+      // that hasn't been decided yet (TBD), so label the two cases differently.
+      const pending = !id && ri > 0;
+      slot.className = "bk-slot" + (id && m.winner === id ? " won" : "") + (!id ? (pending ? " tbd" : " bye") : "");
+      slot.textContent = id ? name(id) : pending ? "—" : "bye";
       slot.disabled = !id || !m.a || !m.b;
       if (id && m.a && m.b) slot.addEventListener("click", () => setKoWinner(ri, m.key, id));
       el.appendChild(slot);
@@ -172,6 +185,7 @@ export function initBracket(root) {
 
   /* ================= LEAGUE ================= */
   function renderLeague() {
+    resultEl.innerHTML = ""; // called directly on result clicks — avoid appending duplicates
     const ids = cfg().competitors.map((c) => c.id);
     const rr = roundRobin(ids);
     const fixtures = [];
@@ -182,6 +196,7 @@ export function initBracket(root) {
 
   /* ================= GROUPS ================= */
   function renderGroups() {
+    resultEl.innerHTML = ""; // called directly on result clicks — avoid appending duplicates
     const g = cfg();
     const count = Math.min(g.groupCount, Math.floor(g.competitors.length / 2) || 1);
     const groups = Array.from({ length: count }, () => []);
