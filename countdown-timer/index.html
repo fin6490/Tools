@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801o" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801p" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -486,6 +486,12 @@
           </div>
           <label id="bkGroupsOpt" class="score-setup-item" hidden>Groups <input type="number" id="bkGroupCount" class="setup-num" min="2" max="8" value="2" /></label>
           <label id="bkQualOpt" class="score-setup-item" hidden>Qualify <input type="number" id="bkQualify" class="setup-num" min="1" max="4" value="2" /></label>
+          <div id="bkPointsOpt" class="bk-points" hidden>
+            <span class="bk-points-label">Points</span>
+            <label class="score-setup-item">Win <input type="number" id="bkPtsWin" class="setup-num" min="0" max="20" value="3" /></label>
+            <label class="score-setup-item">Draw <input type="number" id="bkPtsDraw" class="setup-num" min="0" max="20" value="1" /></label>
+            <label class="score-setup-item">Loss <input type="number" id="bkPtsLoss" class="setup-num" min="0" max="20" value="0" /></label>
+          </div>
           <button id="bkGenerate" class="btn primary">Generate</button>
         </div>
       </div>
@@ -614,7 +620,7 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-<script type="module" src="/js/app.js?v=20260801o"></script>
+<script type="module" src="/js/app.js?v=20260801p"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

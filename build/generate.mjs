@@ -499,6 +499,12 @@ const PANELS = String.raw`  <!-- WHEEL -->
           </div>
           <label id="bkGroupsOpt" class="score-setup-item" hidden>Groups <input type="number" id="bkGroupCount" class="setup-num" min="2" max="8" value="2" /></label>
           <label id="bkQualOpt" class="score-setup-item" hidden>Qualify <input type="number" id="bkQualify" class="setup-num" min="1" max="4" value="2" /></label>
+          <div id="bkPointsOpt" class="bk-points" hidden>
+            <span class="bk-points-label">Points</span>
+            <label class="score-setup-item">Win <input type="number" id="bkPtsWin" class="setup-num" min="0" max="20" value="3" /></label>
+            <label class="score-setup-item">Draw <input type="number" id="bkPtsDraw" class="setup-num" min="0" max="20" value="1" /></label>
+            <label class="score-setup-item">Loss <input type="number" id="bkPtsLoss" class="setup-num" min="0" max="20" value="0" /></label>
+          </div>
           <button id="bkGenerate" class="btn primary">Generate</button>
         </div>
       </div>
