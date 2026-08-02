@@ -1,7 +1,7 @@
 // firstplayer.js — "who goes first?" Ruthlessly simple: an answer in one tap.
 // Count mode (default), Names mode, a full turn-order list, and a multi-touch
 // "everyone hold a finger" picker. All picks use crypto randomness.
-import { getState, save } from "./storage.js?v=20260801p";
+import { getState, save } from "./storage.js?v=20260801q";
 
 function randInt(n) {
   const range = 2 ** 32, limit = range - (range % n), a = new Uint32Array(1);

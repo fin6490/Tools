@@ -61,12 +61,38 @@ ${ld}`;
 }
 
 // Nav tabs (real links). `active` = the view for the current page, or null.
-function tabs(active) {
-  const items = TOOLS.map((t) => {
-    const on = t.view === active;
-    return `      <a class="tab${on ? " is-active" : ""}" data-view-btn="${t.view}" href="/${t.slug}/"${on ? ' aria-current="page"' : ""}>${t.nav}</a>`;
+// The tabs are clustered into two labelled groups: "Pick" (choose or randomise
+// something) and "Score & time" (keep score or run a clock). Order within each
+// group is the display order; the TOOLS array order still drives page/sitemap
+// generation. Slugs must match content.mjs.
+const TAB_GROUPS = [
+  { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
+  { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
+];
+const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
+
+// Render the grouped tab strip. `interactive` adds the router hooks
+// (data-view-btn / active state); the simple header on hub+legal pages omits
+// them since there is no app to soft-navigate.
+function tabGroups(active, interactive) {
+  const groups = TAB_GROUPS.map((g) => {
+    const items = g.slugs.map((slug) => {
+      const t = TOOL_BY_SLUG[slug];
+      if (!t) return "";
+      const on = interactive && t.view === active;
+      const attrs = interactive
+        ? ` data-view-btn="${t.view}"${on ? ' aria-current="page"' : ""}`
+        : "";
+      return `        <a class="tab${on ? " is-active" : ""}"${attrs} href="/${t.slug}/">${esc(t.nav)}</a>`;
+    }).join("\n");
+    return `      <div class="tab-group">\n        <span class="tab-group-label" aria-hidden="true">${esc(g.label)}</span>\n${items}\n      </div>`;
   }).join("\n");
-  return `<nav class="tabs" role="tablist" aria-label="Tools">\n${items}\n    </nav>`;
+  const role = interactive ? ' role="tablist"' : "";
+  return `<nav class="tabs"${role} aria-label="Tools">\n${groups}\n    </nav>`;
+}
+
+function tabs(active) {
+  return tabGroups(active, true);
 }
 
 const BRAND = `<a class="brand" href="/" aria-label="SpinDecks home">
@@ -111,9 +137,7 @@ function topbar(active) {
 function simpleHeader() {
   return `<header class="topbar topbar-simple">
     ${BRAND}
-    <nav class="tabs" aria-label="Tools">
-${TOOLS.map((t) => `      <a class="tab" href="/${t.slug}/">${t.nav}</a>`).join("\n")}
-    </nav>
+    ${tabGroups(null, false)}
   </header>`;
 }
 

@@ -88,7 +88,12 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 }
 .brand-tag { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.tabs { display: flex; gap: 6px; margin: 0 auto; }
+.tabs { display: flex; gap: 18px; margin: 0 auto; align-items: center; flex-wrap: wrap; justify-content: center; }
+.tab-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tab-group-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-right: 2px; white-space: nowrap;
+}
 .tab {
   border: 2px solid transparent; background: transparent; color: var(--ink-dim);
   padding: 7px 14px; border-radius: 9px; cursor: pointer;
@@ -516,7 +521,9 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
   /* Collapse the tip CTA to just the emoji so it doesn't crowd the bar. */
   .tip-top-label { display: none; }
   .tip-top { padding: 0 11px; }
-  .tabs { order: 3; flex-basis: 100%; margin: 0; flex-wrap: wrap; justify-content: center; gap: 4px; }
+  .tabs { order: 3; flex-basis: 100%; margin: 0; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  /* Give each group its own centred row so the labels stay readable. */
+  .tab-group { flex-basis: 100%; justify-content: center; gap: 4px; }
   .tab { padding: 7px 11px; font-size: 12px; }
   .view { padding: 12px; gap: 12px; }
   .panel { min-width: 0; }
