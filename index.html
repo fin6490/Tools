@@ -96,6 +96,7 @@
         <button id="menuBtn" class="icon-btn" title="More" aria-haspopup="true" aria-label="More options">⋯</button>
         <div id="menuPanel" class="menu-panel" hidden>
           <button id="installBtn" data-action="install" hidden>Install app</button>
+          <button id="greenBtn" data-action="greenscreen" title="Solid green background for OBS chroma key — best with fullscreen (G)">Green screen (chroma key)</button>
           <button data-action="support">SpinDecks Pro &amp; support</button>
           <button data-action="export">Export all (JSON)</button>
           <button data-action="import">Import (JSON)</button>
@@ -391,8 +392,8 @@
      entry script AND on every import in js/*.js — it MUST be identical
      everywhere (mismatched tokens would load duplicate module copies).
      Bump it whenever any JS changes:
-       grep -rl '?v=20260801f' index.html js | xargs sed -i 's/?v=20260801f/?v=NEWTOKEN/g' -->
-<script type="module" src="js/app.js?v=20260801f"></script>
+       grep -rl '?v=20260801g' index.html js | xargs sed -i 's/?v=20260801g/?v=NEWTOKEN/g' -->
+<script type="module" src="js/app.js?v=20260801g"></script>
 
 <!-- Register the service worker so SpinDecks loads and runs offline. -->
 <script>

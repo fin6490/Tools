@@ -1,16 +1,16 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801f";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801f";
-import * as sound from "./sound.js?v=20260801f";
-import { burst } from "./confetti.js?v=20260801f";
-import { initTimer } from "./timer.js?v=20260801f";
-import { initCounters } from "./counter.js?v=20260801f";
-import { initGroups } from "./groups.js?v=20260801f";
-import { initImages } from "./images.js?v=20260801f";
-import { initScores } from "./scores.js?v=20260801f";
-import { initSlots } from "./slots.js?v=20260801f";
-import { initNumbers } from "./numbers.js?v=20260801f";
-import { initSupport } from "./support.js?v=20260801f";
+import * as store from "./storage.js?v=20260801g";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801g";
+import * as sound from "./sound.js?v=20260801g";
+import { burst } from "./confetti.js?v=20260801g";
+import { initTimer } from "./timer.js?v=20260801g";
+import { initCounters } from "./counter.js?v=20260801g";
+import { initGroups } from "./groups.js?v=20260801g";
+import { initImages } from "./images.js?v=20260801g";
+import { initScores } from "./scores.js?v=20260801g";
+import { initSlots } from "./slots.js?v=20260801g";
+import { initNumbers } from "./numbers.js?v=20260801g";
+import { initSupport } from "./support.js?v=20260801g";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -349,6 +349,19 @@ document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement && app.dataset.present === "true") togglePresent(false);
 });
 
+/* ---------- Green screen (OBS chroma key) ---------- */
+function applyGreenLabel() {
+  const b = $("#greenBtn");
+  if (b) b.textContent = app.dataset.greenscreen === "true" ? "Green screen: on" : "Green screen (chroma key)";
+}
+function toggleGreen(force) {
+  const on = force !== undefined ? force : app.dataset.greenscreen !== "true";
+  app.dataset.greenscreen = on ? "true" : "false";
+  state.greenScreen = on;
+  store.save();
+  applyGreenLabel();
+}
+
 /* ---------- Keyboard ---------- */
 document.addEventListener("keydown", (e) => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
@@ -356,6 +369,8 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault(); doSpin();
   } else if (e.key.toLowerCase() === "f" && !typing) {
     togglePresent();
+  } else if (e.key.toLowerCase() === "g" && !typing) {
+    toggleGreen();
   } else if (e.key === "Escape") {
     const imagesModal = $("#imagesModal");
     if (!modal.hidden) modal.hidden = true;
@@ -378,6 +393,8 @@ menuPanel.addEventListener("click", (e) => {
   closeMenu();
   if (action === "install") {
     support.install();
+  } else if (action === "greenscreen") {
+    toggleGreen();
   } else if (action === "support") {
     support.open();
   } else if (action === "export") {
@@ -437,6 +454,8 @@ function loadFromHash() {
 }
 
 /* ---------- Init ---------- */
+app.dataset.greenscreen = state.greenScreen ? "true" : "false";
+applyGreenLabel();
 loadFromHash();
 populateWheelSelect();
 loadActiveWheelIntoEditor();
