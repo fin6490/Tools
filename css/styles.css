@@ -499,8 +499,10 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
   .view-wheel { grid-template-columns: 1fr; }
   .editor, .history { max-width: 640px; margin: 0 auto; width: 100%; }
   .stage { order: -1; }
-  /* The seven tabs stop fitting a single row here and would overlap the brand
-     (e.g. a half-screen window) — drop them onto their own centred row. */
+}
+/* The seven tabs plus the tip button stop fitting a single row before the brand
+   would clip — drop the tabs onto their own centred row well before that. */
+@media (max-width: 1240px) {
   .topbar { flex-wrap: wrap; row-gap: 10px; }
   .tabs { order: 3; flex-basis: 100%; margin: 0; justify-content: center; flex-wrap: wrap; }
   .topbar-actions { margin-left: auto; }
@@ -527,4 +529,94 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
 @media (prefers-reduced-motion: reduce) {
   .modal-card { animation: none; }
   * { scroll-behavior: auto; }
+}
+
+/* ===== Multi-page: links, tool prose, footer, hub, static pages ===== */
+
+/* Brand and tabs are now real links */
+.brand { text-decoration: none; color: inherit; }
+.tab { text-decoration: none; }
+a.tab { display: inline-flex; align-items: center; }
+.topbar-simple { }
+.tab[aria-current="page"], .tab.is-active {
+  color: var(--accent-ink); background: var(--accent); box-shadow: 0 3px 0 var(--accent-press);
+}
+
+/* --- Tool page SEO prose (below the app) --- */
+.tool-copy {
+  max-width: 760px; margin: 8px auto 56px; padding: 8px 20px 0;
+  color: var(--ink-dim); line-height: 1.6;
+}
+.tool-copy h1 {
+  font-family: var(--mono); text-transform: none; letter-spacing: -.5px;
+  font-size: clamp(24px, 4vw, 32px); color: var(--ink); margin: 0 0 12px;
+}
+.tool-copy h2 {
+  font-size: 18px; color: var(--ink); margin: 26px 0 10px; text-transform: none; letter-spacing: 0;
+}
+.tool-copy .tool-intro { font-size: 17px; color: var(--ink-dim); margin: 0 0 8px; }
+.tool-copy ol, .tool-copy ul { margin: 0; padding-left: 22px; }
+.tool-copy li { margin: 6px 0; }
+.tool-copy .tool-who { list-style: none; padding-left: 0; }
+.tool-copy .tool-who li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.tool-copy code { font-family: var(--mono); background: var(--panel-2); padding: 1px 6px; border-radius: 6px; font-size: .92em; }
+.tool-faq details {
+  border: 2px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--panel); margin: 8px 0; overflow: hidden;
+}
+.tool-faq summary {
+  cursor: pointer; padding: 12px 14px; font-weight: 700; color: var(--ink);
+  list-style: none;
+}
+.tool-faq summary::-webkit-details-marker { display: none; }
+.tool-faq summary::after { content: "+"; float: right; color: var(--muted); font-family: var(--mono); }
+.tool-faq details[open] summary::after { content: "–"; }
+.tool-faq p { margin: 0; padding: 0 14px 14px; }
+
+/* --- Footer --- */
+.site-footer {
+  border-top: 2px solid var(--line); background: var(--bg-2);
+  padding: 32px 20px 24px; margin-top: auto;
+}
+.footer-cols {
+  max-width: 1000px; margin: 0 auto; display: grid; gap: 24px;
+  grid-template-columns: 2fr 1fr 1fr;
+}
+.footer-col { display: flex; flex-direction: column; gap: 6px; }
+.footer-brand { font-family: var(--mono); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); margin: 0; }
+.footer-head { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.footer-col a { color: var(--ink-dim); text-decoration: none; font-size: 14px; }
+.footer-col a:hover { color: var(--accent); }
+.footer-legal { max-width: 1000px; margin: 24px auto 0; font-size: 12px; text-align: center; }
+
+/* --- Static + hub pages --- */
+.page-static { display: flex; flex-direction: column; min-height: 100vh; }
+.static-main { max-width: 820px; margin: 0 auto; padding: 32px 20px 48px; flex: 1; width: 100%; }
+.static-main h1 { font-family: var(--mono); font-size: clamp(26px, 5vw, 38px); color: var(--ink); margin: 0 0 16px; letter-spacing: -.5px; }
+.prose { color: var(--ink-dim); line-height: 1.65; }
+.prose h2 { color: var(--ink); font-size: 19px; margin: 26px 0 8px; text-transform: none; letter-spacing: 0; }
+.prose a { color: var(--accent); }
+.prose code { font-family: var(--mono); background: var(--panel-2); padding: 1px 6px; border-radius: 6px; }
+.lede { font-size: 18px; color: var(--ink); margin: 0 0 20px; }
+
+.hub-main { text-align: center; }
+.hub-main .lede { max-width: 640px; margin: 0 auto 28px; color: var(--ink-dim); }
+.hub-grid {
+  display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  text-align: left; margin-top: 8px;
+}
+.hub-card {
+  display: flex; flex-direction: column; gap: 6px; text-decoration: none;
+  background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
+  padding: 18px; box-shadow: 0 3px 0 rgba(0,0,0,.35); transition: transform .08s, border-color .12s, box-shadow .08s;
+}
+.hub-card:hover { border-color: var(--accent); }
+.hub-card:active { transform: translateY(3px); box-shadow: 0 0 0 rgba(0,0,0,.35); }
+.hub-card-title { font-family: var(--mono); font-weight: 800; font-size: 17px; color: var(--ink); }
+.hub-card-desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.notfound { text-align: center; }
+
+@media (max-width: 640px) {
+  .footer-cols { grid-template-columns: 1fr 1fr; }
+  .footer-col:first-child { grid-column: 1 / -1; }
 }

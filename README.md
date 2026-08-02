@@ -100,15 +100,23 @@ Several modes for any number of players:
 
 ## Run it
 
-It's a pure static site — no build step, no dependencies.
+It's a static site with a tiny, dependency-free page generator.
 
 ```bash
-# any static server works, e.g.
+# regenerate the pages after editing content or the shell
+node build/generate.mjs
+
+# then serve — any static server works
 npx http-server -p 8123
-# then open http://localhost:8123
+# and open http://localhost:8123
 ```
 
-Or just open `index.html` over a local server (ES modules need `http://`, not `file://`).
+Each tool has its own real URL (`/wheel-of-names`, `/darts-scoreboard`, …) so it
+can be found and indexed on its own. The pages are generated from
+`build/content.mjs` (metadata + copy) via `build/generate.mjs` (no runtime
+dependencies — Node built-ins only) and the output is committed, so the deploy
+is still a plain static upload with no build step in CI. ES modules need
+`http://`, not `file://`.
 
 ### Deploy free
 Push to any static host — **GitHub Pages, Netlify, Vercel, Cloudflare Pages**. No config needed.
