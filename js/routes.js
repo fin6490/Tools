@@ -49,6 +49,11 @@ export const ROUTES = {
     "slug": "scorepad",
     "title": "Score Pad — Free Board Game Score Keeper | SpinDecks",
     "description": "A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login."
+  },
+  "chessclock": {
+    "slug": "chess-clock",
+    "title": "Online Chess Clock — Free Multiplayer Game Timer | SpinDecks",
+    "description": "A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline."
   }
 };
 

@@ -138,7 +138,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -766,3 +766,27 @@ a.tab { display: inline-flex; align-items: center; }
 }
 .sp-keys button:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.4); }
 .sp-keys .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 2px 0 var(--accent-press); }
+
+/* ===== Chess clock ===== */
+.cc-panel { width: min(560px, 96vw); }
+.cc-setup { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.cc-setup .muted { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; }
+.cc-board { display: grid; gap: 10px; margin-bottom: 12px; }
+.cc-board[data-count="2"] { grid-template-columns: 1fr; }
+.cc-board[data-count="3"], .cc-board[data-count="4"],
+.cc-board[data-count="5"], .cc-board[data-count="6"] { grid-template-columns: 1fr 1fr; }
+/* Two players face each other across the phone. */
+.cc-board[data-count="2"] .cc-zone:first-child { transform: rotate(180deg); }
+.cc-zone {
+  min-height: 130px; border: 3px solid var(--line); border-radius: var(--radius);
+  background: var(--panel-2); color: var(--ink); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  transition: border-color .12s, background .12s;
+}
+.cc-zone.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, var(--panel-2)); }
+.cc-zone.flagged { opacity: .5; border-color: var(--danger); }
+.cc-name { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.cc-time { font-family: var(--mono); font-weight: 800; font-size: clamp(38px, 9vw, 62px); font-variant-numeric: tabular-nums; line-height: 1; }
+.cc-zone.active .cc-time { color: var(--accent); }
+.cc-zone.flagged .cc-time { color: var(--danger); }
+.cc-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }

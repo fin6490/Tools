@@ -1,20 +1,21 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801l";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801l";
-import * as sound from "./sound.js?v=20260801l";
-import { burst } from "./confetti.js?v=20260801l";
-import { initTimer } from "./timer.js?v=20260801l";
-import { initCounters } from "./counter.js?v=20260801l";
-import { initGroups } from "./groups.js?v=20260801l";
-import { initImages } from "./images.js?v=20260801l";
-import { initScores } from "./scores.js?v=20260801l";
-import { initSlots } from "./slots.js?v=20260801l";
-import { initNumbers } from "./numbers.js?v=20260801l";
-import { initDice } from "./dice.js?v=20260801l";
-import { initFirstPlayer } from "./firstplayer.js?v=20260801l";
-import { initScorepad } from "./scorepad.js?v=20260801l";
-import { initSupport } from "./support.js?v=20260801l";
-import { ROUTES } from "./routes.js?v=20260801l";
+import * as store from "./storage.js?v=20260801m";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801m";
+import * as sound from "./sound.js?v=20260801m";
+import { burst } from "./confetti.js?v=20260801m";
+import { initTimer } from "./timer.js?v=20260801m";
+import { initCounters } from "./counter.js?v=20260801m";
+import { initGroups } from "./groups.js?v=20260801m";
+import { initImages } from "./images.js?v=20260801m";
+import { initScores } from "./scores.js?v=20260801m";
+import { initSlots } from "./slots.js?v=20260801m";
+import { initNumbers } from "./numbers.js?v=20260801m";
+import { initDice } from "./dice.js?v=20260801m";
+import { initFirstPlayer } from "./firstplayer.js?v=20260801m";
+import { initScorepad } from "./scorepad.js?v=20260801m";
+import { initChessClock } from "./chessclock.js?v=20260801m";
+import { initSupport } from "./support.js?v=20260801m";
+import { ROUTES } from "./routes.js?v=20260801m";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -512,6 +513,7 @@ initNumbers(document);
 initDice(document);
 initFirstPlayer(document);
 initScorepad(document, { toast });
+initChessClock(document);
 slots = initSlots(document, { soundOn: () => state.soundOn });
 support = initSupport(document, { toast });
 initImages(document, {

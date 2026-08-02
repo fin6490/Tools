@@ -28,6 +28,7 @@ const DEFAULTS = () => ({
   dice: { notation: "", history: [] },
   firstPlayer: { mode: "count", count: 4, names: "" },
   scorepad: { games: [], activeId: null },
+  chessclock: { count: 2, baseMin: 5, incSec: 0 },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
