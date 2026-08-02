@@ -118,7 +118,21 @@ ${TOOLS.map((t) => `      <a class="tab" href="/${t.slug}/">${t.nav}</a>`).join(
 }
 
 function footer() {
-  const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${t.nav === "Numbers" ? "Random numbers" : t.nav === "Scores" ? "Darts scoreboard" : t.nav === "Teams" ? "Team generator" : t.nav === "Slots" ? "Slot reels" : t.nav === "Wheel" ? "Wheel of names" : t.nav === "Timer" ? "Countdown timer" : "Tally counter"}</a>`).join("\n        ");
+  const footerLabels = {
+    "wheel-of-names": "Wheel of names",
+    "random-team-generator": "Team generator",
+    "darts-scoreboard": "Darts scoreboard",
+    "random-number-generator": "Random numbers",
+    "countdown-timer": "Countdown timer",
+    "tally-counter": "Tally counter",
+    "slot-machine": "Slot reels",
+    "dice-roller": "Dice roller",
+    "first-player-picker": "First player",
+    "scorepad": "Score pad",
+    "chess-clock": "Chess clock",
+    "tournament-bracket": "Tournament bracket",
+  };
+  const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
     <div class="footer-cols">
       <div class="footer-col">
