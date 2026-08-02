@@ -63,6 +63,15 @@ body {
 }
 #app { min-height: 100%; display: flex; flex-direction: column; }
 
+/* Green Screen mode — solid chroma-key green behind everything, for OBS colour
+   keying. Panels/tools keep their own backgrounds so they stay visible; pair
+   with fullscreen (F) to key out just the active tool. */
+body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
+#app[data-greenscreen="true"],
+#app[data-greenscreen="true"] .topbar,
+#app[data-greenscreen="true"] .view,
+#app[data-greenscreen="true"] .stage { background: #00ff00 !important; }
+
 /* ===== Top bar ===== */
 .topbar {
   display: flex; align-items: center; gap: 16px;

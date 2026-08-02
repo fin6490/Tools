@@ -17,6 +17,7 @@ const DEFAULTS = () => ({
   soundOn: true,
   confettiOn: true,
   spinLen: 5,
+  greenScreen: false,
   activeWheelId: null,
   wheels: [DEFAULT_WHEEL()],
   counters: [{ id: crypto.randomUUID(), name: "Spins", value: 0, step: 1 }],
