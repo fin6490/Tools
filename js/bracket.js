@@ -3,7 +3,7 @@
 //   league   — round-robin fixtures + a live standings table
 //   groups   — round-robin groups, top N qualify, then build a knockout
 // State (entrants, seeds, results) persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801p";
+import { getState, save } from "./storage.js?v=20260801q";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id" + Math.random().toString(36).slice(2));
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const r = new Uint32Array(1); crypto.getRandomValues(r); const j = r[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
