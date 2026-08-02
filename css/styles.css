@@ -138,7 +138,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -656,4 +656,65 @@ a.tab { display: inline-flex; align-items: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .dice-total.pop { animation: none; }
+}
+
+/* Dice tumble while rolling (JS skips this for prefers-reduced-motion). */
+.die-chip.rolling { animation: die-tumble .18s steps(2) infinite; border-color: var(--accent); color: var(--ink); }
+@keyframes die-tumble {
+  0%   { transform: translateY(0) rotate(-6deg); }
+  100% { transform: translateY(-3px) rotate(6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .die-chip.rolling { animation: none; }
+}
+
+/* ===== First player picker ===== */
+.fp-panel { width: min(480px, 94vw); text-align: center; }
+.fp-panel .seg-toggle { display: flex; justify-content: center; margin: 0 auto 16px; }
+.fp-mode { margin-bottom: 12px; }
+.fp-q { color: var(--ink-dim); font-size: 16px; margin: 8px 0 12px; }
+.fp-step-row { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.fp-step-btn {
+  width: 64px; height: 64px; border-radius: 16px; border: 2px solid var(--line);
+  background: var(--panel-2); color: var(--ink); font-size: 34px; line-height: 1; cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0,0,0,.4); transition: transform .08s, box-shadow .08s, border-color .12s;
+}
+.fp-step-btn:hover { border-color: var(--accent); }
+.fp-step-btn:active { transform: translateY(3px); box-shadow: 0 0 0 rgba(0,0,0,.4); }
+.fp-num { font-family: var(--mono); font-weight: 800; font-size: 56px; min-width: 84px; font-variant-numeric: tabular-nums; }
+#fpNames .entries { min-height: 150px; }
+.fp-pick { display: block; width: 100%; padding: 16px; font-size: 18px; letter-spacing: 1px; margin-top: 4px; }
+.fp-order-btn { margin-top: 10px; }
+.fp-result { min-height: 60px; margin-top: 16px; }
+.fp-winner {
+  font-family: var(--mono); font-weight: 800; font-size: clamp(26px, 6vw, 42px);
+  color: var(--accent); line-height: 1.1; word-break: break-word;
+}
+.fp-winner.pop { animation: dice-pop .3s ease; }
+.fp-order-list { list-style: none; padding: 0; margin: 14px 0 0; text-align: left; }
+.fp-order-list li { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-sm); }
+.fp-order-list li:nth-child(odd) { background: var(--panel-2); }
+.fp-rank { font-family: var(--mono); font-weight: 800; color: var(--accent); min-width: 34px; }
+
+/* Touch picker pad */
+.fp-touchpad {
+  position: relative; height: min(46vh, 360px); border: 3px dashed var(--line);
+  border-radius: var(--radius); background: var(--panel-2); overflow: hidden;
+  display: grid; place-items: center; touch-action: none; user-select: none;
+}
+.fp-touchpad.counting { border-style: solid; border-color: var(--accent); }
+.fp-touch-hint { color: var(--muted); font-size: 15px; padding: 0 20px; text-align: center; pointer-events: none; }
+.fp-ring {
+  position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%;
+  border: 6px solid var(--ring); background: color-mix(in srgb, var(--ring) 22%, transparent);
+  pointer-events: none; transition: transform .25s ease, opacity .25s ease;
+}
+.fp-touchpad.counting .fp-ring { animation: fp-pulse .8s ease-in-out infinite; }
+.fp-ring.chosen { transform: scale(1.5); box-shadow: 0 0 0 6px color-mix(in srgb, var(--ring) 40%, transparent); animation: none; }
+.fp-ring.faded { opacity: .18; animation: none; }
+@keyframes fp-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-winner.pop { animation: none; }
+  .fp-touchpad.counting .fp-ring { animation: none; }
 }

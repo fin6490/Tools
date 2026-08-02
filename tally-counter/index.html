@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Free online tally counter. Run several counters at once, set custom steps, and reset with one tap. Ad-free, no sign-up, works offline on phone or desktop." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801j" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801k" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -116,6 +116,7 @@
       <a class="tab is-active" data-view-btn="counter" href="/tally-counter/" aria-current="page">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
+      <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -376,6 +377,39 @@
       </div>
     </section>
   </main>
+
+  <!-- FIRST PLAYER -->
+  <main class="view view-firstplayer" data-view-panel="firstplayer" hidden>
+    <section class="panel tool-panel fp-panel">
+      <div class="seg-toggle" role="tablist" aria-label="Mode">
+        <button class="seg is-active" data-fp-mode="count" role="tab">Count</button>
+        <button class="seg" data-fp-mode="names" role="tab">Names</button>
+        <button class="seg" data-fp-mode="touch" role="tab">Touch</button>
+      </div>
+
+      <div id="fpCount" class="fp-mode">
+        <p class="fp-q">How many players?</p>
+        <div class="fp-step-row">
+          <button id="fpMinus" class="fp-step-btn" aria-label="Fewer players">–</button>
+          <span id="fpNum" class="fp-num">4</span>
+          <button id="fpPlus" class="fp-step-btn" aria-label="More players">+</button>
+        </div>
+      </div>
+
+      <div id="fpNames" class="fp-mode" hidden>
+        <textarea id="fpNameList" class="entries" spellcheck="false" placeholder="One name per line…"></textarea>
+      </div>
+
+      <div id="fpTouch" class="fp-mode" hidden>
+        <div id="fpTouchPad" class="fp-touchpad"><p class="fp-touch-hint">Everyone press and hold a finger here</p></div>
+      </div>
+
+      <button id="fpPick" class="btn primary fp-pick">Pick first player</button>
+      <button id="fpOrder" class="mini-btn fp-order-btn">…and full turn order</button>
+      <div id="fpResult" class="fp-result" aria-live="polite"></div>
+      <ol id="fpOrderList" class="fp-order-list" aria-live="polite" hidden></ol>
+    </section>
+  </main>
   <div id="winnerModal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="winnerName">
       <p id="modalEyebrow" class="modal-eyebrow">Winner</p>
@@ -483,6 +517,7 @@
         <a href="/tally-counter/">Tally counter</a>
         <a href="/slot-machine/">Slot reels</a>
         <a href="/dice-roller/">Tally counter</a>
+        <a href="/first-player-picker/">Tally counter</a>
       </nav>
       <nav class="footer-col" aria-label="More">
         <p class="footer-head">More</p>
@@ -494,7 +529,7 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-<script type="module" src="/js/app.js?v=20260801j"></script>
+<script type="module" src="/js/app.js?v=20260801k"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

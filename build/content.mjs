@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801j",
+  token: "20260801k",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -244,6 +244,35 @@ export const TOOLS = [
       ["How do I roll D&D stats?", "Use <code>4d6kh3</code> — it rolls four six-sided dice and keeps the highest three, showing the dropped die struck through."],
       ["Is the roller fair?", "Yes. Every die uses <code>crypto.getRandomValues</code> with bias removed, so all faces are equally likely."],
       ["Does it work offline?", "Yes — once loaded it works with no connection, and your roll history is stored only in your browser."],
+    ],
+  },
+  {
+    slug: "first-player-picker",
+    view: "firstplayer",
+    nav: "First player",
+    title: "Who Goes First? Free First Player Picker | SpinDecks",
+    description:
+      "Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free.",
+    h1: "Who goes first?",
+    intro:
+      "Settle who goes first in seconds. Pick a random player by number or by name, generate a full random turn order, or use the multi-touch picker — everyone holds a finger on the screen and one is chosen at random. Built for phones at the table.",
+    steps: [
+      "Choose a mode: Count (just how many players), Names, or Touch.",
+      "In Count mode, set the number of players and tap “Pick first player”.",
+      "In Touch mode, everyone presses and holds a finger on the pad — after a moment, one is chosen.",
+      "Tap “…and full turn order” for a complete random running order.",
+    ],
+    whoFor: [
+      ["Board gamers", "decide the start player without arguing — or roll a full turn order for the round."],
+      ["Families & parties", "let the phone pick fairly with the finger-on-screen game everyone knows."],
+      ["Teachers", "pick who goes first for a game or activity in one tap."],
+    ],
+    faq: [
+      ["How does the finger picker work?", "Switch to Touch mode and everyone holds a finger on the pad. Once two or more are held, a short countdown runs and one finger is chosen at random. Lift and tap to go again."],
+      ["Can I use names instead of “Player 1”?", "Yes — switch to Names mode, enter one name per line, and the picker chooses a name. Your list is saved for next time."],
+      ["Can it give a full turn order?", "Yes — tap “…and full turn order” for a complete random running order, not just the first player."],
+      ["Is it fair?", "Yes. Every pick uses your browser’s cryptographic random source, so each player is equally likely."],
+      ["Does it work on a phone?", "It’s designed for phones — big buttons, one-handed, and the touch picker uses multi-touch. It works on desktop too via Count and Names modes."],
     ],
   },
 ];

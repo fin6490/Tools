@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks</title>
-<meta name="description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
+<title>Who Goes First? Free First Player Picker | SpinDecks</title>
+<meta name="description" content="Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/countdown-timer/" />
+<link rel="canonical" href="https://spindecks.app/first-player-picker/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks" />
-<meta property="og:description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
-<meta property="og:url" content="https://spindecks.app/countdown-timer/" />
+<meta property="og:title" content="Who Goes First? Free First Player Picker | SpinDecks" />
+<meta property="og:description" content="Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free." />
+<meta property="og:url" content="https://spindecks.app/first-player-picker/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Countdown Timer — Free Classroom &amp; Stream Timer | SpinDecks" />
-<meta name="twitter:description" content="A big, clear countdown timer for lessons, tasks and streams. Quick presets, custom times, stopwatch mode and an optional end beep. Free, ad-free, no login." />
+<meta name="twitter:title" content="Who Goes First? Free First Player Picker | SpinDecks" />
+<meta name="twitter:description" content="Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260801k" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Countdown timer",
-  "url": "https://spindecks.app/countdown-timer/",
+  "name": "Who goes first?",
+  "url": "https://spindecks.app/first-player-picker/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is the timer accurate?",
+      "name": "How does the finger picker work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — it’s timestamp-based, so it stays accurate even if the tab is in the background, with no drift."
+        "text": "Switch to Touch mode and everyone holds a finger on the pad. Once two or more are held, a short countdown runs and one finger is chosen at random. Lift and tap to go again."
       }
     },
     {
       "@type": "Question",
-      "name": "Can the class see it from a distance?",
+      "name": "Can I use names instead of “Player 1”?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. The clock is deliberately huge, and fullscreen mode makes it fill the screen for projectors."
+        "text": "Yes — switch to Names mode, enter one name per line, and the picker chooses a name. Your list is saved for next time."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it beep when it finishes?",
+      "name": "Can it give a full turn order?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It can — there’s an optional end beep you can switch on or off."
+        "text": "Yes — tap “…and full turn order” for a complete random running order, not just the first player."
       }
     },
     {
       "@type": "Question",
-      "name": "Is there a stopwatch too?",
+      "name": "Is it fair?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — switch to Stopwatch mode to count up from zero."
+        "text": "Yes. Every pick uses your browser’s cryptographic random source, so each player is equally likely."
       }
     },
     {
       "@type": "Question",
-      "name": "Do I need to install anything?",
+      "name": "Does it work on a phone?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. It runs in your browser, free and ad-free, and works offline after the first visit."
+        "text": "It’s designed for phones — big buttons, one-handed, and the touch picker uses multi-touch. It works on desktop too via Count and Names modes."
       }
     }
   ]
@@ -99,7 +99,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="timer">
+<div id="app" data-view="firstplayer">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -112,11 +112,11 @@
       <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
       <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Scores</a>
       <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
-      <a class="tab is-active" data-view-btn="timer" href="/countdown-timer/" aria-current="page">Timer</a>
+      <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
       <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
       <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
-      <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
+      <a class="tab is-active" data-view-btn="firstplayer" href="/first-player-picker/" aria-current="page">First player</a>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -248,7 +248,7 @@
   </main>
 
   <!-- TIMER -->
-  <main class="view view-timer" data-view-panel="timer">
+  <main class="view view-timer" data-view-panel="timer" hidden>
     <section class="panel tool-panel timer-panel">
       <div class="seg-toggle" role="tablist" aria-label="Timer mode">
         <button class="seg is-active" data-timer-mode="countdown" role="tab">Countdown</button>
@@ -379,7 +379,7 @@
   </main>
 
   <!-- FIRST PLAYER -->
-  <main class="view view-firstplayer" data-view-panel="firstplayer" hidden>
+  <main class="view view-firstplayer" data-view-panel="firstplayer">
     <section class="panel tool-panel fp-panel">
       <div class="seg-toggle" role="tablist" aria-label="Mode">
         <button class="seg is-active" data-fp-mode="count" role="tab">Count</button>
@@ -462,42 +462,42 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Countdown timer</h1>
-      <p class="tool-intro">A big, clear countdown timer for lessons, tasks, games and streams. Pick a preset or set a custom time, and watch a giant, readable clock count down — with an optional beep when it hits zero. There’s a stopwatch mode too.</p>
+      <h1>Who goes first?</h1>
+      <p class="tool-intro">Settle who goes first in seconds. Pick a random player by number or by name, generate a full random turn order, or use the multi-touch picker — everyone holds a finger on the screen and one is chosen at random. Built for phones at the table.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Choose a preset (1, 3, 5, 10, 15 minutes) or type a custom time.</li>
-        <li>Press Start — the clock is large enough to read from across a room.</li>
-        <li>Pause, resume or reset at any time; switch to Stopwatch to count up instead.</li>
-        <li>Go fullscreen for a distraction-free display on a projector or second screen.</li>
+        <li>Choose a mode: Count (just how many players), Names, or Touch.</li>
+        <li>In Count mode, set the number of players and tap “Pick first player”.</li>
+        <li>In Touch mode, everyone presses and holds a finger on the pad — after a moment, one is chosen.</li>
+        <li>Tap “…and full turn order” for a complete random running order.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Teachers:</strong> time a starter, a task or a test with a clock the whole class can see from the back.</li>
-        <li><strong>Streamers:</strong> run a “starting soon” or break countdown, in fullscreen or on a green-screen background for OBS.</li>
-        <li><strong>Anyone:</strong> time a workout, a presentation or a game round without hunting for your phone.</li>
+        <li><strong>Board gamers:</strong> decide the start player without arguing — or roll a full turn order for the round.</li>
+        <li><strong>Families & parties:</strong> let the phone pick fairly with the finger-on-screen game everyone knows.</li>
+        <li><strong>Teachers:</strong> pick who goes first for a game or activity in one tap.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>Is the timer accurate?</summary>
-          <p>Yes — it’s timestamp-based, so it stays accurate even if the tab is in the background, with no drift.</p>
+          <summary>How does the finger picker work?</summary>
+          <p>Switch to Touch mode and everyone holds a finger on the pad. Once two or more are held, a short countdown runs and one finger is chosen at random. Lift and tap to go again.</p>
         </details>
         <details>
-          <summary>Can the class see it from a distance?</summary>
-          <p>Yes. The clock is deliberately huge, and fullscreen mode makes it fill the screen for projectors.</p>
+          <summary>Can I use names instead of “Player 1”?</summary>
+          <p>Yes — switch to Names mode, enter one name per line, and the picker chooses a name. Your list is saved for next time.</p>
         </details>
         <details>
-          <summary>Does it beep when it finishes?</summary>
-          <p>It can — there’s an optional end beep you can switch on or off.</p>
+          <summary>Can it give a full turn order?</summary>
+          <p>Yes — tap “…and full turn order” for a complete random running order, not just the first player.</p>
         </details>
         <details>
-          <summary>Is there a stopwatch too?</summary>
-          <p>Yes — switch to Stopwatch mode to count up from zero.</p>
+          <summary>Is it fair?</summary>
+          <p>Yes. Every pick uses your browser’s cryptographic random source, so each player is equally likely.</p>
         </details>
         <details>
-          <summary>Do I need to install anything?</summary>
-          <p>No. It runs in your browser, free and ad-free, and works offline after the first visit.</p>
+          <summary>Does it work on a phone?</summary>
+          <p>It’s designed for phones — big buttons, one-handed, and the touch picker uses multi-touch. It works on desktop too via Count and Names modes.</p>
         </details>
       </div>
     </section>

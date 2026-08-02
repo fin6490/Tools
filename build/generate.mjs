@@ -378,6 +378,39 @@ const PANELS = String.raw`  <!-- WHEEL -->
         <ol id="diceHistory" class="history-list" aria-live="polite"></ol>
       </div>
     </section>
+  </main>
+
+  <!-- FIRST PLAYER -->
+  <main class="view view-firstplayer" data-view-panel="firstplayer" hidden>
+    <section class="panel tool-panel fp-panel">
+      <div class="seg-toggle" role="tablist" aria-label="Mode">
+        <button class="seg is-active" data-fp-mode="count" role="tab">Count</button>
+        <button class="seg" data-fp-mode="names" role="tab">Names</button>
+        <button class="seg" data-fp-mode="touch" role="tab">Touch</button>
+      </div>
+
+      <div id="fpCount" class="fp-mode">
+        <p class="fp-q">How many players?</p>
+        <div class="fp-step-row">
+          <button id="fpMinus" class="fp-step-btn" aria-label="Fewer players">–</button>
+          <span id="fpNum" class="fp-num">4</span>
+          <button id="fpPlus" class="fp-step-btn" aria-label="More players">+</button>
+        </div>
+      </div>
+
+      <div id="fpNames" class="fp-mode" hidden>
+        <textarea id="fpNameList" class="entries" spellcheck="false" placeholder="One name per line…"></textarea>
+      </div>
+
+      <div id="fpTouch" class="fp-mode" hidden>
+        <div id="fpTouchPad" class="fp-touchpad"><p class="fp-touch-hint">Everyone press and hold a finger here</p></div>
+      </div>
+
+      <button id="fpPick" class="btn primary fp-pick">Pick first player</button>
+      <button id="fpOrder" class="mini-btn fp-order-btn">…and full turn order</button>
+      <div id="fpResult" class="fp-result" aria-live="polite"></div>
+      <ol id="fpOrderList" class="fp-order-list" aria-live="polite" hidden></ol>
+    </section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

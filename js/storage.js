@@ -26,6 +26,7 @@ const DEFAULTS = () => ({
   slots: { count: 3, sources: [], history: [] },
   numbers: { min: 1, max: 100, count: 1, unique: false },
   dice: { notation: "", history: [] },
+  firstPlayer: { mode: "count", count: 4, names: "" },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
