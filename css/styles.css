@@ -138,7 +138,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 /* ===== Views / layout ===== */
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
-.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer { place-items: start center; }
+.view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad { place-items: start center; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -718,3 +718,51 @@ a.tab { display: inline-flex; align-items: center; }
   .fp-winner.pop { animation: none; }
   .fp-touchpad.counting .fp-ring { animation: none; }
 }
+
+/* ===== Score pad ===== */
+.scorepad-panel { width: min(920px, 96vw); }
+.sp-toolbar, .sp-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.sp-toolbar select {
+  flex: 1 1 150px; min-width: 0; background: var(--panel-2); color: var(--ink);
+  border: 2px solid var(--line); border-radius: var(--radius-sm); padding: 9px 10px; font-size: 14px; font-weight: 600;
+}
+.sp-table-wrap { overflow: auto; max-height: 62vh; border: 2px solid var(--line); border-radius: var(--radius-sm); }
+.sp-table { border-collapse: separate; border-spacing: 0; font-family: var(--mono); width: max-content; min-width: 100%; }
+.sp-table th, .sp-table td { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.sp-table thead th { position: sticky; top: 0; z-index: 2; background: var(--bg-2); }
+.sp-table tfoot th, .sp-table tfoot td { position: sticky; bottom: 0; z-index: 2; background: var(--bg-2); }
+.sp-rowlabel, .sp-corner { position: sticky; left: 0; z-index: 1; background: var(--bg-2); }
+.sp-corner { z-index: 4; min-width: 46px; }
+.sp-table thead .sp-playerhead { z-index: 3; }
+.sp-table tfoot .sp-rowlabel { z-index: 4; }
+.sp-rowlabel { color: var(--muted); font-size: 13px; padding: 0 10px; text-align: center; white-space: nowrap; }
+.sp-playerhead { min-width: 74px; padding: 4px; position: relative; }
+.sp-playername { width: 66px; background: transparent; border: 0; color: var(--ink); text-align: center; font-weight: 700; font-size: 13px; padding: 6px 2px; }
+.sp-playername:focus { outline: 1px solid var(--accent); border-radius: 5px; }
+.sp-remove {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 5px;
+  border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1;
+}
+.sp-remove:hover { color: var(--danger); }
+.sp-cell { min-width: 58px; height: 46px; text-align: center; cursor: pointer; font-size: 18px; color: var(--ink); }
+.sp-cell:hover { background: var(--panel); }
+.sp-total { min-width: 58px; height: 46px; text-align: center; font-weight: 800; font-size: 18px; color: var(--ink); }
+.sp-total.leader { color: var(--accent-ink); background: var(--accent); }
+
+/* Custom keypad (bottom sheet) */
+.sp-keypad {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 70;
+  background: var(--panel); border-top: 2px solid var(--line); padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 34px rgba(0,0,0,.45);
+}
+.sp-keypad-head { display: flex; justify-content: space-between; align-items: center; max-width: 420px; margin: 0 auto 10px; }
+.sp-keypad-who { color: var(--muted); font-size: 14px; font-family: var(--mono); }
+.sp-keypad-value { font-family: var(--mono); font-weight: 800; font-size: 30px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.sp-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 420px; margin: 0 auto; }
+.sp-keys button {
+  height: 52px; font-size: 20px; font-family: var(--mono); font-weight: 700;
+  border: 2px solid var(--line); background: var(--panel-2); color: var(--ink);
+  border-radius: 10px; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.4);
+}
+.sp-keys button:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,.4); }
+.sp-keys .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 2px 0 var(--accent-press); }
