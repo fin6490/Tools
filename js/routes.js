@@ -39,6 +39,11 @@ export const ROUTES = {
     "slug": "dice-roller",
     "title": "Dice Roller — Roll 3d6, d20 & Any Dice Notation | SpinDecks",
     "description": "Free online dice roller with standard notation: 3d6+2, 4d6kh3, 2d20kh1. Roll any dice for RPGs and board games. Fair, fast, ad-free, works offline."
+  },
+  "firstplayer": {
+    "slug": "first-player-picker",
+    "title": "Who Goes First? Free First Player Picker | SpinDecks",
+    "description": "Decide who goes first in seconds. Tap for a random player, or generate a full random turn order. Multi-touch “finger” picker for phones at the table. Free, ad-free."
   }
 };
 

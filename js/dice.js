@@ -1,7 +1,7 @@
 // dice.js — a dice roller with standard notation (3d6+2, 4d6kh3, 2d20kl1, d%).
 // No eval — a real parser. Rolls use crypto.getRandomValues for fair, uniform
 // results. History persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801j";
+import { getState, save } from "./storage.js?v=20260801k";
 
 const MAX_DICE = 100; // per term
 const MAX_TERMS = 20;
@@ -129,22 +129,18 @@ export function initDice(root) {
     record(notation, total);
   }
 
-  function chip(value, kept) {
-    const c = document.createElement("span");
-    c.className = "die-chip" + (kept ? "" : " dropped");
-    c.textContent = value;
-    return c;
-  }
+  let rollGen = 0; // guards against overlapping animations
 
   function renderResult(notation, total, terms) {
+    const gen = ++rollGen;
     resultEl.innerHTML = "";
     const totalEl = document.createElement("div");
     totalEl.className = "dice-total";
-    totalEl.textContent = total;
     resultEl.appendChild(totalEl);
 
     const breakdown = document.createElement("div");
     breakdown.className = "dice-breakdown";
+    const anim = []; // { el, sides, value, kept } per die, for the tumble
     terms.forEach((t, idx) => {
       if (idx > 0 || t.sign < 0) {
         const op = document.createElement("span");
@@ -160,13 +156,42 @@ export function initDice(root) {
       } else {
         const grp = document.createElement("span");
         grp.className = "dice-group";
-        t.dice.forEach((d) => grp.appendChild(chip(d.value, d.kept)));
+        t.dice.forEach((d) => {
+          const c = document.createElement("span");
+          c.className = "die-chip";
+          c.textContent = d.value;
+          grp.appendChild(c);
+          anim.push({ el: c, sides: t.sides, value: d.value, kept: d.kept });
+        });
         breakdown.appendChild(grp);
       }
     });
     resultEl.appendChild(breakdown);
-    // Brief pop (CSS honours prefers-reduced-motion).
-    totalEl.classList.remove("pop"); void totalEl.offsetWidth; totalEl.classList.add("pop");
+
+    const settle = () => {
+      anim.forEach((d) => {
+        d.el.textContent = d.value;
+        d.el.classList.toggle("dropped", !d.kept);
+        d.el.classList.remove("rolling");
+      });
+      totalEl.textContent = total;
+      totalEl.classList.remove("pop"); void totalEl.offsetWidth; totalEl.classList.add("pop");
+    };
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !anim.length) { settle(); return; }
+
+    // Brief tumble: cycle random faces, then settle on the real result.
+    anim.forEach((d) => d.el.classList.add("rolling"));
+    const duration = 600, start = performance.now();
+    const frame = () => {
+      if (gen !== rollGen) return; // a newer roll superseded this one
+      if (performance.now() - start >= duration) { settle(); return; }
+      anim.forEach((d) => { d.el.textContent = 1 + Math.floor(Math.random() * d.sides); });
+      totalEl.textContent = anim.reduce((s, d) => s + Number(d.el.textContent), 0);
+      setTimeout(frame, 55);
+    };
+    frame();
   }
 
   function record(notation, total) {

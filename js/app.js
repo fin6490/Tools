@@ -1,18 +1,19 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260801j";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801j";
-import * as sound from "./sound.js?v=20260801j";
-import { burst } from "./confetti.js?v=20260801j";
-import { initTimer } from "./timer.js?v=20260801j";
-import { initCounters } from "./counter.js?v=20260801j";
-import { initGroups } from "./groups.js?v=20260801j";
-import { initImages } from "./images.js?v=20260801j";
-import { initScores } from "./scores.js?v=20260801j";
-import { initSlots } from "./slots.js?v=20260801j";
-import { initNumbers } from "./numbers.js?v=20260801j";
-import { initDice } from "./dice.js?v=20260801j";
-import { initSupport } from "./support.js?v=20260801j";
-import { ROUTES } from "./routes.js?v=20260801j";
+import * as store from "./storage.js?v=20260801k";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260801k";
+import * as sound from "./sound.js?v=20260801k";
+import { burst } from "./confetti.js?v=20260801k";
+import { initTimer } from "./timer.js?v=20260801k";
+import { initCounters } from "./counter.js?v=20260801k";
+import { initGroups } from "./groups.js?v=20260801k";
+import { initImages } from "./images.js?v=20260801k";
+import { initScores } from "./scores.js?v=20260801k";
+import { initSlots } from "./slots.js?v=20260801k";
+import { initNumbers } from "./numbers.js?v=20260801k";
+import { initDice } from "./dice.js?v=20260801k";
+import { initFirstPlayer } from "./firstplayer.js?v=20260801k";
+import { initSupport } from "./support.js?v=20260801k";
+import { ROUTES } from "./routes.js?v=20260801k";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -508,6 +509,7 @@ counters = initCounters(document);
 initScores(document, { toast });
 initNumbers(document);
 initDice(document);
+initFirstPlayer(document);
 slots = initSlots(document, { soundOn: () => state.soundOn });
 support = initSupport(document, { toast });
 initImages(document, {
