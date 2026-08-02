@@ -29,7 +29,7 @@ const DEFAULTS = () => ({
   firstPlayer: { mode: "count", count: 4, names: "" },
   scorepad: { games: [], activeId: null },
   chessclock: { count: 2, baseMin: 5, incSec: 0 },
-  bracket: { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, competitors: [], ko: {}, league: {}, groups: {} },
+  bracket: { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, points: { win: 3, draw: 1, loss: 0 }, competitors: [], ko: {}, league: {}, groups: {} },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,

@@ -2,7 +2,7 @@
 // Players are columns, rounds are rows, totals stick to the bottom. Built for
 // a phone at the table: a big custom keypad, undo, screen wake-lock, and
 // multiple saved games. Everything persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801o";
+import { getState, save } from "./storage.js?v=20260801p";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id" + Math.random().toString(36).slice(2));
 

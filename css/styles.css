@@ -796,6 +796,9 @@ a.tab { display: inline-flex; align-items: center; }
 .bk-setup { display: flex; flex-direction: column; gap: 12px; }
 .bk-setup .entries { min-height: 130px; }
 .bk-opts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.bk-points { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.bk-points-label { font-family: var(--mono); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.bk-points .setup-num { width: 3.2em; }
 .bk-result { margin-top: 16px; }
 .bk-note { text-align: center; }
 

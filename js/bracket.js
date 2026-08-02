@@ -3,7 +3,7 @@
 //   league   — round-robin fixtures + a live standings table
 //   groups   — round-robin groups, top N qualify, then build a knockout
 // State (entrants, seeds, results) persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801o";
+import { getState, save } from "./storage.js?v=20260801p";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id" + Math.random().toString(36).slice(2));
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const r = new Uint32Array(1); crypto.getRandomValues(r); const j = r[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -23,16 +23,17 @@ function roundRobin(ids) {
   return rounds;
 }
 
-// Standings from fixtures {key,a,b} + results {key:"H"|"D"|"A"}. 3/1/0 points.
-function standings(ids, fixtures, results) {
+// Standings from fixtures {key,a,b} + results {key:"H"|"D"|"A"}. Points per
+// win/draw/loss are configurable (defaults to 3/1/0).
+function standings(ids, fixtures, results, pts = { win: 3, draw: 1, loss: 0 }) {
   const t = new Map(ids.map((id) => [id, { id, P: 0, W: 0, D: 0, L: 0, Pts: 0 }]));
   fixtures.forEach(({ key, a, b }) => {
     const res = results[key];
     if (!res || !a || !b) return;
     const ra = t.get(a), rb = t.get(b); ra.P++; rb.P++;
-    if (res === "H") { ra.W++; rb.L++; ra.Pts += 3; }
-    else if (res === "A") { rb.W++; ra.L++; rb.Pts += 3; }
-    else { ra.D++; rb.D++; ra.Pts++; rb.Pts++; }
+    if (res === "H") { ra.W++; rb.L++; ra.Pts += pts.win; rb.Pts += pts.loss; }
+    else if (res === "A") { rb.W++; ra.L++; rb.Pts += pts.win; ra.Pts += pts.loss; }
+    else { ra.D++; rb.D++; ra.Pts += pts.draw; rb.Pts += pts.draw; }
   });
   return [...t.values()].sort((x, y) => y.Pts - x.Pts || y.W - x.W);
 }
@@ -48,12 +49,17 @@ export function initBracket(root) {
   const qualOpt = root.querySelector("#bkQualOpt");
   const groupCountEl = root.querySelector("#bkGroupCount");
   const qualifyEl = root.querySelector("#bkQualify");
+  const pointsOpt = root.querySelector("#bkPointsOpt");
+  const ptsWinEl = root.querySelector("#bkPtsWin");
+  const ptsDrawEl = root.querySelector("#bkPtsDraw");
+  const ptsLossEl = root.querySelector("#bkPtsLoss");
   const genBtn = root.querySelector("#bkGenerate");
   const resultEl = root.querySelector("#bkResult");
 
   const cfg = () => {
     const s = getState();
-    if (!s.bracket) s.bracket = { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, competitors: [], ko: {}, league: {}, groups: {} };
+    if (!s.bracket) s.bracket = { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, points: { win: 3, draw: 1, loss: 0 }, competitors: [], ko: {}, league: {}, groups: {} };
+    if (!s.bracket.points) s.bracket.points = { win: 3, draw: 1, loss: 0 };
     return s.bracket;
   };
   const name = (id) => (cfg().competitors.find((c) => c.id === id) || {}).name || "—";
@@ -62,6 +68,7 @@ export function initBracket(root) {
   const c = cfg();
   entrantsEl.value = c.entrants || "";
   groupCountEl.value = c.groupCount; qualifyEl.value = c.qualify;
+  ptsWinEl.value = c.points.win; ptsDrawEl.value = c.points.draw; ptsLossEl.value = c.points.loss;
   applyFormat(c.format);
   applySeed(c.seed);
   render();
@@ -71,6 +78,7 @@ export function initBracket(root) {
     formatBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.bkFormat === f));
     groupsOpt.hidden = f !== "groups";
     qualOpt.hidden = f !== "groups";
+    pointsOpt.hidden = f === "knockout"; // points only matter for league/groups standings
     save();
   }
   function applySeed(s) {
@@ -83,6 +91,10 @@ export function initBracket(root) {
   entrantsEl.addEventListener("input", () => { cfg().entrants = entrantsEl.value; save(); });
   groupCountEl.addEventListener("input", () => { cfg().groupCount = Math.max(2, Math.min(8, +groupCountEl.value || 2)); save(); });
   qualifyEl.addEventListener("input", () => { cfg().qualify = Math.max(1, Math.min(4, +qualifyEl.value || 1)); save(); });
+  const ptsClamp = (v) => Math.max(0, Math.min(20, Math.round(+v || 0)));
+  [[ptsWinEl, "win"], [ptsDrawEl, "draw"], [ptsLossEl, "loss"]].forEach(([el, k]) => {
+    el.addEventListener("input", () => { cfg().points[k] = ptsClamp(el.value); save(); render(); });
+  });
 
   // ---- generate (freeze entrants + reset results) ----
   genBtn.addEventListener("click", () => {
@@ -218,7 +230,7 @@ export function initBracket(root) {
       box.appendChild(table);
       box.appendChild(fixtureList(fixtures, g.groups.results, (key, res) => { g.groups.results[key] = res; save(); renderGroups(); }, "g" + gi));
       resultEl.appendChild(box);
-      standings(ids, fixtures, g.groups.results).slice(0, g.qualify).forEach((row, pos) => qualifiers.push({ id: row.id, pos, gi }));
+      standings(ids, fixtures, g.groups.results, g.points).slice(0, g.qualify).forEach((row, pos) => qualifiers.push({ id: row.id, pos, gi }));
     });
 
     // Build-knockout button (seeds qualifiers so group winners are separated).
@@ -240,7 +252,7 @@ export function initBracket(root) {
     table.className = "bk-standings";
     table.innerHTML = "<thead><tr><th>#</th><th class='bk-team'>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>";
     const tb = document.createElement("tbody");
-    standings(ids, fixtures, results).forEach((row, i) => {
+    standings(ids, fixtures, results, cfg().points).forEach((row, i) => {
       const tr = document.createElement("tr");
       if (qualify && i < qualify) tr.className = "bk-qualify";
       tr.innerHTML = `<td>${i + 1}</td><td class='bk-team'>${escapeHtml(name(row.id))}</td><td>${row.P}</td><td>${row.W}</td><td>${row.D}</td><td>${row.L}</td><td class='bk-pts'>${row.Pts}</td>`;

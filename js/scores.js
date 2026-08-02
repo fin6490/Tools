@@ -5,8 +5,8 @@
 //   rounds  — fixed number of rounds, highest total wins
 //   darts   — X01 (501/301/701) countdown with bust + double-out
 //   cricket — standard darts cricket (20..15 + bull), marks + points
-import { getState, save } from "./storage.js?v=20260801o";
-import { burst } from "./confetti.js?v=20260801o";
+import { getState, save } from "./storage.js?v=20260801p";
+import { burst } from "./confetti.js?v=20260801p";
 
 const CRICKET_TARGETS = [20, 19, 18, 17, 16, 15, "B"];
 const CRICKET_VALUE = { 20: 20, 19: 19, 18: 18, 17: 17, 16: 16, 15: 15, B: 25 };
