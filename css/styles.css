@@ -587,13 +587,26 @@ a.tab { display: inline-flex; align-items: center; }
 }
 .footer-cols {
   max-width: 1000px; margin: 0 auto; display: grid; gap: 24px;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1.7fr 1fr 1fr 1.7fr;
 }
 .footer-col { display: flex; flex-direction: column; gap: 6px; }
 .footer-brand { font-family: var(--mono); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); margin: 0; }
 .footer-head { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
 .footer-col a { color: var(--ink-dim); text-decoration: none; font-size: 14px; }
 .footer-col a:hover { color: var(--accent); }
+
+/* Footer "Ideas" suggestion box */
+.suggest-label { font-size: 13px; line-height: 1.4; margin-bottom: 2px; }
+.suggest-row { display: flex; gap: 6px; margin-top: 2px; }
+.suggest-input {
+  flex: 1; min-width: 0; background: var(--panel-2); color: var(--ink);
+  border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  font-size: 14px; font-family: inherit;
+}
+.suggest-input:focus { outline: none; border-color: var(--accent); }
+.suggest-input::placeholder { color: var(--muted); }
+.suggest-send { flex: none; padding: 8px 14px; font-size: 13px; }
+.suggest-note { font-size: 13px; margin-top: 8px; }
 .footer-legal { max-width: 1000px; margin: 24px auto 0; font-size: 12px; text-align: center; }
 
 /* --- Static + hub pages --- */
@@ -626,6 +639,7 @@ a.tab { display: inline-flex; align-items: center; }
 @media (max-width: 640px) {
   .footer-cols { grid-template-columns: 1fr 1fr; }
   .footer-col:first-child { grid-column: 1 / -1; }
+  .footer-suggest { grid-column: 1 / -1; }
 }
 
 /* ===== Dice roller ===== */

@@ -1,7 +1,7 @@
 // dice.js — a dice roller with standard notation (3d6+2, 4d6kh3, 2d20kl1, d%).
 // No eval — a real parser. Rolls use crypto.getRandomValues for fair, uniform
 // results. History persists in localStorage.
-import { getState, save } from "./storage.js?v=20260801q";
+import { getState, save } from "./storage.js?v=20260801r";
 
 const MAX_DICE = 100; // per term
 const MAX_TERMS = 20;
