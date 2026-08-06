@@ -174,9 +174,23 @@ function footer() {
         <a href="/terms/">Terms</a>
         <a href="https://ko-fi.com/spindecks" target="_blank" rel="noopener">Support / tip</a>
       </nav>
+      <div class="footer-col footer-suggest">
+        <p class="footer-head">Ideas</p>
+        <form id="suggestForm" class="suggest-form" action="https://formspree.io/f/xzdnlkjp" method="POST">
+          <label for="suggestText" class="muted suggest-label">What else would you like to see?</label>
+          <input type="hidden" name="_subject" value="SpinDecks suggestion" />
+          <input type="hidden" name="source" value="footer-suggestion" />
+          <div class="suggest-row">
+            <input id="suggestText" name="suggestion" type="text" class="suggest-input" placeholder="A tool, a feature, anything…" maxlength="500" autocomplete="off" required />
+            <button type="submit" class="btn suggest-send">Send</button>
+          </div>
+        </form>
+        <p id="suggestNote" class="muted suggest-note" hidden></p>
+      </div>
     </div>
     <p class="footer-legal muted">© ${new Date().getFullYear()} SpinDecks · no ads · no accounts · your data stays in your browser</p>
-  </footer>`;
+  </footer>
+  <script type="module" src="/js/suggest.js?v=${T}"></script>`;
 }
 
 /* ---------- the app shell (all tool panels; app.js wires them) ---------- */

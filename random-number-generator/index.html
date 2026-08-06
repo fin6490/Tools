@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Generate random numbers in any range, with or without repeats. Draw one or many at once, flip a coin or roll dice. Free, ad-free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=2" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801q" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801r" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -623,10 +623,24 @@
         <a href="/terms/">Terms</a>
         <a href="https://ko-fi.com/spindecks" target="_blank" rel="noopener">Support / tip</a>
       </nav>
+      <div class="footer-col footer-suggest">
+        <p class="footer-head">Ideas</p>
+        <form id="suggestForm" class="suggest-form" action="https://formspree.io/f/xzdnlkjp" method="POST">
+          <label for="suggestText" class="muted suggest-label">What else would you like to see?</label>
+          <input type="hidden" name="_subject" value="SpinDecks suggestion" />
+          <input type="hidden" name="source" value="footer-suggestion" />
+          <div class="suggest-row">
+            <input id="suggestText" name="suggestion" type="text" class="suggest-input" placeholder="A tool, a feature, anything…" maxlength="500" autocomplete="off" required />
+            <button type="submit" class="btn suggest-send">Send</button>
+          </div>
+        </form>
+        <p id="suggestNote" class="muted suggest-note" hidden></p>
+      </div>
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-<script type="module" src="/js/app.js?v=20260801q"></script>
+  <script type="module" src="/js/suggest.js?v=20260801r"></script>
+<script type="module" src="/js/app.js?v=20260801r"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

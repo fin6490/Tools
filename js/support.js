@@ -15,6 +15,11 @@ export const SUPPORT = {
   // Optional fallback: if there's no endpoint above, a contact email here turns the
   // waitlist button into a pre-filled mailto. Leave blank to just show "coming soon".
   contactEmail: "",
+
+  // Footer "what else would you like to see?" box. Defaults to the waitlist
+  // endpoint so it works with no extra setup; point it at a separate form if
+  // you'd rather keep suggestions out of the waitlist inbox.
+  suggestEndpoint: "",
 };
 
 export function initSupport(root, { toast } = {}) {
