@@ -14,9 +14,9 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, 
 
 /* ---------- shared fragments ---------- */
 
-// Favicon (inline SVG play-button mark) — same across all pages.
+// Favicon (inline SVG "fan of cards" mark) — same across all pages.
 const FAVICON =
-  `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='8' fill='%23ff5b52'/%3E%3Cpath d='M12 9L24 16L12 23Z' fill='%232b0b09'/%3E%3C/svg%3E" />`;
+  `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />`;
 
 // Runs before CSS paints so the saved theme applies with no flash. No app.js needed.
 const THEME_INIT =
@@ -28,7 +28,7 @@ const SW_REG =
 
 function head({ title, description, canonicalPath, jsonld = [] }) {
   const url = SITE.origin + canonicalPath;
-  const img = SITE.origin + "/assets/og-image.png?v=2";
+  const img = SITE.origin + "/assets/og-image.png?v=3";
   const ld = jsonld.map((o) => `<script type="application/ld+json">\n${JSON.stringify(o, null, 2)}\n</script>`).join("\n");
   return `<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -97,7 +97,7 @@ function tabs(active) {
 
 const BRAND = `<a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32"><rect x="1" y="1" width="30" height="30" rx="8" fill="#ff5b52"/><path d="M12 9L24 16L12 23Z" fill="#2b0b09"/></svg>
+        <svg viewBox="0 0 32 32"><g transform="rotate(-27 16 25)"><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#3fd0c9" stroke="#150c0e" stroke-width=".9"/></g><g transform="rotate(27 16 25)"><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#ffcf4d" stroke="#150c0e" stroke-width=".9"/></g><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#ff5b52" stroke="#150c0e" stroke-width=".9"/><circle cx="16" cy="12.4" r="1.5" fill="#2b0b09"/></svg>
       </span>
       <span class="brand-name">SpinDecks</span>
     </a>`;
