@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{background:#17131d;font-family:'DejaVu Sans Mono',monospace;position:relative}
+  .stripe{position:absolute;top:0;left:0;right:0;height:8px;
+    background:repeating-linear-gradient(90deg,
+      #ff5b52 0 90px,#3fd0c9 90px 180px,#ffcf4d 180px 270px,#8b7ff0 270px 360px)}
+  .frame{position:absolute;inset:16px;border:1px solid #2e2733;border-radius:22px}
+  .pad{position:absolute;inset:0;padding:64px 60px}
+  .brand{display:flex;align-items:center;gap:20px}
+  .brand svg{width:74px;height:74px;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  .brand .wm{font-weight:700;font-size:56px;letter-spacing:8px;color:#f6efe9}
+  .head{margin-top:44px;font-weight:700;font-size:62px;line-height:1.05;letter-spacing:-1px}
+  .head .a{color:#f6efe9}.head .b{color:#ff5b52}
+  .sub{margin-top:18px;font-weight:700;font-size:27px;letter-spacing:.5px;color:#3fd0c9}
+  .pills{margin-top:34px;display:flex;flex-wrap:wrap;gap:12px;max-width:640px}
+  .pill{font-weight:700;font-size:19px;letter-spacing:1.5px;color:#d8cfc9;
+    border:2px solid #3a333f;border-radius:10px;padding:9px 15px;background:#211b28}
+  .pill.on{background:#ff5b52;color:#2b0b09;border-color:#ff5b52}
+  .foot{position:absolute;left:60px;bottom:60px;font-size:20px;letter-spacing:1px;color:#8a8090}
+
+  .wheel{position:absolute;right:70px;top:50%;transform:translateY(-50%);
+    width:340px;height:340px;border-radius:50%;
+    background:conic-gradient(
+      #3fd0c9 0deg 45deg,#6f7bf0 45deg 90deg,#a06cf0 90deg 135deg,
+      #ff8f5e 135deg 180deg,#35c5e8 180deg 225deg,#f0524b 225deg 270deg,
+      #35d183 270deg 315deg,#ffcf4d 315deg 360deg);
+    box-shadow:0 0 0 10px #221b2b,0 20px 50px rgba(0,0,0,.5)}
+  .hub{position:absolute;inset:0;margin:auto;width:104px;height:104px;border-radius:50%;
+    background:#1c1420;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.55)}
+  .hub svg{width:66px;height:66px;display:block}
+  .ptr{position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
+    border-top:26px solid #ffcf4d;z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+</style></head><body>
+  <div class="stripe"></div>
+  <div class="frame"></div>
+  <div class="wheel"><div class="ptr"></div><div class="hub" id="hub"></div></div>
+  <div class="pad">
+    <div class="brand"><span id="logo"></span><span class="wm">SPINDECKS</span></div>
+    <div class="head"><span class="a">The ad-free</span><br><span class="b">wheel of names</span></div>
+    <div class="sub">+ the whole creator toolkit</div>
+    <div class="pills">
+      <span class="pill on">WHEEL</span><span class="pill">SLOTS</span><span class="pill">DICE</span>
+      <span class="pill">TEAMS</span><span class="pill">BRACKET</span><span class="pill">CHESS CLOCK</span>
+      <span class="pill">SCORE PAD</span><span class="pill">TIMER</span>
+    </div>
+    <div class="foot">no ads &middot; no accounts &middot; lives in your browser</div>
+  </div>
+<script>
+  const CARDS=`<g transform="rotate(-27 16 25)"><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#3fd0c9" stroke="#150c0e" stroke-width=".9"/></g><g transform="rotate(27 16 25)"><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#ffcf4d" stroke="#150c0e" stroke-width=".9"/></g><rect x="12" y="7.4" width="8" height="16.2" rx="1.7" fill="#ff5b52" stroke="#150c0e" stroke-width=".9"/><circle cx="16" cy="12.4" r="1.5" fill="#2b0b09"/>`;
+  document.getElementById('logo').innerHTML=`<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x=".6" y=".6" width="30.8" height="30.8" rx="7" fill="#1b0f12" stroke="rgba(255,255,255,.09)"/>${CARDS}</svg>`;
+  document.getElementById('hub').innerHTML=`<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">${CARDS}</svg>`;
+</script>
+</body></html>
