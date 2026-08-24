@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Online Chess Clock — Free Multiplayer Game Timer | SpinDecks</title>
-<meta name="description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
+<title>Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks</title>
+<meta name="description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://spindecks.app/chess-clock/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Online Chess Clock — Free Multiplayer Game Timer | SpinDecks" />
-<meta property="og:description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
+<meta property="og:title" content="Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks" />
+<meta property="og:description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
 <meta property="og:url" content="https://spindecks.app/chess-clock/" />
-<meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=3" />
+<meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Online Chess Clock — Free Multiplayer Game Timer | SpinDecks" />
-<meta name="twitter:description" content="A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline." />
-<meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=3" />
+<meta name="twitter:title" content="Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks" />
+<meta name="twitter:description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
+<meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260801s" />
+<link rel="stylesheet" href="/css/styles.css?v=20260801t" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -32,7 +32,7 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Multiplayer chess clock",
+  "name": "Online chess clock & multiplayer timer",
   "url": "https://spindecks.app/chess-clock/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
@@ -56,6 +56,22 @@
   "mainEntity": [
     {
       "@type": "Question",
+      "name": "Is it a free online chess timer?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — it's completely free, with no ads and no sign-up. It runs in your browser, and once loaded it keeps working offline."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use it as a simple 2-player chess clock?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Set it to 2 players for a classic two-player chess clock — each side taps their own area to pass the turn, exactly like a physical clock."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "How many players does it support?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -72,18 +88,18 @@
     },
     {
       "@type": "Question",
-      "name": "What happens when a player runs out of time?",
+      "name": "Do I need to download or install anything?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Their clock flags at zero and the turn passes on to the next player who still has time."
+        "text": "No — it's just a web page. Open it in any browser on your phone, tablet or computer, or add it to your home screen to use it like an app."
       }
     },
     {
       "@type": "Question",
-      "name": "Will the screen stay on during a game?",
+      "name": "What happens when a player runs out of time?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it."
+        "text": "Their clock flags at zero and the turn passes on to the next player who still has time."
       }
     },
     {
@@ -556,23 +572,31 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Multiplayer chess clock</h1>
-      <p class="tool-intro">A free game clock for 2 to 6 players. Give everyone a time bank, put the phone in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move — perfect for chess, and for keeping turn-hoggers honest in any board game.</p>
+      <h1>Online chess clock & multiplayer timer</h1>
+      <p class="tool-intro">A free online chess timer for two players — or a shared game clock for up to six. Give everyone a time bank, put the phone or laptop in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move. It runs entirely in your browser with nothing to download, and works offline once loaded.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Set the number of players (2–6), minutes each, and any increment in seconds.</li>
+        <li>Set the number of players (2 for a classic chess clock, up to 6), minutes each, and any increment in seconds.</li>
         <li>Press “Start clock” — the first player's timer counts down.</li>
         <li>Each player taps their own area to end their turn and start the next player's clock.</li>
         <li>Pause or reset any time; turn on “Keep screen awake” so it doesn't sleep mid-game.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Chess players:</strong> a proper two-player clock with increment, no app to install.</li>
+        <li><strong>Chess players:</strong> a proper two-player chess clock with Fischer increment — online, free, and nothing to install.</li>
         <li><strong>Board gamers:</strong> put every player on a clock to speed up a slow game — up to six at once.</li>
-        <li><strong>Anyone:</strong> a shared, fair turn timer for any game where people take turns.</li>
+        <li><strong>Anyone:</strong> a shared, fair turn timer or stopwatch for any game where people take turns.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
+        <details>
+          <summary>Is it a free online chess timer?</summary>
+          <p>Yes — it's completely free, with no ads and no sign-up. It runs in your browser, and once loaded it keeps working offline.</p>
+        </details>
+        <details>
+          <summary>Can I use it as a simple 2-player chess clock?</summary>
+          <p>Yes. Set it to 2 players for a classic two-player chess clock — each side taps their own area to pass the turn, exactly like a physical clock.</p>
+        </details>
         <details>
           <summary>How many players does it support?</summary>
           <p>From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn.</p>
@@ -582,12 +606,12 @@
           <p>Yes — set an increment in seconds and that time is added to a player's bank after each move they make.</p>
         </details>
         <details>
-          <summary>What happens when a player runs out of time?</summary>
-          <p>Their clock flags at zero and the turn passes on to the next player who still has time.</p>
+          <summary>Do I need to download or install anything?</summary>
+          <p>No — it's just a web page. Open it in any browser on your phone, tablet or computer, or add it to your home screen to use it like an app.</p>
         </details>
         <details>
-          <summary>Will the screen stay on during a game?</summary>
-          <p>Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it.</p>
+          <summary>What happens when a player runs out of time?</summary>
+          <p>Their clock flags at zero and the turn passes on to the next player who still has time.</p>
         </details>
         <details>
           <summary>Is it accurate?</summary>
@@ -639,8 +663,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20260801s"></script>
-<script type="module" src="/js/app.js?v=20260801s"></script>
+  <script type="module" src="/js/suggest.js?v=20260801t"></script>
+<script type="module" src="/js/app.js?v=20260801t"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

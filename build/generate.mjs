@@ -28,7 +28,7 @@ const SW_REG =
 
 function head({ title, description, canonicalPath, jsonld = [] }) {
   const url = SITE.origin + canonicalPath;
-  const img = SITE.origin + "/assets/og-image.png?v=3";
+  const img = SITE.origin + "/assets/og-image.png?v=4";
   const ld = jsonld.map((o) => `<script type="application/ld+json">\n${JSON.stringify(o, null, 2)}\n</script>`).join("\n");
   return `<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />

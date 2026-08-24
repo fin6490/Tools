@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801s",
+  token: "20260801t",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -308,28 +308,30 @@ export const TOOLS = [
     slug: "chess-clock",
     view: "chessclock",
     nav: "Chess clock",
-    title: "Online Chess Clock — Free Multiplayer Game Timer | SpinDecks",
+    title: "Online Chess Clock — Free 2-Player & Multiplayer Timer | SpinDecks",
     description:
-      "A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline.",
-    h1: "Multiplayer chess clock",
+      "A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline.",
+    h1: "Online chess clock & multiplayer timer",
     intro:
-      "A free game clock for 2 to 6 players. Give everyone a time bank, put the phone in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move — perfect for chess, and for keeping turn-hoggers honest in any board game.",
+      "A free online chess timer for two players — or a shared game clock for up to six. Give everyone a time bank, put the phone or laptop in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move. It runs entirely in your browser with nothing to download, and works offline once loaded.",
     steps: [
-      "Set the number of players (2–6), minutes each, and any increment in seconds.",
+      "Set the number of players (2 for a classic chess clock, up to 6), minutes each, and any increment in seconds.",
       "Press “Start clock” — the first player's timer counts down.",
       "Each player taps their own area to end their turn and start the next player's clock.",
       "Pause or reset any time; turn on “Keep screen awake” so it doesn't sleep mid-game.",
     ],
     whoFor: [
-      ["Chess players", "a proper two-player clock with increment, no app to install."],
+      ["Chess players", "a proper two-player chess clock with Fischer increment — online, free, and nothing to install."],
       ["Board gamers", "put every player on a clock to speed up a slow game — up to six at once."],
-      ["Anyone", "a shared, fair turn timer for any game where people take turns."],
+      ["Anyone", "a shared, fair turn timer or stopwatch for any game where people take turns."],
     ],
     faq: [
+      ["Is it a free online chess timer?", "Yes — it's completely free, with no ads and no sign-up. It runs in your browser, and once loaded it keeps working offline."],
+      ["Can I use it as a simple 2-player chess clock?", "Yes. Set it to 2 players for a classic two-player chess clock — each side taps their own area to pass the turn, exactly like a physical clock."],
       ["How many players does it support?", "From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn."],
       ["Does it support increment (Fischer timing)?", "Yes — set an increment in seconds and that time is added to a player's bank after each move they make."],
+      ["Do I need to download or install anything?", "No — it's just a web page. Open it in any browser on your phone, tablet or computer, or add it to your home screen to use it like an app."],
       ["What happens when a player runs out of time?", "Their clock flags at zero and the turn passes on to the next player who still has time."],
-      ["Will the screen stay on during a game?", "Turn on “Keep screen awake” to stop the screen sleeping while the clock is running, where your browser supports it."],
       ["Is it accurate?", "Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift."],
     ],
   },

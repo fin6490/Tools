@@ -52,8 +52,8 @@ export const ROUTES = {
   },
   "chessclock": {
     "slug": "chess-clock",
-    "title": "Online Chess Clock — Free Multiplayer Game Timer | SpinDecks",
-    "description": "A free online chess clock for 2–6 players. Each player has a time bank; tap your area to end your turn, with optional increment. No ads, no sign-up, works offline."
+    "title": "Online Chess Clock — Free 2-Player & Multiplayer Timer | SpinDecks",
+    "description": "A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline."
   },
   "bracket": {
     "slug": "tournament-bracket",
