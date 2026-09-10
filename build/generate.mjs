@@ -68,6 +68,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
+  { label: "Play", slugs: ["bt-dojo"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -155,6 +156,7 @@ function footer() {
     "scorepad": "Score pad",
     "chess-clock": "Chess clock",
     "tournament-bracket": "Tournament bracket",
+    "bt-dojo": "The BT Dojo",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -548,6 +550,11 @@ const PANELS = String.raw`  <!-- WHEEL -->
       </div>
       <div id="bkResult" class="bk-result" aria-live="polite"></div>
     </section>
+  </main>
+
+  <!-- THE BT DOJO (head-to-head classroom quiz game; dojo.js builds the screens) -->
+  <main class="view view-dojo" data-view-panel="dojo" hidden>
+    <section class="panel dojo-panel" aria-label="The BT Dojo quiz game"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

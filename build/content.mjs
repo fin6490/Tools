@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260801t",
+  token: "20260801u",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -362,6 +362,36 @@ export const TOOLS = [
       ["How do I record results?", "In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly."],
       ["Does it handle odd numbers of teams?", "Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin."],
       ["Are my brackets saved?", "Yes — the entrants, format and results stay in your browser, and it all works offline."],
+    ],
+  },
+  {
+    slug: "bt-dojo",
+    view: "dojo",
+    nav: "Dojo",
+    title: "The BT Dojo — Head-to-Head Classroom Quiz Game | SpinDecks",
+    description:
+      "A fast two-player classroom quiz game for the interactive whiteboard. Winner stays on, lives and powerups, a class leaderboard, and any question set you choose. Free, no sign-up, works offline.",
+    h1: "The BT Dojo — classroom quiz duel",
+    intro:
+      "A head-to-head quiz game built for the interactive whiteboard. Two students race to find the correct answer on their own board; the winner stays on as champion and a new challenger steps up. Lives, powerups and a class leaderboard keep the whole room in it — and you can load any question set you like: maths, spelling, science, vocabulary, history, anything.",
+    steps: [
+      "Pick a question set — use a built-in one or make your own in the editor (one line per question: <code>question | answer | wrong, wrong</code>).",
+      "Type the first two students' names and press “Begin duel”.",
+      "Both players race to tap the correct answer on their own board. A wrong tap costs a life; run out and you forfeit.",
+      "The winner stays on as champion; enter the next challenger's name and play on. Check the leaderboard any time to rank the class.",
+    ],
+    whoFor: [
+      ["Teachers", "a fast, high-energy starter or plenary for the whiteboard — on any topic, with the whole class cheering the duel."],
+      ["Tutors & clubs", "quick-fire recall practice with a bit of friendly competition and powerups to keep it fun."],
+      ["Anyone", "a two-player quiz duel for revision, family quiz night or a team ice-breaker."],
+    ],
+    faq: [
+      ["Is it just for maths?", "No — it works for any subject. It ships with maths sets (times tables, fractions, BIDMAS…) plus a capital-cities example, and you can add your own set on any topic in the editor."],
+      ["How do I make my own question set?", "Open the editor and type one question per line as <code>question | answer | wrong answers</code>. Wrong answers are optional — the board fills the rest from the other answers in your set. You can also import a set as JSON."],
+      ["Can it show maths properly?", "Yes — a light markup renders fractions (<code>\\frac{3}{4}</code>), powers (<code>x^2</code>), roots and symbols like <code>\\times</code> and <code>\\div</code>, with no plugins to install."],
+      ["What are the powerups?", "Each round a player can use a Smoke bomb (removes four wrong answers from their own board), Heal (restores a life), and sometimes Block (freezes the opponent's board for three seconds)."],
+      ["How does ranking work?", "The champion builds a streak by staying on, and every student's wins and best streak are tracked in a leaderboard you can display at the end of the session."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your question sets and leaderboard stay in your browser. It works offline once loaded."],
     ],
   },
 ];
