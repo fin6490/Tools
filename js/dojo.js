@@ -3,10 +3,11 @@
 // winner stays on as champion, a new challenger steps up. Lives, powerups and
 // a class leaderboard. Question sets are chosen/edited by the teacher; works
 // for any subject. Zero dependencies — no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260801w";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260801w";
-import { parseEntries } from "./wheel.js?v=20260801w";
-import * as sound from "./sound.js?v=20260801w";
+import { getState, save } from "./storage.js?v=20260801x";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260801x";
+import { parseEntries } from "./wheel.js?v=20260801x";
+import { SUPPORT } from "./support.js?v=20260801x";
+import * as sound from "./sound.js?v=20260801x";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -74,7 +75,7 @@ export function initDojo(root) {
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
 
   /* ================= LOBBY ================= */
-  function renderLobby() {
+  function renderLobby(flash) {
     clearTimers();
     const sets = allSets();
     if (!cfg().activeSetId || !sets.find((x) => x.id === cfg().activeSetId)) cfg().activeSetId = sets[0].id;
@@ -85,9 +86,43 @@ export function initDojo(root) {
     card.appendChild(el("p", "dojo-eyebrow", "Classroom quiz duel"));
     card.appendChild(el("h2", "dojo-title", "The BT Dojo"));
     card.appendChild(el("p", "dojo-lede", "Two students race to answer on their own board. Winner stays on as champion — a new challenger steps up. Best on an interactive whiteboard."));
+    if (flash) card.appendChild(el("p", "dojo-flash", flash));
+
+    // Type a topic → generate a set with AI (works once the hosted generator is set up).
+    const genRow = el("div", "dojo-field");
+    genRow.appendChild(el("label", "dojo-lbl", "Generate a set — type a topic"));
+    const genWrap = el("div", "dojo-genrow");
+    const topicIn = el("input", "dojo-input"); topicIn.placeholder = "e.g. Year 8 solving equations, KS2 homophones…"; topicIn.maxLength = 120;
+    const genBtn = el("button", "btn primary", "Generate");
+    genWrap.append(topicIn, genBtn);
+    genRow.appendChild(genWrap);
+    const genNote = el("p", "dojo-hint dojo-gennote"); genNote.hidden = true; genRow.appendChild(genNote);
+    const doGen = async () => {
+      const t = topicIn.value.trim();
+      if (!t) return;
+      if (!SUPPORT.dojoGenerateEndpoint) { genNote.hidden = false; genNote.textContent = "AI generation isn't switched on for this site yet — pick or make a set below."; return; }
+      genBtn.disabled = true; const orig = genBtn.textContent; genBtn.textContent = "Generating…"; genNote.hidden = true;
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if (SUPPORT.dojoGenerateToken) headers["x-dojo-token"] = SUPPORT.dojoGenerateToken;
+        const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic: t, count: 12 }) });
+        if (!res.ok) throw new Error("status " + res.status);
+        const data = await res.json();
+        const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => ({ q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] })) : [];
+        if (qs.length < 2) throw new Error("empty");
+        const id = uid(); cfg().sets.push({ id, name: (data.name || t).slice(0, 60), questions: qs }); cfg().activeSetId = id; save();
+        renderLobby(`Generated ${qs.length} questions on “${t}” — ready to play.`);
+      } catch {
+        genBtn.disabled = false; genBtn.textContent = orig;
+        genNote.hidden = false; genNote.textContent = "Couldn't generate that just now — try again, or make a set in the editor.";
+      }
+    };
+    genBtn.addEventListener("click", doGen);
+    topicIn.addEventListener("keydown", (e) => { if (e.key === "Enter") doGen(); });
+    card.appendChild(genRow);
 
     const setRow = el("div", "dojo-field");
-    setRow.appendChild(el("label", "dojo-lbl", "Question set"));
+    setRow.appendChild(el("label", "dojo-lbl", "Or pick a saved set"));
     const sel = el("select", "dojo-select");
     sets.forEach((s) => { const o = el("option"); o.value = s.id; o.textContent = `${s.name} (${s.questions.length})`; if (s.id === cfg().activeSetId) o.selected = true; sel.appendChild(o); });
     sel.addEventListener("change", () => { cfg().activeSetId = sel.value; save(); });

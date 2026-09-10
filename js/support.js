@@ -20,6 +20,18 @@ export const SUPPORT = {
   // endpoint so it works with no extra setup; point it at a separate form if
   // you'd rather keep suggestions out of the waitlist inbox.
   suggestEndpoint: "",
+
+  // The BT Dojo "type a topic → generate" feature. Paste the URL of the
+  // Cloudflare Worker (or other proxy) that holds your Anthropic key and calls
+  // Claude Haiku — see serverless/README.md for the 5-minute deploy. Until this
+  // is set, the Dojo's Generate button explains it isn't switched on yet.
+  // e.g. "https://bt-dojo-generate.<you>.workers.dev"
+  dojoGenerateEndpoint: "",
+  // Optional light gate: if your Worker sets DOJO_TOKEN, put the same value here
+  // so the site's requests carry it. (It's still public in the page — the real
+  // protections are the Worker's origin check, output cap, and a Cloudflare
+  // rate-limit rule; see the README.)
+  dojoGenerateToken: "",
 };
 
 export function initSupport(root, { toast } = {}) {

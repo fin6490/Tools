@@ -882,6 +882,11 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-begin { font-size: 18px; padding: 14px; }
 .dojo-lobbyfoot { display: flex; gap: 8px; }
 .dojo-hint { color: var(--muted); font-size: 13px; margin: 0; line-height: 1.5; }
+.dojo-genrow { display: flex; gap: 8px; }
+.dojo-genrow .dojo-input { flex: 1; }
+.dojo-gennote { margin-top: 2px; }
+.dojo-flash { margin: 0; padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, #35d183 18%, var(--panel-2)); border: 1px solid color-mix(in srgb, #35d183 45%, var(--line)); color: var(--ink); font-size: 14px; }
+@media (max-width: 480px) { .dojo-genrow { flex-direction: column; } }
 
 /* Editor */
 .dojo-textarea { min-height: 200px; background: var(--panel-2); color: var(--ink); border: 2px solid var(--line); border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6; resize: vertical; }
