@@ -68,3 +68,38 @@ export function beep() {
     });
   } catch {}
 }
+
+// Wrong-answer buzz (falling square tone).
+export function buzz() {
+  try {
+    const c = ac();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(200, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(90, c.currentTime + 0.22);
+    g.gain.setValueAtTime(0.16, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.24);
+    o.connect(g).connect(c.destination);
+    o.start();
+    o.stop(c.currentTime + 0.25);
+  } catch {}
+}
+
+// Whoosh for powerups (smoke bomb / block).
+export function swoosh() {
+  try {
+    const c = ac();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(600, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(160, c.currentTime + 0.3);
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.1, c.currentTime + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.32);
+    o.connect(g).connect(c.destination);
+    o.start();
+    o.stop(c.currentTime + 0.33);
+  } catch {}
+}

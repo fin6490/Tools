@@ -59,6 +59,11 @@ export const ROUTES = {
     "slug": "tournament-bracket",
     "title": "Tournament Bracket Generator — Knockout, League & Groups | SpinDecks",
     "description": "Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up."
+  },
+  "dojo": {
+    "slug": "bt-dojo",
+    "title": "The BT Dojo — Head-to-Head Classroom Quiz Game | SpinDecks",
+    "description": "A fast two-player classroom quiz game for the interactive whiteboard. Winner stays on, lives and powerups, a class leaderboard, and any question set you choose. Free, no sign-up, works offline."
   }
 };
 
