@@ -40,6 +40,14 @@ export default {
     if (env.DOJO_TOKEN && request.headers.get("x-dojo-token") !== env.DOJO_TOKEN) return json({ error: "bad token" }, 401, cors);
     if (!env.ANTHROPIC_API_KEY) return json({ error: "server not configured" }, 500, cors);
 
+    // Optional rate limit — only enforced if a RATE_LIMITER binding is configured
+    // (Worker → Settings → Bindings → Rate limiting). Keyed per client IP.
+    if (env.RATE_LIMITER) {
+      const ip = request.headers.get("CF-Connecting-IP") || "anon";
+      const { success } = await env.RATE_LIMITER.limit({ key: ip });
+      if (!success) return json({ error: "rate limited — try again in a minute" }, 429, cors);
+    }
+
     let bodyIn;
     try { bodyIn = await request.json(); } catch { return json({ error: "bad json" }, 400, cors); }
     const topic = String(bodyIn.topic || "").trim().slice(0, 120);
