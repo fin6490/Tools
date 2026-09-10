@@ -100,11 +100,71 @@ const capitals = [
   { q: "Capital of New Zealand", a: "Wellington", distractors: ["Auckland", "Christchurch", "Dunedin"] },
 ];
 
+// ---- Rounding to the nearest 10 (maths) ----
+const rounding = [
+  { q: "Round 47 to the nearest 10", a: "50", distractors: ["40", "45", "100"] },
+  { q: "Round 23 to the nearest 10", a: "20", distractors: ["30", "25", "24"] },
+  { q: "Round 68 to the nearest 10", a: "70", distractors: ["60", "65", "80"] },
+  { q: "Round 12 to the nearest 10", a: "10", distractors: ["20", "15", "11"] },
+  { q: "Round 85 to the nearest 10", a: "90", distractors: ["80", "100", "95"] },
+  { q: "Round 34 to the nearest 10", a: "30", distractors: ["40", "35", "33"] },
+  { q: "Round 56 to the nearest 10", a: "60", distractors: ["50", "55", "66"] },
+  { q: "Round 91 to the nearest 10", a: "90", distractors: ["100", "95", "80"] },
+  { q: "Round 45 to the nearest 10", a: "50", distractors: ["40", "44", "55"] },
+  { q: "Round 9 to the nearest 10", a: "10", distractors: ["0", "5", "20"] },
+];
+
+// ---- Homophones — choose the correct word (English) ----
+const homophones = [
+  { q: "The dog wagged ___ tail", a: "its", distractors: ["it's", "its'", "it is"] },
+  { q: "___ going to be late", a: "They're", distractors: ["Their", "There", "Theyre"] },
+  { q: "Put the book over ___", a: "there", distractors: ["their", "they're", "thare"] },
+  { q: "I can't find ___ shoes", a: "their", distractors: ["there", "they're", "thier"] },
+  { q: "___ too cold today", a: "It's", distractors: ["Its", "Its'", "It"] },
+  { q: "We walked ___ the park", a: "to", distractors: ["too", "two", "tow"] },
+  { q: "I want ___ slices", a: "two", distractors: ["to", "too", "tue"] },
+  { q: "That's ___ much sugar", a: "too", distractors: ["to", "two", "tow"] },
+  { q: "___ book is this?", a: "Whose", distractors: ["Who's", "Whos", "Whose'"] },
+  { q: "___ at the door?", a: "Who's", distractors: ["Whose", "Whos", "Who"] },
+];
+
+// ---- Word classes (English) ----
+const wordClasses = [
+  { q: "‘quickly’ is a…", a: "Adverb", distractors: ["Adjective", "Noun", "Verb"] },
+  { q: "‘happy’ is a…", a: "Adjective", distractors: ["Adverb", "Noun", "Verb"] },
+  { q: "‘run’ is a…", a: "Verb", distractors: ["Noun", "Adjective", "Adverb"] },
+  { q: "‘dog’ is a…", a: "Noun", distractors: ["Verb", "Adjective", "Pronoun"] },
+  { q: "‘she’ is a…", a: "Pronoun", distractors: ["Noun", "Verb", "Adverb"] },
+  { q: "‘and’ is a…", a: "Conjunction", distractors: ["Preposition", "Noun", "Verb"] },
+  { q: "‘under’ is a…", a: "Preposition", distractors: ["Adverb", "Conjunction", "Noun"] },
+  { q: "‘beautiful’ is a…", a: "Adjective", distractors: ["Adverb", "Noun", "Verb"] },
+  { q: "‘slowly’ is a…", a: "Adverb", distractors: ["Adjective", "Verb", "Noun"] },
+  { q: "‘jump’ is a…", a: "Verb", distractors: ["Noun", "Adjective", "Adverb"] },
+];
+
+// ---- Element symbols (science) ----
+const elements = [
+  { q: "Symbol for Oxygen", a: "O", distractors: ["Ox", "O2", "Om"] },
+  { q: "Symbol for Sodium", a: "Na", distractors: ["So", "Sd", "S"] },
+  { q: "Symbol for Hydrogen", a: "H", distractors: ["Hy", "Hg", "H2"] },
+  { q: "Symbol for Carbon", a: "C", distractors: ["Ca", "Cb", "Co"] },
+  { q: "Symbol for Iron", a: "Fe", distractors: ["Ir", "Fr", "In"] },
+  { q: "Symbol for Gold", a: "Au", distractors: ["Go", "Gd", "Ag"] },
+  { q: "Symbol for Potassium", a: "K", distractors: ["Po", "P", "Pt"] },
+  { q: "Symbol for Helium", a: "He", distractors: ["H", "Hm", "Hl"] },
+  { q: "Symbol for Nitrogen", a: "N", distractors: ["Ni", "Ng", "Nt"] },
+  { q: "Symbol for Calcium", a: "Ca", distractors: ["C", "Cl", "Cm"] },
+];
+
 export const STARTER_PACKS = [
   { id: "pk-times", name: "Times tables (2–12)", builtIn: true, questions: timesTables() },
   { id: "pk-powers", name: "Square & cube numbers", builtIn: true, questions: powers() },
   { id: "pk-fractions", name: "Fractions of amounts", builtIn: true, questions: fractions },
   { id: "pk-bidmas", name: "Order of operations (BIDMAS)", builtIn: true, questions: bidmas },
   { id: "pk-percent", name: "Percentages of amounts", builtIn: true, questions: percentages },
-  { id: "pk-capitals", name: "Capital cities (example)", builtIn: true, questions: capitals },
+  { id: "pk-rounding", name: "Rounding to the nearest 10", builtIn: true, questions: rounding },
+  { id: "pk-homophones", name: "Homophones (English)", builtIn: true, questions: homophones },
+  { id: "pk-wordclass", name: "Word classes (English)", builtIn: true, questions: wordClasses },
+  { id: "pk-elements", name: "Element symbols (Science)", builtIn: true, questions: elements },
+  { id: "pk-capitals", name: "Capital cities (Geography)", builtIn: true, questions: capitals },
 ];
