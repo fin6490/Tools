@@ -3,11 +3,11 @@
 // winner stays on as champion, a new challenger steps up. Lives, powerups and
 // a class leaderboard. Question sets are chosen/edited by the teacher; works
 // for any subject. Zero dependencies — no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260801x";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260801x";
-import { parseEntries } from "./wheel.js?v=20260801x";
-import { SUPPORT } from "./support.js?v=20260801x";
-import * as sound from "./sound.js?v=20260801x";
+import { getState, save } from "./storage.js?v=20260801y";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260801y";
+import { parseEntries } from "./wheel.js?v=20260801y";
+import { SUPPORT } from "./support.js?v=20260801y";
+import * as sound from "./sound.js?v=20260801y";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
