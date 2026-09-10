@@ -58,11 +58,18 @@ Commit and push. The Generate button now produces sets live.
 
 ## 4. Protect against abuse (recommended)
 
-The endpoint costs you money, so cap it. In the Cloudflare dashboard:
-**Workers & Pages → your Worker → Settings → (Security) Rate limiting** — add a
-rule such as **10 requests per minute per IP**. That, plus the Worker's origin
-check and the small `max_tokens`, keeps a stray bot from running up a bill. For
-a stricter gate, set `DOJO_TOKEN` (step 2).
+The endpoint costs you money, so cap it. A `*.workers.dev` URL can't use WAF
+rate-limiting rules (those need a domain added to Cloudflare), so use the
+built-in **Workers Rate Limiting binding** — the Worker code already checks for
+it (`env.RATE_LIMITER`), you just add the binding:
+
+1. **Workers & Pages → your Worker → Settings → Bindings → Add → Rate limiting.**
+2. Variable name: `RATE_LIMITER` (must match exactly). Set a limit, e.g.
+   **20 requests per 60 seconds**, and any namespace ID number (e.g. `1001`).
+3. **Deploy.** The Worker now returns `429` when a single IP exceeds the limit.
+
+That, plus the Worker's origin check and the small `max_tokens`, keeps a stray
+bot from running up a bill. For a stricter gate, also set `DOJO_TOKEN` (step 2).
 
 ## 5. Test it
 
