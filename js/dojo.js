@@ -3,9 +3,10 @@
 // winner stays on as champion, a new challenger steps up. Lives, powerups and
 // a class leaderboard. Question sets are chosen/edited by the teacher; works
 // for any subject. Zero dependencies — no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260801v";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260801v";
-import * as sound from "./sound.js?v=20260801v";
+import { getState, save } from "./storage.js?v=20260801w";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260801w";
+import { parseEntries } from "./wheel.js?v=20260801w";
+import * as sound from "./sound.js?v=20260801w";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -34,7 +35,12 @@ const SVG = {
   heart: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21s-6.8-4.35-9.2-8.6C1 9.3 2.5 5.5 6 5.5c2 0 3.3 1.2 4 2.5.7-1.3 2-2.5 4-2.5 3.5 0 5 3.8 3.2 6.9C18.8 16.65 12 21 12 21z"/></svg>',
   smoke: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A5 5 0 0 0 8 8.1 3.5 3.5 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
   heal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
-  shield: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l7 3v5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 3l7 3v5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  crown: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5L3 8z" fill="currentColor"/></svg>',
+  swords: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M4 4h3l9 9-3 3-9-9V4zm16 0h-3l-4 4 3 3 4-4V4zM3 18l4-4 3 3-4 4H3v-3zm14-1l3 3v1h-1l-3-3 1-1z" fill="currentColor"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1.6.7-2.8 1.4-3.6C8.6 8.9 9 9.8 10 10c-.3-2 .8-4.6 2-8z" fill="currentColor"/></svg>',
+  soundOn: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9a3 3 0 0 1 0 6M18.5 7a6 6 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
 };
 
 export function initDojo(root) {
@@ -50,6 +56,16 @@ export function initDojo(root) {
   };
   const allSets = () => [...STARTER_PACKS, ...cfg().sets];
   const activeSet = () => allSets().find((x) => x.id === cfg().activeSetId) || STARTER_PACKS[0];
+  // A "class" is one of the user's saved SpinDecks wheels; its names are the roster.
+  const wheels = () => getState().wheels || [];
+  const roster = () => {
+    const w = wheels().find((x) => x.id === cfg().rosterWheelId);
+    return w ? parseEntries(w.text).map((s) => s.label).filter(Boolean) : [];
+  };
+  const randomName = (exclude) => {
+    const pool = roster().filter((n) => norm(n) !== norm(exclude || ""));
+    return pool.length ? pool[rint(pool.length)] : "";
+  };
   let soundOn = getState().soundOn !== false;
   let live = null;
   let blockTimer = null;
@@ -91,10 +107,31 @@ export function initDojo(root) {
     livesRow.appendChild(livesSel);
     card.appendChild(livesRow);
 
+    // Optional: pull the class roster from one of the user's saved wheels.
+    const classRow = el("div", "dojo-field");
+    classRow.appendChild(el("label", "dojo-lbl", "Class (optional — from a saved wheel)"));
+    const clsSel = el("select", "dojo-select");
+    const none = el("option"); none.value = ""; none.textContent = "— none —"; clsSel.appendChild(none);
+    wheels().forEach((w) => { const o = el("option"); o.value = w.id; o.textContent = `${w.name} (${parseEntries(w.text).length})`; if (w.id === cfg().rosterWheelId) o.selected = true; clsSel.appendChild(o); });
+    clsSel.addEventListener("change", () => { cfg().rosterWheelId = clsSel.value || null; save(); renderLobby(); });
+    classRow.appendChild(clsSel);
+    card.appendChild(classRow);
+
+    const list = roster();
     const names = el("div", "dojo-names");
     const p1 = el("input", "dojo-input"); p1.placeholder = "Champion name"; p1.maxLength = 24;
     const p2 = el("input", "dojo-input"); p2.placeholder = "Challenger name"; p2.maxLength = 24;
-    names.append(p1, p2);
+    const p1w = el("div", "dojo-nameentry"); p1w.appendChild(p1);
+    const p2w = el("div", "dojo-nameentry"); p2w.appendChild(p2);
+    if (list.length) {
+      const dl = el("datalist"); dl.id = "djRoster"; list.forEach((n) => { const o = el("option"); o.value = n; dl.appendChild(o); });
+      card.appendChild(dl);
+      p1.setAttribute("list", "djRoster"); p2.setAttribute("list", "djRoster");
+      const r1 = el("button", "btn ghost dojo-rand", "Random"); r1.type = "button"; r1.addEventListener("click", () => { p1.value = randomName(p2.value); });
+      const r2 = el("button", "btn ghost dojo-rand", "Random"); r2.type = "button"; r2.addEventListener("click", () => { p2.value = randomName(p1.value); });
+      p1w.appendChild(r1); p2w.appendChild(r2);
+    }
+    names.append(p1w, p2w);
     card.appendChild(names);
 
     const go = el("button", "btn primary dojo-begin", "Begin duel");
@@ -244,23 +281,29 @@ export function initDojo(root) {
   function buildBattleShell() {
     panel.innerHTML = "";
     panel.appendChild(el("div", "dojo-battle", `
-      <div class="dojo-topbar">
+      <div class="dojo-toprow">
         <span class="dojo-set" id="djSet"></span>
-        <span class="dojo-streak" id="djStreak"></span>
         <span class="dojo-topbtns">
-          <button class="btn ghost" id="djMute"></button>
+          <button class="icon-btn dojo-icobtn" id="djMute" title="Toggle sound" aria-label="Toggle sound"></button>
           <button class="btn ghost" id="djQuit">End session</button>
         </span>
       </div>
-      <div class="dojo-qbar"><div class="dojo-q" id="djQ"></div></div>
+      <div class="dojo-hud">
+        <div class="dojo-hud-side dojo-hud-champ"><span class="dojo-role">${SVG.crown}</span><span class="dojo-pname" id="djName1"></span></div>
+        <div class="dojo-hud-center">
+          <span class="dojo-lives" id="djLives1"></span>
+          <span class="dojo-streakbadge" id="djStreak">${SVG.flame}<b>0</b></span>
+          <span class="dojo-lives" id="djLives2"></span>
+        </div>
+        <div class="dojo-hud-side dojo-hud-chal"><span class="dojo-pname" id="djName2"></span><span class="dojo-role">${SVG.swords}</span></div>
+      </div>
+      <div class="dojo-qbar"><p class="dojo-race">Race to solve</p><div class="dojo-q" id="djQ"></div></div>
       <div class="dojo-arena">
         <div class="dojo-side dojo-p1">
-          <div class="dojo-phead"><span class="dojo-pname" id="djName1"></span><span class="dojo-lives" id="djLives1"></span></div>
           <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid1"></div><div class="dojo-blocked" id="djBlock1" hidden><span>BLOCKED</span></div></div>
           <div class="dojo-powers" id="djPow1"></div>
         </div>
         <div class="dojo-side dojo-p2">
-          <div class="dojo-phead"><span class="dojo-pname" id="djName2"></span><span class="dojo-lives" id="djLives2"></span></div>
           <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid2"></div><div class="dojo-blocked" id="djBlock2" hidden><span>BLOCKED</span></div></div>
           <div class="dojo-powers" id="djPow2"></div>
         </div>
@@ -272,11 +315,16 @@ export function initDojo(root) {
     panel.querySelector("#djMute").addEventListener("click", () => { soundOn = !soundOn; updateMute(); });
     panel.querySelector("#djQuit").addEventListener("click", () => { live = null; renderLobby(); });
   }
-  function updateMute() { const b = panel.querySelector("#djMute"); if (b) b.textContent = soundOn ? "Sound: on" : "Sound: off"; }
+  function updateMute() {
+    const b = panel.querySelector("#djMute");
+    if (b) { b.innerHTML = soundOn ? SVG.soundOn : SVG.soundOff; b.classList.toggle("is-off", !soundOn); }
+  }
 
   function paintRound() {
     panel.querySelector("#djQ").innerHTML = mathHtml(live.q.q);
-    panel.querySelector("#djStreak").textContent = live.streak > 0 ? `${live.champion} — streak ${live.streak}` : "New champion up";
+    const badge = panel.querySelector("#djStreak");
+    badge.querySelector("b").textContent = live.streak;
+    badge.classList.toggle("hot", live.streak > 0);
     panel.querySelector("#djName1").textContent = live.p1.name;
     panel.querySelector("#djName2").textContent = live.p2.name;
     panel.querySelector("#djResult").hidden = true;
@@ -308,14 +356,15 @@ export function initDojo(root) {
     const wrap = panel.querySelector(side === "p1" ? "#djPow1" : "#djPow2");
     wrap.innerHTML = "";
     const add = (type, label, icon, avail) => {
-      const b = el("button", "dojo-pow dojo-pow-" + type, icon + "<span>" + label + "</span>");
+      const b = el("button", "dojo-pow dojo-pow-" + type, icon);
+      b.title = label; b.setAttribute("aria-label", label);
       b.disabled = !avail || live.roundOver;
       b.addEventListener("click", () => usePower(side, type));
       wrap.appendChild(b);
     };
-    add("smoke", "Smoke bomb", SVG.smoke, p.powers.smoke);
-    add("heal", "Heal", SVG.heal, p.powers.heal);
-    if (p.powers.block) add("block", "Block", SVG.shield, p.powers.block);
+    add("smoke", "Smoke bomb — clear four wrong answers", SVG.smoke, p.powers.smoke);
+    add("heal", "Heal — restore a life", SVG.heal, p.powers.heal);
+    if (p.powers.block) add("block", "Block — freeze your opponent for 3 seconds", SVG.shield, p.powers.block);
   }
 
   function usePower(side, type) {
@@ -362,6 +411,8 @@ export function initDojo(root) {
 
     live.streak = side === "p1" ? live.streak + 1 : 1; // champion defended, or challenger dethroned
     live.pendingChampion = winner;
+    const badge = panel.querySelector("#djStreak");
+    if (badge) { badge.querySelector("b").textContent = live.streak; badge.classList.toggle("hot", live.streak > 0); }
 
     const lb = cfg().leaderboard;
     const w = lb[winner] || (lb[winner] = { wins: 0, games: 0, best: 0 });
@@ -381,11 +432,17 @@ export function initDojo(root) {
     box.appendChild(el("p", "dojo-res-streak", live.streak > 1 ? `Champion on a streak of ${live.streak}` : "New champion!"));
     const form = el("div", "dojo-res-form");
     const inp = el("input", "dojo-input"); inp.placeholder = "Next challenger name"; inp.maxLength = 24;
+    const list = roster();
+    if (list.length) {
+      const dl = el("datalist"); dl.id = "djRoster2"; list.forEach((n) => { const o = el("option"); o.value = n; dl.appendChild(o); });
+      box.appendChild(dl); inp.setAttribute("list", "djRoster2");
+    }
     const next = el("button", "btn primary", "Next challenger");
     const go = () => { const n = inp.value.trim() || "Challenger"; live.champion = live.pendingChampion; live.challenger = n; live.qi++; startRound(); };
     next.addEventListener("click", go);
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
     form.append(inp, next);
+    if (list.length) { const r = el("button", "btn ghost", "Random"); r.type = "button"; r.addEventListener("click", () => { inp.value = randomName(live.pendingChampion); }); form.append(r); }
     box.appendChild(form);
     const fin = el("button", "btn ghost dojo-res-fin", "Finish — show leaderboard");
     fin.addEventListener("click", renderLeaderboard);
