@@ -59,9 +59,10 @@ export default {
     const system = [
       "You create multiple-choice quiz question sets for a fast classroom game where two students race to tap the correct answer.",
       "Output ONLY a JSON object — no prose, no code fences — in exactly this shape:",
-      '{"name":"<short set name>","questions":[{"q":"<question>","a":"<correct answer>","distractors":["<wrong>","<wrong>","<wrong>"]}]}',
+      '{"name":"<short set name>","questions":[{"q":"<question>","a":"<correct answer>","answers":["<correct>","<also correct>"],"distractors":["<wrong>","<wrong>","<wrong>"]}]}',
       "Rules: keep each question and answer short enough to fit on a button (a few words or a number).",
-      "Give exactly 3 plausible but clearly wrong distractors per question.",
+      "Give exactly 3 distractors per question. Every distractor MUST be unambiguously WRONG — never a value that is also a correct answer to the question (e.g. for 'a multiple of 6' do not use 18 as a distractor).",
+      "If a question genuinely has more than one correct answer, list them ALL in an \"answers\" array (any one counts as correct); otherwise omit \"answers\". Always also set \"a\" to one correct answer.",
       "Use UK spelling, keep it factual and age-appropriate, and never use gambling or betting themes.",
       "For maths you may use this light markup: \\frac{a}{b} for fractions, x^2 for powers, \\sqrt{9} for roots, and \\times \\div \\pm for symbols.",
     ].join(" ");
@@ -98,11 +99,15 @@ export default {
     const questions = parsed.questions
       .filter((q) => q && q.q && q.a)
       .slice(0, 20)
-      .map((q) => ({
-        q: String(q.q),
-        a: String(q.a),
-        distractors: Array.isArray(q.distractors) ? q.distractors.slice(0, 9).map(String) : [],
-      }));
+      .map((q) => {
+        const out = {
+          q: String(q.q),
+          a: String(q.a),
+          distractors: Array.isArray(q.distractors) ? q.distractors.slice(0, 9).map(String) : [],
+        };
+        if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.slice(0, 10).map(String);
+        return out;
+      });
     if (questions.length < 2) return json({ error: "not enough questions" }, 502, cors);
 
     return json({ name: String(parsed.name || topic).slice(0, 60), questions }, 200, cors);

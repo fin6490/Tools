@@ -4,17 +4,23 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260911b";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260911b";
-import { parseEntries } from "./wheel.js?v=20260911b";
-import { SUPPORT } from "./support.js?v=20260911b";
-import * as sound from "./sound.js?v=20260911b";
+import { getState, save } from "./storage.js?v=20260911c";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260911c";
+import { parseEntries } from "./wheel.js?v=20260911c";
+import { SUPPORT } from "./support.js?v=20260911c";
+import * as sound from "./sound.js?v=20260911c";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const norm = (s) => String(s).trim().toLowerCase();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "s" + Math.random().toString(36).slice(2));
+
+// A question may accept more than one correct answer (e.g. "a multiple of 6").
+// `answers` is the full accepted list; `a` stays the primary/display answer.
+const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
+const acceptedSet = (q) => new Set(answersOf(q).map(norm));
+const isCorrect = (q, v) => acceptedSet(q).has(norm(v));
 
 /* ---------- tiny maths markup renderer (no KaTeX) ---------- */
 function mathHtml(str) {
@@ -159,7 +165,11 @@ export function initDojo(root) {
         const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic: t, count: 12 }) });
         if (!res.ok) throw new Error("status " + res.status);
         const data = await res.json();
-        const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => ({ q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] })) : [];
+        const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => {
+          const out = { q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] };
+          if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.map(String); // question with several correct answers
+          return out;
+        }) : [];
         if (qs.length < 2) throw new Error("empty");
         const id = uid(); cfg().sets.push({ id, name: (data.name || t).slice(0, 60), questions: qs }); cfg().activeSetId = id; save();
         renderLobby(`Generated ${qs.length} questions on “${t}” — ready to play.`);
@@ -259,7 +269,7 @@ export function initDojo(root) {
     panel.innerHTML = "";
     const card = el("div", "dojo-editor");
     card.appendChild(el("h2", "dojo-title", editing ? "Edit set" : "New question set"));
-    card.appendChild(el("p", "dojo-lede", "One question per line: <code>question | answer | wrong, wrong</code>. Wrong answers are optional — the board fills the rest from the other answers in the set."));
+    card.appendChild(el("p", "dojo-lede", "One question per line: <code>question | answer | wrong, wrong</code>. Wrong answers are optional — the board fills the rest from the other answers in the set. If a question has several correct answers, separate them with a semicolon: <code>A multiple of 6 | 6; 12; 18; 24</code> — any of them counts."));
 
     const nameIn = el("input", "dojo-input"); nameIn.placeholder = "Set name";
     nameIn.value = seed ? (existing ? seed.name : seed.name + " (copy)") : "";
@@ -267,14 +277,14 @@ export function initDojo(root) {
 
     const ta = el("textarea", "dojo-textarea");
     ta.spellcheck = false;
-    ta.value = seed ? toLines(seed.questions) : "12 \\times 7 | 84\n\\frac{3}{4} of 20 | 15 | 5, 16, 12\nCapital of France | Paris | Lyon, Nice";
+    ta.value = seed ? toLines(seed.questions) : "12 \\times 7 | 84\n\\frac{3}{4} of 20 | 15 | 5, 16, 12\nA multiple of 6 | 6; 12; 18; 24 | 10, 14, 20\nCapital of France | Paris | Lyon, Nice";
     card.appendChild(ta);
 
     const preview = el("div", "dojo-preview");
     const renderPreview = () => {
       const qs = parseLines(ta.value);
       preview.innerHTML = qs.length
-        ? `<span class="dojo-lbl">Preview (${qs.length}) </span>` + mathHtml(qs[0].q) + ' <span class="muted">→</span> ' + mathHtml(qs[0].a)
+        ? `<span class="dojo-lbl">Preview (${qs.length}) </span>` + mathHtml(qs[0].q) + ' <span class="muted">→</span> ' + answersOf(qs[0]).map(mathHtml).join(' <span class="muted">/</span> ')
         : '<span class="muted">Add at least one line.</span>';
     };
     ta.addEventListener("input", renderPreview); renderPreview();
@@ -306,7 +316,7 @@ export function initDojo(root) {
     const io = el("details", "dojo-io");
     io.innerHTML = "<summary>Import / export as JSON</summary>";
     const jsonTa = el("textarea", "dojo-textarea dojo-json");
-    jsonTa.spellcheck = false; jsonTa.placeholder = '{"name":"My set","questions":[{"q":"...","a":"...","distractors":["..."]}]}';
+    jsonTa.spellcheck = false; jsonTa.placeholder = '{"name":"My set","questions":[{"q":"...","a":"...","answers":["..."],"distractors":["..."]}]}';
     const ioRow = el("div", "dojo-editbtns");
     const loadJson = el("button", "btn ghost", "Load JSON into editor");
     loadJson.addEventListener("click", () => {
@@ -333,12 +343,18 @@ export function initDojo(root) {
   function parseLines(text) {
     return text.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
       const parts = line.split("|").map((p) => p.trim());
+      const answers = (parts[1] || "").split(";").map((a) => a.trim()).filter(Boolean);
       const distractors = (parts[2] || "").split(",").map((d) => d.trim()).filter(Boolean);
-      return { q: parts[0] || "", a: parts[1] || "", distractors };
+      const q = { q: parts[0] || "", a: answers[0] || "", distractors };
+      if (answers.length > 1) q.answers = answers; // any of these counts as correct
+      return q;
     }).filter((x) => x.q && x.a);
   }
   function toLines(questions) {
-    return questions.map((x) => `${x.q} | ${x.a}${x.distractors && x.distractors.length ? " | " + x.distractors.join(", ") : ""}`).join("\n");
+    return questions.map((x) => {
+      const ans = answersOf(x).join("; ");
+      return `${x.q} | ${ans}${x.distractors && x.distractors.length ? " | " + x.distractors.join(", ") : ""}`;
+    }).join("\n");
   }
 
   /* ================= SPIN THE WHEEL (class picker) ================= */
@@ -368,12 +384,14 @@ export function initDojo(root) {
   /* ================= DUEL / ROUNDS ================= */
   function poolFor(set) {
     const seen = new Set(), pool = [];
-    set.questions.forEach((q) => [q.a, ...(q.distractors || [])].forEach((v) => { if (v && !seen.has(norm(v))) { seen.add(norm(v)); pool.push(v); } }));
+    set.questions.forEach((q) => [...answersOf(q), ...(q.distractors || [])].forEach((v) => { if (v && !seen.has(norm(v))) { seen.add(norm(v)); pool.push(v); } }));
     return pool;
   }
   function buildOptions(q, pool) {
-    const opts = [q.a, ...(q.distractors || [])];
-    const seen = new Set(opts.map(norm));
+    // Seed with every accepted answer + the question's own distractors, then
+    // top up from the set-wide pool so the board always has ten tiles.
+    const opts = [], seen = new Set();
+    [...answersOf(q), ...(q.distractors || [])].forEach((v) => { if (v && !seen.has(norm(v))) { seen.add(norm(v)); opts.push(v); } });
     for (const x of shuffle(pool)) { if (opts.length >= 10) break; if (!seen.has(norm(x))) { seen.add(norm(x)); opts.push(x); } }
     return shuffle(opts).slice(0, 10);
   }
@@ -527,7 +545,7 @@ export function initDojo(root) {
     }
 
     if (type === "fifty") {
-      const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && norm(b.dataset.val) !== norm(live.q.a));
+      const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && !isCorrect(live.q, b.dataset.val));
       shuffle(wrong).slice(0, Math.ceil(wrong.length / 2)).forEach((b) => { b.disabled = true; b.classList.add("smoked"); });
       fx(sound.swoosh);
     } else if (type === "heal") { p.lives = Math.min(max, p.lives + 1); renderLives(side); fx(sound.beep); }
@@ -588,7 +606,7 @@ export function initDojo(root) {
   function onPick(side, val, btn) {
     const p = live[side];
     if (live.roundOver || p.over || btn.disabled || Date.now() < p.blockedUntil) return;
-    if (norm(val) === norm(live.q.a)) { btn.classList.add("correct"); return winRound(side); }
+    if (isCorrect(live.q, val)) { btn.classList.add("correct"); return winRound(side); }
     btn.classList.add("wrong"); btn.disabled = true;
     if (p.shield) { p.shield = false; renderShield(side); fx(sound.tick); return; } // shield absorbs the mistake
     p.lives--; renderLives(side); fx(sound.buzz);
@@ -603,7 +621,7 @@ export function initDojo(root) {
     const winner = live[side].name;
     const loser = live[side === "p1" ? "p2" : "p1"].name;
     ["#djGrid1", "#djGrid2"].forEach((g) => panel.querySelectorAll(g + " .dojo-opt").forEach((b) => {
-      b.disabled = true; if (norm(b.dataset.val) === norm(live.q.a)) b.classList.add("correct");
+      b.disabled = true; if (isCorrect(live.q, b.dataset.val)) b.classList.add("correct");
     }));
     renderPowers("p1"); renderPowers("p2");
 
@@ -649,7 +667,11 @@ export function initDojo(root) {
     form.append(inp, next);
     if (list.length) {
       const spin = el("button", "btn dojo-spinbtn", "Spin for challenger"); spin.type = "button";
-      spin.addEventListener("click", async () => { const ch = await spinPick({ exclude: live.pendingChampion, label: "Next challenger" }); if (ch) go(ch); });
+      // Pick the challenger, but wait for a click to start — so they can get to the board.
+      spin.addEventListener("click", async () => {
+        const ch = await spinPick({ exclude: live.pendingChampion, label: "Next challenger" });
+        if (ch) { inp.value = ch; next.textContent = "Begin round — " + ch; next.classList.add("dojo-begin-armed"); next.focus(); }
+      });
       form.append(spin);
     }
     box.appendChild(form);
