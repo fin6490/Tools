@@ -1,13 +1,14 @@
 // dojo.js — The BT Dojo: a head-to-head classroom quiz game for the whiteboard.
 // Two players race to find the correct answer on their own shuffled board;
-// winner stays on as champion, a new challenger steps up. Lives, powerups and
-// a class leaderboard. Question sets are chosen/edited by the teacher; works
-// for any subject. Zero dependencies — no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260801y";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260801y";
-import { parseEntries } from "./wheel.js?v=20260801y";
-import { SUPPORT } from "./support.js?v=20260801y";
-import * as sound from "./sound.js?v=20260801y";
+// winner stays on as champion, a new challenger steps up. Points, lives,
+// a bigger power-up set, an on-screen "spin the wheel" picker for the class,
+// and per-class + overall leaderboards. Works for any subject. Zero deps —
+// no KaTeX, a tiny maths renderer instead.
+import { getState, save } from "./storage.js?v=20260801z";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260801z";
+import { parseEntries } from "./wheel.js?v=20260801z";
+import { SUPPORT } from "./support.js?v=20260801z";
+import * as sound from "./sound.js?v=20260801z";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -15,8 +16,7 @@ function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { co
 const norm = (s) => String(s).trim().toLowerCase();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "s" + Math.random().toString(36).slice(2));
 
-/* ---------- tiny maths markup renderer (no KaTeX) ----------
-   Supports \frac{a}{b}, x^2 / x^{10}, x_1, \sqrt{9} and common symbols. */
+/* ---------- tiny maths markup renderer (no KaTeX) ---------- */
 function mathHtml(str) {
   let s = String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,
@@ -35,8 +35,11 @@ function mathHtml(str) {
 const SVG = {
   heart: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21s-6.8-4.35-9.2-8.6C1 9.3 2.5 5.5 6 5.5c2 0 3.3 1.2 4 2.5.7-1.3 2-2.5 4-2.5 3.5 0 5 3.8 3.2 6.9C18.8 16.65 12 21 12 21z"/></svg>',
   smoke: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A5 5 0 0 0 8 8.1 3.5 3.5 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  fifty: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
   heal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
-  shield: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 3l7 3v5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  steal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  freeze: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l7 3v5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
   crown: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5L3 8z" fill="currentColor"/></svg>',
   swords: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M4 4h3l9 9-3 3-9-9V4zm16 0h-3l-4 4 3 3 4-4V4zM3 18l4-4 3 3-4 4H3v-3zm14-1l3 3v1h-1l-3-3 1-1z" fill="currentColor"/></svg>',
   flame: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1.6.7-2.8 1.4-3.6C8.6 8.9 9 9.8 10 10c-.3-2 .8-4.6 2-8z" fill="currentColor"/></svg>',
@@ -44,20 +47,40 @@ const SVG = {
   soundOff: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
 };
 
+// Power-up catalogue. Each player is granted 3 at random per round.
+const POWERS = {
+  smoke:  { label: "Smoke bomb — clear four wrong answers", icon: SVG.smoke },
+  fifty:  { label: "50:50 — clear half your wrong answers", icon: SVG.fifty },
+  heal:   { label: "Heal — restore one life", icon: SVG.heal },
+  steal:  { label: "Steal — take a life from your opponent", icon: SVG.steal },
+  freeze: { label: "Freeze — freeze your opponent for 3 seconds", icon: SVG.freeze },
+  shield: { label: "Shield — block your next wrong answer", icon: SVG.shield },
+};
+const POWER_KEYS = Object.keys(POWERS);
+
 export function initDojo(root) {
   const panel = root.querySelector(".dojo-panel");
   if (!panel) return;
 
   const cfg = () => {
     const s = getState();
-    if (!s.dojo) s.dojo = { activeSetId: null, lives: 3, sets: [], leaderboard: {} };
-    if (!Array.isArray(s.dojo.sets)) s.dojo.sets = [];
-    if (!s.dojo.leaderboard) s.dojo.leaderboard = {};
-    return s.dojo;
+    if (!s.dojo) s.dojo = {};
+    const d = s.dojo;
+    if (typeof d.lives !== "number") d.lives = 3;
+    if (!Array.isArray(d.sets)) d.sets = [];
+    if (!d.leaderboards) {
+      d.leaderboards = {};
+      // migrate the old single flat leaderboard into an "ad-hoc" bucket
+      if (d.leaderboard && Object.keys(d.leaderboard).length) {
+        const b = {};
+        for (const [n, v] of Object.entries(d.leaderboard)) b[n] = { wins: v.wins || 0, games: v.games || 0, best: v.best || 0, points: 0 };
+        d.leaderboards.adhoc = b;
+      }
+    }
+    return d;
   };
   const allSets = () => [...STARTER_PACKS, ...cfg().sets];
   const activeSet = () => allSets().find((x) => x.id === cfg().activeSetId) || STARTER_PACKS[0];
-  // A "class" is one of the user's saved SpinDecks wheels; its names are the roster.
   const wheels = () => getState().wheels || [];
   const roster = () => {
     const w = wheels().find((x) => x.id === cfg().rosterWheelId);
@@ -67,6 +90,24 @@ export function initDojo(root) {
     const pool = roster().filter((n) => norm(n) !== norm(exclude || ""));
     return pool.length ? pool[rint(pool.length)] : "";
   };
+
+  /* ---------- leaderboard storage (per class + overall) ---------- */
+  const classKeyNow = () => cfg().rosterWheelId || "adhoc";
+  const classLabel = (key) => key === "adhoc" ? "Ad-hoc games" : (wheels().find((w) => w.id === key)?.name || "Former class");
+  function bucket(key) { const b = cfg().leaderboards; if (!b[key]) b[key] = {}; return b[key]; }
+  function lbRow(store, name) { if (!store[name]) store[name] = { wins: 0, games: 0, best: 0, points: 0 }; return store[name]; }
+  function overallRows() {
+    const merged = {};
+    for (const b of Object.values(cfg().leaderboards)) {
+      for (const [name, v] of Object.entries(b)) {
+        const m = merged[name] || (merged[name] = { wins: 0, games: 0, best: 0, points: 0 });
+        m.wins += v.wins || 0; m.games += v.games || 0; m.points += v.points || 0; m.best = Math.max(m.best, v.best || 0);
+      }
+    }
+    return merged;
+  }
+  const hasAnyBoard = () => Object.values(cfg().leaderboards).some((b) => Object.keys(b).length);
+
   let soundOn = getState().soundOn !== false;
   let live = null;
   let blockTimer = null;
@@ -79,7 +120,6 @@ export function initDojo(root) {
     clearTimers();
     const sets = allSets();
     if (!cfg().activeSetId || !sets.find((x) => x.id === cfg().activeSetId)) cfg().activeSetId = sets[0].id;
-    const lbCount = Object.keys(cfg().leaderboard).length;
 
     panel.innerHTML = "";
     const card = el("div", "dojo-lobby");
@@ -169,6 +209,19 @@ export function initDojo(root) {
     names.append(p1w, p2w);
     card.appendChild(names);
 
+    // Spin the class wheel to choose both players.
+    if (list.length) {
+      const spinBtn = el("button", "btn dojo-spinbtn", "Spin the wheel for players");
+      spinBtn.type = "button";
+      spinBtn.addEventListener("click", async () => {
+        spinBtn.disabled = true;
+        const c = await spinPick({ label: "Champion" }); if (c) p1.value = c;
+        const ch = await spinPick({ exclude: c, label: "Challenger" }); if (ch) p2.value = ch;
+        spinBtn.disabled = false;
+      });
+      card.appendChild(spinBtn);
+    }
+
     const go = el("button", "btn primary dojo-begin", "Begin duel");
     go.addEventListener("click", () => {
       const n1 = p1.value.trim() || "Player 1";
@@ -179,16 +232,14 @@ export function initDojo(root) {
     card.appendChild(go);
 
     const foot = el("div", "dojo-lobbyfoot");
-    if (lbCount) { const lb = el("button", "btn ghost", "Leaderboard"); lb.addEventListener("click", renderLeaderboard); foot.appendChild(lb); }
-    const hint = el("p", "dojo-hint", "Tip: ask for a ready-made set on any topic and paste it in the editor — maths, spelling, science, vocab, anything.");
+    if (hasAnyBoard()) { const lb = el("button", "btn ghost", "Leaderboards"); lb.addEventListener("click", () => renderLeaderboard()); foot.appendChild(lb); }
     card.appendChild(foot);
-    card.appendChild(hint);
+    card.appendChild(el("p", "dojo-hint", "Tip: pick a class (a saved wheel) to spin for players and keep a per-class leaderboard. Ask for a ready-made set on any topic, or type one in the editor."));
     panel.appendChild(card);
   }
 
   /* ================= EDITOR ================= */
   function renderEditor(setId) {
-    // Built-in sets open as a duplicate the teacher can save as their own.
     const existing = cfg().sets.find((s) => s.id === setId);
     const builtin = STARTER_PACKS.find((s) => s.id === setId);
     const editing = existing || null;
@@ -228,7 +279,7 @@ export function initDojo(root) {
       save(); renderLobby();
     });
     const cancel = el("button", "btn ghost", "Cancel");
-    cancel.addEventListener("click", renderLobby);
+    cancel.addEventListener("click", () => renderLobby());
     row.append(saveBtn, cancel);
     if (editing) {
       const del = el("button", "btn ghost dojo-danger", "Delete set");
@@ -241,7 +292,6 @@ export function initDojo(root) {
     }
     card.appendChild(row);
 
-    // Import / export as JSON (for sets handed over ready-made)
     const io = el("details", "dojo-io");
     io.innerHTML = "<summary>Import / export as JSON</summary>";
     const jsonTa = el("textarea", "dojo-textarea dojo-json");
@@ -280,6 +330,30 @@ export function initDojo(root) {
     return questions.map((x) => `${x.q} | ${x.a}${x.distractors && x.distractors.length ? " | " + x.distractors.join(", ") : ""}`).join("\n");
   }
 
+  /* ================= SPIN THE WHEEL (class picker) ================= */
+  function spinPick({ exclude = "", label = "Next up" } = {}) {
+    return new Promise((resolve) => {
+      const pool = roster().filter((n) => norm(n) !== norm(exclude));
+      if (!pool.length) return resolve("");
+      const target = pool[rint(pool.length)];
+      const ov = el("div", "dojo-spinner", `<p class="dojo-spin-label">${escapeHtml(label)}</p><div class="dojo-spin-name" id="djSpinName">${escapeHtml(pool[0])}</div>`);
+      document.body.appendChild(ov);
+      const nameEl = ov.querySelector("#djSpinName");
+      const done = () => { nameEl.textContent = target; nameEl.classList.add("landed"); fx(sound.fanfare); setTimeout(() => { ov.remove(); resolve(target); }, 850); };
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || pool.length === 1) { setTimeout(done, 250); return; }
+      const start = performance.now(), total = 1800;
+      const step = () => {
+        nameEl.textContent = pool[rint(pool.length)];
+        fx(sound.tick);
+        const elapsed = performance.now() - start;
+        if (elapsed >= total) return done();
+        setTimeout(step, 55 + (elapsed / total) * 230); // ease-out
+      };
+      setTimeout(step, 60);
+    });
+  }
+
   /* ================= DUEL / ROUNDS ================= */
   function poolFor(set) {
     const seen = new Set(), pool = [];
@@ -294,7 +368,7 @@ export function initDojo(root) {
   }
 
   function startDuel(champ, chal) {
-    live = { champion: champ, challenger: chal, streak: 0, questions: shuffle(activeSet().questions), qi: 0 };
+    live = { champion: champ, challenger: chal, streak: 0, classKey: classKeyNow(), questions: shuffle(activeSet().questions), qi: 0 };
     buildBattleShell();
     startRound();
   }
@@ -305,7 +379,11 @@ export function initDojo(root) {
     if (live.qi >= live.questions.length) { live.questions = shuffle(activeSet().questions); live.qi = 0; }
     const q = live.questions[live.qi];
     const pool = poolFor(activeSet());
-    const mk = (name, side) => ({ name, side, lives: maxLives, opts: buildOptions(q, pool), powers: { smoke: 1, heal: 1, block: rint(100) < 40 ? 1 : 0 }, blockedUntil: 0, over: false });
+    const mk = (name, side) => {
+      const granted = shuffle(POWER_KEYS).slice(0, 3);
+      const powers = {}; granted.forEach((k) => (powers[k] = 1));
+      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, shield: false, blockedUntil: 0, over: false };
+    };
     live.q = q;
     live.p1 = mk(live.champion, "p1");
     live.p2 = mk(live.challenger, "p2");
@@ -324,22 +402,22 @@ export function initDojo(root) {
         </span>
       </div>
       <div class="dojo-hud">
-        <div class="dojo-hud-side dojo-hud-champ"><span class="dojo-role">${SVG.crown}</span><span class="dojo-pname" id="djName1"></span></div>
+        <div class="dojo-hud-side dojo-hud-champ"><span class="dojo-role">${SVG.crown}</span><span class="dojo-pname" id="djName1"></span><span class="dojo-shield" id="djShield1" hidden>${SVG.shield}</span></div>
         <div class="dojo-hud-center">
           <span class="dojo-lives" id="djLives1"></span>
           <span class="dojo-streakbadge" id="djStreak">${SVG.flame}<b>0</b></span>
           <span class="dojo-lives" id="djLives2"></span>
         </div>
-        <div class="dojo-hud-side dojo-hud-chal"><span class="dojo-pname" id="djName2"></span><span class="dojo-role">${SVG.swords}</span></div>
+        <div class="dojo-hud-side dojo-hud-chal"><span class="dojo-shield" id="djShield2" hidden>${SVG.shield}</span><span class="dojo-pname" id="djName2"></span><span class="dojo-role">${SVG.swords}</span></div>
       </div>
       <div class="dojo-qbar"><p class="dojo-race">Race to solve</p><div class="dojo-q" id="djQ"></div></div>
       <div class="dojo-arena">
         <div class="dojo-side dojo-p1">
-          <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid1"></div><div class="dojo-blocked" id="djBlock1" hidden><span>BLOCKED</span></div></div>
+          <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid1"></div><div class="dojo-blocked" id="djBlock1" hidden><span>FROZEN</span></div></div>
           <div class="dojo-powers" id="djPow1"></div>
         </div>
         <div class="dojo-side dojo-p2">
-          <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid2"></div><div class="dojo-blocked" id="djBlock2" hidden><span>BLOCKED</span></div></div>
+          <div class="dojo-boardwrap"><div class="dojo-grid" id="djGrid2"></div><div class="dojo-blocked" id="djBlock2" hidden><span>FROZEN</span></div></div>
           <div class="dojo-powers" id="djPow2"></div>
         </div>
       </div>
@@ -363,7 +441,7 @@ export function initDojo(root) {
     panel.querySelector("#djName1").textContent = live.p1.name;
     panel.querySelector("#djName2").textContent = live.p2.name;
     panel.querySelector("#djResult").hidden = true;
-    ["p1", "p2"].forEach((side) => { buildGrid(side); renderLives(side); renderPowers(side); panel.querySelector(side === "p1" ? "#djBlock1" : "#djBlock2").hidden = true; });
+    ["p1", "p2"].forEach((side) => { buildGrid(side); renderLives(side); renderPowers(side); renderShield(side); panel.querySelector(side === "p1" ? "#djBlock1" : "#djBlock2").hidden = true; });
   }
 
   function buildGrid(side) {
@@ -385,21 +463,22 @@ export function initDojo(root) {
     box.innerHTML = "";
     for (let i = 0; i < max; i++) { const h = el("span", "dojo-heart" + (i < p.lives ? " on" : ""), SVG.heart); box.appendChild(h); }
   }
+  function renderShield(side) {
+    const s = panel.querySelector(side === "p1" ? "#djShield1" : "#djShield2");
+    if (s) s.hidden = !live[side].shield;
+  }
 
   function renderPowers(side) {
     const p = live[side];
     const wrap = panel.querySelector(side === "p1" ? "#djPow1" : "#djPow2");
     wrap.innerHTML = "";
-    const add = (type, label, icon, avail) => {
-      const b = el("button", "dojo-pow dojo-pow-" + type, icon);
-      b.title = label; b.setAttribute("aria-label", label);
-      b.disabled = !avail || live.roundOver;
+    p.granted.forEach((type) => {
+      const b = el("button", "dojo-pow dojo-pow-" + type, POWERS[type].icon);
+      b.title = POWERS[type].label; b.setAttribute("aria-label", POWERS[type].label);
+      b.disabled = !p.powers[type] || live.roundOver;
       b.addEventListener("click", () => usePower(side, type));
       wrap.appendChild(b);
-    };
-    add("smoke", "Smoke bomb — clear four wrong answers", SVG.smoke, p.powers.smoke);
-    add("heal", "Heal — restore a life", SVG.heal, p.powers.heal);
-    if (p.powers.block) add("block", "Block — freeze your opponent for 3 seconds", SVG.shield, p.powers.block);
+    });
   }
 
   function usePower(side, type) {
@@ -407,14 +486,21 @@ export function initDojo(root) {
     if (live.roundOver || p.over || !p.powers[type] || Date.now() < p.blockedUntil) return;
     p.powers[type] = 0;
     const grid = panel.querySelector(side === "p1" ? "#djGrid1" : "#djGrid2");
-    if (type === "smoke") {
+    const o = live[side === "p1" ? "p2" : "p1"];
+    const clearWrong = (n) => {
       const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && norm(b.dataset.val) !== norm(live.q.a));
-      shuffle(wrong).slice(0, 4).forEach((b) => { b.disabled = true; b.classList.add("smoked"); });
+      shuffle(wrong).slice(0, n).forEach((b) => { b.disabled = true; b.classList.add("smoked"); });
+    };
+    if (type === "smoke") { clearWrong(4); fx(sound.swoosh); }
+    else if (type === "fifty") {
+      const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && norm(b.dataset.val) !== norm(live.q.a));
+      clearWrong(Math.ceil(wrong.length / 2)); fx(sound.swoosh);
+    } else if (type === "heal") { p.lives = Math.min(cfg().lives || 3, p.lives + 1); renderLives(side); fx(sound.beep); }
+    else if (type === "steal") {
+      if (o.lives > 1) { o.lives -= 1; p.lives = Math.min(cfg().lives || 3, p.lives + 1); renderLives(o.side); renderLives(side); }
       fx(sound.swoosh);
-    } else if (type === "heal") {
-      p.lives = Math.min(cfg().lives || 3, p.lives + 1); renderLives(side); fx(sound.beep);
-    } else if (type === "block") {
-      const o = live[side === "p1" ? "p2" : "p1"];
+    } else if (type === "shield") { p.shield = true; renderShield(side); fx(sound.beep); }
+    else if (type === "freeze") {
       o.blockedUntil = Date.now() + 3000;
       const ov = panel.querySelector(o.side === "p1" ? "#djBlock1" : "#djBlock2");
       ov.hidden = false; fx(sound.swoosh);
@@ -429,6 +515,7 @@ export function initDojo(root) {
     if (live.roundOver || p.over || btn.disabled || Date.now() < p.blockedUntil) return;
     if (norm(val) === norm(live.q.a)) { btn.classList.add("correct"); return winRound(side); }
     btn.classList.add("wrong"); btn.disabled = true;
+    if (p.shield) { p.shield = false; renderShield(side); fx(sound.tick); return; } // shield absorbs the mistake
     p.lives--; renderLives(side); fx(sound.buzz);
     if (p.lives <= 0) { p.over = true; winRound(side === "p1" ? "p2" : "p1"); }
   }
@@ -438,33 +525,36 @@ export function initDojo(root) {
     clearTimeout(blockTimer);
     const winner = live[side].name;
     const loser = live[side === "p1" ? "p2" : "p1"].name;
-    // Reveal correct answer on both boards, lock everything.
     ["#djGrid1", "#djGrid2"].forEach((g) => panel.querySelectorAll(g + " .dojo-opt").forEach((b) => {
       b.disabled = true; if (norm(b.dataset.val) === norm(live.q.a)) b.classList.add("correct");
     }));
     renderPowers("p1"); renderPowers("p2");
 
+    const prevStreak = live.streak;
     live.streak = side === "p1" ? live.streak + 1 : 1; // champion defended, or challenger dethroned
     live.pendingChampion = winner;
+    // Points: base + streak bonus. Toppling a champion mid-streak is worth more.
+    const pts = 10 + (side === "p1" ? 2 * prevStreak : 5 * prevStreak);
+
     const badge = panel.querySelector("#djStreak");
     if (badge) { badge.querySelector("b").textContent = live.streak; badge.classList.toggle("hot", live.streak > 0); }
 
-    const lb = cfg().leaderboard;
-    const w = lb[winner] || (lb[winner] = { wins: 0, games: 0, best: 0 });
-    const l = lb[loser] || (lb[loser] = { wins: 0, games: 0, best: 0 });
-    w.wins++; w.games++; l.games++; w.best = Math.max(w.best, live.streak);
+    const store = bucket(live.classKey);
+    const w = lbRow(store, winner), l = lbRow(store, loser);
+    w.wins++; w.games++; w.points += pts; w.best = Math.max(w.best, live.streak);
+    l.games++;
     save();
     fx(sound.fanfare);
-    showResult(winner);
+    showResult(winner, pts);
   }
 
-  function showResult(winner) {
+  function showResult(winner, pts) {
     const box = panel.querySelector("#djResult");
     box.hidden = false;
     box.innerHTML = "";
     box.appendChild(el("p", "dojo-res-eyebrow", "Round won"));
     box.appendChild(el("p", "dojo-res-name", winner));
-    box.appendChild(el("p", "dojo-res-streak", live.streak > 1 ? `Champion on a streak of ${live.streak}` : "New champion!"));
+    box.appendChild(el("p", "dojo-res-streak", `+${pts} points · ${live.streak > 1 ? "streak of " + live.streak : "new champion!"}`));
     const form = el("div", "dojo-res-form");
     const inp = el("input", "dojo-input"); inp.placeholder = "Next challenger name"; inp.maxLength = 24;
     const list = roster();
@@ -473,38 +563,67 @@ export function initDojo(root) {
       box.appendChild(dl); inp.setAttribute("list", "djRoster2");
     }
     const next = el("button", "btn primary", "Next challenger");
-    const go = () => { const n = inp.value.trim() || "Challenger"; live.champion = live.pendingChampion; live.challenger = n; live.qi++; startRound(); };
-    next.addEventListener("click", go);
+    const go = (name) => { live.champion = live.pendingChampion; live.challenger = (name || inp.value.trim() || "Challenger"); live.qi++; startRound(); };
+    next.addEventListener("click", () => go());
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
     form.append(inp, next);
-    if (list.length) { const r = el("button", "btn ghost", "Random"); r.type = "button"; r.addEventListener("click", () => { inp.value = randomName(live.pendingChampion); }); form.append(r); }
+    if (list.length) {
+      const spin = el("button", "btn dojo-spinbtn", "Spin for challenger"); spin.type = "button";
+      spin.addEventListener("click", async () => { const ch = await spinPick({ exclude: live.pendingChampion, label: "Next challenger" }); if (ch) go(ch); });
+      form.append(spin);
+    }
     box.appendChild(form);
     const fin = el("button", "btn ghost dojo-res-fin", "Finish — show leaderboard");
-    fin.addEventListener("click", renderLeaderboard);
+    fin.addEventListener("click", () => renderLeaderboard(live.classKey));
     box.appendChild(fin);
     setTimeout(() => inp.focus(), 30);
   }
 
-  /* ================= LEADERBOARD ================= */
-  function renderLeaderboard() {
+  /* ================= LEADERBOARDS (per class + overall) ================= */
+  function renderLeaderboard(scope) {
     clearTimers();
-    const lb = cfg().leaderboard;
-    const rows = Object.entries(lb).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.wins - a.wins || b.best - a.best || a.name.localeCompare(b.name));
+    const boards = cfg().leaderboards;
+    const keysWithData = Object.keys(boards).filter((k) => Object.keys(boards[k]).length);
+    if (scope == null) scope = live ? live.classKey : "overall";
+    if (scope !== "overall" && !keysWithData.includes(scope)) scope = "overall";
+
+    const src = scope === "overall" ? overallRows() : boards[scope] || {};
+    const rows = Object.entries(src).map(([name, v]) => ({ name, wins: v.wins || 0, games: v.games || 0, best: v.best || 0, points: v.points || 0 }))
+      .sort((a, b) => b.points - a.points || b.best - a.best || a.games - b.games || a.name.localeCompare(b.name));
+
     panel.innerHTML = "";
     const card = el("div", "dojo-lbcard");
     card.appendChild(el("h2", "dojo-title", "Leaderboard"));
+
+    const scopeRow = el("div", "dojo-field dojo-field-inline");
+    scopeRow.appendChild(el("label", "dojo-lbl", "Show"));
+    const scopeSel = el("select", "dojo-select");
+    const oOverall = el("option"); oOverall.value = "overall"; oOverall.textContent = "Overall (all classes)"; if (scope === "overall") oOverall.selected = true; scopeSel.appendChild(oOverall);
+    keysWithData.forEach((k) => { const o = el("option"); o.value = k; o.textContent = classLabel(k); if (k === scope) o.selected = true; scopeSel.appendChild(o); });
+    scopeSel.addEventListener("change", () => renderLeaderboard(scopeSel.value));
+    scopeRow.appendChild(scopeSel);
+    card.appendChild(scopeRow);
+
     if (!rows.length) card.appendChild(el("p", "dojo-lede", "No rounds played yet."));
     else {
-      const table = el("table", "dojo-lbtable", "<thead><tr><th>#</th><th class='l'>Student</th><th>Wins</th><th>Best streak</th><th>Rounds</th></tr></thead>");
+      const table = el("table", "dojo-lbtable", "<thead><tr><th>#</th><th class='l'>Student</th><th>Points</th><th>Wins</th><th>Best</th><th>Rounds</th></tr></thead>");
       const tb = el("tbody");
-      rows.forEach((r, i) => tb.appendChild(el("tr", i === 0 ? "top" : "", `<td>${i + 1}</td><td class='l'>${escapeHtml(r.name)}</td><td>${r.wins}</td><td>${r.best}</td><td>${r.games}</td>`)));
+      rows.forEach((r, i) => {
+        const medal = i < 3 ? ` medal m${i + 1}` : "";
+        tb.appendChild(el("tr", (i === 0 ? "top" : "") + medal, `<td>${i + 1}</td><td class='l'>${escapeHtml(r.name)}</td><td class='dojo-pts'>${r.points}</td><td>${r.wins}</td><td>${r.best}</td><td>${r.games}</td>`));
+      });
       table.appendChild(tb); card.appendChild(table);
     }
+
     const row = el("div", "dojo-editbtns");
     const back = el("button", "btn primary", live ? "Back to duel" : "New duel");
     back.addEventListener("click", () => { if (live && !live.roundOver) paintRound(); else renderLobby(); });
-    const reset = el("button", "btn ghost dojo-danger", "Reset leaderboard");
-    reset.addEventListener("click", () => { cfg().leaderboard = {}; save(); renderLeaderboard(); });
+    const reset = el("button", "btn ghost dojo-danger", scope === "overall" ? "Reset all boards" : "Reset this class");
+    reset.addEventListener("click", () => {
+      if (scope === "overall") cfg().leaderboards = {};
+      else delete cfg().leaderboards[scope];
+      save(); renderLeaderboard("overall");
+    });
     row.append(back, reset);
     card.appendChild(row);
     panel.appendChild(card);

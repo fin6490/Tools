@@ -952,7 +952,23 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-pow:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
 .dojo-pow:disabled { opacity: .3; cursor: default; }
 .dojo-pow-heal:not(:disabled) { color: #35d183; border-color: color-mix(in srgb, #35d183 45%, var(--line)); }
-.dojo-pow-block:not(:disabled) { color: #7fd8ff; border-color: color-mix(in srgb, #7fd8ff 55%, var(--line)); }
+.dojo-pow-freeze:not(:disabled) { color: #7fd8ff; border-color: color-mix(in srgb, #7fd8ff 55%, var(--line)); }
+.dojo-pow-shield:not(:disabled) { color: #b79bff; border-color: color-mix(in srgb, #b79bff 55%, var(--line)); }
+.dojo-pow-steal:not(:disabled) { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.dojo-pow-fifty:not(:disabled) { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); }
+
+/* shield armed badge next to a player's name */
+.dojo-shield { display: inline-flex; color: #b79bff; }
+.dojo-shield svg { display: block; }
+
+/* spin-the-wheel picker overlay */
+.dojo-spinner { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(4px); }
+.dojo-spin-label { font-family: var(--mono); font-size: 14px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin: 0; }
+.dojo-spin-name { font-family: var(--mono); font-weight: 800; font-size: clamp(40px, 10vw, 108px); color: var(--ink); text-align: center; line-height: 1.05; padding: 0 16px; }
+.dojo-spin-name.landed { color: var(--gold); animation: dojoLand .4s cubic-bezier(.2,1.3,.4,1) both; }
+@keyframes dojoLand { from { transform: scale(.7); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+.dojo-spinbtn { border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); color: var(--gold); }
+@media (prefers-reduced-motion: reduce) { .dojo-spin-name.landed { animation: none; } }
 
 /* Round result overlay */
 .dojo-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(3px); border-radius: 16px; z-index: 10; padding: 20px; }
@@ -968,7 +984,12 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-lbtable th, .dojo-lbtable td { padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .dojo-lbtable th { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .dojo-lbtable .l { text-align: left; }
-.dojo-lbtable tbody tr.top td { color: var(--gold); font-weight: 800; }
+.dojo-lbtable .dojo-pts { font-weight: 800; color: var(--ink); }
+.dojo-lbtable tbody tr.medal td { font-weight: 800; }
+.dojo-lbtable tbody tr.m1 td { color: var(--gold); }
+.dojo-lbtable tbody tr.m2 td { color: #ccd3da; }
+.dojo-lbtable tbody tr.m3 td { color: #d9a066; }
+.dojo-lbtable tbody tr.medal .dojo-pts { color: inherit; }
 
 /* Light maths markup */
 .mfrac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .15em; }
