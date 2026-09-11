@@ -4,11 +4,11 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260801z";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260801z";
-import { parseEntries } from "./wheel.js?v=20260801z";
-import { SUPPORT } from "./support.js?v=20260801z";
-import * as sound from "./sound.js?v=20260801z";
+import { getState, save } from "./storage.js?v=20260911a";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260911a";
+import { parseEntries } from "./wheel.js?v=20260911a";
+import { SUPPORT } from "./support.js?v=20260911a";
+import * as sound from "./sound.js?v=20260911a";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -34,12 +34,13 @@ function mathHtml(str) {
 /* ---------- inline SVG icons (no emoji) ---------- */
 const SVG = {
   heart: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21s-6.8-4.35-9.2-8.6C1 9.3 2.5 5.5 6 5.5c2 0 3.3 1.2 4 2.5.7-1.3 2-2.5 4-2.5 3.5 0 5 3.8 3.2 6.9C18.8 16.65 12 21 12 21z"/></svg>',
-  smoke: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A5 5 0 0 0 8 8.1 3.5 3.5 0 0 0 7 18z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
   fifty: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
   heal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
   steal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   freeze: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   shield: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l7 3v5c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  poison: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a6 6 0 0 0-4 10.5V17a4 4 0 0 0 8 0v-3.5A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9.7" cy="11" r="1.3" fill="currentColor"/><circle cx="14.3" cy="11" r="1.3" fill="currentColor"/></svg>',
+  jumble: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h4l9 10h3M4 17h4l3-3.3M17 4l3 3-3 3M17 14l3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   crown: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5L3 8z" fill="currentColor"/></svg>',
   swords: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M4 4h3l9 9-3 3-9-9V4zm16 0h-3l-4 4 3 3 4-4V4zM3 18l4-4 3 3-4 4H3v-3zm14-1l3 3v1h-1l-3-3 1-1z" fill="currentColor"/></svg>',
   flame: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1.6.7-2.8 1.4-3.6C8.6 8.9 9 9.8 10 10c-.3-2 .8-4.6 2-8z" fill="currentColor"/></svg>',
@@ -47,14 +48,16 @@ const SVG = {
   soundOff: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
 };
 
-// Power-up catalogue. Each player is granted 3 at random per round.
+// Power-up catalogue. Each player is granted 3 at random per round, but only
+// ONE may be used per round — so it's a choice, not a free-for-all at the start.
 const POWERS = {
-  smoke:  { label: "Smoke bomb — clear four wrong answers", icon: SVG.smoke },
-  fifty:  { label: "50:50 — clear half your wrong answers", icon: SVG.fifty },
-  heal:   { label: "Heal — restore one life", icon: SVG.heal },
-  steal:  { label: "Steal — take a life from your opponent", icon: SVG.steal },
-  freeze: { label: "Freeze — freeze your opponent for 3 seconds", icon: SVG.freeze },
-  shield: { label: "Shield — block your next wrong answer", icon: SVG.shield },
+  fifty:  { name: "50:50",  label: "50:50 — clear half your wrong answers", icon: SVG.fifty },
+  heal:   { name: "Heal",   label: "Heal — restore one life", icon: SVG.heal },
+  shield: { name: "Shield", label: "Shield — block your next wrong answer", icon: SVG.shield },
+  steal:  { name: "Steal",  label: "Steal — take a life from your opponent", icon: SVG.steal },
+  freeze: { name: "Freeze", label: "Freeze — freeze your opponent for 3 seconds", icon: SVG.freeze },
+  poison: { name: "Poison", label: "Poison — your opponent loses a life over time", icon: SVG.poison },
+  jumble: { name: "Jumble", label: "Jumble — shuffle your opponent's answers", icon: SVG.jumble },
 };
 const POWER_KEYS = Object.keys(POWERS);
 
@@ -111,6 +114,7 @@ export function initDojo(root) {
   let soundOn = getState().soundOn !== false;
   let live = null;
   let blockTimer = null;
+  let poisonTimers = [];
 
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
@@ -382,7 +386,7 @@ export function initDojo(root) {
     const mk = (name, side) => {
       const granted = shuffle(POWER_KEYS).slice(0, 3);
       const powers = {}; granted.forEach((k) => (powers[k] = 1));
-      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, shield: false, blockedUntil: 0, over: false };
+      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, powerUsed: false, shield: false, blockedUntil: 0, poisoned: false, over: false };
     };
     live.q = q;
     live.p1 = mk(live.champion, "p1");
@@ -441,7 +445,12 @@ export function initDojo(root) {
     panel.querySelector("#djName1").textContent = live.p1.name;
     panel.querySelector("#djName2").textContent = live.p2.name;
     panel.querySelector("#djResult").hidden = true;
-    ["p1", "p2"].forEach((side) => { buildGrid(side); renderLives(side); renderPowers(side); renderShield(side); panel.querySelector(side === "p1" ? "#djBlock1" : "#djBlock2").hidden = true; });
+    ["p1", "p2"].forEach((side) => { buildGrid(side); renderLives(side); renderPowers(side); renderShield(side); markPoison(side, false); panel.querySelector(side === "p1" ? "#djBlock1" : "#djBlock2").hidden = true; });
+  }
+
+  function markPoison(side, on) {
+    const wrap = panel.querySelector((side === "p1" ? ".dojo-p1" : ".dojo-p2") + " .dojo-boardwrap");
+    if (wrap) wrap.classList.toggle("poisoned", on);
   }
 
   function buildGrid(side) {
@@ -473,9 +482,9 @@ export function initDojo(root) {
     const wrap = panel.querySelector(side === "p1" ? "#djPow1" : "#djPow2");
     wrap.innerHTML = "";
     p.granted.forEach((type) => {
-      const b = el("button", "dojo-pow dojo-pow-" + type, POWERS[type].icon);
+      const b = el("button", "dojo-pow dojo-pow-" + type, POWERS[type].icon + `<span class="dojo-pow-name">${POWERS[type].name}</span>`);
       b.title = POWERS[type].label; b.setAttribute("aria-label", POWERS[type].label);
-      b.disabled = !p.powers[type] || live.roundOver;
+      b.disabled = !p.powers[type] || p.powerUsed || live.roundOver;
       b.addEventListener("click", () => usePower(side, type));
       wrap.appendChild(b);
     });
@@ -483,18 +492,15 @@ export function initDojo(root) {
 
   function usePower(side, type) {
     const p = live[side];
-    if (live.roundOver || p.over || !p.powers[type] || Date.now() < p.blockedUntil) return;
+    if (live.roundOver || p.over || p.powerUsed || !p.powers[type] || Date.now() < p.blockedUntil) return;
     p.powers[type] = 0;
+    p.powerUsed = true; // one power-up per round — locks the rest
     const grid = panel.querySelector(side === "p1" ? "#djGrid1" : "#djGrid2");
     const o = live[side === "p1" ? "p2" : "p1"];
-    const clearWrong = (n) => {
+    if (type === "fifty") {
       const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && norm(b.dataset.val) !== norm(live.q.a));
-      shuffle(wrong).slice(0, n).forEach((b) => { b.disabled = true; b.classList.add("smoked"); });
-    };
-    if (type === "smoke") { clearWrong(4); fx(sound.swoosh); }
-    else if (type === "fifty") {
-      const wrong = [...grid.querySelectorAll(".dojo-opt")].filter((b) => !b.disabled && norm(b.dataset.val) !== norm(live.q.a));
-      clearWrong(Math.ceil(wrong.length / 2)); fx(sound.swoosh);
+      shuffle(wrong).slice(0, Math.ceil(wrong.length / 2)).forEach((b) => { b.disabled = true; b.classList.add("smoked"); });
+      fx(sound.swoosh);
     } else if (type === "heal") { p.lives = Math.min(cfg().lives || 3, p.lives + 1); renderLives(side); fx(sound.beep); }
     else if (type === "steal") {
       if (o.lives > 1) { o.lives -= 1; p.lives = Math.min(cfg().lives || 3, p.lives + 1); renderLives(o.side); renderLives(side); }
@@ -506,6 +512,21 @@ export function initDojo(root) {
       ov.hidden = false; fx(sound.swoosh);
       clearTimeout(blockTimer);
       blockTimer = setTimeout(() => { if (live && !live.roundOver) { o.blockedUntil = 0; ov.hidden = true; } }, 3000);
+    } else if (type === "poison") {
+      o.poisoned = true; markPoison(o.side, true); fx(sound.buzz);
+      const tick = (n) => {
+        if (!live || live.roundOver || o.over || !o.poisoned) return;
+        o.lives--; renderLives(o.side); fx(sound.buzz);
+        if (o.lives <= 0) { o.over = true; markPoison(o.side, false); return winRound(side); }
+        if (n > 0) poisonTimers.push(setTimeout(() => tick(n - 1), 2200));
+        else { o.poisoned = false; markPoison(o.side, false); }
+      };
+      poisonTimers.push(setTimeout(() => tick(1), 2200)); // two ticks, ~2.2s apart
+    } else if (type === "jumble") {
+      const og = panel.querySelector(o.side === "p1" ? "#djGrid1" : "#djGrid2");
+      shuffle([...og.children]).forEach((c) => og.appendChild(c));
+      og.classList.remove("jumbling"); void og.offsetWidth; og.classList.add("jumbling");
+      fx(sound.swoosh);
     }
     renderPowers(side);
   }
@@ -523,6 +544,7 @@ export function initDojo(root) {
   function winRound(side) {
     live.roundOver = true;
     clearTimeout(blockTimer);
+    poisonTimers.forEach((t) => clearTimeout(t)); poisonTimers = [];
     const winner = live[side].name;
     const loser = live[side === "p1" ? "p2" : "p1"].name;
     ["#djGrid1", "#djGrid2"].forEach((g) => panel.querySelectorAll(g + " .dojo-opt").forEach((b) => {
@@ -629,7 +651,10 @@ export function initDojo(root) {
     panel.appendChild(card);
   }
 
-  function clearTimers() { clearTimeout(blockTimer); blockTimer = null; }
+  function clearTimers() {
+    clearTimeout(blockTimer); blockTimer = null;
+    poisonTimers.forEach((t) => clearTimeout(t)); poisonTimers = [];
+  }
   function escapeHtml(s) { return String(s).replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[m])); }
 
   renderLobby();
