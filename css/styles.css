@@ -1002,7 +1002,10 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-spin-name.landed { color: var(--gold); animation: dojoLand .4s cubic-bezier(.2,1.3,.4,1) both; }
 @keyframes dojoLand { from { transform: scale(.7); opacity: .3; } to { transform: scale(1); opacity: 1; } }
 .dojo-spinbtn { border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); color: var(--gold); }
-@media (prefers-reduced-motion: reduce) { .dojo-spin-name.landed { animation: none; } }
+/* the "Begin round — Name" button after a spin — pulses so it's clear you start it */
+.dojo-begin-armed { animation: dojoArm 1.1s ease-in-out infinite alternate; }
+@keyframes dojoArm { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--teal) 55%, transparent); } to { box-shadow: 0 0 0 6px color-mix(in srgb, var(--teal) 0%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .dojo-spin-name.landed, .dojo-begin-armed { animation: none; } }
 
 /* Round result overlay */
 .dojo-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(3px); border-radius: 16px; z-index: 10; padding: 20px; }
