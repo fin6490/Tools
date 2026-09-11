@@ -2,7 +2,7 @@
 // one-line suggestion to the same no-backend form service as the waitlist.
 // Loaded on every page from the footer, so it self-initialises and quietly
 // bails when the form isn't on the page.
-import { SUPPORT } from "./support.js?v=20260801y";
+import { SUPPORT } from "./support.js?v=20260801z";
 
 const form = document.getElementById("suggestForm");
 if (form) {
