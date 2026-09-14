@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260914e",
+  token: "20260914f",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -447,6 +447,34 @@ export const TOOLS = [
       ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
       ["How are the cards matched?", "Each question card pairs with its answer card. Only questions with distinct answers are used, so there are no ambiguous duplicates on the board."],
       ["Can two teams play?", "Yes — switch to two-team mode. A match scores a point and keeps your turn; a miss passes to the other team."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "bingo",
+    view: "bingo",
+    nav: "Bingo",
+    title: "Classroom Bingo — Free Question Bingo Caller & Card Maker | SpinDecks",
+    description:
+      "Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline.",
+    h1: "Classroom bingo",
+    intro:
+      "Whole-class bingo built from your questions. Print a set of cards for the class (or have students fill a blank grid from the answer pool), then call questions one at a time — the class works out each answer and marks it off. First to a line or full house wins. It uses the same question sets as The BT Dojo.",
+    steps: [
+      "Pick a question set and a card size (3×3, 4×4 or 5×5).",
+      "Print cards for the class, or show the answer pool so students fill their own grid.",
+      "Press “Start calling”, read the question, then “Reveal answer” when the class is ready.",
+      "Students mark the answer if it's on their card. Keep calling until someone shouts bingo.",
+    ],
+    whoFor: [
+      ["Teachers", "a whole-class recap where everyone plays at once — times tables, vocabulary, key facts."],
+      ["Tutors", "a relaxed group game that still drills recall."],
+      ["Anyone", "quiz bingo for a club or family night on any topic."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
+      ["How do students get cards?", "Print a batch of randomly generated cards from the “Print cards” button, or show the answer pool on the board and have students copy any answers they like into a blank grid."],
+      ["How does the caller work?", "It shows one question at a time. You reveal the answer when the class is ready, and each revealed answer is added to a “called” list so you can check a winning card."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
     ],
   },
