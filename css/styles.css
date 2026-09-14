@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal, .view-pairs, .view-bingo { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -876,7 +876,22 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Class quiz */
+.classquiz-preview { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.classquiz-prevteam { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.classquiz-prevteam strong { color: var(--ink); }
+.classquiz-game { display: flex; flex-direction: column; gap: 16px; }
+.classquiz-scores { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.classquiz-score { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border: 2px solid var(--line); border-radius: 999px; font-family: var(--mono); font-weight: 800; }
+.classquiz-score.lead { border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 25%, transparent); }
+.classquiz-tname { color: var(--ink); }
+.classquiz-tscore { color: var(--accent); font-size: 20px; }
+.classquiz-stage { min-height: 34vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 20px; border: 2px solid var(--line); border-radius: 18px; background: var(--panel-2); }
+.classquiz-award { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+.classquiz-awardlbl { font-weight: 700; color: var(--muted); width: 100%; text-align: center; }
+.classquiz-awardbtn { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); }
 
 /* Bingo caller */
 .bingo-caller { display: flex; flex-direction: column; gap: 16px; }
@@ -893,6 +908,8 @@ a.tab { display: inline-flex; align-items: center; }
 .bingo-called-item { border-color: color-mix(in srgb, #35d183 55%, var(--line)); color: #35d183; }
 .bingo-pool-item { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .bingo-ans { animation: none; } }
+
+.bingo-count-ctrl { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--muted); font-size: 14px; }
 
 /* Bingo printable cards */
 .bingo-print { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }

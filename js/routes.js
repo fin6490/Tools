@@ -79,6 +79,11 @@ export const ROUTES = {
     "slug": "bingo",
     "title": "Classroom Bingo — Free Question Bingo Caller & Card Maker | SpinDecks",
     "description": "Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline."
+  },
+  "classquiz": {
+    "slug": "class-quiz",
+    "title": "Class Quiz — Free Team Quiz Game for the Whiteboard | SpinDecks",
+    "description": "Run a team quiz on the whiteboard. Split the class into teams (from a saved wheel if you like), reveal each answer and tap the team that got it — scores keep themselves. Free, no sign-up, works offline."
   }
 };
 
