@@ -4,11 +4,11 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260911c";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260911c";
-import { parseEntries } from "./wheel.js?v=20260911c";
-import { SUPPORT } from "./support.js?v=20260911c";
-import * as sound from "./sound.js?v=20260911c";
+import { getState, save } from "./storage.js?v=20260914a";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260914a";
+import { parseEntries } from "./wheel.js?v=20260914a";
+import { SUPPORT } from "./support.js?v=20260914a";
+import * as sound from "./sound.js?v=20260914a";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -21,6 +21,17 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "s" + Math.random()
 const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
 const acceptedSet = (q) => new Set(answersOf(q).map(norm));
 const isCorrect = (q, v) => acceptedSet(q).has(norm(v));
+
+// Point ranks — like online-game tiers. A student's tier comes from their points.
+const TIERS = [
+  { name: "Bronze",   min: 0,    color: "#cd7f32" },
+  { name: "Silver",   min: 100,  color: "#b8c0cc" },
+  { name: "Gold",     min: 250,  color: "#f4c542" },
+  { name: "Platinum", min: 500,  color: "#5ad2c2" },
+  { name: "Diamond",  min: 1000, color: "#7cc4ff" },
+  { name: "Master",   min: 2000, color: "#c08bff" },
+];
+const tierFor = (pts) => { let t = TIERS[0]; for (const x of TIERS) if ((pts || 0) >= x.min) t = x; return t; };
 
 /* ---------- tiny maths markup renderer (no KaTeX) ---------- */
 function mathHtml(str) {
@@ -50,6 +61,7 @@ const SVG = {
   timebomb: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="14" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10v4l3 2M9 2h6M18.5 6.5l2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   mirror: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v18" stroke="currentColor" stroke-width="2" stroke-dasharray="2 3"/><path d="M8 8L4 12l4 4M16 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   focus: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  trap: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><circle cx="9" cy="15" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg>',
   crown: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5L3 8z" fill="currentColor"/></svg>',
   swords: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M4 4h3l9 9-3 3-9-9V4zm16 0h-3l-4 4 3 3 4-4V4zM3 18l4-4 3 3-4 4H3v-3zm14-1l3 3v1h-1l-3-3 1-1z" fill="currentColor"/></svg>',
   flame: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1.6.7-2.8 1.4-3.6C8.6 8.9 9 9.8 10 10c-.3-2 .8-4.6 2-8z" fill="currentColor"/></svg>',
@@ -70,6 +82,7 @@ const POWERS = {
   timebomb: { name: "Time bomb", label: "Time bomb — the opponent loses a life if they don't answer in 5s", icon: SVG.timebomb },
   mirror: { name: "Mirror", label: "Mirror — reflect the opponent's next power-up back at them", icon: SVG.mirror },
   focus: { name: "Focus", label: "Focus — your next correct answer scores double", icon: SVG.focus },
+  trap: { name: "Trap", label: "Trap — your opponent must clear a mini-game before they can answer", icon: SVG.trap },
 };
 const POWER_KEYS = Object.keys(POWERS);
 
@@ -128,6 +141,15 @@ export function initDojo(root) {
   let blockTimer = null;
   let poisonTimers = [];
   let bombTimers = [];
+  // Fair spin: don't draw the same student again until everyone's had a turn.
+  let pickedCycle = new Set();
+  function fairTarget(pool) {
+    let fresh = pool.filter((n) => !pickedCycle.has(norm(n)));
+    if (!fresh.length) { pickedCycle = new Set(); fresh = pool.slice(); } // everyone drawn — start a new cycle
+    const t = fresh[rint(fresh.length)];
+    pickedCycle.add(norm(t));
+    return t;
+  }
 
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
@@ -209,7 +231,7 @@ export function initDojo(root) {
     const clsSel = el("select", "dojo-select");
     const none = el("option"); none.value = ""; none.textContent = "— none —"; clsSel.appendChild(none);
     wheels().forEach((w) => { const o = el("option"); o.value = w.id; o.textContent = `${w.name} (${parseEntries(w.text).length})`; if (w.id === cfg().rosterWheelId) o.selected = true; clsSel.appendChild(o); });
-    clsSel.addEventListener("change", () => { cfg().rosterWheelId = clsSel.value || null; save(); renderLobby(); });
+    clsSel.addEventListener("change", () => { cfg().rosterWheelId = clsSel.value || null; pickedCycle = new Set(); save(); renderLobby(); });
     classRow.appendChild(clsSel);
     card.appendChild(classRow);
 
@@ -362,7 +384,7 @@ export function initDojo(root) {
     return new Promise((resolve) => {
       const pool = roster().filter((n) => norm(n) !== norm(exclude));
       if (!pool.length) return resolve("");
-      const target = pool[rint(pool.length)];
+      const target = fairTarget(pool);
       const ov = el("div", "dojo-spinner", `<p class="dojo-spin-label">${escapeHtml(label)}</p><div class="dojo-spin-name" id="djSpinName">${escapeHtml(pool[0])}</div>`);
       document.body.appendChild(ov);
       const nameEl = ov.querySelector("#djSpinName");
@@ -397,6 +419,8 @@ export function initDojo(root) {
   }
 
   function startDuel(champ, chal) {
+    pickedCycle = new Set(); // fresh fair-rotation cycle each session
+    [champ, chal].forEach((n) => { if (n) pickedCycle.add(norm(n)); }); // the two already up count as drawn
     live = { champion: champ, challenger: chal, streak: 0, classKey: classKeyNow(), questions: shuffle(activeSet().questions), qi: 0 };
     buildBattleShell();
     startRound();
@@ -411,7 +435,7 @@ export function initDojo(root) {
     const mk = (name, side) => {
       const granted = shuffle(POWER_KEYS).slice(0, 3);
       const powers = {}; granted.forEach((k) => (powers[k] = 1));
-      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, powerUsed: false, shield: false, mirror: false, focus: false, blockedUntil: 0, poisoned: false, over: false };
+      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, powerUsed: false, shield: false, mirror: false, focus: false, trapped: false, blockedUntil: 0, poisoned: false, over: false };
     };
     live.q = q;
     live.p1 = mk(live.champion, "p1");
@@ -517,7 +541,7 @@ export function initDojo(root) {
     p.granted.forEach((type) => {
       const b = el("button", "dojo-pow dojo-pow-" + type, POWERS[type].icon + `<span class="dojo-pow-name">${POWERS[type].name}</span>`);
       b.title = POWERS[type].label; b.setAttribute("aria-label", POWERS[type].label);
-      b.disabled = !p.powers[type] || p.powerUsed || live.roundOver;
+      b.disabled = !p.powers[type] || p.powerUsed || p.trapped || live.roundOver;
       b.addEventListener("click", () => usePower(side, type));
       wrap.appendChild(b);
     });
@@ -534,7 +558,7 @@ export function initDojo(root) {
 
     // Offensive powers target the opponent — unless they've armed a Mirror, which
     // bounces the power straight back onto the caster (and is spent doing so).
-    const offensive = type === "steal" || type === "freeze" || type === "poison" || type === "jumble" || type === "timebomb";
+    const offensive = type === "steal" || type === "freeze" || type === "poison" || type === "jumble" || type === "timebomb" || type === "trap";
     let victim = o, benef = p;
     if (offensive && o.mirror) {
       o.mirror = false; renderBadges(o.side);
@@ -579,8 +603,43 @@ export function initDojo(root) {
       fx(sound.swoosh);
     } else if (type === "timebomb") {
       startBomb(victim, 5);
+    } else if (type === "trap") {
+      startTrap(victim);
     }
     renderPowers(side);
+  }
+
+  // Trap — cover the victim's board with a quick tap-the-dots mini-game. They
+  // can't answer or use a power until they clear it. Cleared = board returns.
+  function startTrap(v) {
+    const wrap = panel.querySelector((v.side === "p1" ? ".dojo-p1" : ".dojo-p2") + " .dojo-boardwrap");
+    if (!wrap) return;
+    v.trapped = true;
+    renderPowers(v.side); // lock their power buttons while trapped
+    const ov = el("div", "dojo-trap");
+    ov.appendChild(el("p", "dojo-trap-title", "Trapped! Tap the dots to break free"));
+    const field = el("div", "dojo-trap-field");
+    ov.appendChild(field);
+    wrap.appendChild(ov);
+    let remaining = 5;
+    const escape = () => { v.trapped = false; ov.remove(); renderPowers(v.side); fx(sound.beep); };
+    for (let i = 0; i < remaining; i++) {
+      const d = el("button", "dojo-trap-dot");
+      d.style.left = (8 + rint(80)) + "%";
+      d.style.top = (14 + rint(70)) + "%";
+      d.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (v.over || live.roundOver) { ov.remove(); return; }
+        d.remove(); remaining--; fx(sound.tick);
+        if (remaining <= 0) escape();
+      });
+      field.appendChild(d);
+    }
+    fx(sound.buzz);
+  }
+  function clearTraps() {
+    panel.querySelectorAll(".dojo-trap").forEach((t) => t.remove());
+    if (live) { if (live.p1) live.p1.trapped = false; if (live.p2) live.p2.trapped = false; }
   }
 
   // Time bomb — the victim has `secs` seconds to win the round, or loses a life.
@@ -605,7 +664,7 @@ export function initDojo(root) {
 
   function onPick(side, val, btn) {
     const p = live[side];
-    if (live.roundOver || p.over || btn.disabled || Date.now() < p.blockedUntil) return;
+    if (live.roundOver || p.over || p.trapped || btn.disabled || Date.now() < p.blockedUntil) return;
     if (isCorrect(live.q, val)) { btn.classList.add("correct"); return winRound(side); }
     btn.classList.add("wrong"); btn.disabled = true;
     if (p.shield) { p.shield = false; renderShield(side); fx(sound.tick); return; } // shield absorbs the mistake
@@ -618,6 +677,7 @@ export function initDojo(root) {
     clearTimeout(blockTimer);
     poisonTimers.forEach((t) => clearTimeout(t)); poisonTimers = [];
     bombTimers.forEach((t) => clearTimeout(t)); bombTimers = [];
+    clearTraps();
     const winner = live[side].name;
     const loser = live[side === "p1" ? "p2" : "p1"].name;
     ["#djGrid1", "#djGrid2"].forEach((g) => panel.querySelectorAll(g + " .dojo-opt").forEach((b) => {
@@ -637,22 +697,29 @@ export function initDojo(root) {
     const badge = panel.querySelector("#djStreak");
     if (badge) { badge.querySelector("b").textContent = live.streak; badge.classList.toggle("hot", live.streak > 0); }
 
+    const beforePts = (overallRows()[winner] || {}).points || 0; // overall profile before this win
     const store = bucket(live.classKey);
     const w = lbRow(store, winner), l = lbRow(store, loser);
     w.wins++; w.games++; w.points += pts; w.best = Math.max(w.best, live.streak);
     l.games++;
     save();
     fx(sound.fanfare);
-    showResult(winner, pts, focused);
+    const leveledUp = tierFor(beforePts + pts).name !== tierFor(beforePts).name ? tierFor(beforePts + pts) : null;
+    showResult(winner, pts, focused, leveledUp);
   }
 
-  function showResult(winner, pts, focused) {
+  function showResult(winner, pts, focused, leveledUp) {
     const box = panel.querySelector("#djResult");
     box.hidden = false;
     box.innerHTML = "";
     box.appendChild(el("p", "dojo-res-eyebrow", "Round won"));
     box.appendChild(el("p", "dojo-res-name", winner));
     box.appendChild(el("p", "dojo-res-streak", `+${pts} points${focused ? " (Focus ×2)" : ""} · ${live.streak > 1 ? "streak of " + live.streak : "new champion!"}`));
+    if (leveledUp) {
+      const lvl = el("p", "dojo-res-levelup", `Ranked up to ${leveledUp.name}!`);
+      lvl.style.color = leveledUp.color;
+      box.appendChild(lvl);
+    }
     const form = el("div", "dojo-res-form");
     const inp = el("input", "dojo-input"); inp.placeholder = "Next challenger name"; inp.maxLength = 24;
     const list = roster();
@@ -708,13 +775,18 @@ export function initDojo(root) {
 
     if (!rows.length) card.appendChild(el("p", "dojo-lede", "No rounds played yet."));
     else {
-      const table = el("table", "dojo-lbtable", "<thead><tr><th>#</th><th class='l'>Student</th><th>Points</th><th>Wins</th><th>Best</th><th>Rounds</th></tr></thead>");
+      const table = el("table", "dojo-lbtable", "<thead><tr><th>#</th><th class='l'>Student</th><th class='l'>Rank</th><th>Points</th><th>Wins</th><th>Best</th><th>Rounds</th></tr></thead>");
       const tb = el("tbody");
       rows.forEach((r, i) => {
         const medal = i < 3 ? ` medal m${i + 1}` : "";
-        tb.appendChild(el("tr", (i === 0 ? "top" : "") + medal, `<td>${i + 1}</td><td class='l'>${escapeHtml(r.name)}</td><td class='dojo-pts'>${r.points}</td><td>${r.wins}</td><td>${r.best}</td><td>${r.games}</td>`));
+        const t = tierFor(r.points);
+        const pill = `<span class="dojo-tier" style="color:${t.color};border-color:${t.color}">${t.name}</span>`;
+        tb.appendChild(el("tr", (i === 0 ? "top" : "") + medal, `<td>${i + 1}</td><td class='l'>${escapeHtml(r.name)}</td><td class='l'>${pill}</td><td class='dojo-pts'>${r.points}</td><td>${r.wins}</td><td>${r.best}</td><td>${r.games}</td>`));
       });
       table.appendChild(tb); card.appendChild(table);
+      // Legend of the point thresholds for each rank.
+      const legend = el("p", "dojo-tierlegend", "Ranks: " + TIERS.map((t) => `<span style="color:${t.color}">${t.name}</span> ${t.min}+`).join(" · "));
+      card.appendChild(legend);
     }
 
     const row = el("div", "dojo-editbtns");
@@ -735,6 +807,7 @@ export function initDojo(root) {
     clearTimeout(blockTimer); blockTimer = null;
     poisonTimers.forEach((t) => clearTimeout(t)); poisonTimers = [];
     bombTimers.forEach((t) => clearTimeout(t)); bombTimers = [];
+    clearTraps();
   }
   function escapeHtml(s) { return String(s).replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[m])); }
 
