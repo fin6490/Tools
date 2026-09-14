@@ -80,7 +80,7 @@ export function initSupport(root, { toast } = {}) {
     tipBlock.hidden = false;
   }
 
-  // Top-bar "Buy me a pint" CTA — same link, revealed only when configured.
+  // Top-bar "Buy me a coffee" CTA — same link, revealed only when configured.
   const tipTop = root.querySelector("#tipTopBtn");
   if (tipTop && SUPPORT.tipUrl) {
     tipTop.href = SUPPORT.tipUrl;
