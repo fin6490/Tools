@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -863,7 +863,20 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Reveal cards */
+.reveal-check { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 15px; }
+.reveal-run { display: flex; flex-direction: column; gap: 18px; }
+.reveal-stage { min-height: 46vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; padding: 20px; border: 2px solid var(--line); border-radius: 18px; background: var(--panel-2); cursor: pointer; }
+.reveal-count { font-family: var(--mono); font-size: 13px; letter-spacing: 1px; color: var(--muted); margin: 0; }
+.reveal-q { font-family: var(--mono); font-weight: 800; font-size: clamp(30px, 6vw, 66px); color: var(--ink); line-height: 1.15; }
+.reveal-a { font-family: var(--mono); font-weight: 800; font-size: clamp(28px, 5.5vw, 60px); color: #35d183; line-height: 1.15; animation: revealIn .25s ease; }
+@keyframes revealIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.reveal-flip { font-size: 18px; padding: 12px 20px; }
+.reveal-nav { display: flex; gap: 10px; justify-content: center; }
+.reveal-nav .btn { min-width: 120px; }
+@media (prefers-reduced-motion: reduce) { .reveal-a { animation: none; } }
 .dojo-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin: 0; }
 .dojo-title { font-family: var(--mono); font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -.5px; margin: 0; text-transform: none; }
 .dojo-lede { color: var(--muted); margin: 0; line-height: 1.55; }

@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260914a",
+  token: "20260914b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -392,6 +392,34 @@ export const TOOLS = [
       ["What are the powerups?", "Each round a player can use a Smoke bomb (removes four wrong answers from their own board), Heal (restores a life), and sometimes Block (freezes the opponent's board for three seconds)."],
       ["How does ranking work?", "The champion builds a streak by staying on, and every student's wins and best streak are tracked in a leaderboard you can display at the end of the session."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your question sets and leaderboard stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "reveal-cards",
+    view: "reveal",
+    nav: "Reveal cards",
+    title: "Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks",
+    description:
+      "A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline.",
+    h1: "Reveal cards — classroom flashcards",
+    intro:
+      "A dead-simple flashcard tool for the whiteboard. Show a question big on the board, reveal the answer when the class is ready, then move to the next card. Perfect as a low-stakes starter, recap or plenary — and it uses the same question sets as The BT Dojo, so anything you've made or generated is ready to go.",
+    steps: [
+      "Pick a question set — a built-in one, or one you made or generated in The BT Dojo.",
+      "Choose whether to shuffle, then press “Start”.",
+      "Read the question with the class. Click the card (or press Space) to reveal the answer.",
+      "Press Next (or →) for the next card. Go back with ← at any time.",
+    ],
+    whoFor: [
+      ["Teachers", "a no-fuss starter or plenary — key terms, times tables, definitions, vocabulary — paced by you."],
+      ["Tutors", "quick recall practice one card at a time, with the answer hidden until you're ready."],
+      ["Anyone", "revision flashcards on any topic, straight on the big screen."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus any set you make in the editor or generate with AI. Make it once, use it in both games."],
+      ["Can it show maths properly?", "Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed."],
+      ["Can I use the keyboard?", "Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
     ],
   },
 ];
