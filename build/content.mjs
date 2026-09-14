@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260914b",
+  token: "20260914c",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -419,6 +419,34 @@ export const TOOLS = [
       ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus any set you make in the editor or generate with AI. Make it once, use it in both games."],
       ["Can it show maths properly?", "Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed."],
       ["Can I use the keyboard?", "Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "pairs",
+    view: "pairs",
+    nav: "Pairs",
+    title: "Pairs — Free Classroom Matching & Memory Game | SpinDecks",
+    description:
+      "A match-the-answer memory game for the whiteboard. Flip cards to pair each question with its answer, solo or in two teams. Uses any question set. Free, no sign-up, works offline.",
+    h1: "Pairs — classroom matching game",
+    intro:
+      "A memory-and-matching game for the whiteboard. Flip two cards to match each question with its answer — perfect for key terms, vocabulary and definitions. Play as a whole class or split into two teams, and it uses the same question sets as The BT Dojo.",
+    steps: [
+      "Pick a question set and how many pairs to play with.",
+      "Choose whole-class or two-team mode, then press “Start”.",
+      "Tap two cards to flip them — a question and its matching answer stay face-up.",
+      "In team mode a match keeps your turn; a miss passes over. Most pairs wins.",
+    ],
+    whoFor: [
+      ["Teachers", "a matching starter for terms and definitions, played as a class or as teams."],
+      ["Tutors", "recall and pairing practice — vocabulary, translations, formulae."],
+      ["Anyone", "a quick memory game on any topic."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
+      ["How are the cards matched?", "Each question card pairs with its answer card. Only questions with distinct answers are used, so there are no ambiguous duplicates on the board."],
+      ["Can two teams play?", "Yes — switch to two-team mode. A match scores a point and keeps your turn; a miss passes to the other team."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
     ],
   },

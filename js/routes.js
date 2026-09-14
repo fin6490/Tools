@@ -69,6 +69,11 @@ export const ROUTES = {
     "slug": "reveal-cards",
     "title": "Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks",
     "description": "A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline."
+  },
+  "pairs": {
+    "slug": "pairs",
+    "title": "Pairs — Free Classroom Matching & Memory Game | SpinDecks",
+    "description": "A match-the-answer memory game for the whiteboard. Flip cards to pair each question with its answer, solo or in two teams. Uses any question set. Free, no sign-up, works offline."
   }
 };
 

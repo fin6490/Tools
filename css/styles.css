@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -863,7 +863,25 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Pairs */
+.pairs-game { display: flex; flex-direction: column; gap: 14px; }
+.pairs-status { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 30px; font-family: var(--mono); font-weight: 700; }
+.pairs-moves { color: var(--muted); }
+.pairs-team { padding: 4px 12px; border: 2px solid var(--line); border-radius: 999px; color: var(--muted); }
+.pairs-team.on { color: var(--ink); border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 25%, transparent); }
+.pairs-vs { color: var(--muted); font-size: 12px; }
+.pairs-grid { display: grid; gap: 10px; }
+.pairs-card { aspect-ratio: 4 / 3; border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pairs-card:disabled { cursor: default; }
+.pairs-card .pairs-back { width: 26px; height: 26px; border-radius: 6px; background: repeating-linear-gradient(45deg, var(--line) 0 6px, transparent 6px 12px); opacity: .6; }
+.pairs-card .pairs-face { font-family: var(--mono); font-weight: 800; font-size: clamp(14px, 2.4vw, 26px); line-height: 1.1; color: var(--ink); text-align: center; word-break: break-word; }
+.pairs-card.up { background: #f6f6f8; }
+.pairs-card.up .pairs-face { color: #16161a; }
+.pairs-card.kind-q { border-color: var(--accent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.pairs-card.kind-a { border-color: var(--teal); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--teal) 35%, transparent); }
+.pairs-card.matched { opacity: .5; }
 
 /* Reveal cards */
 .reveal-check { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 15px; }
