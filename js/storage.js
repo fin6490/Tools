@@ -32,6 +32,7 @@ const DEFAULTS = () => ({
   bracket: { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, points: { win: 3, draw: 1, loss: 0 }, competitors: [], ko: {}, league: {}, groups: {} },
   dojo: { activeSetId: null, lives: 3, sets: [], rosterWheelId: null, leaderboards: {} },
   reveal: { activeSetId: null, shuffle: true },
+  pairs: { activeSetId: null, count: 8, mode: "solo" },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
