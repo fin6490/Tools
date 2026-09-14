@@ -109,7 +109,7 @@ function topbar(active) {
     ${tabs(active)}
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
-        <span class="tip-top-emoji" aria-hidden="true">🍺</span><span class="tip-top-label">Buy me a pint</span>
+        <span class="tip-top-emoji" aria-hidden="true">☕</span><span class="tip-top-label">Buy me a coffee</span>
       </a>
       <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
