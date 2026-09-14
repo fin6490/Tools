@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks</title>
-<meta name="description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
+<title>Classroom Bingo — Free Question Bingo Caller &amp; Card Maker | SpinDecks</title>
+<meta name="description" content="Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/chess-clock/" />
+<link rel="canonical" href="https://spindecks.app/bingo/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks" />
-<meta property="og:description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/chess-clock/" />
+<meta property="og:title" content="Classroom Bingo — Free Question Bingo Caller &amp; Card Maker | SpinDecks" />
+<meta property="og:description" content="Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/bingo/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Online Chess Clock — Free 2-Player &amp; Multiplayer Timer | SpinDecks" />
-<meta name="twitter:description" content="A free online chess clock and game timer for two players or up to six. Each player gets a time bank; tap your area to end your turn, with optional Fischer increment. No ads, no sign-up, works offline." />
+<meta name="twitter:title" content="Classroom Bingo — Free Question Bingo Caller &amp; Card Maker | SpinDecks" />
+<meta name="twitter:description" content="Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260914f" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Online chess clock & multiplayer timer",
-  "url": "https://spindecks.app/chess-clock/",
+  "name": "Classroom bingo",
+  "url": "https://spindecks.app/bingo/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,58 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is it a free online chess timer?",
+      "name": "Where do the questions come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — it's completely free, with no ads and no sign-up. It runs in your browser, and once loaded it keeps working offline."
+        "text": "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I use it as a simple 2-player chess clock?",
+      "name": "How do students get cards?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Set it to 2 players for a classic two-player chess clock — each side taps their own area to pass the turn, exactly like a physical clock."
+        "text": "Print a batch of randomly generated cards from the “Print cards” button, or show the answer pool on the board and have students copy any answers they like into a blank grid."
       }
     },
     {
       "@type": "Question",
-      "name": "How many players does it support?",
+      "name": "How does the caller work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn."
+        "text": "It shows one question at a time. You reveal the answer when the class is ready, and each revealed answer is added to a “called” list so you can check a winning card."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it support increment (Fischer timing)?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — set an increment in seconds and that time is added to a player's bank after each move they make."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Do I need to download or install anything?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No — it's just a web page. Open it in any browser on your phone, tablet or computer, or add it to your home screen to use it like an app."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What happens when a player runs out of time?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Their clock flags at zero and the turn passes on to the next player who still has time."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is it accurate?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift."
+        "text": "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."
       }
     }
   ]
@@ -115,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="chessclock">
+<div id="app" data-view="bingo">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -138,7 +114,7 @@
         <span class="tab-group-label" aria-hidden="true">Score &amp; time</span>
         <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
         <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
-        <a class="tab is-active" data-view-btn="chessclock" aria-current="page" href="/chess-clock/">Chess clock</a>
+        <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
         <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
         <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
       </div>
@@ -147,7 +123,7 @@
         <a class="tab" data-view-btn="dojo" href="/bt-dojo/">Dojo</a>
         <a class="tab" data-view-btn="reveal" href="/reveal-cards/">Reveal cards</a>
         <a class="tab" data-view-btn="pairs" href="/pairs/">Pairs</a>
-        <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
+        <a class="tab is-active" data-view-btn="bingo" aria-current="page" href="/bingo/">Bingo</a>
       </div>
     </nav>
     <div class="topbar-actions">
@@ -480,7 +456,7 @@
   </main>
 
   <!-- CHESS CLOCK (multi-player game clock) -->
-  <main class="view view-chessclock" data-view-panel="chessclock">
+  <main class="view view-chessclock" data-view-panel="chessclock" hidden>
     <section class="panel tool-panel cc-panel">
       <div id="ccSetup" class="cc-setup">
         <label class="score-setup-item">Players <input type="number" id="ccCount" class="setup-num" min="2" max="6" value="2" /></label>
@@ -541,7 +517,7 @@
     <section class="panel pairs-panel" aria-label="Pairs matching game"></section>
   </main>
   <!-- BINGO (whole-class caller + card maker; bingo.js builds the screens) -->
-  <main class="view view-bingo" data-view-panel="bingo" hidden>
+  <main class="view view-bingo" data-view-panel="bingo">
     <section class="panel bingo-panel" aria-label="Classroom bingo"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -596,53 +572,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Online chess clock & multiplayer timer</h1>
-      <p class="tool-intro">A free online chess timer for two players — or a shared game clock for up to six. Give everyone a time bank, put the phone or laptop in the middle, and each player taps their own area to end their turn. Optional Fischer increment adds time after each move. It runs entirely in your browser with nothing to download, and works offline once loaded.</p>
+      <h1>Classroom bingo</h1>
+      <p class="tool-intro">Whole-class bingo built from your questions. Print a set of cards for the class (or have students fill a blank grid from the answer pool), then call questions one at a time — the class works out each answer and marks it off. First to a line or full house wins. It uses the same question sets as The BT Dojo.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Set the number of players (2 for a classic chess clock, up to 6), minutes each, and any increment in seconds.</li>
-        <li>Press “Start clock” — the first player's timer counts down.</li>
-        <li>Each player taps their own area to end their turn and start the next player's clock.</li>
-        <li>Pause or reset any time; turn on “Keep screen awake” so it doesn't sleep mid-game.</li>
+            <li>Pick a question set and a card size (3×3, 4×4 or 5×5).</li>
+        <li>Print cards for the class, or show the answer pool so students fill their own grid.</li>
+        <li>Press “Start calling”, read the question, then “Reveal answer” when the class is ready.</li>
+        <li>Students mark the answer if it's on their card. Keep calling until someone shouts bingo.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Chess players:</strong> a proper two-player chess clock with Fischer increment — online, free, and nothing to install.</li>
-        <li><strong>Board gamers:</strong> put every player on a clock to speed up a slow game — up to six at once.</li>
-        <li><strong>Anyone:</strong> a shared, fair turn timer or stopwatch for any game where people take turns.</li>
+            <li><strong>Teachers:</strong> a whole-class recap where everyone plays at once — times tables, vocabulary, key facts.</li>
+        <li><strong>Tutors:</strong> a relaxed group game that still drills recall.</li>
+        <li><strong>Anyone:</strong> quiz bingo for a club or family night on any topic.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>Is it a free online chess timer?</summary>
-          <p>Yes — it's completely free, with no ads and no sign-up. It runs in your browser, and once loaded it keeps working offline.</p>
+          <summary>Where do the questions come from?</summary>
+          <p>The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI.</p>
         </details>
         <details>
-          <summary>Can I use it as a simple 2-player chess clock?</summary>
-          <p>Yes. Set it to 2 players for a classic two-player chess clock — each side taps their own area to pass the turn, exactly like a physical clock.</p>
+          <summary>How do students get cards?</summary>
+          <p>Print a batch of randomly generated cards from the “Print cards” button, or show the answer pool on the board and have students copy any answers they like into a blank grid.</p>
         </details>
         <details>
-          <summary>How many players does it support?</summary>
-          <p>From 2 up to 6, each with their own time bank. The phone sits in the middle and everyone taps their area to pass the turn.</p>
+          <summary>How does the caller work?</summary>
+          <p>It shows one question at a time. You reveal the answer when the class is ready, and each revealed answer is added to a “called” list so you can check a winning card.</p>
         </details>
         <details>
-          <summary>Does it support increment (Fischer timing)?</summary>
-          <p>Yes — set an increment in seconds and that time is added to a player's bank after each move they make.</p>
-        </details>
-        <details>
-          <summary>Do I need to download or install anything?</summary>
-          <p>No — it's just a web page. Open it in any browser on your phone, tablet or computer, or add it to your home screen to use it like an app.</p>
-        </details>
-        <details>
-          <summary>What happens when a player runs out of time?</summary>
-          <p>Their clock flags at zero and the turn passes on to the next player who still has time.</p>
-        </details>
-        <details>
-          <summary>Is it accurate?</summary>
-          <p>Yes — it's timestamp-based, so it stays accurate even if the tab is briefly in the background, with no drift.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded.</p>
         </details>
           </div>
         </div>

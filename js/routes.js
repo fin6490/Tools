@@ -74,6 +74,11 @@ export const ROUTES = {
     "slug": "pairs",
     "title": "Pairs — Free Classroom Matching & Memory Game | SpinDecks",
     "description": "A match-the-answer memory game for the whiteboard. Flip cards to pair each question with its answer, solo or in two teams. Uses any question set. Free, no sign-up, works offline."
+  },
+  "bingo": {
+    "slug": "bingo",
+    "title": "Classroom Bingo — Free Question Bingo Caller & Card Maker | SpinDecks",
+    "description": "Whole-class bingo for the whiteboard. You call the questions, students mark the answers on their cards. Print cards from any question set and reveal answers one at a time. Free, no sign-up, works offline."
   }
 };
 

@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal, .view-pairs { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs, .view-bingo { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -876,7 +876,37 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Bingo caller */
+.bingo-caller { display: flex; flex-direction: column; gap: 16px; }
+.bingo-stage { min-height: 40vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; padding: 20px; border: 2px solid var(--line); border-radius: 18px; background: var(--panel-2); }
+.bingo-count { font-family: var(--mono); font-size: 13px; letter-spacing: 1px; color: var(--muted); margin: 0; }
+.bingo-q { font-family: var(--mono); font-weight: 800; font-size: clamp(28px, 5.5vw, 60px); color: var(--ink); line-height: 1.15; }
+.bingo-ans { font-family: var(--mono); font-weight: 800; font-size: clamp(26px, 5vw, 54px); color: #35d183; line-height: 1.15; animation: revealIn .25s ease; }
+.bingo-actions { display: flex; gap: 10px; }
+.bingo-reveal, .bingo-next { font-size: 18px; padding: 12px 22px; }
+.bingo-called-wrap summary, .bingo-pool-wrap summary { cursor: pointer; font-weight: 700; color: var(--muted); padding: 8px 0; }
+.bingo-called-wrap summary:hover, .bingo-pool-wrap summary:hover { color: var(--ink); }
+.bingo-called, .bingo-pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0 4px; }
+.bingo-called-item, .bingo-pool-item { font-family: var(--mono); font-weight: 700; font-size: 15px; padding: 4px 10px; border: 2px solid var(--line); border-radius: 999px; }
+.bingo-called-item { border-color: color-mix(in srgb, #35d183 55%, var(--line)); color: #35d183; }
+.bingo-pool-item { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bingo-ans { animation: none; } }
+
+/* Bingo printable cards */
+.bingo-print { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
+.bingo-printcard { border: 2px solid var(--ink); border-radius: 10px; padding: 12px; break-inside: avoid; background: #fff; color: #111; }
+.bingo-printtitle { font-family: var(--mono); font-weight: 800; letter-spacing: 4px; text-align: center; margin: 0; font-size: 20px; color: #111; }
+.bingo-printset { text-align: center; margin: 2px 0 10px; font-size: 12px; color: #555; }
+.bingo-printgrid { display: grid; gap: 6px; }
+.bingo-cell { border: 1.5px solid #333; border-radius: 6px; min-height: 54px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; font-family: var(--mono); font-weight: 700; font-size: 15px; color: #111; }
+@media print {
+  body * { visibility: hidden !important; }
+  .bingo-print, .bingo-print * { visibility: visible !important; }
+  .bingo-print { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: repeat(2, 1fr); }
+  .bingo-noprint { display: none !important; }
+}
 
 /* Pairs */
 .pairs-game { display: flex; flex-direction: column; gap: 14px; }
