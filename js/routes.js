@@ -64,6 +64,11 @@ export const ROUTES = {
     "slug": "bt-dojo",
     "title": "The BT Dojo — Head-to-Head Classroom Quiz Game | SpinDecks",
     "description": "A fast two-player classroom quiz game for the interactive whiteboard. Winner stays on, lives and powerups, a class leaderboard, and any question set you choose. Free, no sign-up, works offline."
+  },
+  "reveal": {
+    "slug": "reveal-cards",
+    "title": "Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks",
+    "description": "A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline."
   }
 };
 

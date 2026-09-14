@@ -68,7 +68,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Play", slugs: ["bt-dojo"] },
+  { label: "Play", slugs: ["bt-dojo", "reveal-cards"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -157,6 +157,7 @@ function footer() {
     "chess-clock": "Chess clock",
     "tournament-bracket": "Tournament bracket",
     "bt-dojo": "The BT Dojo",
+    "reveal-cards": "Reveal cards",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -555,6 +556,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- THE BT DOJO (head-to-head classroom quiz game; dojo.js builds the screens) -->
   <main class="view view-dojo" data-view-panel="dojo" hidden>
     <section class="panel dojo-panel" aria-label="The BT Dojo quiz game"></section>
+  </main>
+  <!-- REVEAL CARDS (teacher-paced flashcards; reveal.js builds the screens) -->
+  <main class="view view-reveal" data-view-panel="reveal" hidden>
+    <section class="panel reveal-panel" aria-label="Reveal cards flashcards"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

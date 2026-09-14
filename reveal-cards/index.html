@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Slot Reels — Random Picker with Spinning Reels | SpinDecks</title>
-<meta name="description" content="A slot-reel style random picker. Feed it your own list and let the reels decide. Free, ad-free and offline — a fun alternative to a spinning wheel." />
+<title>Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks</title>
+<meta name="description" content="A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/slot-machine/" />
+<link rel="canonical" href="https://spindecks.app/reveal-cards/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Slot Reels — Random Picker with Spinning Reels | SpinDecks" />
-<meta property="og:description" content="A slot-reel style random picker. Feed it your own list and let the reels decide. Free, ad-free and offline — a fun alternative to a spinning wheel." />
-<meta property="og:url" content="https://spindecks.app/slot-machine/" />
+<meta property="og:title" content="Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks" />
+<meta property="og:description" content="A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/reveal-cards/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Slot Reels — Random Picker with Spinning Reels | SpinDecks" />
-<meta name="twitter:description" content="A slot-reel style random picker. Feed it your own list and let the reels decide. Free, ad-free and offline — a fun alternative to a spinning wheel." />
+<meta name="twitter:title" content="Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks" />
+<meta name="twitter:description" content="A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260914b" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Slot reels picker",
-  "url": "https://spindecks.app/slot-machine/",
+  "name": "Reveal cards — classroom flashcards",
+  "url": "https://spindecks.app/reveal-cards/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What is the slot reels picker?",
+      "name": "Where do the questions come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It’s a random picker styled like spinning reels. Each reel draws from a list you choose, so it’s just a playful way to pick names, prompts or challenges — not a casino game."
+        "text": "The same sets as The BT Dojo — built-in packs plus any set you make in the editor or generate with AI. Make it once, use it in both games."
       }
     },
     {
       "@type": "Question",
-      "name": "Can each reel use a different list?",
+      "name": "Can it show maths properly?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Point each reel at any of your saved wheels to build a combo — for example a name, a challenge and a number."
+        "text": "Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I spin one reel at a time?",
+      "name": "Can I use the keyboard?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — spin them all together, or click a single reel (or its Spin button) to spin just that one."
+        "text": "Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it keep a history?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — every spin is recorded in a results log with a timestamp, which you can clear any time."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is it free?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — free, ad-free and offline-capable, like the rest of SpinDecks."
+        "text": "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="slots">
+<div id="app" data-view="reveal">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -111,7 +103,7 @@
       <div class="tab-group">
         <span class="tab-group-label" aria-hidden="true">Pick</span>
         <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
-        <a class="tab is-active" data-view-btn="slots" aria-current="page" href="/slot-machine/">Slots</a>
+        <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
         <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
         <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
         <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
@@ -129,7 +121,7 @@
       <div class="tab-group">
         <span class="tab-group-label" aria-hidden="true">Play</span>
         <a class="tab" data-view-btn="dojo" href="/bt-dojo/">Dojo</a>
-        <a class="tab" data-view-btn="reveal" href="/reveal-cards/">Reveal cards</a>
+        <a class="tab is-active" data-view-btn="reveal" aria-current="page" href="/reveal-cards/">Reveal cards</a>
       </div>
     </nav>
     <div class="topbar-actions">
@@ -212,7 +204,7 @@
   </main>
 
   <!-- SLOTS -->
-  <main class="view view-slots" data-view-panel="slots">
+  <main class="view view-slots" data-view-panel="slots" hidden>
     <section class="panel tool-panel slots-panel">
       <div class="slots-head"><h2>Slot reels</h2></div>
       <p class="muted">Several reels side by side — spin them all at once. Point each reel at any of your saved wheels.</p>
@@ -515,7 +507,7 @@
     <section class="panel dojo-panel" aria-label="The BT Dojo quiz game"></section>
   </main>
   <!-- REVEAL CARDS (teacher-paced flashcards; reveal.js builds the screens) -->
-  <main class="view view-reveal" data-view-panel="reveal" hidden>
+  <main class="view view-reveal" data-view-panel="reveal">
     <section class="panel reveal-panel" aria-label="Reveal cards flashcards"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -570,42 +562,38 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Slot reels picker</h1>
-      <p class="tool-intro">A slot-reel style random picker: a row of reels that spin and stop on a pick from your own lists. It’s a fun, playful alternative to the wheel — feed each reel a list of names, prompts or challenges and let the reels decide the combo.</p>
+      <h1>Reveal cards — classroom flashcards</h1>
+      <p class="tool-intro">A dead-simple flashcard tool for the whiteboard. Show a question big on the board, reveal the answer when the class is ready, then move to the next card. Perfect as a low-stakes starter, recap or plenary — and it uses the same question sets as The BT Dojo, so anything you've made or generated is ready to go.</p>
       <h2>How to use it</h2>
       <ol class="tool-steps">
-        <li>Choose how many reels you want (2–6).</li>
-        <li>Point each reel at any of your saved wheels — the same list for repeat picks, or different lists for a combo.</li>
-        <li>Press “Spin all”, or spin a single reel on its own.</li>
-        <li>Each spin is logged in the results list with a timestamp.</li>
+        <li>Pick a question set — a built-in one, or one you made or generated in The BT Dojo.</li>
+        <li>Choose whether to shuffle, then press “Start”.</li>
+        <li>Read the question with the class. Click the card (or press Space) to reveal the answer.</li>
+        <li>Press Next (or →) for the next card. Go back with ← at any time.</li>
       </ol>
       <h2>Who it's for</h2>
       <ul class="tool-who">
-        <li><strong>Streamers:</strong> pick a random challenge, character or loadout combo live on stream.</li>
-        <li><strong>Teachers:</strong> mix a random name with a random task or prompt for a bit of fun.</li>
-        <li><strong>Games nights:</strong> generate a random combo — who, what and where — to kick off a round.</li>
+        <li><strong>Teachers:</strong> a no-fuss starter or plenary — key terms, times tables, definitions, vocabulary — paced by you.</li>
+        <li><strong>Tutors:</strong> quick recall practice one card at a time, with the answer hidden until you're ready.</li>
+        <li><strong>Anyone:</strong> revision flashcards on any topic, straight on the big screen.</li>
       </ul>
       <h2>FAQ</h2>
       <div class="tool-faq">
         <details>
-          <summary>What is the slot reels picker?</summary>
-          <p>It’s a random picker styled like spinning reels. Each reel draws from a list you choose, so it’s just a playful way to pick names, prompts or challenges — not a casino game.</p>
+          <summary>Where do the questions come from?</summary>
+          <p>The same sets as The BT Dojo — built-in packs plus any set you make in the editor or generate with AI. Make it once, use it in both games.</p>
         </details>
         <details>
-          <summary>Can each reel use a different list?</summary>
-          <p>Yes. Point each reel at any of your saved wheels to build a combo — for example a name, a challenge and a number.</p>
+          <summary>Can it show maths properly?</summary>
+          <p>Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed.</p>
         </details>
         <details>
-          <summary>Can I spin one reel at a time?</summary>
-          <p>Yes — spin them all together, or click a single reel (or its Spin button) to spin just that one.</p>
+          <summary>Can I use the keyboard?</summary>
+          <p>Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen.</p>
         </details>
         <details>
-          <summary>Does it keep a history?</summary>
-          <p>Yes — every spin is recorded in a results log with a timestamp, which you can clear any time.</p>
-        </details>
-        <details>
-          <summary>Is it free?</summary>
-          <p>Yes — free, ad-free and offline-capable, like the rest of SpinDecks.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded.</p>
         </details>
       </div>
     </section>
