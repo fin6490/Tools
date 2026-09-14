@@ -33,7 +33,8 @@ const DEFAULTS = () => ({
   dojo: { activeSetId: null, lives: 3, sets: [], rosterWheelId: null, leaderboards: {} },
   reveal: { activeSetId: null, shuffle: true },
   pairs: { activeSetId: null, count: 8, mode: "solo" },
-  bingo: { activeSetId: null, size: 3 },
+  bingo: { activeSetId: null, size: 3, printCount: 6 },
+  classquiz: { activeSetId: null, teamCount: 2, rosterWheelId: null },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,

@@ -68,7 +68,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo"] },
+  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -160,6 +160,7 @@ function footer() {
     "reveal-cards": "Reveal cards",
     "pairs": "Pairs",
     "bingo": "Bingo",
+    "class-quiz": "Class quiz",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -570,6 +571,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- BINGO (whole-class caller + card maker; bingo.js builds the screens) -->
   <main class="view view-bingo" data-view-panel="bingo" hidden>
     <section class="panel bingo-panel" aria-label="Classroom bingo"></section>
+  </main>
+  <!-- CLASS QUIZ (team quiz; classquiz.js builds the screens) -->
+  <main class="view view-classquiz" data-view-panel="classquiz" hidden>
+    <section class="panel classquiz-panel" aria-label="Class team quiz"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

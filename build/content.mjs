@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260914f",
+  token: "20260914g",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -475,6 +475,34 @@ export const TOOLS = [
       ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
       ["How do students get cards?", "Print a batch of randomly generated cards from the “Print cards” button, or show the answer pool on the board and have students copy any answers they like into a blank grid."],
       ["How does the caller work?", "It shows one question at a time. You reveal the answer when the class is ready, and each revealed answer is added to a “called” list so you can check a winning card."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "class-quiz",
+    view: "classquiz",
+    nav: "Class quiz",
+    title: "Class Quiz — Free Team Quiz Game for the Whiteboard | SpinDecks",
+    description:
+      "Run a team quiz on the whiteboard. Split the class into teams (from a saved wheel if you like), reveal each answer and tap the team that got it — scores keep themselves. Free, no sign-up, works offline.",
+    h1: "Class quiz — team quiz game",
+    intro:
+      "A team quiz for the whole class, run from the board. Split students into teams — from one of your saved wheels or just numbered teams — then work through a question set. Reveal each answer, tap the team that got it, and the scoreboard updates itself. It uses the same question sets as The BT Dojo.",
+    steps: [
+      "Pick a question set and how many teams to play with.",
+      "Optionally choose a saved class wheel — students are split into balanced teams automatically.",
+      "Press “Start quiz”, read the question, then “Reveal answer”.",
+      "Tap the team that got it right (or “No one”) and the score updates. Finish any time for the final standings.",
+    ],
+    whoFor: [
+      ["Teachers", "a whole-class team quiz for recap or revision, with automatic scoring."],
+      ["Tutors & clubs", "a group quiz where everyone's involved and the scores keep themselves."],
+      ["Anyone", "a pub-style team quiz on any topic."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
+      ["How are teams made?", "Choose a saved wheel and the class is split into balanced teams automatically (sizes differ by at most one), or just play with numbered teams. Re-shuffle before you start if you like."],
+      ["How is scoring handled?", "After you reveal each answer, tap the team that got it right to add a point. The scoreboard is always on screen, and the final standings show at the end."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
     ],
   },

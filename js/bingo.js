@@ -1,9 +1,9 @@
 // bingo.js — Bingo: the teacher calls questions, students mark the answers on
 // their cards. Auto-builds printable cards from a question set's answers and
 // runs a caller that reveals one answer at a time. Reuses the Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914f";
-import { getState, save } from "./storage.js?v=20260914f";
-import * as sound from "./sound.js?v=20260914f";
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914g";
+import { getState, save } from "./storage.js?v=20260914g";
+import * as sound from "./sound.js?v=20260914g";
 
 export function initBingo(root) {
   const panel = root.querySelector(".bingo-panel");
@@ -73,15 +73,21 @@ export function initBingo(root) {
   /* ================= PRINTABLE CARDS ================= */
   function renderPrint() {
     const n = cfg().size || 3, pool = usable(activeSet()).map((q) => q.a);
-    const count = 6;
+    const count = Math.min(32, Math.max(1, cfg().printCount || 6));
     panel.innerHTML = "";
     const bar = el("div", "dojo-editbtns bingo-noprint");
     const back = el("button", "btn ghost", "← Back"); back.addEventListener("click", () => renderLobby());
+    // How many cards to print — up to 32 (a full class).
+    const cntWrap = el("label", "bingo-count-ctrl", "Cards ");
+    const cntSel = el("select", "dojo-select dojo-select-sm");
+    [6, 12, 16, 20, 24, 28, 32].forEach((v) => { const o = el("option"); o.value = v; o.textContent = v; if (v === count) o.selected = true; cntSel.appendChild(o); });
+    cntSel.addEventListener("change", () => { cfg().printCount = +cntSel.value; save(); renderPrint(); });
+    cntWrap.appendChild(cntSel);
     const again = el("button", "btn ghost", "Shuffle cards"); again.addEventListener("click", () => renderPrint());
     const print = el("button", "btn primary", "Print these"); print.addEventListener("click", () => window.print());
-    bar.append(back, again, print);
+    bar.append(back, cntWrap, again, print);
     panel.appendChild(bar);
-    panel.appendChild(el("p", "dojo-hint bingo-noprint", `${count} cards from “${escapeHtml(activeSet().name)}”. Use your browser's print dialog (they lay out one per area).`));
+    panel.appendChild(el("p", "dojo-hint bingo-noprint", `${count} cards from “${escapeHtml(activeSet().name)}”. Use your browser's print dialog.`));
 
     const wrap = el("div", "bingo-print");
     for (let c = 0; c < count; c++) {
