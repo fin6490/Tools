@@ -631,21 +631,29 @@ function toolCopy(t) {
   const faq = t.faq
     .map(([q, a]) => `<details>\n          <summary>${q}</summary>\n          <p>${a}</p>\n        </details>`)
     .join("\n        ");
+  // Keep the heading and a one-line intro visible; tuck the detail (steps,
+  // who-it's-for, FAQ) behind one quiet toggle so the tool itself stays the
+  // focus. All the copy stays in the DOM for search engines.
   return `<section class="tool-copy">
       <h1>${t.h1}</h1>
       <p class="tool-intro">${t.intro}</p>
-      <h2>How to use it</h2>
-      <ol class="tool-steps">
-        ${steps}
-      </ol>
-      <h2>Who it's for</h2>
-      <ul class="tool-who">
-        ${who}
-      </ul>
-      <h2>FAQ</h2>
-      <div class="tool-faq">
-        ${faq}
-      </div>
+      <details class="tool-more">
+        <summary>How to use it, who it's for &amp; FAQ</summary>
+        <div class="tool-more-body">
+          <h2>How to use it</h2>
+          <ol class="tool-steps">
+            ${steps}
+          </ol>
+          <h2>Who it's for</h2>
+          <ul class="tool-who">
+            ${who}
+          </ul>
+          <h2>FAQ</h2>
+          <div class="tool-faq">
+            ${faq}
+          </div>
+        </div>
+      </details>
     </section>`;
 }
 

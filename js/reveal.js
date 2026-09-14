@@ -1,9 +1,9 @@
 // reveal.js — Reveal cards: a teacher-paced flashcard runner for the whiteboard.
 // Pick a question set, show a question big, click to reveal the answer, next.
 // Reuses the Dojo's question sets (starter packs + your saved sets). Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914c";
-import { getState, save } from "./storage.js?v=20260914c";
-import * as sound from "./sound.js?v=20260914c";
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914d";
+import { getState, save } from "./storage.js?v=20260914d";
+import * as sound from "./sound.js?v=20260914d";
 
 export function initReveal(root) {
   const panel = root.querySelector(".reveal-panel");
