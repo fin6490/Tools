@@ -562,7 +562,20 @@ a.tab { display: inline-flex; align-items: center; }
 .tool-copy h2 {
   font-size: 18px; color: var(--ink); margin: 26px 0 10px; text-transform: none; letter-spacing: 0;
 }
-.tool-copy .tool-intro { font-size: 17px; color: var(--ink-dim); margin: 0 0 8px; }
+.tool-copy .tool-intro { font-size: 17px; color: var(--ink-dim); margin: 0 0 16px; }
+/* the single quiet toggle that hides the detailed copy by default */
+.tool-more { border-top: 1px solid var(--line); }
+.tool-more > summary {
+  cursor: pointer; list-style: none; padding: 12px 0; font-weight: 700; color: var(--muted);
+  font-size: 14px; display: flex; align-items: center; gap: 8px;
+}
+.tool-more > summary:hover { color: var(--ink); }
+.tool-more > summary::-webkit-details-marker { display: none; }
+.tool-more > summary::before { content: "+"; font-family: var(--mono); color: var(--muted); }
+.tool-more[open] > summary::before { content: "–"; }
+.tool-more[open] > summary { color: var(--ink); }
+.tool-more-body { padding-top: 4px; }
+.tool-more-body h2:first-child { margin-top: 4px; }
 .tool-copy ol, .tool-copy ul { margin: 0; padding-left: 22px; }
 .tool-copy li { margin: 6px 0; }
 .tool-copy .tool-who { list-style: none; padding-left: 0; }
