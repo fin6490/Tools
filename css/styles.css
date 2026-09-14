@@ -981,10 +981,23 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-bombnum { font-family: var(--mono); font-weight: 800; font-size: 22px; line-height: 1; }
 @keyframes dojoBomb { from { transform: scale(1); } to { transform: scale(1.14); } }
 
+/* trap — mini-game overlay over the victim's board; tap all dots to escape */
+.dojo-trap { position: absolute; inset: 0; z-index: 7; border-radius: 14px; background: rgba(12,10,20,.9); overflow: hidden; }
+.dojo-trap-title { position: absolute; top: 10px; left: 0; right: 0; margin: 0; text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(14px, 2vw, 20px); color: #ffcf6b; padding: 0 10px; }
+.dojo-trap-field { position: absolute; inset: 0; }
+.dojo-trap-dot { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 3px solid #fff; background: radial-gradient(circle at 35% 35%, #ffd36b, #ff7a3c); cursor: pointer; box-shadow: 0 0 14px rgba(255,140,60,.8); animation: dojoTrapPulse .8s ease-in-out infinite alternate; }
+@keyframes dojoTrapPulse { from { transform: scale(1); } to { transform: scale(1.16); } }
+
+/* point ranks — tier pill on the leaderboard, and the round-won rank-up line */
+.dojo-tier { display: inline-block; padding: 1px 9px; border: 1.5px solid currentColor; border-radius: 999px; font-weight: 800; font-size: 12px; }
+.dojo-tierlegend { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.dojo-tierlegend span { font-weight: 800; }
+.dojo-res-levelup { margin: 4px 0 0; font-family: var(--mono); font-weight: 800; font-size: clamp(16px, 2.4vw, 24px); }
+
 @media (prefers-reduced-motion: reduce) {
   .dojo-boardwrap.poisoned::after { animation: none; opacity: .6; }
   .dojo-grid.jumbling, .dojo-grid.reflected { animation: none; }
-  .dojo-bomb { animation: none; }
+  .dojo-bomb, .dojo-trap-dot { animation: none; }
 }
 
 /* armed-power badges (shield / mirror / focus) next to a player's name */
