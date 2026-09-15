@@ -892,6 +892,13 @@ a.tab { display: inline-flex; align-items: center; }
 .classquiz-award { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
 .classquiz-awardlbl { font-weight: 700; color: var(--muted); width: 100%; text-align: center; }
 .classquiz-awardbtn { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); }
+.classquiz-body { display: flex; flex-direction: column; gap: 16px; }
+.classquiz-roundtitle { font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 3vw, 26px); color: var(--ink); margin: 0; text-align: center; }
+.classquiz-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.classquiz-type { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 16px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel-2); color: var(--ink); cursor: pointer; }
+.classquiz-type:hover { border-color: var(--teal); }
+.classquiz-type strong { font-size: 17px; }
+.classquiz-type span { color: var(--muted); font-size: 14px; line-height: 1.45; }
 
 /* Bingo caller */
 .bingo-caller { display: flex; flex-direction: column; gap: 16px; }
@@ -910,9 +917,21 @@ a.tab { display: inline-flex; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .bingo-ans { animation: none; } }
 
 .bingo-count-ctrl { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--muted); font-size: 14px; }
+/* spacing so the hint never crowds the toolbar buttons (was overlapping on phones) */
+.bingo-print-bar { margin-bottom: 6px; }
+.bingo-print-hint { margin: 4px 0 14px; }
+
+/* Bingo DIY — show all answers, students draw their own grid */
+.bingo-diy { margin-top: 8px; }
+.bingo-diy-title { font-family: var(--mono); font-weight: 800; font-size: clamp(16px, 2.4vw, 22px); color: var(--ink); margin: 0 0 12px; }
+.bingo-diy-pool { display: flex; flex-wrap: wrap; gap: 10px; }
+.bingo-diy-item { font-family: var(--mono); font-weight: 700; font-size: clamp(16px, 2.2vw, 24px); padding: 8px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); color: var(--ink); }
 
 /* Bingo printable cards */
 .bingo-print { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
+.bingo-printlist { display: flex; flex-wrap: wrap; gap: 6px; }
+.bingo-listitem { font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 2px 7px; border: 1px solid #333; border-radius: 5px; color: #111; }
+.bingo-cell-blank { min-height: 60px; }
 .bingo-printcard { border: 2px solid var(--ink); border-radius: 10px; padding: 12px; break-inside: avoid; background: #fff; color: #111; }
 .bingo-printtitle { font-family: var(--mono); font-weight: 800; letter-spacing: 4px; text-align: center; margin: 0; font-size: 20px; color: #111; }
 .bingo-printset { text-align: center; margin: 2px 0 10px; font-size: 12px; color: #555; }
