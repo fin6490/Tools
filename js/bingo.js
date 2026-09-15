@@ -1,9 +1,9 @@
 // bingo.js — Bingo: the teacher calls questions, students mark the answers on
 // their cards. Auto-builds printable cards from a question set's answers and
 // runs a caller that reveals one answer at a time. Reuses the Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915i";
-import { getState, save } from "./storage.js?v=20260915i";
-import * as sound from "./sound.js?v=20260915i";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260915j";
+import { getState, save } from "./storage.js?v=20260915j";
+import * as sound from "./sound.js?v=20260915j";
 
 export function initBingo(root) {
   const panel = root.querySelector(".bingo-panel");
@@ -200,7 +200,7 @@ export function initBingo(root) {
     idx++; revealed = false;
     const q = queue[idx];
     panel.querySelector("#bgCount").textContent = `Question ${idx + 1} of ${queue.length}`;
-    panel.querySelector("#bgQ").innerHTML = mathHtml(q.q);
+    const qEl = panel.querySelector("#bgQ"); qEl.innerHTML = mathHtml(q.q); fitBlock(qEl, 0.42, 60, 22);
     const ans = panel.querySelector("#bgAns"); ans.hidden = true; ans.innerHTML = "";
     panel.querySelector("#bgReveal").hidden = false;
     panel.querySelector("#bgNext").hidden = true;
@@ -212,7 +212,7 @@ export function initBingo(root) {
     revealed = true;
     const q = queue[idx];
     const ans = panel.querySelector("#bgAns");
-    ans.innerHTML = mathHtml(q.a); ans.hidden = false;
+    ans.innerHTML = mathHtml(q.a); ans.hidden = false; fitBlock(ans, 0.32, 54, 20);
     panel.querySelector("#bgReveal").hidden = true;
     panel.querySelector("#bgNext").hidden = false;
     called.push(q.a);

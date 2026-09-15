@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915i";
-import { parseEntries } from "./wheel.js?v=20260915i";
-import { getState, save } from "./storage.js?v=20260915i";
-import * as sound from "./sound.js?v=20260915i";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260915j";
+import { parseEntries } from "./wheel.js?v=20260915j";
+import { getState, save } from "./storage.js?v=20260915j";
+import * as sound from "./sound.js?v=20260915j";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
@@ -201,8 +201,9 @@ export function initClassQuiz(root) {
     b.innerHTML = "";
     b.appendChild(el("p", "bingo-count", `${ROUND_TYPES[live.type].name} · Question ${live.qi + 1} of ${round.length} — teams write your answer`));
     const stage = el("div", "classquiz-stage");
-    stage.appendChild(el("div", "bingo-q", mathHtml(q.q)));
+    const qEl = el("div", "bingo-q", mathHtml(q.q)); stage.appendChild(qEl);
     b.appendChild(stage);
+    fitBlock(qEl, 0.34, 60, 22);
     const next = el("button", "btn primary bingo-next", live.qi < round.length - 1 ? "Next question →" : "Mark the round →");
     next.addEventListener("click", () => { if (live.qi < round.length - 1) { live.qi++; renderAsk(); } else { live.phase = "mark"; live.qi = 0; renderMark(); } });
     b.appendChild(next);
@@ -219,15 +220,17 @@ export function initClassQuiz(root) {
     const stage = el("div", "classquiz-stage");
     const clockEl = type.flow === "quick" ? el("div", "classquiz-clock", "20") : null;
     if (clockEl) stage.appendChild(clockEl);
-    stage.appendChild(el("div", "bingo-q", mathHtml(q.q)));
+    const qEl = el("div", "bingo-q", mathHtml(q.q)); stage.appendChild(qEl);
     const ans = el("div", "bingo-ans"); ans.hidden = true; stage.appendChild(ans);
     const reveal = el("button", "btn primary bingo-reveal", "Reveal answer"); stage.appendChild(reveal);
     b.appendChild(stage);
+    fitBlock(qEl, 0.34, 60, 22);
     const aw = el("div", "classquiz-award"); aw.hidden = true; b.appendChild(aw);
 
     const doReveal = () => {
       clearQTimer();
       ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false;
+      fitBlock(ans, 0.3, 54, 20);
       reveal.hidden = true; fx(sound.beep);
       aw.hidden = false; aw.innerHTML = "";
       if (type.flow === "bid") {

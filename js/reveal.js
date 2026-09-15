@@ -1,9 +1,9 @@
 // reveal.js — Reveal cards: a teacher-paced flashcard runner for the whiteboard.
 // Pick a question set, show a question big, click to reveal the answer, next.
 // Reuses the Dojo's question sets (starter packs + your saved sets). Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915i";
-import { getState, save } from "./storage.js?v=20260915i";
-import * as sound from "./sound.js?v=20260915i";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260915j";
+import { getState, save } from "./storage.js?v=20260915j";
+import * as sound from "./sound.js?v=20260915j";
 
 export function initReveal(root) {
   const panel = root.querySelector(".reveal-panel");
@@ -116,10 +116,14 @@ export function initReveal(root) {
   function paint() {
     const q = deck[idx];
     panel.querySelector("#rvCount").textContent = `${idx + 1} / ${deck.length}`;
-    panel.querySelector("#rvQ").innerHTML = mathHtml(q.q);
+    const qEl = panel.querySelector("#rvQ");
+    qEl.innerHTML = mathHtml(q.q);
     const a = panel.querySelector("#rvA");
     a.innerHTML = answersHtml(q);
     a.hidden = !shown;
+    // Keep big-board text large, but scale a very long question/answer to fit.
+    fitBlock(qEl, shown ? 0.32 : 0.44, 66, 22);
+    if (shown) fitBlock(a, 0.32, 60, 20);
     panel.querySelector("#rvFlip").hidden = shown;
     panel.querySelector("#rvPrev").disabled = idx === 0;
   }
