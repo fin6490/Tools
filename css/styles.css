@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz, .view-gridclaim { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz, .view-gridclaim, .view-countdown { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -876,7 +876,28 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby, .gridclaim-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby, .gridclaim-lobby, .countdown-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Countdown */
+.countdown-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.countdown-mode { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 16px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel-2); color: var(--ink); cursor: pointer; }
+.countdown-mode:hover { border-color: var(--teal); }
+.countdown-mode strong { font-size: 17px; }
+.countdown-mode span { color: var(--muted); font-size: 14px; }
+.countdown-round { display: flex; flex-direction: column; gap: 18px; align-items: center; }
+.countdown-round .dojo-toprow { width: 100%; }
+.countdown-slots { min-height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; }
+.countdown-tile { display: inline-flex; align-items: center; justify-content: center; width: clamp(40px, 9vw, 72px); height: clamp(48px, 11vw, 88px); border: 2px solid var(--line); border-radius: 10px; background: #f6f6f8; color: #16161a; font-family: var(--mono); font-weight: 800; font-size: clamp(24px, 6vw, 48px); }
+.countdown-tile.empty { background: var(--panel-2); color: var(--muted); }
+.countdown-slots > .countdown-numrow, .countdown-slots .countdown-numrow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.countdown-numtile { display: inline-flex; align-items: center; justify-content: center; min-width: 62px; height: 62px; padding: 0 10px; border: 2px solid var(--teal); border-radius: 10px; background: var(--panel-2); color: var(--ink); font-family: var(--mono); font-weight: 800; font-size: 26px; }
+.countdown-target { font-family: var(--mono); font-size: 18px; color: var(--muted); margin: 0; text-align: center; }
+.countdown-target b { color: var(--ink); font-size: clamp(28px, 7vw, 52px); display: block; }
+.countdown-answer { font-family: var(--mono); font-weight: 800; font-size: clamp(24px, 6vw, 46px); letter-spacing: 3px; color: #35d183; margin: 4px 0 0; }
+.countdown-setup { display: flex; align-items: center; gap: 10px; }
+.countdown-clock { font-family: var(--mono); font-weight: 800; font-size: clamp(44px, 12vw, 96px); color: var(--ink); line-height: 1; }
+.countdown-clock.low { color: #ff6b6b; }
+.countdown-ctrls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
 /* Grid claim */
 .gridclaim-game { display: flex; flex-direction: column; gap: 14px; position: relative; }

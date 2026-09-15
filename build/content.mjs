@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915b",
+  token: "20260915c",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -532,6 +532,34 @@ export const TOOLS = [
       ["How do you win?", "Team 1 wins by connecting the left and right sides with their tiles; Team 2 by connecting top and bottom. If the whole grid is claimed with no path, whoever has the most tiles wins."],
       ["What happens on a wrong answer?", "The tile stays open and it becomes the other team's turn, so a miss can hand your rivals the tile you wanted."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "countdown",
+    view: "countdown",
+    nav: "Countdown",
+    title: "Countdown Game — Free Letters, Numbers & Conundrum | SpinDecks",
+    description:
+      "The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline.",
+    h1: "Countdown — letters, numbers & conundrum",
+    intro:
+      "The classic letters-and-numbers game as a classroom starter. In the letters round, choose vowels and consonants and make the longest word. In the numbers round, pick your six numbers and reach the target. Or crack the nine-letter conundrum. Each round has its own 30-second clock. A great warm-up — no question set needed.",
+    steps: [
+      "Choose a round: Letters, Numbers or Conundrum.",
+      "Letters: tap Vowel or Consonant nine times, then start the 30-second clock and find the longest word.",
+      "Numbers: choose how many large numbers, deal your six and a target, then race the clock to reach it.",
+      "Conundrum: unscramble the nine-letter word before the clock runs out, then reveal the answer.",
+    ],
+    whoFor: [
+      ["Teachers", "a quick literacy or numeracy starter that needs no set-up or content."],
+      ["Tutors", "mental-maths and vocabulary practice with a bit of time pressure."],
+      ["Anyone", "a solo or team brain-teaser in the style of the TV show."],
+    ],
+    faq: [
+      ["Does it need a question set?", "No — Countdown is self-contained. It deals random letters, numbers and conundrums, so you can start straight away."],
+      ["How are the letters and numbers chosen?", "Letters are drawn from weighted vowel and consonant pools like the show; numbers come from the four large tiles (25, 50, 75, 100) and two sets of 1–10, with a random three-digit target."],
+      ["Does it check my word or solution?", "No — the class or teacher judges the best word or the closest number, just like the show. The clock and the puzzle are what it provides."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },
 ];

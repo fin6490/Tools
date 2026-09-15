@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks</title>
-<meta name="description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
+<title>Countdown Game — Free Letters, Numbers &amp; Conundrum | SpinDecks</title>
+<meta name="description" content="The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/tournament-bracket/" />
+<link rel="canonical" href="https://spindecks.app/countdown/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
-<meta property="og:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
-<meta property="og:url" content="https://spindecks.app/tournament-bracket/" />
+<meta property="og:title" content="Countdown Game — Free Letters, Numbers &amp; Conundrum | SpinDecks" />
+<meta property="og:description" content="The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/countdown/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
-<meta name="twitter:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
+<meta name="twitter:title" content="Countdown Game — Free Letters, Numbers &amp; Conundrum | SpinDecks" />
+<meta name="twitter:description" content="The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915c" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Tournament bracket generator",
-  "url": "https://spindecks.app/tournament-bracket/",
+  "name": "Countdown — letters, numbers & conundrum",
+  "url": "https://spindecks.app/countdown/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What tournament formats are supported?",
+      "name": "Does it need a question set?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Single-elimination knockout (with byes when the count isn't a power of two), round-robin league with a points table, and group stages — round-robin groups where the top teams qualify for a knockout."
+        "text": "No — Countdown is self-contained. It deals random letters, numbers and conundrums, so you can start straight away."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I seed randomly?",
+      "name": "How are the letters and numbers chosen?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed."
+        "text": "Letters are drawn from weighted vowel and consonant pools like the show; numbers come from the four large tiles (25, 50, 75, 100) and two sets of 1–10, with a random three-digit target."
       }
     },
     {
       "@type": "Question",
-      "name": "How do I record results?",
+      "name": "Does it check my word or solution?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly."
+        "text": "No — the class or teacher judges the best word or the closest number, just like the show. The clock and the puzzle are what it provides."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it handle odd numbers of teams?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Are my brackets saved?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — the entrants, format and results stay in your browser, and it all works offline."
+        "text": "Completely — no ads, no sign-up, and it works offline once loaded."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="bracket">
+<div id="app" data-view="countdown">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -116,7 +108,7 @@
         <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
         <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
         <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
-        <a class="tab is-active" data-view-btn="bracket" aria-current="page" href="/tournament-bracket/">Bracket</a>
+        <a class="tab" data-view-btn="bracket" href="/tournament-bracket/">Bracket</a>
       </div>
       <div class="tab-group">
         <span class="tab-group-label" aria-hidden="true">Score &amp; time</span>
@@ -134,7 +126,7 @@
         <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
         <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
         <a class="tab" data-view-btn="gridclaim" href="/grid-claim/">Grid claim</a>
-        <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
+        <a class="tab is-active" data-view-btn="countdown" aria-current="page" href="/countdown/">Countdown</a>
       </div>
     </nav>
     <div class="topbar-actions">
@@ -486,7 +478,7 @@
   </main>
 
   <!-- BRACKET (tournament generator: knockout / league / groups) -->
-  <main class="view view-bracket" data-view-panel="bracket">
+  <main class="view view-bracket" data-view-panel="bracket" hidden>
     <section class="panel tool-panel bracket-panel">
       <div class="bk-setup">
         <div class="seg-toggle" role="tablist" aria-label="Format">
@@ -540,7 +532,7 @@
     <section class="panel gridclaim-panel" aria-label="Grid claim connect game"></section>
   </main>
   <!-- COUNTDOWN (letters/numbers/conundrum game; countdown.js builds the screens) -->
-  <main class="view view-countdown" data-view-panel="countdown" hidden>
+  <main class="view view-countdown" data-view-panel="countdown">
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -595,45 +587,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Tournament bracket generator</h1>
-      <p class="tool-intro">Make a tournament in seconds. Paste your players or teams and pick a format — a single-elimination <strong>knockout</strong> bracket, a round-robin <strong>league</strong> with a live standings table, or <strong>group stages</strong> that feed into a knockout. Seed by order or at random, then tap winners and results as you play.</p>
+      <h1>Countdown — letters, numbers & conundrum</h1>
+      <p class="tool-intro">The classic letters-and-numbers game as a classroom starter. In the letters round, choose vowels and consonants and make the longest word. In the numbers round, pick your six numbers and reach the target. Or crack the nine-letter conundrum. Each round has its own 30-second clock. A great warm-up — no question set needed.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Type one player or team per line, and choose Keep order or Random seeds.</li>
-        <li>Pick a format: Knockout, League, or Groups.</li>
-        <li>Press Generate — for a knockout, tap a name in each match to advance them; for a league or groups, tap W / D / W to record results and the table updates.</li>
-        <li>In Groups, set how many teams qualify, then “Build knockout from qualifiers” to play it out.</li>
+            <li>Choose a round: Letters, Numbers or Conundrum.</li>
+        <li>Letters: tap Vowel or Consonant nine times, then start the 30-second clock and find the longest word.</li>
+        <li>Numbers: choose how many large numbers, deal your six and a target, then race the clock to reach it.</li>
+        <li>Conundrum: unscramble the nine-letter word before the clock runs out, then reveal the answer.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Games nights & clubs:</strong> run a quick knockout or a full round-robin for any number of players.</li>
-        <li><strong>Esports & sports:</strong> seed a bracket, track a league table, or do groups-then-knockout like a real cup.</li>
-        <li><strong>Classrooms:</strong> organise a fair class tournament without drawing brackets by hand.</li>
+            <li><strong>Teachers:</strong> a quick literacy or numeracy starter that needs no set-up or content.</li>
+        <li><strong>Tutors:</strong> mental-maths and vocabulary practice with a bit of time pressure.</li>
+        <li><strong>Anyone:</strong> a solo or team brain-teaser in the style of the TV show.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>What tournament formats are supported?</summary>
-          <p>Single-elimination <strong>knockout</strong> (with byes when the count isn't a power of two), round-robin <strong>league</strong> with a points table, and <strong>group stages</strong> — round-robin groups where the top teams qualify for a knockout.</p>
+          <summary>Does it need a question set?</summary>
+          <p>No — Countdown is self-contained. It deals random letters, numbers and conundrums, so you can start straight away.</p>
         </details>
         <details>
-          <summary>Can I seed randomly?</summary>
-          <p>Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed.</p>
+          <summary>How are the letters and numbers chosen?</summary>
+          <p>Letters are drawn from weighted vowel and consonant pools like the show; numbers come from the four large tiles (25, 50, 75, 100) and two sets of 1–10, with a random three-digit target.</p>
         </details>
         <details>
-          <summary>How do I record results?</summary>
-          <p>In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly.</p>
+          <summary>Does it check my word or solution?</summary>
+          <p>No — the class or teacher judges the best word or the closest number, just like the show. The clock and the puzzle are what it provides.</p>
         </details>
         <details>
-          <summary>Does it handle odd numbers of teams?</summary>
-          <p>Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin.</p>
-        </details>
-        <details>
-          <summary>Are my brackets saved?</summary>
-          <p>Yes — the entrants, format and results stay in your browser, and it all works offline.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and it works offline once loaded.</p>
         </details>
           </div>
         </div>
