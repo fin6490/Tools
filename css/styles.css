@@ -1324,3 +1324,37 @@ a.tab { display: block; }
 .lexicon-key.present { background: #e6b23e; color: #2a1e05; }
 .lexicon-key.absent { background: var(--panel); color: var(--muted); opacity: .55; }
 @media (prefers-reduced-motion: reduce) { .lexicon-row.shake { animation: none; } }
+
+/* ===== Numberwang (nonsense maths game show) ===== */
+.nw-lobby, .nw-game { max-width: 720px; margin: 0 auto; }
+.nw-names { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.nw-nameinput { width: 100%; }
+.nw-scores { display: flex; gap: 12px; justify-content: center; margin: 8px 0 4px; }
+.nw-score { display: flex; flex-direction: column; align-items: center; min-width: 120px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel-2); }
+.nw-score.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.nw-pname { font-size: 13px; color: var(--muted); font-weight: 700; }
+.nw-pscore { font-family: var(--mono); font-weight: 800; font-size: 30px; color: var(--ink); }
+.nw-stage { text-align: center; margin: 14px 0; transition: transform .5s ease; }
+.nw-stage.rotate { transform: rotate(180deg); }
+.nw-stage.wangernumb { filter: hue-rotate(180deg); }
+.nw-prompt { font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 3.4vw, 26px); color: var(--ink); margin: 0 0 14px; }
+.nw-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(460px, 90vw); margin: 0 auto; }
+.nw-tile { aspect-ratio: 3 / 2; border: 2px solid var(--line); border-radius: 16px; background: var(--panel-2); color: var(--ink); font-family: var(--mono); font-weight: 800; font-size: clamp(22px, 6vw, 36px); cursor: pointer; transition: transform .06s, border-color .12s; }
+.nw-tile:hover:not(:disabled) { border-color: var(--ink); transform: translateY(-2px); }
+.nw-tile.chosen { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--panel-2)); }
+.nw-tile.dim { opacity: .35; }
+.nw-tile:disabled { cursor: default; }
+.nw-sub { margin-top: 12px; }
+.nw-announce {
+  position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%);
+  z-index: 80; text-align: center; pointer-events: none;
+  font-family: var(--mono); font-weight: 800; letter-spacing: 1px;
+  font-size: clamp(30px, 8vw, 72px); padding: 18px 34px; border-radius: 20px;
+  animation: nwpop .3s ease;
+}
+.nw-announce.thinking { color: var(--muted); font-size: clamp(20px, 4vw, 34px); }
+.nw-announce.yes { color: #06251a; background: #35d183; box-shadow: 0 14px 40px rgba(0,0,0,.4); }
+.nw-announce.no { color: var(--ink); background: var(--panel); border: 2px solid var(--line); font-size: clamp(22px, 5vw, 44px); }
+.nw-announce.rotate, .nw-announce.wangernumb { color: var(--accent-ink); background: var(--accent); box-shadow: 0 14px 40px rgba(0,0,0,.4); }
+@keyframes nwpop { 0% { transform: translate(-50%, -50%) scale(.6); opacity: 0; } 60% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .nw-announce { animation: none; } .nw-stage { transition: none; } }

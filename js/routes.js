@@ -114,6 +114,11 @@ export const ROUTES = {
     "slug": "lexicon",
     "title": "Lexicon — Free Five-Letter Word Puzzle for the Classroom | SpinDecks",
     "description": "Guess the five-letter word in six tries — a Wordle-style puzzle in the SpinDecks style. A daily word for everyone, endless practice, or set your own word for the class. Free, no sign-up, works offline."
+  },
+  "numberwang": {
+    "slug": "numberwang",
+    "title": "Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks",
+    "description": "A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline."
   }
 };
 

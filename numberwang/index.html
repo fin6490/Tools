@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks</title>
-<meta name="description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
+<title>Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks</title>
+<meta name="description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/noughts-and-crosses/" />
+<link rel="canonical" href="https://spindecks.app/numberwang/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks" />
-<meta property="og:description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/noughts-and-crosses/" />
+<meta property="og:title" content="Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks" />
+<meta property="og:description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/numberwang/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks" />
-<meta name="twitter:description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
+<meta name="twitter:title" content="Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks" />
+<meta name="twitter:description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915l" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Noughts & crosses",
-  "url": "https://spindecks.app/noughts-and-crosses/",
+  "name": "Numberwang — the nonsense maths game",
+  "url": "https://spindecks.app/numberwang/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,26 +56,26 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Can I play against the computer?",
+      "name": "How is Numberwang decided?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — switch to “vs Computer” and you play as crosses. The computer plays perfectly, so you can draw but never beat it — good for showing why the game is a draw with best play."
+        "text": "It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it keep score?",
+      "name": "Is this the official Numberwang?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — wins for each side and draws are tallied and saved in your browser. Reset them any time."
+        "text": "No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch."
       }
     },
     {
       "@type": "Question",
-      "name": "Who goes first?",
+      "name": "How many can play?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Crosses always start a game; after each round the other side starts the next one."
+        "text": "Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first."
       }
     },
     {
@@ -91,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="noughts">
+<div id="app" data-view="numberwang">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -139,9 +139,9 @@
           <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
           <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
           <a class="tab" data-view-btn="hangman" href="/hangman/">Hangman</a>
-          <a class="tab is-active" data-view-btn="noughts" aria-current="page" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
+          <a class="tab" data-view-btn="noughts" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
           <a class="tab" data-view-btn="lexicon" href="/lexicon/">Lexicon</a>
-          <a class="tab" data-view-btn="numberwang" href="/numberwang/">Numberwang</a>
+          <a class="tab is-active" data-view-btn="numberwang" aria-current="page" href="/numberwang/">Numberwang</a>
         </div>
       </details>
     </nav>
@@ -560,7 +560,7 @@
     <section class="panel hangman-panel" aria-label="Hangman word game"></section>
   </main>
   <!-- NOUGHTS & CROSSES (two-player / vs computer; noughts.js builds the screens) -->
-  <main class="view view-noughts" data-view-panel="noughts">
+  <main class="view view-noughts" data-view-panel="noughts" hidden>
     <section class="panel noughts-panel" aria-label="Noughts and crosses game"></section>
   </main>
   <!-- LEXICON (five-letter word puzzle; lexicon.js builds the screens) -->
@@ -568,7 +568,7 @@
     <section class="panel lexicon-panel" aria-label="Lexicon word puzzle"></section>
   </main>
   <!-- NUMBERWANG (nonsense maths game show; numberwang.js builds the screens) -->
-  <main class="view view-numberwang" data-view-panel="numberwang" hidden>
+  <main class="view view-numberwang" data-view-panel="numberwang">
     <section class="panel numberwang-panel" aria-label="Numberwang nonsense maths game"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -623,37 +623,37 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Noughts & crosses</h1>
-      <p class="tool-intro">Noughts and crosses (tic-tac-toe) for the board. Play as two players taking turns, or one player against the computer — which plays a perfect game, so the best you can force is a draw. The board is big and clear for a classroom, and the running score keeps itself.</p>
+      <h1>Numberwang — the nonsense maths game</h1>
+      <p class="tool-intro">The maths quiz that everyone loves to play — a light-hearted homage to the famous sketch. Two contestants take turns choosing a number, and the host declares whether it's Numberwang. How is it decided? Nobody knows, and that's the whole joke. Rotate the board, brace yourself for Wangernumb, and race to be the champion. A pure bit of fun for the end of a lesson.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Choose two players or “vs Computer”, then press Start.</li>
-        <li>Tap a square to place your mark — crosses always go first.</li>
-        <li>Get three in a row across, down or diagonally to win; the winning line lights up.</li>
-        <li>Press “New round” to play again (the loser starts), or reset the scores any time.</li>
+            <li>Enter two contestants' names (optional) and how many Numberwangs win the game.</li>
+        <li>Press “Let's play Numberwang!” — players take turns choosing a number on the board.</li>
+        <li>The host announces whether it's Numberwang — on no logic at all, which is the point.</li>
+        <li>Watch for “Rotate the board!” and “Wangernumb!”. First to the target is the champion.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Teachers:</strong> a quick brain-break or reward game on the board — two students, or the class against the computer.</li>
-        <li><strong>Families:</strong> the classic pencil-and-paper game with no pencil and paper.</li>
-        <li><strong>Anyone:</strong> a 30-second game to settle who's right.</li>
+            <li><strong>Teachers:</strong> a daft, no-stakes end-of-lesson treat that gets the whole class shouting numbers.</li>
+        <li><strong>Fans of the sketch:</strong> a playable tribute to the maths game show that makes no sense whatsoever.</li>
+        <li><strong>Anyone:</strong> a quick, silly two-player game for a bit of a laugh.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>Can I play against the computer?</summary>
-          <p>Yes — switch to “vs Computer” and you play as crosses. The computer plays perfectly, so you can draw but never beat it — good for showing why the game is a draw with best play.</p>
+          <summary>How is Numberwang decided?</summary>
+          <p>It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun.</p>
         </details>
         <details>
-          <summary>Does it keep score?</summary>
-          <p>Yes — wins for each side and draws are tallied and saved in your browser. Reset them any time.</p>
+          <summary>Is this the official Numberwang?</summary>
+          <p>No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch.</p>
         </details>
         <details>
-          <summary>Who goes first?</summary>
-          <p>Crosses always start a game; after each round the other side starts the next one.</p>
+          <summary>How many can play?</summary>
+          <p>Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first.</p>
         </details>
         <details>
           <summary>Is it free and private?</summary>

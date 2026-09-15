@@ -40,6 +40,7 @@ const DEFAULTS = () => ({
   hangman: { category: "animals", maxMiss: 6 },
   noughts: { mode: "two", scores: { x: 0, o: 0, d: 0 } },
   lexicon: { lastSolved: 0, streak: 0 },
+  numberwang: { target: 3, names: [] },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
