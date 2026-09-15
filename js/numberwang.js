@@ -8,9 +8,9 @@
 // board! Diagonal! Base 12! Wangernumb!). An optional Maths mode makes players
 // solve a real question — auto arithmetic or one of your Dojo sets — to unlock
 // their pick. Zero deps. All original code; no assets or scripts are copied.
-import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915p";
-import { getState, save } from "./storage.js?v=20260915p";
-import * as sound from "./sound.js?v=20260915p";
+import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915q";
+import { getState, save } from "./storage.js?v=20260915q";
+import * as sound from "./sound.js?v=20260915q";
 
 const YES = ["That's NUMBERWANG!", "NUMBERWANG!", "Ooh — NUMBERWANG!", "Why, that's NUMBERWANG!", "Stone me, it's NUMBERWANG!", "Get in — NUMBERWANG!"];
 const DOUBLE = ["DOUBLE NUMBERWANG!", "It's a DOUBLE NUMBERWANG!!", "Twice the wang — DOUBLE NUMBERWANG!"];
@@ -156,7 +156,7 @@ export function initNumberwang(root) {
     maths = !!cfg().maths; mathSet = cfg().mathSet || "auto";
     players = [{ name: nameOf(0), score: 0 }, { name: nameOf(1), score: 0 }];
     turn = 0; over = false; busy = false; picks = 0; roundIx = 0;
-    mods = { diagonal: false, wangernumb: false, base12: false, nonsense: false };
+    mods = { flip: false, diagonal: false, wangernumb: false, base12: false, nonsense: false };
     buildShell();
     renderTurn();
   }
@@ -201,6 +201,7 @@ export function initNumberwang(root) {
   }
   function applyMods() {
     const stage = panel.querySelector("#nwStage"); if (!stage) return;
+    stage.classList.toggle("flip", mods.flip);
     stage.classList.toggle("diagonal", mods.diagonal);
     stage.classList.toggle("wangernumb", mods.wangernumb);
   }
@@ -320,12 +321,13 @@ export function initNumberwang(root) {
   function maybeEvent(c) {
     if (c === 0) return null;                 // pure sketch — no gags yet
     if (rint(100) >= (c === 1 ? 35 : 60)) return null;
-    const roll = c === 1 ? rint(2) : rint(6); // level 1 only gets the gentle ones
-    if (roll === 0) { return { text: "ROTATE THE BOARD!", cls: "event", spin: true }; }
+    const roll = c === 1 ? rint(2) : rint(7); // level 1 only gets the gentle ones
+    if (roll === 0) { return { text: "ROTATE THE BOARD!", cls: "event", spin: true }; } // full pointless 360
     if (roll === 1) { mods.wangernumb = !mods.wangernumb; return { text: mods.wangernumb ? "IT'S TIME FOR WANGERNUMB!" : "Wangernumb is over. Probably.", cls: "wangernumb" }; }
     if (roll === 2) { mods.diagonal = !mods.diagonal; return { text: "THE BOARD IS NOW DIAGONAL!", cls: "event" }; }
     if (roll === 3) { mods.base12 = !mods.base12; return { text: mods.base12 ? "THE NUMBERS ARE NOW IN BASE 12!" : "Back to base 10. You're welcome.", cls: "event" }; }
     if (roll === 4) { mods.nonsense = !mods.nonsense; return { text: "THE NUMBERS HAVE GONE FUNNY!", cls: "event" }; }
+    if (roll === 5) { mods.flip = !mods.flip; return { text: mods.flip ? "FLIP THE BOARD!" : "The board is the right way up again.", cls: "event" }; } // persistent 180
     return { text: "RECOUNT! … (no change)", cls: "event" };
   }
 

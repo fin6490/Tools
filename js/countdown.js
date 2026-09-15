@@ -1,8 +1,8 @@
 // countdown.js — Countdown: the classic letters, numbers and conundrum starter,
 // built for the whiteboard. Deal the puzzle, run the 30-second clock, reveal.
 // Standalone (no question set needed). Zero deps.
-import { rint, shuffle, el } from "./quizkit.js?v=20260915p";
-import * as sound from "./sound.js?v=20260915p";
+import { rint, shuffle, el } from "./quizkit.js?v=20260915q";
+import * as sound from "./sound.js?v=20260915q";
 
 // Weighted letter bags (roughly the show's mix) and the numbers stacks.
 const VOWELS = "AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIIOOOOOOOOOOOOOUUUUU".split("");
