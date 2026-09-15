@@ -1371,3 +1371,13 @@ a.tab { display: block; }
 .nw-announce.silent { color: var(--muted); background: var(--panel); border: 2px dashed var(--line); font-size: clamp(18px, 3.5vw, 30px); box-shadow: none; }
 .nw-announce.event { color: var(--accent-ink); background: var(--accent); box-shadow: 0 14px 40px rgba(0,0,0,.4); font-size: clamp(24px, 6vw, 52px); }
 .nw-announce.yes.big { font-size: clamp(34px, 9vw, 82px); }
+
+/* Numberwang — Maths mode (real question to unlock a pick) */
+.nw-check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: var(--ink); margin: 4px 0; }
+.nw-question { font-family: var(--mono); font-weight: 800; font-size: clamp(28px, 7vw, 52px); color: var(--ink); margin: 6px 0 14px; }
+.nw-qopts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: min(440px, 92vw); margin: 0 auto; }
+.nw-qopt { padding: 16px 12px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel-2); color: var(--ink); font-family: var(--mono); font-weight: 800; font-size: clamp(20px, 5vw, 30px); cursor: pointer; }
+.nw-qopt:hover:not(:disabled) { border-color: var(--ink); }
+.nw-qopt.right { background: #35d183; color: #06251a; border-color: #2bbf75; }
+.nw-qopt.wrong { background: #f3d2d2; color: #a12b23; border-color: #e0a6a1; text-decoration: line-through; }
+.nw-qopt:disabled { cursor: default; }
