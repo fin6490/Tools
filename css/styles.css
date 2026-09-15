@@ -946,6 +946,8 @@ a.tab { display: inline-flex; align-items: center; }
 .gridclaim-qacts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
 /* Class quiz */
+.classquiz-names { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.classquiz-nameinput { width: 100%; }
 .classquiz-preview { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .classquiz-prevteam { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.5; color: var(--muted); }
 .classquiz-prevteam strong { color: var(--ink); }

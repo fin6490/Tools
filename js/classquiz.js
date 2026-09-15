@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915f";
-import { parseEntries } from "./wheel.js?v=20260915f";
-import { getState, save } from "./storage.js?v=20260915f";
-import * as sound from "./sound.js?v=20260915f";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915g";
+import { parseEntries } from "./wheel.js?v=20260915g";
+import { getState, save } from "./storage.js?v=20260915g";
+import * as sound from "./sound.js?v=20260915g";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
@@ -38,8 +38,10 @@ export function initClassQuiz(root) {
   const clearQTimer = () => { if (qTimer) { clearInterval(qTimer); qTimer = null; } };
 
   const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
+  // A team's display name — a custom one if set, else "Team N".
+  const teamName = (i) => { const n = cfg().teamNames; return (n && n[i] && n[i].trim()) ? n[i].trim() : "Team " + (i + 1); };
   function splitTeams(names, n) {
-    const teams = Array.from({ length: n }, (_, i) => ({ name: "Team " + (i + 1), members: [], score: 0 }));
+    const teams = Array.from({ length: n }, (_, i) => ({ name: teamName(i), members: [], score: 0 }));
     shuffle(names).forEach((nm, i) => teams[i % n].members.push(nm));
     return teams;
   }
@@ -68,10 +70,25 @@ export function initClassQuiz(root) {
     const nRow = el("div", "dojo-field dojo-field-inline");
     nRow.appendChild(el("label", "dojo-lbl", "Teams"));
     const nSel = el("select", "dojo-select dojo-select-sm");
-    [2, 3, 4, 5, 6].forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; if (n === (cfg().teamCount || 2)) o.selected = true; nSel.appendChild(o); });
+    [2, 3, 4, 5, 6, 7, 8].forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; if (n === (cfg().teamCount || 2)) o.selected = true; nSel.appendChild(o); });
     nSel.addEventListener("change", () => { cfg().teamCount = +nSel.value; save(); renderLobby(); });
     nRow.appendChild(nSel);
     card.appendChild(nRow);
+
+    // Optional custom team names — one input per team.
+    const namesRow = el("div", "dojo-field");
+    namesRow.appendChild(el("label", "dojo-lbl", "Team names (optional)"));
+    const namesGrid = el("div", "classquiz-names");
+    if (!Array.isArray(cfg().teamNames)) cfg().teamNames = [];
+    for (let i = 0; i < (cfg().teamCount || 2); i++) {
+      const inp = el("input", "dojo-input classquiz-nameinput");
+      inp.placeholder = "Team " + (i + 1); inp.maxLength = 24;
+      inp.value = cfg().teamNames[i] || "";
+      inp.addEventListener("input", () => { cfg().teamNames[i] = inp.value; save(); });
+      namesGrid.appendChild(inp);
+    }
+    namesRow.appendChild(namesGrid);
+    card.appendChild(namesRow);
 
     // Rounds: 0 = straight through; otherwise questions per round.
     const rRow = el("div", "dojo-field dojo-field-inline");
@@ -114,7 +131,7 @@ export function initClassQuiz(root) {
     if (!set || !set.questions.length) return;
     const names = roster();
     const teams = names.length ? splitTeams(names, cfg().teamCount || 2)
-      : Array.from({ length: cfg().teamCount || 2 }, (_, i) => ({ name: "Team " + (i + 1), members: [], score: 0 }));
+      : Array.from({ length: cfg().teamCount || 2 }, (_, i) => ({ name: teamName(i), members: [], score: 0 }));
     const all = shuffle(set.questions);
     const size = cfg().roundSize || 0;
     const rounds = size > 0 ? chunk(all, size) : [all];

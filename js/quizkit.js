@@ -2,9 +2,9 @@
 // Pairs, Class quiz, Grid claim…). They all reuse the question sets that the
 // BT Dojo editor + AI generator produce, plus a tiny maths renderer so fractions
 // and powers show properly. The Dojo keeps its own copies; new games use these.
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915f";
-import { getState, save } from "./storage.js?v=20260915f";
-import { SUPPORT } from "./support.js?v=20260915f";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915g";
+import { getState, save } from "./storage.js?v=20260915g";
+import { SUPPORT } from "./support.js?v=20260915g";
 
 export function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 export function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -47,24 +47,32 @@ export const el = (tag, cls, html) => { const e = document.createElement(tag); i
 /* ---------- AI set generation (shared with the Dojo's hosted generator) ---------- */
 // Calls the Cloudflare Worker, saves the new set into the shared dojo.sets store
 // (so it shows up in every game), and returns it. Throws on failure.
-export async function generateSet(topic, count = 12) {
-  const headers = { "Content-Type": "application/json" };
-  if (SUPPORT.dojoGenerateToken) headers["x-dojo-token"] = SUPPORT.dojoGenerateToken;
-  const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic, count }) });
-  if (!res.ok) throw new Error("status " + res.status);
-  const data = await res.json();
-  const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => {
-    const out = { q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] };
-    if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.map(String);
-    return out;
-  }) : [];
-  if (qs.length < 2) throw new Error("empty");
-  const s = getState();
-  if (!s.dojo) s.dojo = {};
-  if (!Array.isArray(s.dojo.sets)) s.dojo.sets = [];
-  const set = { id: uid(), name: (data.name || topic).slice(0, 60), questions: qs };
-  s.dojo.sets.push(set); save();
-  return set;
+export async function generateSet(topic, count = 12, tries = 3) {
+  // The model occasionally returns output the Worker can't parse, so retry a few
+  // times before giving up — most failures clear on the next attempt.
+  let lastErr;
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (SUPPORT.dojoGenerateToken) headers["x-dojo-token"] = SUPPORT.dojoGenerateToken;
+      const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic, count }) });
+      if (!res.ok) throw new Error("status " + res.status);
+      const data = await res.json();
+      const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => {
+        const out = { q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] };
+        if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.map(String);
+        return out;
+      }) : [];
+      if (qs.length < 2) throw new Error("empty");
+      const s = getState();
+      if (!s.dojo) s.dojo = {};
+      if (!Array.isArray(s.dojo.sets)) s.dojo.sets = [];
+      const set = { id: uid(), name: (data.name || topic).slice(0, 60), questions: qs };
+      s.dojo.sets.push(set); save();
+      return set;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
 }
 
 // A ready-made "type a topic → Generate" row. onGenerated(newSet, flashMsg) fires
