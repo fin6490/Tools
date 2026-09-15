@@ -883,6 +883,8 @@ a.tab { display: inline-flex; align-items: center; }
 .axiom-level { padding: 6px 16px; border: 2px solid var(--line); border-radius: 999px; background: var(--panel-2); color: var(--muted); font-weight: 700; cursor: pointer; }
 .axiom-level.on { color: var(--ink); border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 22%, transparent); }
 .axiom-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(92vw, 420px); margin: 4px auto 0; }
+.axiom-board.dim7 { width: min(96vw, 540px); gap: 4px; }
+.axiom-board.dim7 .axiom-cell { border-radius: 8px; font-size: clamp(12px, 3.2vw, 22px); border-width: 1.5px; }
 .axiom-cell { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 5vw, 30px); border: 2px solid var(--line); background: var(--panel-2); color: var(--ink); }
 .axiom-cell.dead { border: none; background: transparent; }
 .axiom-cell.op { background: transparent; border-color: transparent; color: var(--muted); }

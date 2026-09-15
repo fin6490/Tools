@@ -2,8 +2,9 @@
 // Pairs, Class quiz, Grid claim…). They all reuse the question sets that the
 // BT Dojo editor + AI generator produce, plus a tiny maths renderer so fractions
 // and powers show properly. The Dojo keeps its own copies; new games use these.
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915e";
-import { getState } from "./storage.js?v=20260915e";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915f";
+import { getState, save } from "./storage.js?v=20260915f";
+import { SUPPORT } from "./support.js?v=20260915f";
 
 export function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 export function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -42,3 +43,53 @@ export function mathHtml(str) {
 }
 
 export const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+/* ---------- AI set generation (shared with the Dojo's hosted generator) ---------- */
+// Calls the Cloudflare Worker, saves the new set into the shared dojo.sets store
+// (so it shows up in every game), and returns it. Throws on failure.
+export async function generateSet(topic, count = 12) {
+  const headers = { "Content-Type": "application/json" };
+  if (SUPPORT.dojoGenerateToken) headers["x-dojo-token"] = SUPPORT.dojoGenerateToken;
+  const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic, count }) });
+  if (!res.ok) throw new Error("status " + res.status);
+  const data = await res.json();
+  const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => {
+    const out = { q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] };
+    if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.map(String);
+    return out;
+  }) : [];
+  if (qs.length < 2) throw new Error("empty");
+  const s = getState();
+  if (!s.dojo) s.dojo = {};
+  if (!Array.isArray(s.dojo.sets)) s.dojo.sets = [];
+  const set = { id: uid(), name: (data.name || topic).slice(0, 60), questions: qs };
+  s.dojo.sets.push(set); save();
+  return set;
+}
+
+// A ready-made "type a topic → Generate" row. onGenerated(newSet, flashMsg) fires
+// on success (after the set is saved). Degrades gracefully when AI isn't set up.
+export function makeGenerateRow(onGenerated) {
+  const wrap = el("div", "dojo-field");
+  wrap.appendChild(el("label", "dojo-lbl", "Generate a set with AI — type a topic"));
+  const row = el("div", "dojo-genrow");
+  const input = el("input", "dojo-input"); input.placeholder = "e.g. Year 8 equations, KS2 homophones…"; input.maxLength = 120;
+  const btn = el("button", "btn primary", "Generate");
+  row.append(input, btn); wrap.appendChild(row);
+  const note = el("p", "dojo-hint dojo-gennote"); note.hidden = true; wrap.appendChild(note);
+  const doGen = async () => {
+    const t = input.value.trim(); if (!t) return;
+    if (!SUPPORT.dojoGenerateEndpoint) { note.hidden = false; note.textContent = "AI generation isn't switched on for this site yet — pick or make a set below."; return; }
+    btn.disabled = true; const orig = btn.textContent; btn.textContent = "Generating…"; note.hidden = true;
+    try {
+      const set = await generateSet(t, 12);
+      onGenerated(set, `Generated ${set.questions.length} questions on “${t}” — ready to play.`);
+    } catch {
+      btn.disabled = false; btn.textContent = orig;
+      note.hidden = false; note.textContent = "Couldn't generate that just now — try again, or pick a set below.";
+    }
+  };
+  btn.addEventListener("click", doGen);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") doGen(); });
+  return wrap;
+}

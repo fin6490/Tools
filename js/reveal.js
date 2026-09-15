@@ -1,9 +1,9 @@
 // reveal.js — Reveal cards: a teacher-paced flashcard runner for the whiteboard.
 // Pick a question set, show a question big, click to reveal the answer, next.
 // Reuses the Dojo's question sets (starter packs + your saved sets). Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915e";
-import { getState, save } from "./storage.js?v=20260915e";
-import * as sound from "./sound.js?v=20260915e";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915f";
+import { getState, save } from "./storage.js?v=20260915f";
+import * as sound from "./sound.js?v=20260915f";
 
 export function initReveal(root) {
   const panel = root.querySelector(".reveal-panel");
@@ -42,6 +42,8 @@ export function initReveal(root) {
     sel.addEventListener("change", () => { cfg().activeSetId = sel.value; save(); });
     setRow.appendChild(sel);
     card.appendChild(setRow);
+
+    card.appendChild(makeGenerateRow((set) => { cfg().activeSetId = set.id; save(); renderLobby(`Generated “${set.name}” — ready.`); }));
 
     const shufRow = el("label", "reveal-check");
     const cb = el("input"); cb.type = "checkbox"; cb.checked = cfg().shuffle !== false;

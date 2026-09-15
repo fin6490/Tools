@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915e";
-import { parseEntries } from "./wheel.js?v=20260915e";
-import { getState, save } from "./storage.js?v=20260915e";
-import * as sound from "./sound.js?v=20260915e";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915f";
+import { parseEntries } from "./wheel.js?v=20260915f";
+import { getState, save } from "./storage.js?v=20260915f";
+import * as sound from "./sound.js?v=20260915f";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
@@ -62,6 +62,8 @@ export function initClassQuiz(root) {
     sel.addEventListener("change", () => { cfg().activeSetId = sel.value; save(); });
     setRow.appendChild(sel);
     card.appendChild(setRow);
+
+    card.appendChild(makeGenerateRow((set) => { cfg().activeSetId = set.id; save(); renderLobby(`Generated “${set.name}” — ready.`); }));
 
     const nRow = el("div", "dojo-field dojo-field-inline");
     nRow.appendChild(el("label", "dojo-lbl", "Teams"));

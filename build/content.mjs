@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915e",
+  token: "20260915f",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -571,9 +571,9 @@ export const TOOLS = [
       "A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline.",
     h1: "Axiom — daily maths puzzle",
     intro:
-      "A daily maths puzzle for a starter or a brain-break, at three difficulty levels. Numbers and operators sit in a grid; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — shared cells have to work in both directions at once. Easy is a four-equation ring; Medium and Hard are fully interlocking crosswords (six lines), with Hard mixing add, subtract and multiply. A new puzzle every day at each level, the same for the whole class, and it checks itself.",
+      "A daily maths puzzle for a starter or a brain-break, at four difficulty levels. Numbers and operators sit in a grid; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — shared cells have to work in both directions at once. Easy is a four-equation ring; Medium and Hard are interlocking 3×3 crosswords (six lines), with Hard mixing +, −, × and ÷; Expert is a bigger 4×4 crossword — eight lines of three-number sums. A new puzzle every day at each level, the same for the whole class, and it checks itself.",
     steps: [
-      "Choose a level — Easy, Medium or Hard — then look at the grid and its shared cells.",
+      "Choose a level — Easy, Medium, Hard or Expert — then look at the grid and its shared cells.",
       "Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).",
       "Fill every blank so all the lines are true — lines you've completed turn green.",
       "Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.",
@@ -585,7 +585,7 @@ export const TOOLS = [
     ],
     faq: [
       ["Is it the same puzzle for everyone?", "Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."],
-      ["What are the difficulty levels?", "Easy is a four-equation ring; Medium is an interlocking crossword of six addition lines; Hard is the same six-line crossword but mixes add, subtract and multiply with more blanks to fill."],
+      ["What are the difficulty levels?", "Easy is a four-equation ring; Medium is an interlocking 3×3 crossword of six addition lines; Hard is the same six-line crossword but mixes +, −, × and ÷ with more blanks; Expert is a bigger 4×4 crossword — eight lines of three-number sums."],
       ["How does it check itself?", "Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed."],
       ["Do I need an account?", "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."],
       ["Is it free?", "Completely — no ads, no sign-up, ever."],
