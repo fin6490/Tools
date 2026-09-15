@@ -8,9 +8,9 @@
 // board! Diagonal! Base 12! Wangernumb!). An optional Maths mode makes players
 // solve a real question — auto arithmetic or one of your Dojo sets — to unlock
 // their pick. Zero deps. All original code; no assets or scripts are copied.
-import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915o";
-import { getState, save } from "./storage.js?v=20260915o";
-import * as sound from "./sound.js?v=20260915o";
+import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915p";
+import { getState, save } from "./storage.js?v=20260915p";
+import * as sound from "./sound.js?v=20260915p";
 
 const YES = ["That's NUMBERWANG!", "NUMBERWANG!", "Ooh — NUMBERWANG!", "Why, that's NUMBERWANG!", "Stone me, it's NUMBERWANG!", "Get in — NUMBERWANG!"];
 const DOUBLE = ["DOUBLE NUMBERWANG!", "It's a DOUBLE NUMBERWANG!!", "Twice the wang — DOUBLE NUMBERWANG!"];
@@ -156,7 +156,7 @@ export function initNumberwang(root) {
     maths = !!cfg().maths; mathSet = cfg().mathSet || "auto";
     players = [{ name: nameOf(0), score: 0 }, { name: nameOf(1), score: 0 }];
     turn = 0; over = false; busy = false; picks = 0; roundIx = 0;
-    mods = { rotate: false, diagonal: false, wangernumb: false, base12: false, nonsense: false };
+    mods = { diagonal: false, wangernumb: false, base12: false, nonsense: false };
     buildShell();
     renderTurn();
   }
@@ -201,7 +201,6 @@ export function initNumberwang(root) {
   }
   function applyMods() {
     const stage = panel.querySelector("#nwStage"); if (!stage) return;
-    stage.classList.toggle("rotate", mods.rotate);
     stage.classList.toggle("diagonal", mods.diagonal);
     stage.classList.toggle("wangernumb", mods.wangernumb);
   }
@@ -308,8 +307,12 @@ export function initNumberwang(root) {
     const ev = maybeEvent(chaos());
     turn = turn ? 0 : 1;
     busy = false;
-    if (ev) announce(ev.text, ev.cls, 1500, () => { hideAnnounce(); renderTurn(); });
-    else renderTurn();
+    if (ev) {
+      // A full, slow, utterly pointless 360° spin of the whole board — it ends
+      // up exactly where it started, of course.
+      if (ev.spin) { const st = panel.querySelector("#nwStage"); if (st) { st.classList.remove("spin"); void st.offsetWidth; st.classList.add("spin"); } }
+      announce(ev.text, ev.cls, ev.spin ? 1750 : 1500, () => { hideAnnounce(); renderTurn(); });
+    } else renderTurn();
   }
 
   // Cosmetic-only events; they never touch the score, so the game always ends.
@@ -318,7 +321,7 @@ export function initNumberwang(root) {
     if (c === 0) return null;                 // pure sketch — no gags yet
     if (rint(100) >= (c === 1 ? 35 : 60)) return null;
     const roll = c === 1 ? rint(2) : rint(6); // level 1 only gets the gentle ones
-    if (roll === 0) { mods.rotate = !mods.rotate; return { text: "ROTATE THE BOARD!", cls: "event" }; }
+    if (roll === 0) { return { text: "ROTATE THE BOARD!", cls: "event", spin: true }; }
     if (roll === 1) { mods.wangernumb = !mods.wangernumb; return { text: mods.wangernumb ? "IT'S TIME FOR WANGERNUMB!" : "Wangernumb is over. Probably.", cls: "wangernumb" }; }
     if (roll === 2) { mods.diagonal = !mods.diagonal; return { text: "THE BOARD IS NOW DIAGONAL!", cls: "event" }; }
     if (roll === 3) { mods.base12 = !mods.base12; return { text: mods.base12 ? "THE NUMBERS ARE NOW IN BASE 12!" : "Back to base 10. You're welcome.", cls: "event" }; }
