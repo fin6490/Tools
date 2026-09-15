@@ -1337,6 +1337,8 @@ a.tab { display: block; }
 .nw-stage { text-align: center; margin: 14px 0; transition: transform .5s ease; }
 .nw-stage.spin { animation: nwspin 1.7s ease-in-out; }
 @keyframes nwspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.nw-stage.flip { transform: rotate(180deg); }
+.nw-stage.flip.diagonal { transform: rotate(174deg) skewX(-6deg); }
 .nw-stage.wangernumb { filter: hue-rotate(180deg); }
 .nw-prompt { font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 3.4vw, 26px); color: var(--ink); margin: 0 0 14px; }
 .nw-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(460px, 90vw); margin: 0 auto; }
