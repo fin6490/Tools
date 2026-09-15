@@ -1,9 +1,9 @@
 // bingo.js — Bingo: the teacher calls questions, students mark the answers on
 // their cards. Auto-builds printable cards from a question set's answers and
 // runs a caller that reveals one answer at a time. Reuses the Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915e";
-import { getState, save } from "./storage.js?v=20260915e";
-import * as sound from "./sound.js?v=20260915e";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915f";
+import { getState, save } from "./storage.js?v=20260915f";
+import * as sound from "./sound.js?v=20260915f";
 
 export function initBingo(root) {
   const panel = root.querySelector(".bingo-panel");
@@ -44,6 +44,8 @@ export function initBingo(root) {
     sel.addEventListener("change", () => { cfg().activeSetId = sel.value; save(); renderLobby(); });
     setRow.appendChild(sel);
     card.appendChild(setRow);
+
+    card.appendChild(makeGenerateRow((set) => { cfg().activeSetId = set.id; save(); renderLobby(`Generated “${set.name}” — ready.`); }));
 
     const pool = usable(activeSet()).length;
     const sizeRow = el("div", "dojo-field dojo-field-inline");
