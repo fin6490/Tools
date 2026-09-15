@@ -84,6 +84,11 @@ export const ROUTES = {
     "slug": "class-quiz",
     "title": "Class Quiz — Free Team Quiz Game for the Whiteboard | SpinDecks",
     "description": "Run a team quiz on the whiteboard. Split the class into teams (from a saved wheel if you like), reveal each answer and tap the team that got it — scores keep themselves. Free, no sign-up, works offline."
+  },
+  "gridclaim": {
+    "slug": "grid-claim",
+    "title": "Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks",
+    "description": "A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline."
   }
 };
 

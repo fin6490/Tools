@@ -91,6 +91,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://spindecks.app/grid-claim/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://spindecks.app/about/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

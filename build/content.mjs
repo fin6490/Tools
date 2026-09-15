@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915a",
+  token: "20260915b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -503,6 +503,34 @@ export const TOOLS = [
       ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
       ["How are teams made?", "Choose a saved wheel and the class is split into balanced teams automatically (sizes differ by at most one), or just play with numbered teams. Re-shuffle before you start if you like."],
       ["How is scoring handled?", "After you reveal each answer, tap the team that got it right to add a point. The scoreboard is always on screen, and the final standings show at the end."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "grid-claim",
+    view: "gridclaim",
+    nav: "Grid claim",
+    title: "Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks",
+    description:
+      "A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline.",
+    h1: "Grid claim — connect quiz game",
+    intro:
+      "A two-team strategy quiz for the board. Teams take turns answering to claim tiles on a grid: Team 1 tries to build an unbroken path from left to right, Team 2 from top to bottom. Answer correctly to claim a tile — and block your rivals' route. It uses the same question sets as The BT Dojo.",
+    steps: [
+      "Pick a question set and a grid size (4×4, 5×5 or 6×6).",
+      "On your turn, tap an open tile and read the question that appears.",
+      "Reveal the answer — if the team got it, claim the tile in your colour; a miss leaves it open and passes over.",
+      "First team to connect their two sides wins. If the grid fills up, the most tiles wins.",
+    ],
+    whoFor: [
+      ["Teachers", "a tactical whole-class team game where answering and blocking both matter."],
+      ["Tutors & clubs", "a connect-four-meets-quiz for two teams on any topic."],
+      ["Anyone", "a strategic quiz duel for revision or a games night."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
+      ["How do you win?", "Team 1 wins by connecting the left and right sides with their tiles; Team 2 by connecting top and bottom. If the whole grid is claimed with no path, whoever has the most tiles wins."],
+      ["What happens on a wrong answer?", "The tile stays open and it becomes the other team's turn, so a miss can hand your rivals the tile you wanted."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
     ],
   },
