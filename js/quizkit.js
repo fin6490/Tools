@@ -2,9 +2,9 @@
 // Pairs, Class quiz, Grid claim…). They all reuse the question sets that the
 // BT Dojo editor + AI generator produce, plus a tiny maths renderer so fractions
 // and powers show properly. The Dojo keeps its own copies; new games use these.
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915i";
-import { getState, save } from "./storage.js?v=20260915i";
-import { SUPPORT } from "./support.js?v=20260915i";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915j";
+import { getState, save } from "./storage.js?v=20260915j";
+import { SUPPORT } from "./support.js?v=20260915j";
 
 export function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 export function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -56,6 +56,19 @@ export function fitText(box, face, max = 26, min = 9) {
     while (size > min && (box.scrollHeight > box.clientHeight + 1 || box.scrollWidth > box.clientWidth + 1)) {
       size -= 1; face.style.fontSize = size + "px";
     }
+  });
+}
+
+// Big on-board display text (Reveal / Bingo caller / Class quiz): keep the large
+// readable size for normal answers, but scale a very long one down so it doesn't
+// overrun the board. maxVh caps the block's height as a fraction of the viewport.
+export function fitBlock(face, maxVh = 0.4, max = 60, min = 22) {
+  if (!face) return;
+  requestAnimationFrame(() => {
+    const cap = Math.max(140, Math.round((window.innerHeight || 800) * maxVh));
+    let size = max, guard = 0;
+    face.style.fontSize = size + "px";
+    while (size > min && face.scrollHeight > cap && guard++ < 200) { size -= 2; face.style.fontSize = size + "px"; }
   });
 }
 

@@ -4,12 +4,12 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260915i";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915i";
-import { parseEntries } from "./wheel.js?v=20260915i";
-import { SUPPORT } from "./support.js?v=20260915i";
-import { generateSet } from "./quizkit.js?v=20260915i";
-import * as sound from "./sound.js?v=20260915i";
+import { getState, save } from "./storage.js?v=20260915j";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915j";
+import { parseEntries } from "./wheel.js?v=20260915j";
+import { SUPPORT } from "./support.js?v=20260915j";
+import { generateSet, fitText } from "./quizkit.js?v=20260915j";
+import * as sound from "./sound.js?v=20260915j";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -504,10 +504,11 @@ export function initDojo(root) {
     const grid = panel.querySelector(side === "p1" ? "#djGrid1" : "#djGrid2");
     grid.innerHTML = "";
     p.opts.forEach((val) => {
-      const b = el("button", "dojo-opt", mathHtml(val));
+      const b = el("button", "dojo-opt", `<span class="dojo-optlabel">${mathHtml(val)}</span>`);
       b.dataset.val = val;
       b.addEventListener("click", () => onPick(side, val, b));
       grid.appendChild(b);
+      fitText(b, b.querySelector(".dojo-optlabel"), 28, 12); // shrink wordy answers to fit
     });
   }
 
