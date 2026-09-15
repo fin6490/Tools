@@ -1,8 +1,8 @@
 // countdown.js — Countdown: the classic letters, numbers and conundrum starter,
 // built for the whiteboard. Deal the puzzle, run the 30-second clock, reveal.
 // Standalone (no question set needed). Zero deps.
-import { rint, shuffle, el } from "./quizkit.js?v=20260915d";
-import * as sound from "./sound.js?v=20260915d";
+import { rint, shuffle, el } from "./quizkit.js?v=20260915e";
+import * as sound from "./sound.js?v=20260915e";
 
 // Weighted letter bags (roughly the show's mix) and the numbers stacks.
 const VOWELS = "AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIIOOOOOOOOOOOOOUUUUU".split("");
@@ -94,8 +94,9 @@ export function initCountdown(root) {
 
   /* ================= NUMBERS ================= */
   function renderNumbers() {
-    const { slots, clock, ctrls } = shell("Numbers round");
+    const { slots, ctrls } = shell("Numbers round");
     slots.innerHTML = "";
+    let dealt = null, target = 0;
     const setup = el("div", "countdown-setup");
     setup.appendChild(el("label", "dojo-lbl", "How many large numbers?"));
     const sel = el("select", "dojo-select dojo-select-sm");
@@ -104,22 +105,62 @@ export function initCountdown(root) {
     slots.appendChild(setup);
     const deal = el("button", "btn primary", "Deal");
     const start = el("button", "btn primary", "Start 30s"); start.disabled = true;
+    const solBtn = el("button", "btn ghost", "Reveal solution"); solBtn.disabled = true;
     const again = el("button", "btn ghost", "New round"); again.addEventListener("click", renderNumbers);
     deal.addEventListener("click", () => {
       const large = shuffle(LARGE).slice(0, +sel.value);
       const smallBag = []; for (let v = 1; v <= 10; v++) { smallBag.push(v, v); }
       const small = shuffle(smallBag).slice(0, 6 - large.length);
-      const nums = shuffle([...large, ...small]);
-      const target = 100 + rint(900);
+      dealt = shuffle([...large, ...small]);
+      target = 100 + rint(900);
       slots.innerHTML = "";
       slots.appendChild(el("p", "countdown-target", `Target <b>${target}</b>`));
       const row = el("div", "countdown-numrow");
-      nums.forEach((n) => row.appendChild(el("span", "countdown-numtile", String(n))));
+      dealt.forEach((n) => row.appendChild(el("span", "countdown-numtile", String(n))));
       slots.appendChild(row);
-      deal.disabled = true; start.disabled = false; fx(sound.fanfare);
+      deal.disabled = true; start.disabled = false; solBtn.disabled = false; fx(sound.fanfare);
     });
     start.addEventListener("click", () => { start.disabled = true; runClock(30, () => fx(sound.fanfare)); });
-    ctrls.append(deal, start, again);
+    solBtn.addEventListener("click", () => {
+      if (!dealt) return;
+      clearTimer();
+      const best = solveNumbers(dealt, target);
+      slots.querySelectorAll(".countdown-solution").forEach((n) => n.remove());
+      const box = el("div", "countdown-solution");
+      if (best.value === target) box.appendChild(el("p", "countdown-solhead ok", "Solution — spot on!"));
+      else box.appendChild(el("p", "countdown-solhead", `Best possible: ${best.value} (${Math.abs(best.value - target)} away)`));
+      best.steps.forEach((s) => box.appendChild(el("p", "countdown-solstep", s)));
+      slots.appendChild(box);
+      fx(sound.fanfare);
+    });
+    ctrls.append(deal, start, solBtn, again);
+  }
+
+  // Countdown numbers solver — reach the target (or get closest) with + − × ÷.
+  function solveNumbers(nums, target) {
+    let best = null;
+    const consider = (val, steps) => {
+      const d = Math.abs(val - target);
+      if (!best || d < best.diff || (d === best.diff && steps.length < best.steps.length)) best = { diff: d, value: val, steps: steps.slice() };
+    };
+    nums.forEach((n) => consider(n, []));
+    (function rec(arr, steps) {
+      for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
+        const a = arr[i], b = arr[j], rest = arr.filter((_, k) => k !== i && k !== j);
+        const ops = [[a + b, `${a} + ${b} = ${a + b}`], [a * b, `${a} × ${b} = ${a * b}`]];
+        if (a - b > 0) ops.push([a - b, `${a} − ${b} = ${a - b}`]);
+        else if (b - a > 0) ops.push([b - a, `${b} − ${a} = ${b - a}`]);
+        if (b !== 0 && a % b === 0) ops.push([a / b, `${a} ÷ ${b} = ${a / b}`]);
+        else if (a !== 0 && b % a === 0) ops.push([b / a, `${b} ÷ ${a} = ${b / a}`]);
+        for (const [val, expr] of ops) {
+          const steps2 = [...steps, expr];
+          consider(val, steps2);
+          if (best.diff === 0) return;
+          if (rest.length) rec([...rest, val], steps2);
+        }
+      }
+    })(nums.slice(), []);
+    return best;
   }
 
   /* ================= CONUNDRUM ================= */
