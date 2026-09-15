@@ -8,9 +8,9 @@
 // board! Diagonal! Base 12! Wangernumb!). An optional Maths mode makes players
 // solve a real question — auto arithmetic or one of your Dojo sets — to unlock
 // their pick. Zero deps. All original code; no assets or scripts are copied.
-import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915n";
-import { getState, save } from "./storage.js?v=20260915n";
-import * as sound from "./sound.js?v=20260915n";
+import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260915o";
+import { getState, save } from "./storage.js?v=20260915o";
+import * as sound from "./sound.js?v=20260915o";
 
 const YES = ["That's NUMBERWANG!", "NUMBERWANG!", "Ooh — NUMBERWANG!", "Why, that's NUMBERWANG!", "Stone me, it's NUMBERWANG!", "Get in — NUMBERWANG!"];
 const DOUBLE = ["DOUBLE NUMBERWANG!", "It's a DOUBLE NUMBERWANG!!", "Twice the wang — DOUBLE NUMBERWANG!"];
@@ -105,7 +105,7 @@ export function initNumberwang(root) {
     const card = el("div", "nw-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "Nonsense game show"));
     card.appendChild(el("h2", "dojo-title", "Numberwang"));
-    card.appendChild(el("p", "dojo-lede", "The maths quiz that everyone loves to play! Take it in turns to choose a number, and find out if it's Numberwang. It starts simple — just like the show — then the chaos creeps in: a shifting rulebook, meaningless meters and the odd Wangernumb. First to the target wins."));
+    card.appendChild(el("p", "dojo-lede", "The maths quiz that everyone loves to play!"));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const namesRow = el("div", "dojo-field");
@@ -131,7 +131,7 @@ export function initNumberwang(root) {
     // Optional real-maths twist.
     const mRow = el("label", "nw-check");
     const cb = el("input"); cb.type = "checkbox"; cb.checked = !!cfg().maths;
-    mRow.append(cb, document.createTextNode(" Maths mode — solve a question to unlock your pick"));
+    mRow.append(cb, document.createTextNode(" Maths mode"));
     card.appendChild(mRow);
 
     const srcRow = el("div", "dojo-field"); srcRow.hidden = !cfg().maths;
@@ -147,7 +147,6 @@ export function initNumberwang(root) {
     const go = el("button", "btn primary dojo-begin", "Let's play Numberwang!");
     go.addEventListener("click", () => { cfg().target = +tSel.value; cfg().maths = cb.checked; cfg().mathSet = srcSel.value; save(); startGame(); });
     card.appendChild(go);
-    card.appendChild(el("p", "dojo-hint", "Best on the big screen with the whole class calling out. In Maths mode the sum is real; whether your number is Numberwang is, as ever, pure nonsense."));
     panel.appendChild(card);
   }
 
@@ -219,7 +218,7 @@ export function initNumberwang(root) {
     const stage = panel.querySelector("#nwStage");
     stage.className = "nw-stage"; stage.innerHTML = "";
     if (c >= 1) stage.appendChild(el("p", "nw-round", ROUND_NAMES[roundIx % ROUND_NAMES.length] + (mods.wangernumb ? " — WANGERNUMB" : "")));
-    stage.appendChild(el("p", "nw-prompt", `${players[turn].name}, solve to earn your pick`));
+    stage.appendChild(el("p", "nw-prompt", `${players[turn].name}, your question`));
     const q = nextQuestion();
     stage.appendChild(el("div", "nw-question", mathHtml(q.q)));
     const wrap = el("div", "nw-qopts");
@@ -234,7 +233,6 @@ export function initNumberwang(root) {
       wrap.appendChild(b);
     });
     stage.appendChild(wrap);
-    stage.appendChild(el("p", "dojo-hint nw-sub", "Get it right to choose a number. (Being right earns the pick — not the Numberwang.)"));
     applyMods();
   }
 
@@ -252,7 +250,6 @@ export function initNumberwang(root) {
       wrap.appendChild(b);
     });
     stage.appendChild(wrap);
-    stage.appendChild(el("p", "dojo-hint nw-sub", c >= 2 ? "Tap the number you'd like to play. (The meters are watching.)" : "Tap the number you'd like to play."));
     applyMods();
   }
 
@@ -336,7 +333,7 @@ export function initNumberwang(root) {
     const champ = players[0].score > players[1].score ? players[0] : players[1];
     card.appendChild(el("h2", "dojo-title", "That's Numberwang!"));
     card.appendChild(el("p", "dojo-res-name", `${champ.name} is the Numberwang champion!`));
-    card.appendChild(el("p", "dojo-lede", `Final: ${players[0].name} ${players[0].score} · ${players[1].name} ${players[1].score}. The meters, the rules and the numbers all meant nothing. As it should be.`));
+    card.appendChild(el("p", "dojo-lede", `${players[0].name} ${players[0].score} · ${players[1].name} ${players[1].score}`));
     const row = el("div", "dojo-editbtns");
     const again = el("button", "btn primary", "Play again"); again.addEventListener("click", () => startGame());
     const back = el("button", "btn ghost", "New game"); back.addEventListener("click", () => renderLobby());
