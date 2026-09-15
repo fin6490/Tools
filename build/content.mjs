@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915c",
+  token: "20260915d",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -560,6 +560,34 @@ export const TOOLS = [
       ["How are the letters and numbers chosen?", "Letters are drawn from weighted vowel and consonant pools like the show; numbers come from the four large tiles (25, 50, 75, 100) and two sets of 1–10, with a random three-digit target."],
       ["Does it check my word or solution?", "No — the class or teacher judges the best word or the closest number, just like the show. The clock and the puzzle are what it provides."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "axiom",
+    view: "axiom",
+    nav: "Axiom",
+    title: "Axiom — Free Daily Maths Puzzle | SpinDecks",
+    description:
+      "A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline.",
+    h1: "Axiom — daily maths puzzle",
+    intro:
+      "A daily maths puzzle for a starter or a brain-break. Four equations form a ring and share their corners; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — each corner has to work two ways at once. There's a new puzzle every day, the same for the whole class, and it checks itself.",
+    steps: [
+      "Look at the grid — the corners are shared between an across equation and a down one.",
+      "Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).",
+      "Fill every blank so all four lines are true — lines you've completed turn green.",
+      "Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.",
+    ],
+    whoFor: [
+      ["Teachers", "a daily number starter that runs itself — put it on the board as students come in."],
+      ["Tutors", "quick arithmetic and reasoning practice, one short puzzle at a time."],
+      ["Anyone", "a bite-sized daily maths challenge, like a numbers crossword."],
+    ],
+    faq: [
+      ["Is it the same puzzle for everyone?", "Yes — the daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."],
+      ["How does it check itself?", "Each of the four lines is a real equation. Complete lines turn green and you've solved it when all four are correct — no marking needed."],
+      ["Do I need an account?", "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."],
+      ["Is it free?", "Completely — no ads, no sign-up, ever."],
     ],
   },
 ];

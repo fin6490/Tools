@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz, .view-gridclaim, .view-countdown { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz, .view-gridclaim, .view-countdown, .view-axiom { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -876,7 +876,25 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby, .gridclaim-lobby, .countdown-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby, .gridclaim-lobby, .countdown-lobby, .axiom-wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Axiom — daily maths crossword */
+.axiom-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(92vw, 420px); margin: 4px auto 0; }
+.axiom-cell { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 5vw, 30px); border: 2px solid var(--line); background: var(--panel-2); color: var(--ink); }
+.axiom-cell.dead { border: none; background: transparent; }
+.axiom-cell.op { background: transparent; border-color: transparent; color: var(--muted); }
+.axiom-cell.num { background: #f6f6f8; color: #16161a; }
+.axiom-cell.blank { background: var(--panel); border-style: dashed; border-color: var(--teal); color: var(--ink); cursor: pointer; }
+.axiom-cell.blank:hover { border-style: solid; }
+.axiom-cell.good { background: #35d183; color: #06251a; border-color: #2bbf75; }
+.axiom-cell.bad { background: #f3d2d2; color: #a12b23; border-color: #e0a6a1; }
+.axiom-rack { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 4px; }
+.axiom-tile { min-width: 54px; height: 54px; border: 2px solid var(--gold); border-radius: 10px; background: var(--panel-2); color: var(--ink); font-family: var(--mono); font-weight: 800; font-size: 24px; cursor: pointer; }
+.axiom-tile.held { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent); transform: translateY(-2px); }
+.axiom-tile.used { opacity: .25; cursor: default; }
+.axiom-status { text-align: center; font-family: var(--mono); font-weight: 700; color: var(--muted); margin: 0; min-height: 22px; }
+.axiom-status.solved { color: #35d183; font-size: 18px; }
+.axiom-ctrls { justify-content: center; }
 
 /* Countdown */
 .countdown-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }

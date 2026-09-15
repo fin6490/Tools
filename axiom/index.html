@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks</title>
-<meta name="description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
+<title>Axiom — Free Daily Maths Puzzle | SpinDecks</title>
+<meta name="description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/tournament-bracket/" />
+<link rel="canonical" href="https://spindecks.app/axiom/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
-<meta property="og:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
-<meta property="og:url" content="https://spindecks.app/tournament-bracket/" />
+<meta property="og:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
+<meta property="og:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/axiom/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Tournament Bracket Generator — Knockout, League &amp; Groups | SpinDecks" />
-<meta name="twitter:description" content="Free tournament bracket generator: single-elimination knockout, round-robin league tables, or group stages into a knockout. Random or ordered seeding. No ads, no sign-up." />
+<meta name="twitter:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
+<meta name="twitter:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915d" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Tournament bracket generator",
-  "url": "https://spindecks.app/tournament-bracket/",
+  "name": "Axiom — daily maths puzzle",
+  "url": "https://spindecks.app/axiom/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What tournament formats are supported?",
+      "name": "Is it the same puzzle for everyone?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Single-elimination knockout (with byes when the count isn't a power of two), round-robin league with a points table, and group stages — round-robin groups where the top teams qualify for a knockout."
+        "text": "Yes — the daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I seed randomly?",
+      "name": "How does it check itself?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed."
+        "text": "Each of the four lines is a real equation. Complete lines turn green and you've solved it when all four are correct — no marking needed."
       }
     },
     {
       "@type": "Question",
-      "name": "How do I record results?",
+      "name": "Do I need an account?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly."
+        "text": "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."
       }
     },
     {
       "@type": "Question",
-      "name": "Does it handle odd numbers of teams?",
+      "name": "Is it free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Are my brackets saved?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — the entrants, format and results stay in your browser, and it all works offline."
+        "text": "Completely — no ads, no sign-up, ever."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="bracket">
+<div id="app" data-view="axiom">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -116,7 +108,7 @@
         <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
         <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
         <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
-        <a class="tab is-active" data-view-btn="bracket" aria-current="page" href="/tournament-bracket/">Bracket</a>
+        <a class="tab" data-view-btn="bracket" href="/tournament-bracket/">Bracket</a>
       </div>
       <div class="tab-group">
         <span class="tab-group-label" aria-hidden="true">Score &amp; time</span>
@@ -135,7 +127,7 @@
         <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
         <a class="tab" data-view-btn="gridclaim" href="/grid-claim/">Grid claim</a>
         <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
-        <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
+        <a class="tab is-active" data-view-btn="axiom" aria-current="page" href="/axiom/">Axiom</a>
       </div>
     </nav>
     <div class="topbar-actions">
@@ -487,7 +479,7 @@
   </main>
 
   <!-- BRACKET (tournament generator: knockout / league / groups) -->
-  <main class="view view-bracket" data-view-panel="bracket">
+  <main class="view view-bracket" data-view-panel="bracket" hidden>
     <section class="panel tool-panel bracket-panel">
       <div class="bk-setup">
         <div class="seg-toggle" role="tablist" aria-label="Format">
@@ -545,7 +537,7 @@
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
   </main>
   <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
-  <main class="view view-axiom" data-view-panel="axiom" hidden>
+  <main class="view view-axiom" data-view-panel="axiom">
     <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -600,45 +592,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Tournament bracket generator</h1>
-      <p class="tool-intro">Make a tournament in seconds. Paste your players or teams and pick a format — a single-elimination <strong>knockout</strong> bracket, a round-robin <strong>league</strong> with a live standings table, or <strong>group stages</strong> that feed into a knockout. Seed by order or at random, then tap winners and results as you play.</p>
+      <h1>Axiom — daily maths puzzle</h1>
+      <p class="tool-intro">A daily maths puzzle for a starter or a brain-break. Four equations form a ring and share their corners; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — each corner has to work two ways at once. There's a new puzzle every day, the same for the whole class, and it checks itself.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Type one player or team per line, and choose Keep order or Random seeds.</li>
-        <li>Pick a format: Knockout, League, or Groups.</li>
-        <li>Press Generate — for a knockout, tap a name in each match to advance them; for a league or groups, tap W / D / W to record results and the table updates.</li>
-        <li>In Groups, set how many teams qualify, then “Build knockout from qualifiers” to play it out.</li>
+            <li>Look at the grid — the corners are shared between an across equation and a down one.</li>
+        <li>Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).</li>
+        <li>Fill every blank so all four lines are true — lines you've completed turn green.</li>
+        <li>Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Games nights & clubs:</strong> run a quick knockout or a full round-robin for any number of players.</li>
-        <li><strong>Esports & sports:</strong> seed a bracket, track a league table, or do groups-then-knockout like a real cup.</li>
-        <li><strong>Classrooms:</strong> organise a fair class tournament without drawing brackets by hand.</li>
+            <li><strong>Teachers:</strong> a daily number starter that runs itself — put it on the board as students come in.</li>
+        <li><strong>Tutors:</strong> quick arithmetic and reasoning practice, one short puzzle at a time.</li>
+        <li><strong>Anyone:</strong> a bite-sized daily maths challenge, like a numbers crossword.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>What tournament formats are supported?</summary>
-          <p>Single-elimination <strong>knockout</strong> (with byes when the count isn't a power of two), round-robin <strong>league</strong> with a points table, and <strong>group stages</strong> — round-robin groups where the top teams qualify for a knockout.</p>
+          <summary>Is it the same puzzle for everyone?</summary>
+          <p>Yes — the daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak.</p>
         </details>
         <details>
-          <summary>Can I seed randomly?</summary>
-          <p>Yes — choose “Random seeds” before generating and the draw is shuffled with your browser's cryptographic random source, or “Keep order” to seed by the order you typed.</p>
+          <summary>How does it check itself?</summary>
+          <p>Each of the four lines is a real equation. Complete lines turn green and you've solved it when all four are correct — no marking needed.</p>
         </details>
         <details>
-          <summary>How do I record results?</summary>
-          <p>In a knockout, tap the name that won each match to advance them. In a league or group, tap W (home), D, or W (away) on each fixture and the standings recalculate instantly.</p>
+          <summary>Do I need an account?</summary>
+          <p>No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded.</p>
         </details>
         <details>
-          <summary>Does it handle odd numbers of teams?</summary>
-          <p>Yes. Knockouts add byes to reach a full bracket, and leagues/groups add a rest week so everyone plays a full round-robin.</p>
-        </details>
-        <details>
-          <summary>Are my brackets saved?</summary>
-          <p>Yes — the entrants, format and results stay in your browser, and it all works offline.</p>
+          <summary>Is it free?</summary>
+          <p>Completely — no ads, no sign-up, ever.</p>
         </details>
           </div>
         </div>

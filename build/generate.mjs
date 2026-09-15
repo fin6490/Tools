@@ -68,7 +68,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim", "countdown"] },
+  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim", "countdown", "axiom"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -163,6 +163,7 @@ function footer() {
     "class-quiz": "Class quiz",
     "grid-claim": "Grid claim",
     "countdown": "Countdown game",
+    "axiom": "Axiom",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -585,6 +586,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- COUNTDOWN (letters/numbers/conundrum game; countdown.js builds the screens) -->
   <main class="view view-countdown" data-view-panel="countdown" hidden>
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
+  </main>
+  <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
+  <main class="view view-axiom" data-view-panel="axiom" hidden>
+    <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
