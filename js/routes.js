@@ -89,6 +89,11 @@ export const ROUTES = {
     "slug": "grid-claim",
     "title": "Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks",
     "description": "A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline."
+  },
+  "countdown": {
+    "slug": "countdown",
+    "title": "Countdown Game — Free Letters, Numbers & Conundrum | SpinDecks",
+    "description": "The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline."
   }
 };
 

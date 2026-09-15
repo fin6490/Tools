@@ -2,8 +2,8 @@
 // Pairs, Class quiz, Grid claim…). They all reuse the question sets that the
 // BT Dojo editor + AI generator produce, plus a tiny maths renderer so fractions
 // and powers show properly. The Dojo keeps its own copies; new games use these.
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915b";
-import { getState } from "./storage.js?v=20260915b";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915c";
+import { getState } from "./storage.js?v=20260915c";
 
 export function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 export function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
