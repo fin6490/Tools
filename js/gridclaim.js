@@ -2,9 +2,9 @@
 // Teams take turns picking a tile and answering; a correct answer claims it in
 // their colour. Team 1 tries to connect left↔right, Team 2 top↔bottom. First to
 // bridge their sides wins; if the grid fills, most tiles wins. Reuses Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915d";
-import { getState, save } from "./storage.js?v=20260915d";
-import * as sound from "./sound.js?v=20260915d";
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915e";
+import { getState, save } from "./storage.js?v=20260915e";
+import * as sound from "./sound.js?v=20260915e";
 
 export function initGridClaim(root) {
   const panel = root.querySelector(".gridclaim-panel");
@@ -144,6 +144,8 @@ export function initGridClaim(root) {
       grid[selected] = turn; fx(sound.fanfare);
       if (connected(turn)) { paint(); return win(turn); }
       if (!grid.includes(0)) { paint(); return decideFull(); }
+      // Neither side can still reach across their edges → the game is decided.
+      if (!canConnect(1) && !canConnect(2)) { paint(); return decideFull(); }
     }
     turn = turn === 1 ? 2 : 1;
     paint();
@@ -170,9 +172,51 @@ export function initGridClaim(root) {
     return false;
   }
 
+  // Could `owner` still connect if they claimed all the open cells they need?
+  // (BFS treating their own tiles AND open cells as passable.)
+  function canConnect(owner) {
+    const n = size, seen = new Set(), stack = [];
+    const passable = (i) => grid[i] === owner || grid[i] === 0;
+    for (let i = 0; i < n; i++) { const cell = owner === 1 ? i * n : i; if (passable(cell)) { seen.add(cell); stack.push(cell); } }
+    while (stack.length) {
+      const c = stack.pop(), r = Math.floor(c / n), col = c % n;
+      if (owner === 1 && col === n - 1) return true;
+      if (owner === 2 && r === n - 1) return true;
+      const nb = [];
+      if (r > 0) nb.push(c - n); if (r < n - 1) nb.push(c + n);
+      if (col > 0) nb.push(c - 1); if (col < n - 1) nb.push(c + 1);
+      for (const x of nb) if (passable(x) && !seen.has(x)) { seen.add(x); stack.push(x); }
+    }
+    return false;
+  }
+
+  // The actual chain of the winner's tiles that bridges their two edges.
+  function winningPath(owner) {
+    const n = size, prev = new Map(), q = [];
+    for (let i = 0; i < n; i++) { const cell = owner === 1 ? i * n : i; if (grid[cell] === owner) { prev.set(cell, -1); q.push(cell); } }
+    let end = -1;
+    for (let h = 0; h < q.length && end < 0; h++) {
+      const c = q[h], r = Math.floor(c / n), col = c % n;
+      if ((owner === 1 && col === n - 1) || (owner === 2 && r === n - 1)) { end = c; break; }
+      const nb = [];
+      if (r > 0) nb.push(c - n); if (r < n - 1) nb.push(c + n);
+      if (col > 0) nb.push(c - 1); if (col < n - 1) nb.push(c + 1);
+      for (const x of nb) if (grid[x] === owner && !prev.has(x)) { prev.set(x, c); q.push(x); }
+    }
+    const path = [];
+    for (let c = end; c >= 0; c = prev.get(c)) path.push(c);
+    return path;
+  }
+
   function counts() { let a = 0, b = 0; grid.forEach((v) => { if (v === 1) a++; else if (v === 2) b++; }); return [a, b]; }
 
-  function win(owner) { over = true; renderDone(`${TEAM[owner].name} connects ${TEAM[owner].goal} — wins!`); }
+  function win(owner) {
+    over = true; paint();
+    const board = panel.querySelector("#gcBoard");
+    if (board) winningPath(owner).forEach((i) => board.children[i] && board.children[i].classList.add("win"));
+    fx(sound.fanfare);
+    setTimeout(() => renderDone(`${TEAM[owner].name} connects ${TEAM[owner].goal} — wins!`), 1500);
+  }
   function decideFull() {
     over = true;
     const [a, b] = counts();

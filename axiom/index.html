@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260915d" />
+<link rel="stylesheet" href="/css/styles.css?v=20260915e" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -59,7 +59,15 @@
       "name": "Is it the same puzzle for everyone?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — the daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."
+        "text": "Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the difficulty levels?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Easy is a four-equation ring; Medium is an interlocking crossword of six addition lines; Hard is the same six-line crossword but mixes add, subtract and multiply with more blanks to fill."
       }
     },
     {
@@ -67,7 +75,7 @@
       "name": "How does it check itself?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Each of the four lines is a real equation. Complete lines turn green and you've solved it when all four are correct — no marking needed."
+        "text": "Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed."
       }
     },
     {
@@ -593,15 +601,15 @@
 </div>
 <section class="tool-copy">
       <h1>Axiom — daily maths puzzle</h1>
-      <p class="tool-intro">A daily maths puzzle for a starter or a brain-break. Four equations form a ring and share their corners; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — each corner has to work two ways at once. There's a new puzzle every day, the same for the whole class, and it checks itself.</p>
+      <p class="tool-intro">A daily maths puzzle for a starter or a brain-break, at three difficulty levels. Numbers and operators sit in a grid; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — shared cells have to work in both directions at once. Easy is a four-equation ring; Medium and Hard are fully interlocking crosswords (six lines), with Hard mixing add, subtract and multiply. A new puzzle every day at each level, the same for the whole class, and it checks itself.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Look at the grid — the corners are shared between an across equation and a down one.</li>
+            <li>Choose a level — Easy, Medium or Hard — then look at the grid and its shared cells.</li>
         <li>Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).</li>
-        <li>Fill every blank so all four lines are true — lines you've completed turn green.</li>
+        <li>Fill every blank so all the lines are true — lines you've completed turn green.</li>
         <li>Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.</li>
           </ol>
           <h2>Who it's for</h2>
@@ -614,11 +622,15 @@
           <div class="tool-faq">
             <details>
           <summary>Is it the same puzzle for everyone?</summary>
-          <p>Yes — the daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak.</p>
+          <p>Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak.</p>
+        </details>
+        <details>
+          <summary>What are the difficulty levels?</summary>
+          <p>Easy is a four-equation ring; Medium is an interlocking crossword of six addition lines; Hard is the same six-line crossword but mixes add, subtract and multiply with more blanks to fill.</p>
         </details>
         <details>
           <summary>How does it check itself?</summary>
-          <p>Each of the four lines is a real equation. Complete lines turn green and you've solved it when all four are correct — no marking needed.</p>
+          <p>Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed.</p>
         </details>
         <details>
           <summary>Do I need an account?</summary>
@@ -684,8 +696,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20260915d"></script>
-<script type="module" src="/js/app.js?v=20260915d"></script>
+  <script type="module" src="/js/suggest.js?v=20260915e"></script>
+<script type="module" src="/js/app.js?v=20260915e"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

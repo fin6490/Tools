@@ -3,16 +3,18 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915d";
-import { parseEntries } from "./wheel.js?v=20260915d";
-import { getState, save } from "./storage.js?v=20260915d";
-import * as sound from "./sound.js?v=20260915d";
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915e";
+import { parseEntries } from "./wheel.js?v=20260915e";
+import { getState, save } from "./storage.js?v=20260915e";
+import * as sound from "./sound.js?v=20260915e";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
   standard: { name: "Mark as you go", desc: "Reveal and mark each question one at a time.", flow: "mark", points: 1 },
   written:  { name: "Written round", desc: "Read all the questions first, teams write answers, then mark together.", flow: "written", points: 1 },
   double:   { name: "Double points", desc: "A written round worth double — great as a finale.", flow: "written", points: 2 },
+  quickfire:{ name: "Quickfire", desc: "A 20-second clock on every question — beat the buzzer.", flow: "quick", points: 1 },
+  bid:      { name: "Bonus bid", desc: "After the answer, the winning team bids 1, 2 or 3 points.", flow: "bid", points: 1 },
 };
 
 export function initClassQuiz(root) {
@@ -32,6 +34,8 @@ export function initClassQuiz(root) {
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
 
   let live = null; // { teams, rounds:[[q..]], ri, rounded, type, phase, qi }
+  let qTimer = null;
+  const clearQTimer = () => { if (qTimer) { clearInterval(qTimer); qTimer = null; } };
 
   const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
   function splitTeams(names, n) {
@@ -98,7 +102,7 @@ export function initClassQuiz(root) {
     const go = el("button", "btn primary dojo-begin", "Start quiz");
     go.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().teamCount = +nSel.value; cfg().roundSize = +rSel.value; save(); start(); });
     card.appendChild(go);
-    if (cfg().roundSize > 0) card.appendChild(el("p", "dojo-hint", "With rounds on you'll pick a round type (mark as you go, written, or double points) before each round."));
+    if (cfg().roundSize > 0) card.appendChild(el("p", "dojo-hint", "With rounds on you'll pick a round type before each round — mark as you go, written, double points, quickfire or bonus bid."));
     panel.appendChild(card);
   }
 
@@ -188,37 +192,75 @@ export function initClassQuiz(root) {
 
   /* ---------- mark: reveal answer, award the point ---------- */
   function renderMark() {
+    clearQTimer();
     paintScores();
     const round = live.rounds[live.ri], q = round[live.qi], type = ROUND_TYPES[live.type], b = body();
     b.innerHTML = "";
     b.appendChild(el("p", "bingo-count", `${type.name} · Question ${live.qi + 1} of ${round.length}`));
     const stage = el("div", "classquiz-stage");
+    const clockEl = type.flow === "quick" ? el("div", "classquiz-clock", "20") : null;
+    if (clockEl) stage.appendChild(clockEl);
     stage.appendChild(el("div", "bingo-q", mathHtml(q.q)));
     const ans = el("div", "bingo-ans"); ans.hidden = true; stage.appendChild(ans);
     const reveal = el("button", "btn primary bingo-reveal", "Reveal answer"); stage.appendChild(reveal);
     b.appendChild(stage);
     const aw = el("div", "classquiz-award"); aw.hidden = true; b.appendChild(aw);
-    reveal.addEventListener("click", () => {
+
+    const doReveal = () => {
+      clearQTimer();
       ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false;
       reveal.hidden = true; fx(sound.beep);
       aw.hidden = false; aw.innerHTML = "";
-      aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points})`));
-      live.teams.forEach((t) => {
-        const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${type.points}`);
-        btn.addEventListener("click", () => { t.score += type.points; paintScores(); fx(sound.fanfare); advanceMark(); });
-        aw.appendChild(btn);
-      });
-      const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
-      aw.appendChild(skip);
-    });
+      if (type.flow === "bid") {
+        // Tap the team that got it, then how many they bid (1–3).
+        aw.appendChild(el("span", "classquiz-awardlbl", "Who got it?"));
+        live.teams.forEach((t) => {
+          const btn = el("button", "btn classquiz-awardbtn", escapeHtml(t.name));
+          btn.addEventListener("click", () => askBid(t, aw));
+          aw.appendChild(btn);
+        });
+        const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
+        aw.appendChild(skip);
+      } else {
+        aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points})`));
+        live.teams.forEach((t) => {
+          const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${type.points}`);
+          btn.addEventListener("click", () => { t.score += type.points; paintScores(); fx(sound.fanfare); advanceMark(); });
+          aw.appendChild(btn);
+        });
+        const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
+        aw.appendChild(skip);
+      }
+    };
+    reveal.addEventListener("click", doReveal);
+
+    if (type.flow === "quick") {
+      let t = 20;
+      qTimer = setInterval(() => {
+        t--; if (clockEl) { clockEl.textContent = t; clockEl.classList.toggle("low", t <= 5); }
+        if (t <= 5 && t > 0) fx(sound.tick);
+        if (t <= 0) { clearQTimer(); fx(sound.buzz); if (!live.roundOver && ans.hidden) doReveal(); }
+      }, 1000);
+    }
     fx(sound.tick);
   }
+  function askBid(team, aw) {
+    aw.innerHTML = "";
+    aw.appendChild(el("span", "classquiz-awardlbl", `${escapeHtml(team.name)} bids…`));
+    [1, 2, 3].forEach((n) => {
+      const btn = el("button", "btn classquiz-awardbtn", `+${n}`);
+      btn.addEventListener("click", () => { team.score += n; paintScores(); fx(sound.fanfare); advanceMark(); });
+      aw.appendChild(btn);
+    });
+  }
   function advanceMark() {
+    clearQTimer();
     const round = live.rounds[live.ri];
     if (live.qi < round.length - 1) { live.qi++; renderMark(); } else endRound();
   }
 
   function endRound() {
+    clearQTimer();
     if (!live.rounded || live.ri >= live.rounds.length - 1) return renderDone();
     paintScores();
     const b = body(); b.innerHTML = "";
@@ -233,6 +275,7 @@ export function initClassQuiz(root) {
 
   /* ---------- final standings ---------- */
   function renderDone() {
+    clearQTimer();
     panel.innerHTML = "";
     const card = el("div", "classquiz-lobby");
     card.appendChild(el("h2", "dojo-title", "Final scores"));
