@@ -101,6 +101,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://spindecks.app/axiom/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://spindecks.app/about/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
