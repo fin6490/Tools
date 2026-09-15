@@ -2,9 +2,9 @@
 // Teams take turns picking a tile and answering; a correct answer claims it in
 // their colour. Team 1 tries to connect left↔right, Team 2 top↔bottom. First to
 // bridge their sides wins; if the grid fills, most tiles wins. Reuses Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915o";
-import { getState, save } from "./storage.js?v=20260915o";
-import * as sound from "./sound.js?v=20260915o";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915p";
+import { getState, save } from "./storage.js?v=20260915p";
+import * as sound from "./sound.js?v=20260915p";
 
 export function initGridClaim(root) {
   const panel = root.querySelector(".gridclaim-panel");
