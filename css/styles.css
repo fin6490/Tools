@@ -144,7 +144,7 @@ body:has(#app[data-greenscreen="true"]) { background: #00ff00 !important; }
 .view { flex: 1; display: grid; gap: 16px; padding: 18px; }
 .view-wheel { grid-template-columns: 320px 1fr 260px; }
 .view-timer, .view-counter, .view-scores, .view-groups, .view-slots, .view-numbers, .view-dice, .view-firstplayer, .view-scorepad, .view-chessclock, .view-bracket { place-items: start center; }
-.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz { grid-template-columns: 1fr; place-items: start stretch; }
+.view-dojo, .view-reveal, .view-pairs, .view-bingo, .view-classquiz, .view-gridclaim { grid-template-columns: 1fr; place-items: start stretch; }
 
 .panel {
   background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
@@ -876,7 +876,25 @@ a.tab { display: inline-flex; align-items: center; }
 .dojo-panel { width: 100%; max-width: 1180px; margin: 0 auto; }
 
 /* Lobby + editor + leaderboard cards */
-.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.dojo-lobby, .dojo-editor, .dojo-lbcard, .reveal-lobby, .pairs-lobby, .bingo-lobby, .classquiz-lobby, .gridclaim-lobby { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Grid claim */
+.gridclaim-game { display: flex; flex-direction: column; gap: 14px; position: relative; }
+.gridclaim-turn { text-align: center; font-family: var(--mono); font-weight: 700; margin: 0; color: var(--ink); }
+.gridclaim-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
+.gridclaim-dot.t1 { background: var(--accent); }
+.gridclaim-dot.t2 { background: var(--teal); }
+.gridclaim-boardwrap { display: flex; justify-content: center; }
+.gridclaim-board { display: grid; gap: 8px; width: min(90vw, 560px); }
+.gridclaim-tile { aspect-ratio: 1 / 1; border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); cursor: pointer; font-family: var(--mono); font-weight: 800; }
+.gridclaim-tile.open:hover:not(:disabled) { border-color: var(--ink); }
+.gridclaim-tile.t1 { background: color-mix(in srgb, var(--accent) 78%, #000); border-color: var(--accent); }
+.gridclaim-tile.t2 { background: color-mix(in srgb, var(--teal) 78%, #000); border-color: var(--teal); }
+.gridclaim-tile:disabled { cursor: default; }
+.gridclaim-overlay { position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(3px); border-radius: 16px; }
+.gridclaim-qbox { width: min(92%, 560px); display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; padding: 24px; border: 2px solid var(--line); border-radius: 18px; background: var(--panel); }
+.gridclaim-qteam { margin: 0; font-family: var(--mono); font-weight: 700; color: var(--muted); }
+.gridclaim-qacts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
 /* Class quiz */
 .classquiz-preview { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }

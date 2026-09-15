@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Score Pad — Free Board Game Score Keeper | SpinDecks</title>
-<meta name="description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
+<title>Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks</title>
+<meta name="description" content="A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/scorepad/" />
+<link rel="canonical" href="https://spindecks.app/grid-claim/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
-<meta property="og:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
-<meta property="og:url" content="https://spindecks.app/scorepad/" />
+<meta property="og:title" content="Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks" />
+<meta property="og:description" content="A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/grid-claim/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Score Pad — Free Board Game Score Keeper | SpinDecks" />
-<meta name="twitter:description" content="A free score pad for any board or card game. Add players, score by round, see running totals. Big keypad for phones, undo, and screen-awake. No ads, no login." />
+<meta name="twitter:title" content="Grid Claim — Free Two-Team Connect Quiz Game | SpinDecks" />
+<meta name="twitter:description" content="A two-team connect game for the whiteboard. Answer questions to claim tiles — one team joins left to right, the other top to bottom. First to bridge their sides wins. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915b" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Board game score pad",
-  "url": "https://spindecks.app/scorepad/",
+  "name": "Grid claim — connect quiz game",
+  "url": "https://spindecks.app/grid-claim/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What games is the score pad for?",
+      "name": "Where do the questions come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the darts scoreboard."
+        "text": "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."
       }
     },
     {
       "@type": "Question",
-      "name": "Can the highest or lowest score win?",
+      "name": "How do you win?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest."
+        "text": "Team 1 wins by connecting the left and right sides with their tiles; Team 2 by connecting top and bottom. If the whole grid is claimed with no path, whoever has the most tiles wins."
       }
     },
     {
       "@type": "Question",
-      "name": "Will my scores stay on my phone if the screen locks?",
+      "name": "What happens on a wrong answer?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser."
+        "text": "The tile stays open and it becomes the other team's turn, so a miss can hand your rivals the tile you wanted."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I keep more than one game going?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I get the scores out?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file."
+        "text": "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="scorepad">
+<div id="app" data-view="gridclaim">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -120,7 +112,7 @@
       </div>
       <div class="tab-group">
         <span class="tab-group-label" aria-hidden="true">Score &amp; time</span>
-        <a class="tab is-active" data-view-btn="scorepad" aria-current="page" href="/scorepad/">Score pad</a>
+        <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
         <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
         <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
         <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
@@ -133,7 +125,7 @@
         <a class="tab" data-view-btn="pairs" href="/pairs/">Pairs</a>
         <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
         <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
-        <a class="tab" data-view-btn="gridclaim" href="/grid-claim/">Grid claim</a>
+        <a class="tab is-active" data-view-btn="gridclaim" aria-current="page" href="/grid-claim/">Grid claim</a>
       </div>
     </nav>
     <div class="topbar-actions">
@@ -346,7 +338,7 @@
   </main>
 
   <!-- SCORE PAD (generic multi-player, multi-round) -->
-  <main class="view view-scorepad" data-view-panel="scorepad">
+  <main class="view view-scorepad" data-view-panel="scorepad" hidden>
     <section class="panel tool-panel scorepad-panel">
       <div class="sp-toolbar">
         <label class="sr-only" for="spGame">Game</label>
@@ -535,7 +527,7 @@
     <section class="panel classquiz-panel" aria-label="Class team quiz"></section>
   </main>
   <!-- GRID CLAIM (two-team connect game; gridclaim.js builds the screens) -->
-  <main class="view view-gridclaim" data-view-panel="gridclaim" hidden>
+  <main class="view view-gridclaim" data-view-panel="gridclaim">
     <section class="panel gridclaim-panel" aria-label="Grid claim connect game"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -590,45 +582,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Board game score pad</h1>
-      <p class="tool-intro">A free, general-purpose score pad for any board or card game — players across the top, rounds down the side, running totals that keep themselves. Tap a cell to enter a score on a big keypad, undo mistakes, and keep the screen awake at the table. Save as many games as you like.</p>
+      <h1>Grid claim — connect quiz game</h1>
+      <p class="tool-intro">A two-team strategy quiz for the board. Teams take turns answering to claim tiles on a grid: Team 1 tries to build an unbroken path from left to right, Team 2 from top to bottom. Answer correctly to claim a tile — and block your rivals' route. It uses the same question sets as The BT Dojo.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Add your players (rename them by tapping the name).</li>
-        <li>Tap “Add round”, then tap any cell to enter that player’s score on the keypad.</li>
-        <li>Running totals update at the bottom; the leader is highlighted — flip “Lowest wins” for golf-style games.</li>
-        <li>Save multiple games, duplicate one to replay with the same players, and export a game as CSV.</li>
+            <li>Pick a question set and a grid size (4×4, 5×5 or 6×6).</li>
+        <li>On your turn, tap an open tile and read the question that appears.</li>
+        <li>Reveal the answer — if the team got it, claim the tile in your colour; a miss leaves it open and passes over.</li>
+        <li>First team to connect their two sides wins. If the grid fills up, the most tiles wins.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Board gamers:</strong> keep score for Wingspan, Catan, rummy or any game — on the phone at the table.</li>
-        <li><strong>Card players:</strong> track rounds and running totals without pen and paper.</li>
-        <li><strong>Families:</strong> a simple, shared score sheet everyone can see, that survives a screen lock.</li>
+            <li><strong>Teachers:</strong> a tactical whole-class team game where answering and blocking both matter.</li>
+        <li><strong>Tutors & clubs:</strong> a connect-four-meets-quiz for two teams on any topic.</li>
+        <li><strong>Anyone:</strong> a strategic quiz duel for revision or a games night.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>What games is the score pad for?</summary>
-          <p>Any game where you total points across players and rounds — board games, card games, quizzes. For darts specifically, use the <a href="/darts-scoreboard/">darts scoreboard</a>.</p>
+          <summary>Where do the questions come from?</summary>
+          <p>The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI.</p>
         </details>
         <details>
-          <summary>Can the highest or lowest score win?</summary>
-          <p>Both. Tick “Lowest wins” for golf-style games and the lowest total is highlighted as the leader instead of the highest.</p>
+          <summary>How do you win?</summary>
+          <p>Team 1 wins by connecting the left and right sides with their tiles; Team 2 by connecting top and bottom. If the whole grid is claimed with no path, whoever has the most tiles wins.</p>
         </details>
         <details>
-          <summary>Will my scores stay on my phone if the screen locks?</summary>
-          <p>Turn on “Keep screen awake” to stop the screen sleeping during a game (where your browser supports it). Everything is also saved automatically in your browser.</p>
+          <summary>What happens on a wrong answer?</summary>
+          <p>The tile stays open and it becomes the other team's turn, so a miss can hand your rivals the tile you wanted.</p>
         </details>
         <details>
-          <summary>Can I keep more than one game going?</summary>
-          <p>Yes — save as many games as you like and switch between them, or duplicate a finished game to replay with the same players.</p>
-        </details>
-        <details>
-          <summary>Can I get the scores out?</summary>
-          <p>Yes — “Export CSV” downloads the whole game (players, rounds and totals) as a spreadsheet-friendly file.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded.</p>
         </details>
           </div>
         </div>

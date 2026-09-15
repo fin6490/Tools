@@ -68,7 +68,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz"] },
+  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -161,6 +161,7 @@ function footer() {
     "pairs": "Pairs",
     "bingo": "Bingo",
     "class-quiz": "Class quiz",
+    "grid-claim": "Grid claim",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -575,6 +576,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- CLASS QUIZ (team quiz; classquiz.js builds the screens) -->
   <main class="view view-classquiz" data-view-panel="classquiz" hidden>
     <section class="panel classquiz-panel" aria-label="Class team quiz"></section>
+  </main>
+  <!-- GRID CLAIM (two-team connect game; gridclaim.js builds the screens) -->
+  <main class="view view-gridclaim" data-view-panel="gridclaim" hidden>
+    <section class="panel gridclaim-panel" aria-label="Grid claim connect game"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
