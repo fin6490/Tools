@@ -1,9 +1,9 @@
 // noughts.js — Noughts & crosses (tic-tac-toe) for the whiteboard.
 // Two players take turns, or play one player against a simple unbeatable
 // computer. Running tally across rounds. Zero deps.
-import { el } from "./quizkit.js?v=20260915l";
-import { getState, save } from "./storage.js?v=20260915l";
-import * as sound from "./sound.js?v=20260915l";
+import { el } from "./quizkit.js?v=20260915m";
+import { getState, save } from "./storage.js?v=20260915m";
+import * as sound from "./sound.js?v=20260915m";
 
 const LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
@@ -75,9 +75,15 @@ export function initNoughts(root) {
     card.appendChild(modeRow);
 
     const go = el("button", "btn primary dojo-begin", "Start game");
-    go.addEventListener("click", () => { cfg().mode = sel.value; save(); starter = "x"; startGame(); });
+    go.addEventListener("click", () => {
+      cfg().mode = sel.value; save();
+      // Two players always open with crosses; vs the computer, toss for who
+      // starts so the computer takes the first turn about half the time.
+      starter = sel.value === "cpu" ? (Math.random() < 0.5 ? "o" : "x") : "x";
+      startGame();
+    });
     card.appendChild(go);
-    card.appendChild(el("p", "dojo-hint", "X always goes first. In “vs Computer” you play as X — the computer plays a perfect game, so the best you can force is a draw."));
+    card.appendChild(el("p", "dojo-hint", "You play as crosses (✕). In “vs Computer” the first turn is tossed for, and the computer plays a perfect game — so the best you can force is a draw."));
     panel.appendChild(card);
   }
 
@@ -88,6 +94,10 @@ export function initNoughts(root) {
     turn = starter; over = false;
     buildShell();
     paint();
+    // If the computer won the toss (or was dealt the opening round), it moves first.
+    if (mode === "cpu" && turn === "o" && !over) {
+      setTimeout(() => { const m = bestMove(board.slice(), "o", "x"); if (m >= 0) place(m); }, 420);
+    }
   }
 
   function buildShell() {
