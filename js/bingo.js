@@ -1,9 +1,9 @@
 // bingo.js — Bingo: the teacher calls questions, students mark the answers on
 // their cards. Auto-builds printable cards from a question set's answers and
 // runs a caller that reveals one answer at a time. Reuses the Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914g";
-import { getState, save } from "./storage.js?v=20260914g";
-import * as sound from "./sound.js?v=20260914g";
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915a";
+import { getState, save } from "./storage.js?v=20260915a";
+import * as sound from "./sound.js?v=20260915a";
 
 export function initBingo(root) {
   const panel = root.querySelector(".bingo-panel");
@@ -65,9 +65,53 @@ export function initBingo(root) {
     play.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().size = +sizeSel.value; save(); startCaller(); });
     const printBtn = el("button", "btn ghost", "Print cards");
     printBtn.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().size = +sizeSel.value; save(); renderPrint(); });
-    btns.append(play, printBtn);
+    const diyBtn = el("button", "btn ghost", "DIY cards");
+    diyBtn.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().size = +sizeSel.value; save(); renderDIY(); });
+    btns.append(play, printBtn, diyBtn);
     card.appendChild(btns);
     panel.appendChild(card);
+  }
+
+  /* ================= DIY CARDS (show all answers, students draw their own) ================= */
+  function renderDIY() {
+    const n = cfg().size || 3, pool = usable(activeSet()).map((q) => q.a);
+    panel.innerHTML = "";
+    const bar = el("div", "dojo-editbtns bingo-noprint bingo-print-bar");
+    const back = el("button", "btn ghost", "← Back"); back.addEventListener("click", () => renderLobby());
+    const print = el("button", "btn primary", "Print blank grids"); print.addEventListener("click", () => window.print());
+    bar.append(back, print);
+    panel.appendChild(bar);
+    panel.appendChild(el("p", "dojo-hint bingo-noprint bingo-print-hint", `Students draw a ${n} × ${n} grid and fill it with any ${n * n} of these answers. Show this on the board, or print blank grids to hand out.`));
+
+    // On-screen: all answers, big and readable for the board.
+    const board = el("div", "bingo-diy bingo-noprint");
+    board.appendChild(el("p", "bingo-diy-title", `Choose any ${n * n} — draw your own ${n} × ${n} grid`));
+    const poolBox = el("div", "bingo-diy-pool");
+    shuffle(pool).forEach((a) => poolBox.appendChild(el("span", "bingo-diy-item", mathHtml(a))));
+    board.appendChild(poolBox);
+    panel.appendChild(board);
+
+    // Printable: the answer list once + a batch of blank grids to write in.
+    const wrap = el("div", "bingo-print");
+    const listCard = el("div", "bingo-printcard");
+    listCard.appendChild(el("p", "bingo-printtitle", "BINGO"));
+    listCard.appendChild(el("p", "bingo-printset", `${activeSet().name} — choose ${n * n}`));
+    const list = el("div", "bingo-printlist");
+    shuffle(pool).forEach((a) => list.appendChild(el("span", "bingo-listitem", mathHtml(a))));
+    listCard.appendChild(list);
+    wrap.appendChild(listCard);
+    const blanks = Math.min(32, Math.max(1, cfg().printCount || 6));
+    for (let c = 0; c < blanks; c++) {
+      const cardEl = el("div", "bingo-printcard");
+      cardEl.appendChild(el("p", "bingo-printtitle", "MY CARD"));
+      cardEl.appendChild(el("p", "bingo-printset", "Name: ________________"));
+      const grid = el("div", "bingo-printgrid");
+      grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+      for (let i = 0; i < n * n; i++) grid.appendChild(el("span", "bingo-cell bingo-cell-blank", ""));
+      cardEl.appendChild(grid);
+      wrap.appendChild(cardEl);
+    }
+    panel.appendChild(wrap);
   }
 
   /* ================= PRINTABLE CARDS ================= */
@@ -75,7 +119,7 @@ export function initBingo(root) {
     const n = cfg().size || 3, pool = usable(activeSet()).map((q) => q.a);
     const count = Math.min(32, Math.max(1, cfg().printCount || 6));
     panel.innerHTML = "";
-    const bar = el("div", "dojo-editbtns bingo-noprint");
+    const bar = el("div", "dojo-editbtns bingo-noprint bingo-print-bar");
     const back = el("button", "btn ghost", "← Back"); back.addEventListener("click", () => renderLobby());
     // How many cards to print — up to 32 (a full class).
     const cntWrap = el("label", "bingo-count-ctrl", "Cards ");
@@ -87,7 +131,7 @@ export function initBingo(root) {
     const print = el("button", "btn primary", "Print these"); print.addEventListener("click", () => window.print());
     bar.append(back, cntWrap, again, print);
     panel.appendChild(bar);
-    panel.appendChild(el("p", "dojo-hint bingo-noprint", `${count} cards from “${escapeHtml(activeSet().name)}”. Use your browser's print dialog.`));
+    panel.appendChild(el("p", "dojo-hint bingo-noprint bingo-print-hint", `${count} cards from “${escapeHtml(activeSet().name)}”. Use your browser's print dialog.`));
 
     const wrap = el("div", "bingo-print");
     for (let c = 0; c < count; c++) {

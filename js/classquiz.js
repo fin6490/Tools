@@ -1,11 +1,19 @@
 // classquiz.js — Class quiz: a teacher-run team quiz for the whiteboard.
-// Split the class into teams (optionally from a saved wheel), run through a
-// question set, reveal each answer and award the point to the team that got it.
-// Reuses the Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260914g";
-import { parseEntries } from "./wheel.js?v=20260914g";
-import { getState, save } from "./storage.js?v=20260914g";
-import * as sound from "./sound.js?v=20260914g";
+// Split the class into teams (optionally from a saved wheel), then run the quiz
+// straight through or in rounds — and each round can be a different type
+// (mark as you go, a written round, or a double-points finale). Reuses the
+// Dojo's question sets. Zero deps.
+import { mathHtml, escapeHtml, shuffle, allSets, el } from "./quizkit.js?v=20260915a";
+import { parseEntries } from "./wheel.js?v=20260915a";
+import { getState, save } from "./storage.js?v=20260915a";
+import * as sound from "./sound.js?v=20260915a";
+
+// The round types the teacher can pick before each round.
+const ROUND_TYPES = {
+  standard: { name: "Mark as you go", desc: "Reveal and mark each question one at a time.", flow: "mark", points: 1 },
+  written:  { name: "Written round", desc: "Read all the questions first, teams write answers, then mark together.", flow: "written", points: 1 },
+  double:   { name: "Double points", desc: "A written round worth double — great as a finale.", flow: "written", points: 2 },
+};
 
 export function initClassQuiz(root) {
   const panel = root.querySelector(".classquiz-panel");
@@ -13,7 +21,8 @@ export function initClassQuiz(root) {
 
   const cfg = () => {
     const s = getState();
-    if (!s.classquiz) s.classquiz = { activeSetId: null, teamCount: 2, rosterWheelId: null };
+    if (!s.classquiz) s.classquiz = { activeSetId: null, teamCount: 2, rosterWheelId: null, roundSize: 5 };
+    if (typeof s.classquiz.roundSize !== "number") s.classquiz.roundSize = 5;
     return s.classquiz;
   };
   const activeSet = () => { const sets = allSets(); return sets.find((x) => x.id === cfg().activeSetId) || sets[0]; };
@@ -22,16 +31,15 @@ export function initClassQuiz(root) {
   let soundOn = getState().soundOn !== false;
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
 
-  let live = null; // { teams:[{name,members,score}], queue, idx, revealed }
+  let live = null; // { teams, rounds:[[q..]], ri, rounded, type, phase, qi }
 
   const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
-
-  // Round-robin split of names into n teams (sizes differ by at most one).
   function splitTeams(names, n) {
     const teams = Array.from({ length: n }, (_, i) => ({ name: "Team " + (i + 1), members: [], score: 0 }));
     shuffle(names).forEach((nm, i) => teams[i % n].members.push(nm));
     return teams;
   }
+  function chunk(arr, n) { const out = []; for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out; }
 
   /* ================= LOBBY ================= */
   function renderLobby(flash) {
@@ -39,7 +47,7 @@ export function initClassQuiz(root) {
     const card = el("div", "classquiz-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "Team quiz"));
     card.appendChild(el("h2", "dojo-title", "Class quiz"));
-    card.appendChild(el("p", "dojo-lede", "Split the class into teams and run a quiz on the board. Reveal each answer, tap the team that got it, and the scores keep themselves. Uses any question set."));
+    card.appendChild(el("p", "dojo-lede", "Split the class into teams and run a quiz on the board — straight through or in rounds. Reveal each answer, tap the team that got it, and the scores keep themselves."));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const sets = allSets();
@@ -59,7 +67,15 @@ export function initClassQuiz(root) {
     nRow.appendChild(nSel);
     card.appendChild(nRow);
 
-    // Optional: build teams from a saved class wheel.
+    // Rounds: 0 = straight through; otherwise questions per round.
+    const rRow = el("div", "dojo-field dojo-field-inline");
+    rRow.appendChild(el("label", "dojo-lbl", "Rounds"));
+    const rSel = el("select", "dojo-select dojo-select-sm");
+    [[0, "No rounds"], [3, "3 per round"], [5, "5 per round"], [8, "8 per round"], [10, "10 per round"]].forEach(([v, t]) => { const o = el("option"); o.value = v; o.textContent = t; if (v === cfg().roundSize) o.selected = true; rSel.appendChild(o); });
+    rSel.addEventListener("change", () => { cfg().roundSize = +rSel.value; save(); });
+    rRow.appendChild(rSel);
+    card.appendChild(rRow);
+
     const clsRow = el("div", "dojo-field");
     clsRow.appendChild(el("label", "dojo-lbl", "Make teams from a class wheel (optional)"));
     const clsSel = el("select", "dojo-select");
@@ -69,7 +85,6 @@ export function initClassQuiz(root) {
     clsRow.appendChild(clsSel);
     card.appendChild(clsRow);
 
-    // Preview the split so the teacher can read teams out.
     const names = roster();
     if (names.length) {
       const prev = splitTeams(names, cfg().teamCount || 2);
@@ -81,8 +96,9 @@ export function initClassQuiz(root) {
     }
 
     const go = el("button", "btn primary dojo-begin", "Start quiz");
-    go.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().teamCount = +nSel.value; save(); start(); });
+    go.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().teamCount = +nSel.value; cfg().roundSize = +rSel.value; save(); start(); });
     card.appendChild(go);
+    if (cfg().roundSize > 0) card.appendChild(el("p", "dojo-hint", "With rounds on you'll pick a round type (mark as you go, written, or double points) before each round."));
     panel.appendChild(card);
   }
 
@@ -93,9 +109,12 @@ export function initClassQuiz(root) {
     const names = roster();
     const teams = names.length ? splitTeams(names, cfg().teamCount || 2)
       : Array.from({ length: cfg().teamCount || 2 }, (_, i) => ({ name: "Team " + (i + 1), members: [], score: 0 }));
-    live = { teams, queue: shuffle(set.questions), idx: -1, revealed: false };
+    const all = shuffle(set.questions);
+    const size = cfg().roundSize || 0;
+    const rounds = size > 0 ? chunk(all, size) : [all];
+    live = { teams, rounds, ri: 0, rounded: size > 0, type: "standard", phase: "mark", qi: 0 };
     buildShell();
-    nextQuestion();
+    if (live.rounded) renderRoundIntro(); else beginRound("standard");
   }
 
   function buildShell() {
@@ -109,21 +128,15 @@ export function initClassQuiz(root) {
         </span>
       </div>
       <div class="classquiz-scores" id="cqScores"></div>
-      <div class="classquiz-stage">
-        <p class="bingo-count" id="cqCount"></p>
-        <div class="bingo-q" id="cqQ"></div>
-        <div class="bingo-ans" id="cqAns" hidden></div>
-        <button class="btn primary bingo-reveal" id="cqReveal">Reveal answer</button>
-      </div>
-      <div class="classquiz-award" id="cqAward" hidden></div>`));
+      <div class="classquiz-body" id="cqBody"></div>`));
     panel.querySelector("#cqSet").textContent = activeSet().name;
     updateMute();
     panel.querySelector("#cqMute").addEventListener("click", () => { soundOn = !soundOn; updateMute(); });
     panel.querySelector("#cqEnd").addEventListener("click", () => renderDone());
-    panel.querySelector("#cqReveal").addEventListener("click", reveal);
     paintScores();
   }
   function updateMute() { const b = panel.querySelector("#cqMute"); if (b) b.textContent = soundOn ? "♪" : "✕"; }
+  const body = () => panel.querySelector("#cqBody");
 
   function paintScores() {
     const box = panel.querySelector("#cqScores");
@@ -136,41 +149,89 @@ export function initClassQuiz(root) {
     });
   }
 
-  function nextQuestion() {
-    if (live.idx >= live.queue.length - 1) return renderDone();
-    live.idx++; live.revealed = false;
-    const q = live.queue[live.idx];
-    panel.querySelector("#cqCount").textContent = `Question ${live.idx + 1} of ${live.queue.length}`;
-    panel.querySelector("#cqQ").innerHTML = mathHtml(q.q);
-    const ans = panel.querySelector("#cqAns"); ans.hidden = true; ans.innerHTML = "";
-    panel.querySelector("#cqReveal").hidden = false;
-    panel.querySelector("#cqAward").hidden = true;
+  /* ---------- round intro: choose the type ---------- */
+  function renderRoundIntro() {
+    paintScores();
+    const b = body(); b.innerHTML = "";
+    b.appendChild(el("p", "bingo-count", `Round ${live.ri + 1} of ${live.rounds.length} · ${live.rounds[live.ri].length} questions`));
+    b.appendChild(el("h3", "classquiz-roundtitle", "Choose the round type"));
+    const opts = el("div", "classquiz-types");
+    Object.entries(ROUND_TYPES).forEach(([k, t]) => {
+      const btn = el("button", "classquiz-type", `<strong>${t.name}</strong><span>${t.desc}</span>`);
+      btn.addEventListener("click", () => beginRound(k));
+      opts.appendChild(btn);
+    });
+    b.appendChild(opts);
+  }
+
+  function beginRound(k) {
+    live.type = k; live.qi = 0;
+    live.phase = ROUND_TYPES[k].flow === "written" ? "ask" : "mark";
+    renderPhase();
+  }
+  function renderPhase() { live.phase === "ask" ? renderAsk() : renderMark(); }
+
+  /* ---------- written round: read all the questions first ---------- */
+  function renderAsk() {
+    paintScores();
+    const round = live.rounds[live.ri], q = round[live.qi], b = body();
+    b.innerHTML = "";
+    b.appendChild(el("p", "bingo-count", `${ROUND_TYPES[live.type].name} · Question ${live.qi + 1} of ${round.length} — teams write your answer`));
+    const stage = el("div", "classquiz-stage");
+    stage.appendChild(el("div", "bingo-q", mathHtml(q.q)));
+    b.appendChild(stage);
+    const next = el("button", "btn primary bingo-next", live.qi < round.length - 1 ? "Next question →" : "Mark the round →");
+    next.addEventListener("click", () => { if (live.qi < round.length - 1) { live.qi++; renderAsk(); } else { live.phase = "mark"; live.qi = 0; renderMark(); } });
+    b.appendChild(next);
     fx(sound.tick);
   }
 
-  function reveal() {
-    if (live.revealed) return;
-    live.revealed = true;
-    const q = live.queue[live.idx];
-    const ans = panel.querySelector("#cqAns");
-    ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> ');
-    ans.hidden = false;
-    panel.querySelector("#cqReveal").hidden = true;
-    fx(sound.beep);
-    // Award row: tap the team that got it, or no one.
-    const aw = panel.querySelector("#cqAward");
-    aw.hidden = false; aw.innerHTML = "";
-    aw.appendChild(el("span", "classquiz-awardlbl", "Who got it?"));
-    live.teams.forEach((t, i) => {
-      const b = el("button", "btn classquiz-awardbtn", escapeHtml(t.name) + " +1");
-      b.addEventListener("click", () => { t.score++; paintScores(); fx(sound.fanfare); nextQuestion(); });
-      aw.appendChild(b);
+  /* ---------- mark: reveal answer, award the point ---------- */
+  function renderMark() {
+    paintScores();
+    const round = live.rounds[live.ri], q = round[live.qi], type = ROUND_TYPES[live.type], b = body();
+    b.innerHTML = "";
+    b.appendChild(el("p", "bingo-count", `${type.name} · Question ${live.qi + 1} of ${round.length}`));
+    const stage = el("div", "classquiz-stage");
+    stage.appendChild(el("div", "bingo-q", mathHtml(q.q)));
+    const ans = el("div", "bingo-ans"); ans.hidden = true; stage.appendChild(ans);
+    const reveal = el("button", "btn primary bingo-reveal", "Reveal answer"); stage.appendChild(reveal);
+    b.appendChild(stage);
+    const aw = el("div", "classquiz-award"); aw.hidden = true; b.appendChild(aw);
+    reveal.addEventListener("click", () => {
+      ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false;
+      reveal.hidden = true; fx(sound.beep);
+      aw.hidden = false; aw.innerHTML = "";
+      aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points})`));
+      live.teams.forEach((t) => {
+        const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${type.points}`);
+        btn.addEventListener("click", () => { t.score += type.points; paintScores(); fx(sound.fanfare); advanceMark(); });
+        aw.appendChild(btn);
+      });
+      const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
+      aw.appendChild(skip);
     });
-    const skip = el("button", "btn ghost", "No one →");
-    skip.addEventListener("click", () => nextQuestion());
-    aw.appendChild(skip);
+    fx(sound.tick);
+  }
+  function advanceMark() {
+    const round = live.rounds[live.ri];
+    if (live.qi < round.length - 1) { live.qi++; renderMark(); } else endRound();
   }
 
+  function endRound() {
+    if (!live.rounded || live.ri >= live.rounds.length - 1) return renderDone();
+    paintScores();
+    const b = body(); b.innerHTML = "";
+    b.appendChild(el("h3", "classquiz-roundtitle", `End of round ${live.ri + 1}`));
+    const ranked = live.teams.slice().sort((a, c) => c.score - a.score);
+    b.appendChild(el("p", "dojo-lede", "Scores so far — " + ranked.map((t) => `${t.name} ${t.score}`).join(" · ")));
+    const next = el("button", "btn primary", "Next round →");
+    next.addEventListener("click", () => { live.ri++; renderRoundIntro(); });
+    b.appendChild(next);
+    fx(sound.fanfare);
+  }
+
+  /* ---------- final standings ---------- */
   function renderDone() {
     panel.innerHTML = "";
     const card = el("div", "classquiz-lobby");

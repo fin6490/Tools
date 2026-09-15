@@ -34,7 +34,7 @@ const DEFAULTS = () => ({
   reveal: { activeSetId: null, shuffle: true },
   pairs: { activeSetId: null, count: 8, mode: "solo" },
   bingo: { activeSetId: null, size: 3, printCount: 6 },
-  classquiz: { activeSetId: null, teamCount: 2, rosterWheelId: null },
+  classquiz: { activeSetId: null, teamCount: 2, rosterWheelId: null, roundSize: 5 },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
