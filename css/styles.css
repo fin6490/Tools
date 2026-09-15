@@ -1022,11 +1022,11 @@ a.tab { display: inline-flex; align-items: center; }
 .pairs-team { padding: 4px 12px; border: 2px solid var(--line); border-radius: 999px; color: var(--muted); }
 .pairs-team.on { color: var(--ink); border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 25%, transparent); }
 .pairs-vs { color: var(--muted); font-size: 12px; }
-.pairs-grid { display: grid; gap: 10px; }
-.pairs-card { aspect-ratio: 4 / 3; border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pairs-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(clamp(84px, 20vw, 130px), 1fr)); }
+.pairs-card { min-height: clamp(72px, 15vw, 120px); max-height: clamp(130px, 24vw, 180px); border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .pairs-card:disabled { cursor: default; }
 .pairs-card .pairs-back { width: 26px; height: 26px; border-radius: 6px; background: repeating-linear-gradient(45deg, var(--line) 0 6px, transparent 6px 12px); opacity: .6; }
-.pairs-card .pairs-face { font-family: var(--mono); font-weight: 800; font-size: clamp(14px, 2.4vw, 26px); line-height: 1.1; color: var(--ink); text-align: center; word-break: break-word; }
+.pairs-card .pairs-face { width: 100%; font-family: var(--mono); font-weight: 800; font-size: clamp(14px, 2.4vw, 26px); line-height: 1.15; color: var(--ink); text-align: center; overflow-wrap: anywhere; hyphens: auto; }
 .pairs-card.up { background: #f6f6f8; }
 .pairs-card.up .pairs-face { color: #16161a; }
 .pairs-card.kind-q { border-color: var(--accent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }

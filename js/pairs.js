@@ -1,9 +1,9 @@
 // pairs.js — Pairs: a match-the-question-to-the-answer memory game for the board.
 // Flip two cards; a question and its answer make a pair. Solo (whole class) or
 // two teams taking turns. Reuses the Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260915h";
-import { getState, save } from "./storage.js?v=20260915h";
-import * as sound from "./sound.js?v=20260915h";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitText } from "./quizkit.js?v=20260915i";
+import { getState, save } from "./storage.js?v=20260915i";
+import * as sound from "./sound.js?v=20260915i";
 
 export function initPairs(root) {
   const panel = root.querySelector(".pairs-panel");
@@ -94,7 +94,6 @@ export function initPairs(root) {
   }
 
   function buildShell(n) {
-    const cols = Math.min(cards.length, Math.ceil(Math.sqrt(cards.length * 1.4)));
     panel.innerHTML = "";
     panel.appendChild(el("div", "pairs-game", `
       <div class="dojo-toprow">
@@ -111,7 +110,6 @@ export function initPairs(root) {
     panel.querySelector("#prMute").addEventListener("click", () => { soundOn = !soundOn; updateMute(); });
     panel.querySelector("#prQuit").addEventListener("click", () => renderLobby());
     const grid = panel.querySelector("#prGrid");
-    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     cards.forEach((c, i) => {
       const b = el("button", "pairs-card", "");
       b.dataset.i = i;
@@ -131,6 +129,7 @@ export function initPairs(root) {
       b.classList.toggle("kind-q", (c.up || c.matched) && c.kind === "q");
       b.classList.toggle("kind-a", (c.up || c.matched) && c.kind === "a");
       b.innerHTML = (c.up || c.matched) ? `<span class="pairs-face">${mathHtml(c.text)}</span>` : `<span class="pairs-back"></span>`;
+      if (c.up || c.matched) fitText(b, b.querySelector(".pairs-face"));
       b.disabled = c.matched;
     });
   }
