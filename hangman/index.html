@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Axiom — Free Daily Maths Puzzle | SpinDecks</title>
-<meta name="description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
+<title>Hangman — Free Classroom Word Guessing Game | SpinDecks</title>
+<meta name="description" content="The classic word-guessing game for the whiteboard. Pick a category for a random word or type your own secret word, then the class guesses letters. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/axiom/" />
+<link rel="canonical" href="https://spindecks.app/hangman/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
-<meta property="og:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/axiom/" />
+<meta property="og:title" content="Hangman — Free Classroom Word Guessing Game | SpinDecks" />
+<meta property="og:description" content="The classic word-guessing game for the whiteboard. Pick a category for a random word or type your own secret word, then the class guesses letters. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/hangman/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
-<meta name="twitter:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
+<meta name="twitter:title" content="Hangman — Free Classroom Word Guessing Game | SpinDecks" />
+<meta name="twitter:description" content="The classic word-guessing game for the whiteboard. Pick a category for a random word or type your own secret word, then the class guesses letters. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915k" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Axiom — daily maths puzzle",
-  "url": "https://spindecks.app/axiom/",
+  "name": "Hangman — classroom word game",
+  "url": "https://spindecks.app/hangman/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is it the same puzzle for everyone?",
+      "name": "Can I use my own words?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."
+        "text": "Yes — choose “Type my own word” and enter a secret word or short phrase. It's masked while you type so the class can't peek, perfect for spellings or topic vocabulary."
       }
     },
     {
       "@type": "Question",
-      "name": "What are the difficulty levels?",
+      "name": "What categories are included?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Easy is a four-equation ring; Medium is an interlocking 3×3 crossword of six addition lines; Hard is the same six-line crossword but mixes +, −, × and ÷ with more blanks; Expert is a bigger 4×4 crossword — eight lines of three-number sums."
+        "text": "Animals, countries, food, science, sport and space, each with a set of words picked at random."
       }
     },
     {
       "@type": "Question",
-      "name": "How does it check itself?",
+      "name": "How many wrong guesses are allowed?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed."
+        "text": "Six — the classic hangman figure is drawn one piece at a time, and the word is revealed if you run out."
       }
     },
     {
       "@type": "Question",
-      "name": "Do I need an account?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is it free?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Completely — no ads, no sign-up, ever."
+        "text": "Completely — no ads, no sign-up, and it works offline once loaded."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="axiom">
+<div id="app" data-view="hangman">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -145,8 +137,8 @@
         <summary class="navgroup-btn">Games<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
         <div class="navgroup-menu">
           <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
-          <a class="tab is-active" data-view-btn="axiom" aria-current="page" href="/axiom/">Axiom</a>
-          <a class="tab" data-view-btn="hangman" href="/hangman/">Hangman</a>
+          <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
+          <a class="tab is-active" data-view-btn="hangman" aria-current="page" href="/hangman/">Hangman</a>
           <a class="tab" data-view-btn="noughts" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
           <a class="tab" data-view-btn="lexicon" href="/lexicon/">Lexicon</a>
         </div>
@@ -559,11 +551,11 @@
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
   </main>
   <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
-  <main class="view view-axiom" data-view-panel="axiom">
+  <main class="view view-axiom" data-view-panel="axiom" hidden>
     <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>
   <!-- HANGMAN (word guessing game; hangman.js builds the screens) -->
-  <main class="view view-hangman" data-view-panel="hangman" hidden>
+  <main class="view view-hangman" data-view-panel="hangman">
     <section class="panel hangman-panel" aria-label="Hangman word game"></section>
   </main>
   <!-- NOUGHTS & CROSSES (two-player / vs computer; noughts.js builds the screens) -->
@@ -626,45 +618,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Axiom — daily maths puzzle</h1>
-      <p class="tool-intro">A daily maths puzzle for a starter or a brain-break, at four difficulty levels. Numbers and operators sit in a grid; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — shared cells have to work in both directions at once. Easy is a four-equation ring; Medium and Hard are interlocking 3×3 crosswords (six lines), with Hard mixing +, −, × and ÷; Expert is a bigger 4×4 crossword — eight lines of three-number sums. A new puzzle every day at each level, the same for the whole class, and it checks itself.</p>
+      <h1>Hangman — classroom word game</h1>
+      <p class="tool-intro">The classic hangman word game, built for the whiteboard. Choose a category for a random word — animals, countries, science and more — or type your own secret word for the class, then guess letters one at a time before the drawing is complete. A quick, no-prep starter or time-filler.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Choose a level — Easy, Medium, Hard or Expert — then look at the grid and its shared cells.</li>
-        <li>Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).</li>
-        <li>Fill every blank so all the lines are true — lines you've completed turn green.</li>
-        <li>Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.</li>
+            <li>Pick a category, or choose “Type my own word” and enter a secret word (it's masked as you type).</li>
+        <li>Press Start — the hidden word shows as blanks, with an on-screen A–Z keyboard.</li>
+        <li>Tap a letter (or use your keyboard). Correct letters fill the blanks; wrong ones add to the drawing.</li>
+        <li>Solve the word before six misses. Press “Change word” for another go.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Teachers:</strong> a daily number starter that runs itself — put it on the board as students come in.</li>
-        <li><strong>Tutors:</strong> quick arithmetic and reasoning practice, one short puzzle at a time.</li>
-        <li><strong>Anyone:</strong> a bite-sized daily maths challenge, like a numbers crossword.</li>
+            <li><strong>Teachers:</strong> a zero-prep starter or reward game — use a category or drop in this week's spellings or vocabulary.</li>
+        <li><strong>Tutors:</strong> spelling and vocabulary practice, one word at a time.</li>
+        <li><strong>Anyone:</strong> the word game everyone knows, on any screen.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>Is it the same puzzle for everyone?</summary>
-          <p>Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak.</p>
+          <summary>Can I use my own words?</summary>
+          <p>Yes — choose “Type my own word” and enter a secret word or short phrase. It's masked while you type so the class can't peek, perfect for spellings or topic vocabulary.</p>
         </details>
         <details>
-          <summary>What are the difficulty levels?</summary>
-          <p>Easy is a four-equation ring; Medium is an interlocking 3×3 crossword of six addition lines; Hard is the same six-line crossword but mixes +, −, × and ÷ with more blanks; Expert is a bigger 4×4 crossword — eight lines of three-number sums.</p>
+          <summary>What categories are included?</summary>
+          <p>Animals, countries, food, science, sport and space, each with a set of words picked at random.</p>
         </details>
         <details>
-          <summary>How does it check itself?</summary>
-          <p>Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed.</p>
+          <summary>How many wrong guesses are allowed?</summary>
+          <p>Six — the classic hangman figure is drawn one piece at a time, and the word is revealed if you run out.</p>
         </details>
         <details>
-          <summary>Do I need an account?</summary>
-          <p>No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded.</p>
-        </details>
-        <details>
-          <summary>Is it free?</summary>
-          <p>Completely — no ads, no sign-up, ever.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and it works offline once loaded.</p>
         </details>
           </div>
         </div>

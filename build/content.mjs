@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915j",
+  token: "20260915k",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -589,6 +589,90 @@ export const TOOLS = [
       ["How does it check itself?", "Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed."],
       ["Do I need an account?", "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."],
       ["Is it free?", "Completely — no ads, no sign-up, ever."],
+    ],
+  },
+  {
+    slug: "hangman",
+    view: "hangman",
+    nav: "Hangman",
+    title: "Hangman — Free Classroom Word Guessing Game | SpinDecks",
+    description:
+      "The classic word-guessing game for the whiteboard. Pick a category for a random word or type your own secret word, then the class guesses letters. Free, no sign-up, works offline.",
+    h1: "Hangman — classroom word game",
+    intro:
+      "The classic hangman word game, built for the whiteboard. Choose a category for a random word — animals, countries, science and more — or type your own secret word for the class, then guess letters one at a time before the drawing is complete. A quick, no-prep starter or time-filler.",
+    steps: [
+      "Pick a category, or choose “Type my own word” and enter a secret word (it's masked as you type).",
+      "Press Start — the hidden word shows as blanks, with an on-screen A–Z keyboard.",
+      "Tap a letter (or use your keyboard). Correct letters fill the blanks; wrong ones add to the drawing.",
+      "Solve the word before six misses. Press “Change word” for another go.",
+    ],
+    whoFor: [
+      ["Teachers", "a zero-prep starter or reward game — use a category or drop in this week's spellings or vocabulary."],
+      ["Tutors", "spelling and vocabulary practice, one word at a time."],
+      ["Anyone", "the word game everyone knows, on any screen."],
+    ],
+    faq: [
+      ["Can I use my own words?", "Yes — choose “Type my own word” and enter a secret word or short phrase. It's masked while you type so the class can't peek, perfect for spellings or topic vocabulary."],
+      ["What categories are included?", "Animals, countries, food, science, sport and space, each with a set of words picked at random."],
+      ["How many wrong guesses are allowed?", "Six — the classic hangman figure is drawn one piece at a time, and the word is revealed if you run out."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "noughts-and-crosses",
+    view: "noughts",
+    nav: "Noughts & crosses",
+    title: "Noughts & Crosses — Free Online Tic-Tac-Toe | SpinDecks",
+    description:
+      "Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline.",
+    h1: "Noughts & crosses",
+    intro:
+      "Noughts and crosses (tic-tac-toe) for the board. Play as two players taking turns, or one player against the computer — which plays a perfect game, so the best you can force is a draw. The board is big and clear for a classroom, and the running score keeps itself.",
+    steps: [
+      "Choose two players or “vs Computer”, then press Start.",
+      "Tap a square to place your mark — crosses always go first.",
+      "Get three in a row across, down or diagonally to win; the winning line lights up.",
+      "Press “New round” to play again (the loser starts), or reset the scores any time.",
+    ],
+    whoFor: [
+      ["Teachers", "a quick brain-break or reward game on the board — two students, or the class against the computer."],
+      ["Families", "the classic pencil-and-paper game with no pencil and paper."],
+      ["Anyone", "a 30-second game to settle who's right."],
+    ],
+    faq: [
+      ["Can I play against the computer?", "Yes — switch to “vs Computer” and you play as crosses. The computer plays perfectly, so you can draw but never beat it — good for showing why the game is a draw with best play."],
+      ["Does it keep score?", "Yes — wins for each side and draws are tallied and saved in your browser. Reset them any time."],
+      ["Who goes first?", "Crosses always start a game; after each round the other side starts the next one."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "lexicon",
+    view: "lexicon",
+    nav: "Lexicon",
+    title: "Lexicon — Free Five-Letter Word Puzzle for the Classroom | SpinDecks",
+    description:
+      "Guess the five-letter word in six tries — a Wordle-style puzzle in the SpinDecks style. A daily word for everyone, endless practice, or set your own word for the class. Free, no sign-up, works offline.",
+    h1: "Lexicon — five-letter word puzzle",
+    intro:
+      "Guess the hidden five-letter word in six tries. Each guess shows which letters are right and in the right place (green), in the word but misplaced (amber), or not in it at all (grey). Play today's word — the same for everyone — keep a streak, practise endlessly, or type your own word for the class to solve.",
+    steps: [
+      "Choose a mode: today's word, practice, or set your own word for the class.",
+      "Type a five-letter guess and press Enter (or use the on-screen keyboard).",
+      "Read the colours — green is right, amber is in the word but misplaced, grey is out — and narrow it down.",
+      "Solve it within six guesses. Today's word keeps a daily streak going.",
+    ],
+    whoFor: [
+      ["Teachers", "a daily vocabulary and spelling starter — or set a topic word for the class to crack together."],
+      ["Tutors", "letter patterns, spelling and reasoning practice, one puzzle at a time."],
+      ["Anyone", "a quick daily word puzzle, no app or account needed."],
+    ],
+    faq: [
+      ["Is it the same word for everyone each day?", "Yes — “today's word” is seeded from the date, so everyone gets the same puzzle each day. Solve it to keep your streak. Practice mode deals a fresh random word that doesn't affect your streak."],
+      ["Can I set my own word for the class?", "Yes — choose “Set a word” and type a five-letter word (it's masked as you type). Great for topic vocabulary or a class challenge."],
+      ["What do the colours mean?", "Green means the letter is correct and in the right place; amber means it's in the word but somewhere else; grey means it isn't in the word at all."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your streak stays in your browser. It works offline once loaded."],
     ],
   },
 ];

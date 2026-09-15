@@ -68,28 +68,39 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Play", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim", "countdown", "axiom"] },
+  { label: "Quiz games", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim"] },
+  { label: "Games", slugs: ["countdown", "axiom", "hangman", "noughts-and-crosses", "lexicon"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
-// Render the grouped tab strip. `interactive` adds the router hooks
-// (data-view-btn / active state); the simple header on hub+legal pages omits
-// them since there is no app to soft-navigate.
+// Render the grouped nav as compact dropdown menus — one button per group that
+// opens a menu of tools. This keeps the header small even with many tools,
+// especially on mobile. Each menu is a native <details>, so it works with no
+// JS (hub/legal pages); on tool pages app.js adds open/close niceties and
+// soft-navigation via the data-view-btn links. `interactive` adds those hooks
+// and marks the active tool + its group.
+const CHEVRON = `<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 function tabGroups(active, interactive) {
   const groups = TAB_GROUPS.map((g) => {
+    let groupActive = false;
     const items = g.slugs.map((slug) => {
       const t = TOOL_BY_SLUG[slug];
       if (!t) return "";
       const on = interactive && t.view === active;
+      if (on) groupActive = true;
       const attrs = interactive
         ? ` data-view-btn="${t.view}"${on ? ' aria-current="page"' : ""}`
         : "";
-      return `        <a class="tab${on ? " is-active" : ""}"${attrs} href="/${t.slug}/">${esc(t.nav)}</a>`;
+      return `          <a class="tab${on ? " is-active" : ""}"${attrs} href="/${t.slug}/">${esc(t.nav)}</a>`;
     }).join("\n");
-    return `      <div class="tab-group">\n        <span class="tab-group-label" aria-hidden="true">${esc(g.label)}</span>\n${items}\n      </div>`;
+    return `      <details class="navgroup${groupActive ? " is-active" : ""}">
+        <summary class="navgroup-btn">${esc(g.label)}${CHEVRON}</summary>
+        <div class="navgroup-menu">
+${items}
+        </div>
+      </details>`;
   }).join("\n");
-  const role = interactive ? ' role="tablist"' : "";
-  return `<nav class="tabs"${role} aria-label="Tools">\n${groups}\n    </nav>`;
+  return `<nav class="tabs" aria-label="Tools">\n${groups}\n    </nav>`;
 }
 
 function tabs(active) {
@@ -164,6 +175,9 @@ function footer() {
     "grid-claim": "Grid claim",
     "countdown": "Countdown game",
     "axiom": "Axiom",
+    "hangman": "Hangman",
+    "noughts-and-crosses": "Noughts & crosses",
+    "lexicon": "Lexicon",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -590,6 +604,18 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
   <main class="view view-axiom" data-view-panel="axiom" hidden>
     <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
+  </main>
+  <!-- HANGMAN (word guessing game; hangman.js builds the screens) -->
+  <main class="view view-hangman" data-view-panel="hangman" hidden>
+    <section class="panel hangman-panel" aria-label="Hangman word game"></section>
+  </main>
+  <!-- NOUGHTS & CROSSES (two-player / vs computer; noughts.js builds the screens) -->
+  <main class="view view-noughts" data-view-panel="noughts" hidden>
+    <section class="panel noughts-panel" aria-label="Noughts and crosses game"></section>
+  </main>
+  <!-- LEXICON (five-letter word puzzle; lexicon.js builds the screens) -->
+  <main class="view view-lexicon" data-view-panel="lexicon" hidden>
+    <section class="panel lexicon-panel" aria-label="Lexicon word puzzle"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

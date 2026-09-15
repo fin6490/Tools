@@ -1,30 +1,33 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260915j";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260915j";
-import * as sound from "./sound.js?v=20260915j";
-import { burst } from "./confetti.js?v=20260915j";
-import { initTimer } from "./timer.js?v=20260915j";
-import { initCounters } from "./counter.js?v=20260915j";
-import { initGroups } from "./groups.js?v=20260915j";
-import { initImages } from "./images.js?v=20260915j";
-import { initScores } from "./scores.js?v=20260915j";
-import { initSlots } from "./slots.js?v=20260915j";
-import { initNumbers } from "./numbers.js?v=20260915j";
-import { initDice } from "./dice.js?v=20260915j";
-import { initFirstPlayer } from "./firstplayer.js?v=20260915j";
-import { initScorepad } from "./scorepad.js?v=20260915j";
-import { initChessClock } from "./chessclock.js?v=20260915j";
-import { initBracket } from "./bracket.js?v=20260915j";
-import { initDojo } from "./dojo.js?v=20260915j";
-import { initReveal } from "./reveal.js?v=20260915j";
-import { initPairs } from "./pairs.js?v=20260915j";
-import { initBingo } from "./bingo.js?v=20260915j";
-import { initClassQuiz } from "./classquiz.js?v=20260915j";
-import { initGridClaim } from "./gridclaim.js?v=20260915j";
-import { initCountdown } from "./countdown.js?v=20260915j";
-import { initAxiom } from "./axiom.js?v=20260915j";
-import { initSupport } from "./support.js?v=20260915j";
-import { ROUTES } from "./routes.js?v=20260915j";
+import * as store from "./storage.js?v=20260915k";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260915k";
+import * as sound from "./sound.js?v=20260915k";
+import { burst } from "./confetti.js?v=20260915k";
+import { initTimer } from "./timer.js?v=20260915k";
+import { initCounters } from "./counter.js?v=20260915k";
+import { initGroups } from "./groups.js?v=20260915k";
+import { initImages } from "./images.js?v=20260915k";
+import { initScores } from "./scores.js?v=20260915k";
+import { initSlots } from "./slots.js?v=20260915k";
+import { initNumbers } from "./numbers.js?v=20260915k";
+import { initDice } from "./dice.js?v=20260915k";
+import { initFirstPlayer } from "./firstplayer.js?v=20260915k";
+import { initScorepad } from "./scorepad.js?v=20260915k";
+import { initChessClock } from "./chessclock.js?v=20260915k";
+import { initBracket } from "./bracket.js?v=20260915k";
+import { initDojo } from "./dojo.js?v=20260915k";
+import { initReveal } from "./reveal.js?v=20260915k";
+import { initPairs } from "./pairs.js?v=20260915k";
+import { initBingo } from "./bingo.js?v=20260915k";
+import { initClassQuiz } from "./classquiz.js?v=20260915k";
+import { initGridClaim } from "./gridclaim.js?v=20260915k";
+import { initCountdown } from "./countdown.js?v=20260915k";
+import { initAxiom } from "./axiom.js?v=20260915k";
+import { initHangman } from "./hangman.js?v=20260915k";
+import { initNoughts } from "./noughts.js?v=20260915k";
+import { initLexicon } from "./lexicon.js?v=20260915k";
+import { initSupport } from "./support.js?v=20260915k";
+import { ROUTES } from "./routes.js?v=20260915k";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -61,6 +64,7 @@ function applyHead(view) {
 
 function showView(view) {
   app.dataset.view = view;
+  if (typeof syncNavGroups === "function") syncNavGroups(view);
   document.querySelectorAll("[data-view-btn]").forEach((b) => {
     const on = b.dataset.viewBtn === view;
     b.classList.toggle("is-active", on);
@@ -92,9 +96,33 @@ document.querySelectorAll("a[data-view-btn]").forEach((a) => {
     const view = a.dataset.viewBtn;
     if (!ROUTES[view]) return;
     e.preventDefault();
+    closeNavGroups();
     navigate(view, true);
   });
 });
+
+/* ---------- dropdown nav groups ---------- */
+const navGroups = [...document.querySelectorAll(".navgroup")];
+function closeNavGroups(except) { navGroups.forEach((d) => { if (d !== except) d.open = false; }); }
+navGroups.forEach((d) => {
+  // Only one menu open at a time.
+  d.addEventListener("toggle", () => { if (d.open) closeNavGroups(d); });
+});
+// Click / tap outside the nav closes any open menu.
+document.addEventListener("click", (e) => { if (!e.target.closest(".navgroup")) closeNavGroups(); });
+// Escape closes menus and returns focus to the summary.
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  const open = navGroups.find((d) => d.open);
+  if (open) { open.open = false; const s = open.querySelector("summary"); if (s) s.focus(); }
+});
+// Mark the group that holds the current tool.
+function syncNavGroups(view) {
+  navGroups.forEach((d) => {
+    const has = !!d.querySelector(`[data-view-btn="${view}"]`);
+    d.classList.toggle("is-active", has);
+  });
+}
 window.addEventListener("popstate", () => {
   const slug = location.pathname.replace(/^\/|\/$/g, "");
   navigate(VIEW_BY_SLUG[slug] || INITIAL_VIEW, false);
@@ -532,6 +560,9 @@ initClassQuiz(document);
 initGridClaim(document);
 initCountdown(document);
 initAxiom(document);
+initHangman(document);
+initNoughts(document);
+initLexicon(document);
 slots = initSlots(document, { soundOn: () => state.soundOn });
 support = initSupport(document, { toast });
 initImages(document, {

@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="A fast two-player classroom quiz game for the interactive whiteboard. Winner stays on, lives and powerups, a class leaderboard, and any question set you choose. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260915j" />
+<link rel="stylesheet" href="/css/styles.css?v=20260915k" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -115,36 +115,50 @@
       </span>
       <span class="brand-name">SpinDecks</span>
     </a>
-    <nav class="tabs" role="tablist" aria-label="Tools">
-      <div class="tab-group">
-        <span class="tab-group-label" aria-hidden="true">Pick</span>
-        <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
-        <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
-        <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
-        <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
-        <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
-        <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
-        <a class="tab" data-view-btn="bracket" href="/tournament-bracket/">Bracket</a>
-      </div>
-      <div class="tab-group">
-        <span class="tab-group-label" aria-hidden="true">Score &amp; time</span>
-        <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
-        <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
-        <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
-        <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
-        <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
-      </div>
-      <div class="tab-group">
-        <span class="tab-group-label" aria-hidden="true">Play</span>
-        <a class="tab is-active" data-view-btn="dojo" aria-current="page" href="/bt-dojo/">Dojo</a>
-        <a class="tab" data-view-btn="reveal" href="/reveal-cards/">Reveal cards</a>
-        <a class="tab" data-view-btn="pairs" href="/pairs/">Pairs</a>
-        <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
-        <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
-        <a class="tab" data-view-btn="gridclaim" href="/grid-claim/">Grid claim</a>
-        <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
-        <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
-      </div>
+    <nav class="tabs" aria-label="Tools">
+      <details class="navgroup">
+        <summary class="navgroup-btn">Pick<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="navgroup-menu">
+          <a class="tab" data-view-btn="wheel" href="/wheel-of-names/">Wheel</a>
+          <a class="tab" data-view-btn="slots" href="/slot-machine/">Slots</a>
+          <a class="tab" data-view-btn="dice" href="/dice-roller/">Dice</a>
+          <a class="tab" data-view-btn="firstplayer" href="/first-player-picker/">First player</a>
+          <a class="tab" data-view-btn="numbers" href="/random-number-generator/">Numbers</a>
+          <a class="tab" data-view-btn="groups" href="/random-team-generator/">Teams</a>
+          <a class="tab" data-view-btn="bracket" href="/tournament-bracket/">Bracket</a>
+        </div>
+      </details>
+      <details class="navgroup">
+        <summary class="navgroup-btn">Score &amp; time<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="navgroup-menu">
+          <a class="tab" data-view-btn="scorepad" href="/scorepad/">Score pad</a>
+          <a class="tab" data-view-btn="scores" href="/darts-scoreboard/">Darts</a>
+          <a class="tab" data-view-btn="chessclock" href="/chess-clock/">Chess clock</a>
+          <a class="tab" data-view-btn="timer" href="/countdown-timer/">Timer</a>
+          <a class="tab" data-view-btn="counter" href="/tally-counter/">Counters</a>
+        </div>
+      </details>
+      <details class="navgroup is-active">
+        <summary class="navgroup-btn">Quiz games<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="navgroup-menu">
+          <a class="tab is-active" data-view-btn="dojo" aria-current="page" href="/bt-dojo/">Dojo</a>
+          <a class="tab" data-view-btn="reveal" href="/reveal-cards/">Reveal cards</a>
+          <a class="tab" data-view-btn="pairs" href="/pairs/">Pairs</a>
+          <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
+          <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
+          <a class="tab" data-view-btn="gridclaim" href="/grid-claim/">Grid claim</a>
+        </div>
+      </details>
+      <details class="navgroup">
+        <summary class="navgroup-btn">Games<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="navgroup-menu">
+          <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
+          <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
+          <a class="tab" data-view-btn="hangman" href="/hangman/">Hangman</a>
+          <a class="tab" data-view-btn="noughts" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
+          <a class="tab" data-view-btn="lexicon" href="/lexicon/">Lexicon</a>
+        </div>
+      </details>
     </nav>
     <div class="topbar-actions">
       <a id="tipTopBtn" class="tip-top" hidden target="_blank" rel="noopener" title="Support SpinDecks with a tip">
@@ -556,6 +570,18 @@
   <main class="view view-axiom" data-view-panel="axiom" hidden>
     <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>
+  <!-- HANGMAN (word guessing game; hangman.js builds the screens) -->
+  <main class="view view-hangman" data-view-panel="hangman" hidden>
+    <section class="panel hangman-panel" aria-label="Hangman word game"></section>
+  </main>
+  <!-- NOUGHTS & CROSSES (two-player / vs computer; noughts.js builds the screens) -->
+  <main class="view view-noughts" data-view-panel="noughts" hidden>
+    <section class="panel noughts-panel" aria-label="Noughts and crosses game"></section>
+  </main>
+  <!-- LEXICON (five-letter word puzzle; lexicon.js builds the screens) -->
+  <main class="view view-lexicon" data-view-panel="lexicon" hidden>
+    <section class="panel lexicon-panel" aria-label="Lexicon word puzzle"></section>
+  </main>
   <div id="winnerModal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="winnerName">
       <p id="modalEyebrow" class="modal-eyebrow">Winner</p>
@@ -684,6 +710,9 @@
         <a href="/grid-claim/">Grid claim</a>
         <a href="/countdown/">Countdown game</a>
         <a href="/axiom/">Axiom</a>
+        <a href="/hangman/">Hangman</a>
+        <a href="/noughts-and-crosses/">Noughts & crosses</a>
+        <a href="/lexicon/">Lexicon</a>
       </nav>
       <nav class="footer-col" aria-label="More">
         <p class="footer-head">More</p>
@@ -708,8 +737,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20260915j"></script>
-<script type="module" src="/js/app.js?v=20260915j"></script>
+  <script type="module" src="/js/suggest.js?v=20260915k"></script>
+<script type="module" src="/js/app.js?v=20260915k"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>
