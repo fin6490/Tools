@@ -99,6 +99,21 @@ export const ROUTES = {
     "slug": "axiom",
     "title": "Axiom — Free Daily Maths Puzzle | SpinDecks",
     "description": "A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline."
+  },
+  "hangman": {
+    "slug": "hangman",
+    "title": "Hangman — Free Classroom Word Guessing Game | SpinDecks",
+    "description": "The classic word-guessing game for the whiteboard. Pick a category for a random word or type your own secret word, then the class guesses letters. Free, no sign-up, works offline."
+  },
+  "noughts": {
+    "slug": "noughts-and-crosses",
+    "title": "Noughts & Crosses — Free Online Tic-Tac-Toe | SpinDecks",
+    "description": "Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline."
+  },
+  "lexicon": {
+    "slug": "lexicon",
+    "title": "Lexicon — Free Five-Letter Word Puzzle for the Classroom | SpinDecks",
+    "description": "Guess the five-letter word in six tries — a Wordle-style puzzle in the SpinDecks style. A daily word for everyone, endless practice, or set your own word for the class. Free, no sign-up, works offline."
   }
 };
 

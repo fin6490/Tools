@@ -37,6 +37,9 @@ const DEFAULTS = () => ({
   classquiz: { activeSetId: null, teamCount: 2, rosterWheelId: null, roundSize: 5, teamNames: [] },
   gridclaim: { activeSetId: null, size: 5 },
   axiom: { lastSolved: 0, streak: 0, level: "medium" },
+  hangman: { category: "animals", maxMiss: 6 },
+  noughts: { mode: "two", scores: { x: 0, o: 0, d: 0 } },
+  lexicon: { lastSolved: 0, streak: 0 },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,

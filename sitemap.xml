@@ -106,6 +106,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://spindecks.app/hangman/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://spindecks.app/noughts-and-crosses/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://spindecks.app/lexicon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://spindecks.app/about/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

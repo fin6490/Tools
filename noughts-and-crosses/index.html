@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Axiom — Free Daily Maths Puzzle | SpinDecks</title>
-<meta name="description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
+<title>Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks</title>
+<meta name="description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/axiom/" />
+<link rel="canonical" href="https://spindecks.app/noughts-and-crosses/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
-<meta property="og:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/axiom/" />
+<meta property="og:title" content="Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks" />
+<meta property="og:description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/noughts-and-crosses/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Axiom — Free Daily Maths Puzzle | SpinDecks" />
-<meta name="twitter:description" content="A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline." />
+<meta name="twitter:title" content="Noughts &amp; Crosses — Free Online Tic-Tac-Toe | SpinDecks" />
+<meta name="twitter:description" content="Play noughts and crosses (tic-tac-toe) on the whiteboard — two players, or one player against the computer. Running score, big clear board. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260915k" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Axiom — daily maths puzzle",
-  "url": "https://spindecks.app/axiom/",
+  "name": "Noughts & crosses",
+  "url": "https://spindecks.app/noughts-and-crosses/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,42 +56,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Is it the same puzzle for everyone?",
+      "name": "Can I play against the computer?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak."
+        "text": "Yes — switch to “vs Computer” and you play as crosses. The computer plays perfectly, so you can draw but never beat it — good for showing why the game is a draw with best play."
       }
     },
     {
       "@type": "Question",
-      "name": "What are the difficulty levels?",
+      "name": "Does it keep score?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Easy is a four-equation ring; Medium is an interlocking 3×3 crossword of six addition lines; Hard is the same six-line crossword but mixes +, −, × and ÷ with more blanks; Expert is a bigger 4×4 crossword — eight lines of three-number sums."
+        "text": "Yes — wins for each side and draws are tallied and saved in your browser. Reset them any time."
       }
     },
     {
       "@type": "Question",
-      "name": "How does it check itself?",
+      "name": "Who goes first?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed."
+        "text": "Crosses always start a game; after each round the other side starts the next one."
       }
     },
     {
       "@type": "Question",
-      "name": "Do I need an account?",
+      "name": "Is it free and private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is it free?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Completely — no ads, no sign-up, ever."
+        "text": "Completely — no ads, no sign-up, and it works offline once loaded."
       }
     }
   ]
@@ -99,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="axiom">
+<div id="app" data-view="noughts">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -145,9 +137,9 @@
         <summary class="navgroup-btn">Games<svg class="navgroup-chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
         <div class="navgroup-menu">
           <a class="tab" data-view-btn="countdown" href="/countdown/">Countdown</a>
-          <a class="tab is-active" data-view-btn="axiom" aria-current="page" href="/axiom/">Axiom</a>
+          <a class="tab" data-view-btn="axiom" href="/axiom/">Axiom</a>
           <a class="tab" data-view-btn="hangman" href="/hangman/">Hangman</a>
-          <a class="tab" data-view-btn="noughts" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
+          <a class="tab is-active" data-view-btn="noughts" aria-current="page" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
           <a class="tab" data-view-btn="lexicon" href="/lexicon/">Lexicon</a>
         </div>
       </details>
@@ -559,7 +551,7 @@
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
   </main>
   <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
-  <main class="view view-axiom" data-view-panel="axiom">
+  <main class="view view-axiom" data-view-panel="axiom" hidden>
     <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>
   <!-- HANGMAN (word guessing game; hangman.js builds the screens) -->
@@ -567,7 +559,7 @@
     <section class="panel hangman-panel" aria-label="Hangman word game"></section>
   </main>
   <!-- NOUGHTS & CROSSES (two-player / vs computer; noughts.js builds the screens) -->
-  <main class="view view-noughts" data-view-panel="noughts" hidden>
+  <main class="view view-noughts" data-view-panel="noughts">
     <section class="panel noughts-panel" aria-label="Noughts and crosses game"></section>
   </main>
   <!-- LEXICON (five-letter word puzzle; lexicon.js builds the screens) -->
@@ -626,45 +618,41 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Axiom — daily maths puzzle</h1>
-      <p class="tool-intro">A daily maths puzzle for a starter or a brain-break, at four difficulty levels. Numbers and operators sit in a grid; a few numbers are missing. Place the tiles from the rack so every line reads correctly across and down — shared cells have to work in both directions at once. Easy is a four-equation ring; Medium and Hard are interlocking 3×3 crosswords (six lines), with Hard mixing +, −, × and ÷; Expert is a bigger 4×4 crossword — eight lines of three-number sums. A new puzzle every day at each level, the same for the whole class, and it checks itself.</p>
+      <h1>Noughts & crosses</h1>
+      <p class="tool-intro">Noughts and crosses (tic-tac-toe) for the board. Play as two players taking turns, or one player against the computer — which plays a perfect game, so the best you can force is a draw. The board is big and clear for a classroom, and the running score keeps itself.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Choose a level — Easy, Medium, Hard or Expert — then look at the grid and its shared cells.</li>
-        <li>Tap a number tile in the rack, then tap the blank cell you want it in (tap a placed tile to take it back).</li>
-        <li>Fill every blank so all the lines are true — lines you've completed turn green.</li>
-        <li>Solve it to keep your daily streak going, or hit “Practice puzzle” for an extra one.</li>
+            <li>Choose two players or “vs Computer”, then press Start.</li>
+        <li>Tap a square to place your mark — crosses always go first.</li>
+        <li>Get three in a row across, down or diagonally to win; the winning line lights up.</li>
+        <li>Press “New round” to play again (the loser starts), or reset the scores any time.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Teachers:</strong> a daily number starter that runs itself — put it on the board as students come in.</li>
-        <li><strong>Tutors:</strong> quick arithmetic and reasoning practice, one short puzzle at a time.</li>
-        <li><strong>Anyone:</strong> a bite-sized daily maths challenge, like a numbers crossword.</li>
+            <li><strong>Teachers:</strong> a quick brain-break or reward game on the board — two students, or the class against the computer.</li>
+        <li><strong>Families:</strong> the classic pencil-and-paper game with no pencil and paper.</li>
+        <li><strong>Anyone:</strong> a 30-second game to settle who's right.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>Is it the same puzzle for everyone?</summary>
-          <p>Yes — each level's daily puzzle is seeded from the date, so everyone gets the same one each day. Want more? “Practice puzzle” deals a fresh random one that doesn't affect your streak.</p>
+          <summary>Can I play against the computer?</summary>
+          <p>Yes — switch to “vs Computer” and you play as crosses. The computer plays perfectly, so you can draw but never beat it — good for showing why the game is a draw with best play.</p>
         </details>
         <details>
-          <summary>What are the difficulty levels?</summary>
-          <p>Easy is a four-equation ring; Medium is an interlocking 3×3 crossword of six addition lines; Hard is the same six-line crossword but mixes +, −, × and ÷ with more blanks; Expert is a bigger 4×4 crossword — eight lines of three-number sums.</p>
+          <summary>Does it keep score?</summary>
+          <p>Yes — wins for each side and draws are tallied and saved in your browser. Reset them any time.</p>
         </details>
         <details>
-          <summary>How does it check itself?</summary>
-          <p>Every line is a real equation. Complete lines turn green and you've solved it when they're all correct — no marking needed.</p>
+          <summary>Who goes first?</summary>
+          <p>Crosses always start a game; after each round the other side starts the next one.</p>
         </details>
         <details>
-          <summary>Do I need an account?</summary>
-          <p>No — your streak is stored in your own browser. There's no sign-up and it works offline once loaded.</p>
-        </details>
-        <details>
-          <summary>Is it free?</summary>
-          <p>Completely — no ads, no sign-up, ever.</p>
+          <summary>Is it free and private?</summary>
+          <p>Completely — no ads, no sign-up, and it works offline once loaded.</p>
         </details>
           </div>
         </div>

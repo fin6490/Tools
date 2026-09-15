@@ -4,12 +4,12 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260915j";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915j";
-import { parseEntries } from "./wheel.js?v=20260915j";
-import { SUPPORT } from "./support.js?v=20260915j";
-import { generateSet, fitText } from "./quizkit.js?v=20260915j";
-import * as sound from "./sound.js?v=20260915j";
+import { getState, save } from "./storage.js?v=20260915k";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915k";
+import { parseEntries } from "./wheel.js?v=20260915k";
+import { SUPPORT } from "./support.js?v=20260915k";
+import { generateSet, fitText } from "./quizkit.js?v=20260915k";
+import * as sound from "./sound.js?v=20260915k";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
