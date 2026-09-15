@@ -2,9 +2,9 @@
 // Pairs, Class quiz, Grid claim…). They all reuse the question sets that the
 // BT Dojo editor + AI generator produce, plus a tiny maths renderer so fractions
 // and powers show properly. The Dojo keeps its own copies; new games use these.
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915g";
-import { getState, save } from "./storage.js?v=20260915g";
-import { SUPPORT } from "./support.js?v=20260915g";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915h";
+import { getState, save } from "./storage.js?v=20260915h";
+import { SUPPORT } from "./support.js?v=20260915h";
 
 export function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
 export function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -77,20 +77,26 @@ export async function generateSet(topic, count = 12, tries = 3) {
 
 // A ready-made "type a topic → Generate" row. onGenerated(newSet, flashMsg) fires
 // on success (after the set is saved). Degrades gracefully when AI isn't set up.
+// How many questions the generator can be asked for. The Worker clamps to this
+// same ceiling, so keep the two in step.
+export const GEN_COUNTS = [8, 10, 12, 16, 20, 25, 30];
+
 export function makeGenerateRow(onGenerated) {
   const wrap = el("div", "dojo-field");
   wrap.appendChild(el("label", "dojo-lbl", "Generate a set with AI — type a topic"));
   const row = el("div", "dojo-genrow");
   const input = el("input", "dojo-input"); input.placeholder = "e.g. Year 8 equations, KS2 homophones…"; input.maxLength = 120;
+  const count = el("select", "dojo-select dojo-select-sm dojo-gencount"); count.title = "How many questions";
+  GEN_COUNTS.forEach((n) => { const o = el("option"); o.value = n; o.textContent = n + " Qs"; if (n === 12) o.selected = true; count.appendChild(o); });
   const btn = el("button", "btn primary", "Generate");
-  row.append(input, btn); wrap.appendChild(row);
+  row.append(input, count, btn); wrap.appendChild(row);
   const note = el("p", "dojo-hint dojo-gennote"); note.hidden = true; wrap.appendChild(note);
   const doGen = async () => {
     const t = input.value.trim(); if (!t) return;
     if (!SUPPORT.dojoGenerateEndpoint) { note.hidden = false; note.textContent = "AI generation isn't switched on for this site yet — pick or make a set below."; return; }
     btn.disabled = true; const orig = btn.textContent; btn.textContent = "Generating…"; note.hidden = true;
     try {
-      const set = await generateSet(t, 12);
+      const set = await generateSet(t, +count.value);
       onGenerated(set, `Generated ${set.questions.length} questions on “${t}” — ready to play.`);
     } catch {
       btn.disabled = false; btn.textContent = orig;
