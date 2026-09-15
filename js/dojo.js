@@ -4,12 +4,12 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260915g";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915g";
-import { parseEntries } from "./wheel.js?v=20260915g";
-import { SUPPORT } from "./support.js?v=20260915g";
-import { generateSet } from "./quizkit.js?v=20260915g";
-import * as sound from "./sound.js?v=20260915g";
+import { getState, save } from "./storage.js?v=20260915h";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915h";
+import { parseEntries } from "./wheel.js?v=20260915h";
+import { SUPPORT } from "./support.js?v=20260915h";
+import { generateSet } from "./quizkit.js?v=20260915h";
+import * as sound from "./sound.js?v=20260915h";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -173,8 +173,10 @@ export function initDojo(root) {
     genRow.appendChild(el("label", "dojo-lbl", "Generate a set — type a topic"));
     const genWrap = el("div", "dojo-genrow");
     const topicIn = el("input", "dojo-input"); topicIn.placeholder = "e.g. Year 8 solving equations, KS2 homophones…"; topicIn.maxLength = 120;
+    const genCount = el("select", "dojo-select dojo-select-sm dojo-gencount"); genCount.title = "How many questions";
+    [8, 10, 12, 16, 20, 25, 30].forEach((n) => { const o = el("option"); o.value = n; o.textContent = n + " Qs"; if (n === 12) o.selected = true; genCount.appendChild(o); });
     const genBtn = el("button", "btn primary", "Generate");
-    genWrap.append(topicIn, genBtn);
+    genWrap.append(topicIn, genCount, genBtn);
     genRow.appendChild(genWrap);
     const genNote = el("p", "dojo-hint dojo-gennote"); genNote.hidden = true; genRow.appendChild(genNote);
     const doGen = async () => {
@@ -183,7 +185,7 @@ export function initDojo(root) {
       if (!SUPPORT.dojoGenerateEndpoint) { genNote.hidden = false; genNote.textContent = "AI generation isn't switched on for this site yet — pick or make a set below."; return; }
       genBtn.disabled = true; const orig = genBtn.textContent; genBtn.textContent = "Generating…"; genNote.hidden = true;
       try {
-        const set = await generateSet(t, 12); // shared helper: retries a few times, saves to the shared store
+        const set = await generateSet(t, +genCount.value); // shared helper: retries a few times, saves to the shared store
         cfg().activeSetId = set.id; save();
         renderLobby(`Generated ${set.questions.length} questions on “${t}” — ready to play.`);
       } catch {

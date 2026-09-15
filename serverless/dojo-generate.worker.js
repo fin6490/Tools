@@ -54,7 +54,7 @@ export default {
     try { bodyIn = await request.json(); } catch { return json({ error: "bad json" }, 400, cors); }
     const topic = String(bodyIn.topic || "").trim().slice(0, 120);
     if (!topic) return json({ error: "missing topic" }, 400, cors);
-    const count = Math.max(6, Math.min(16, parseInt(bodyIn.count, 10) || 12));
+    const count = Math.max(6, Math.min(30, parseInt(bodyIn.count, 10) || 12));
 
     const system = [
       "You create multiple-choice quiz question sets for a fast classroom game where two students race to tap the correct answer.",
@@ -80,7 +80,7 @@ export default {
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5",
-          max_tokens: 1500,
+          max_tokens: 4000,
           system,
           messages: [{ role: "user", content: user }],
         }),

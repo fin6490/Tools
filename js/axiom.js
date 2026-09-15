@@ -1,12 +1,14 @@
-// axiom.js — Axiom: a daily maths crossword with four difficulty levels.
+// axiom.js — Axiom: a daily maths crossword with five difficulty levels.
 // Easy: a four-equation ring. Medium: an interlocking 3×3 crossword (six lines).
 // Hard: the same 3×3 crossword mixing + − × ÷. Expert: a 4×4 crossword on a 7×7
-// grid — eight lines of three-number sums. A few numbers are removed to a rack;
+// grid — eight lines of three-number sums. Genius: a six-line crossword that
+// mixes all four operations, allows negative numbers, and carries two inequality
+// lines (< or >) as well as equalities. A few numbers are removed to a rack;
 // place them so every line reads true across and down. One puzzle per day per
 // level, seeded from the date. Self-checking. Zero deps.
-import { el } from "./quizkit.js?v=20260915g";
-import { getState, save } from "./storage.js?v=20260915g";
-import * as sound from "./sound.js?v=20260915g";
+import { el } from "./quizkit.js?v=20260915h";
+import { getState, save } from "./storage.js?v=20260915h";
+import * as sound from "./sound.js?v=20260915h";
 
 function mulberry32(a) {
   return function () {
@@ -97,9 +99,61 @@ const MEDIUM = Object.assign({}, XW5, { blanks: 4, generate: (rand) => fillAdd(X
 const HARD = Object.assign({}, XW5, { blanks: 5, generate: (rand) => fillMixed5(rand) });
 const EXPERT = Object.assign({}, XW7, { blanks: 7, generate: (rand) => fillAdd(XW7, rand) });
 
-const LEVELS = { easy: RING, medium: MEDIUM, hard: HARD, expert: EXPERT };
-const LEVEL_ORDER = ["easy", "medium", "hard", "expert"];
-const LEVEL_LABEL = { easy: "Easy", medium: "Medium", hard: "Hard", expert: "Expert" };
+/* ---------- Genius: a 3×3 ring-cross with negatives and two inequalities ----------
+   Four equality lanes form the outer ring; two more lanes run through the middle
+   and read as inequalities (< or >). Numbers may be negative and every operation
+   is in play, so it's the hardest board. Layout (5×5):
+     row0  a op b  = c        col0  a op g  = d
+     row4  d op e  = f        col4  c op h  = f
+     midR  g op k <>  h       midC  b op k <>  e   (k is the shared centre)     */
+const GENIUS_LAYOUT = {
+  dim: 5,
+  dead: [6, 8, 16, 18],
+  numCells: [0, 2, 4, 10, 12, 14, 20, 22, 24],
+  lanes: [
+    [0, 1, 2, 3, 4], [20, 21, 22, 23, 24],   // rows 0 and 4 (equalities)
+    [0, 5, 10, 15, 20], [4, 9, 14, 19, 24],   // cols 0 and 4 (equalities)
+    [10, 11, 12, 13, 14],                     // middle row (inequality)
+    [2, 7, 12, 17, 22],                       // middle col (inequality)
+  ],
+  blanks: 6,
+};
+function fillGenius(rand) {
+  const NP = [-9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9];
+  const OPS = ["+", "−", "×", "÷"];
+  const ri = (n) => Math.floor(rand() * n);
+  const pn = () => NP[ri(NP.length)], po = () => OPS[ri(OPS.length)];
+  const ok = (x) => Number.isInteger(x) && x >= -50 && x <= 99;
+  // e such that (d op e) === f, or null when it can't be made an integer.
+  const closeE = (op, d, f) => {
+    if (op === "+") return f - d;
+    if (op === "−") return d - f;
+    if (op === "×") return d !== 0 && f % d === 0 ? f / d : null;
+    return f !== 0 && d % f === 0 ? d / f : null; // ÷ : d / e = f  →  e = d / f
+  };
+  for (let t = 0; t < 8000; t++) {
+    const a = pn(), b = pn(), op1 = po(), c = apply(op1, a, b); if (!ok(c)) continue;
+    const g = pn(), op2 = po(), d = apply(op2, a, g); if (!ok(d)) continue;
+    const h = pn(), op3 = po(), f = apply(op3, c, h); if (!ok(f)) continue;
+    const op4 = po(), e = closeE(op4, d, f); if (e == null || !ok(e) || apply(op4, d, e) !== f) continue;
+    const k = pn();
+    const op5 = po(), lhsR = apply(op5, g, k); if (!ok(lhsR) || lhsR === h) continue;
+    const op6 = po(), lhsC = apply(op6, b, k); if (!ok(lhsC) || lhsC === e) continue;
+    const v = {};
+    v[0] = a; v[2] = b; v[4] = c; v[10] = g; v[12] = k; v[14] = h; v[20] = d; v[22] = e; v[24] = f;
+    v[1] = op1; v[21] = op4; v[5] = op2; v[9] = op3; v[11] = op5; v[7] = op6;
+    v[3] = v[23] = v[15] = v[19] = "=";
+    v[13] = lhsR < h ? "<" : ">";
+    v[17] = lhsC < e ? "<" : ">";
+    return v;
+  }
+  return null;
+}
+const GENIUS = Object.assign({}, GENIUS_LAYOUT, { generate: fillGenius });
+
+const LEVELS = { easy: RING, medium: MEDIUM, hard: HARD, expert: EXPERT, genius: GENIUS };
+const LEVEL_ORDER = ["easy", "medium", "hard", "expert", "genius"];
+const LEVEL_LABEL = { easy: "Easy", medium: "Medium", hard: "Hard", expert: "Expert", genius: "Genius" };
 
 export function initAxiom(root) {
   const panel = root.querySelector(".axiom-panel");
@@ -170,6 +224,7 @@ export function initAxiom(root) {
     ctrls.append(clear, practice);
     wrap.appendChild(ctrls);
 
+    if (cfg().level === "genius") wrap.appendChild(el("p", "dojo-hint", "Genius mixes every operation, uses negative numbers, and two lines read as inequalities — the middle across and down must be less-than (<) or greater-than (>), not equal."));
     const cs = cfg();
     if (cs.streak > 0) wrap.appendChild(el("p", "dojo-hint", `Daily streak: ${cs.streak} ${cs.streak === 1 ? "day" : "days"}. A new Axiom every day, at each level.`));
     panel.appendChild(wrap);
@@ -185,19 +240,21 @@ export function initAxiom(root) {
   }
 
   const valueAt = (i) => blanks.includes(i) ? (fill[i] != null ? rack[fill[i]].value : null) : solution[i];
-  // Evaluate a lane left-to-right: num (op num)* = num.
+  const RELS = { "=": (x, y) => x === y, "<": (x, y) => x < y, ">": (x, y) => x > y, "≤": (x, y) => x <= y, "≥": (x, y) => x >= y };
+  // Evaluate a lane left-to-right: num (op num)* <rel> num, where <rel> is one of = < > ≤ ≥.
   function laneOk(lane) {
-    let acc = null, op = null, target = null, afterEq = false;
+    let acc = null, op = null, target = null, rel = null;
     for (const cell of lane) {
       const raw = solution[cell];
-      if (raw === "=") { afterEq = true; continue; }
+      if (RELS[raw]) { rel = raw; continue; }
       if (typeof raw === "string") { op = raw; continue; }
       const val = valueAt(cell); if (val == null) return null;
-      if (afterEq) target = val;
+      if (rel != null) target = val;
       else if (acc == null) acc = val;
       else acc = apply(op, acc, val);
     }
-    return acc === target;
+    if (acc == null || target == null) return null;
+    return RELS[rel](acc, target);
   }
 
   function updateStatus() {
@@ -224,7 +281,7 @@ export function initAxiom(root) {
   function solve() {
     solved = true; fx(sound.fanfare);
     const status = panel.querySelector("#axStatus");
-    status.textContent = "Solved! Every line adds up.";
+    status.textContent = "Solved! Every line checks out.";
     status.className = "axiom-status solved";
     if (daily) {
       const cs = cfg(), today = dateKey();
