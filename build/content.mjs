@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915k",
+  token: "20260915l",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -673,6 +673,34 @@ export const TOOLS = [
       ["Can I set my own word for the class?", "Yes — choose “Set a word” and type a five-letter word (it's masked as you type). Great for topic vocabulary or a class challenge."],
       ["What do the colours mean?", "Green means the letter is correct and in the right place; amber means it's in the word but somewhere else; grey means it isn't in the word at all."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your streak stays in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "numberwang",
+    view: "numberwang",
+    nav: "Numberwang",
+    title: "Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks",
+    description:
+      "A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline.",
+    h1: "Numberwang — the nonsense maths game",
+    intro:
+      "The maths quiz that everyone loves to play — a light-hearted homage to the famous sketch. Two contestants take turns choosing a number, and the host declares whether it's Numberwang. How is it decided? Nobody knows, and that's the whole joke. Rotate the board, brace yourself for Wangernumb, and race to be the champion. A pure bit of fun for the end of a lesson.",
+    steps: [
+      "Enter two contestants' names (optional) and how many Numberwangs win the game.",
+      "Press “Let's play Numberwang!” — players take turns choosing a number on the board.",
+      "The host announces whether it's Numberwang — on no logic at all, which is the point.",
+      "Watch for “Rotate the board!” and “Wangernumb!”. First to the target is the champion.",
+    ],
+    whoFor: [
+      ["Teachers", "a daft, no-stakes end-of-lesson treat that gets the whole class shouting numbers."],
+      ["Fans of the sketch", "a playable tribute to the maths game show that makes no sense whatsoever."],
+      ["Anyone", "a quick, silly two-player game for a bit of a laugh."],
+    ],
+    faq: [
+      ["How is Numberwang decided?", "It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun."],
+      ["Is this the official Numberwang?", "No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch."],
+      ["How many can play?", "Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },
 ];
