@@ -65,6 +65,7 @@ export default {
       "If a question genuinely has more than one correct answer, list them ALL in an \"answers\" array (any one counts as correct); otherwise omit \"answers\". Always also set \"a\" to one correct answer.",
       "Use UK spelling, keep it factual and age-appropriate, and never use gambling or betting themes.",
       "For maths you may use this light markup: \\frac{a}{b} for fractions, x^2 for powers, \\sqrt{9} for roots, and \\times \\div \\pm for symbols.",
+      "Return STRICT, valid JSON: write every backslash as a double backslash (e.g. \\\\frac, \\\\sqrt, \\\\times) so the JSON parses.",
     ].join(" ");
     const user = `Make ${count} questions for this topic/level: ${topic}`;
 
@@ -120,5 +121,10 @@ function extractJson(text) {
   const s = text.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
   const a = s.indexOf("{"), b = s.lastIndexOf("}");
   if (a === -1 || b === -1 || b < a) return null;
-  try { return JSON.parse(s.slice(a, b + 1)); } catch { return null; }
+  const slice = s.slice(a, b + 1);
+  try { return JSON.parse(slice); } catch {}
+  // The model often writes maths markup with single backslashes (\frac, \sqrt),
+  // which are invalid JSON escapes. Escape any backslash that isn't part of a
+  // valid JSON escape, then try again.
+  try { return JSON.parse(slice.replace(/\\(?!["\\/bfnrtu])/g, "\\\\")); } catch { return null; }
 }

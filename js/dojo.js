@@ -4,11 +4,12 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260915f";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260915f";
-import { parseEntries } from "./wheel.js?v=20260915f";
-import { SUPPORT } from "./support.js?v=20260915f";
-import * as sound from "./sound.js?v=20260915f";
+import { getState, save } from "./storage.js?v=20260915g";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260915g";
+import { parseEntries } from "./wheel.js?v=20260915g";
+import { SUPPORT } from "./support.js?v=20260915g";
+import { generateSet } from "./quizkit.js?v=20260915g";
+import * as sound from "./sound.js?v=20260915g";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -182,19 +183,9 @@ export function initDojo(root) {
       if (!SUPPORT.dojoGenerateEndpoint) { genNote.hidden = false; genNote.textContent = "AI generation isn't switched on for this site yet — pick or make a set below."; return; }
       genBtn.disabled = true; const orig = genBtn.textContent; genBtn.textContent = "Generating…"; genNote.hidden = true;
       try {
-        const headers = { "Content-Type": "application/json" };
-        if (SUPPORT.dojoGenerateToken) headers["x-dojo-token"] = SUPPORT.dojoGenerateToken;
-        const res = await fetch(SUPPORT.dojoGenerateEndpoint, { method: "POST", headers, body: JSON.stringify({ topic: t, count: 12 }) });
-        if (!res.ok) throw new Error("status " + res.status);
-        const data = await res.json();
-        const qs = Array.isArray(data.questions) ? data.questions.filter((q) => q && q.q && q.a).map((q) => {
-          const out = { q: String(q.q), a: String(q.a), distractors: Array.isArray(q.distractors) ? q.distractors.map(String) : [] };
-          if (Array.isArray(q.answers) && q.answers.length > 1) out.answers = q.answers.map(String); // question with several correct answers
-          return out;
-        }) : [];
-        if (qs.length < 2) throw new Error("empty");
-        const id = uid(); cfg().sets.push({ id, name: (data.name || t).slice(0, 60), questions: qs }); cfg().activeSetId = id; save();
-        renderLobby(`Generated ${qs.length} questions on “${t}” — ready to play.`);
+        const set = await generateSet(t, 12); // shared helper: retries a few times, saves to the shared store
+        cfg().activeSetId = set.id; save();
+        renderLobby(`Generated ${set.questions.length} questions on “${t}” — ready to play.`);
       } catch {
         genBtn.disabled = false; genBtn.textContent = orig;
         genNote.hidden = false; genNote.textContent = "Couldn't generate that just now — try again, or make a set in the editor.";

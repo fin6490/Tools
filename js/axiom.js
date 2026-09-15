@@ -4,9 +4,9 @@
 // grid — eight lines of three-number sums. A few numbers are removed to a rack;
 // place them so every line reads true across and down. One puzzle per day per
 // level, seeded from the date. Self-checking. Zero deps.
-import { el } from "./quizkit.js?v=20260915f";
-import { getState, save } from "./storage.js?v=20260915f";
-import * as sound from "./sound.js?v=20260915f";
+import { el } from "./quizkit.js?v=20260915g";
+import { getState, save } from "./storage.js?v=20260915g";
+import * as sound from "./sound.js?v=20260915g";
 
 function mulberry32(a) {
   return function () {
