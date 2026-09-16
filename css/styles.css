@@ -1339,6 +1339,10 @@ a.tab { display: block; }
 @keyframes nwspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .nw-stage.flip { transform: rotate(180deg); }
 .nw-stage.flip.diagonal { transform: rotate(174deg) skewX(-6deg); }
+/* A spin while flipped goes 180° → 540°, so it starts and ends upside down
+   instead of snapping upright for the spin. */
+.nw-stage.flip.spin { animation: nwspinflip 1.7s ease-in-out; }
+@keyframes nwspinflip { from { transform: rotate(180deg); } to { transform: rotate(540deg); } }
 .nw-stage.wangernumb { filter: hue-rotate(180deg); }
 .nw-prompt { font-family: var(--mono); font-weight: 800; font-size: clamp(18px, 3.4vw, 26px); color: var(--ink); margin: 0 0 14px; }
 .nw-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(460px, 90vw); margin: 0 auto; }
@@ -1360,7 +1364,7 @@ a.tab { display: block; }
 .nw-announce.no { color: var(--ink); background: var(--panel); border: 2px solid var(--line); font-size: clamp(22px, 5vw, 44px); }
 .nw-announce.rotate, .nw-announce.wangernumb { color: var(--accent-ink); background: var(--accent); box-shadow: 0 14px 40px rgba(0,0,0,.4); }
 @keyframes nwpop { 0% { transform: translate(-50%, -50%) scale(.6); opacity: 0; } 60% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); } }
-@media (prefers-reduced-motion: reduce) { .nw-announce { animation: none; } .nw-stage { transition: none; } .nw-stage.spin { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .nw-announce { animation: none; } .nw-stage { transition: none; } .nw-stage.spin, .nw-stage.flip.spin { animation: none; } }
 
 /* Numberwang — extra zany layers (meters, rulebook, round names, more events) */
 .nw-meters { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 2px 0 6px; }

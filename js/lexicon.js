@@ -3,9 +3,9 @@
 // amber (in the word, wrong spot) or grey (not in the word). A daily word the
 // same for everyone, a practice mode, or a custom word a teacher sets for the
 // class. Zero deps.
-import { el } from "./quizkit.js?v=20260915q";
-import { getState, save } from "./storage.js?v=20260915q";
-import * as sound from "./sound.js?v=20260915q";
+import { el } from "./quizkit.js?v=20260915r";
+import { getState, save } from "./storage.js?v=20260915r";
+import * as sound from "./sound.js?v=20260915r";
 
 // A curated pool of common five-letter answers (used for daily + practice).
 const WORDS = ["APPLE","BEACH","BRAIN","BREAD","BRUSH","CHAIR","CHEST","CHORD","CLICK","CLOCK","CLOUD","DANCE","DIARY","DRINK","EARTH","FLAME","FLOOR","FRUIT","GHOST","GLASS","GRAPE","GREEN","HEART","HORSE","HOUSE","JUICE","LIGHT","LEMON","MONEY","MONTH","MUSIC","NIGHT","OCEAN","PAINT","PAPER","PEACE","PIANO","PILOT","PIZZA","PLANT","PLATE","POWER","QUEEN","RADIO","RIVER","ROBOT","SHEEP","SHIRT","SMILE","SNAKE","SNOW","SOUND","SPACE","SPOON","STORM","STONE","SUGAR","TABLE","TIGER","TOAST","TOOTH","TOWER","TRAIN","TREE","TRUCK","WATCH","WATER","WHALE","WHEEL","WORLD","ZEBRA","BERRY","CANDY","CLOWN","CROWN","DREAM","EAGLE","FENCE","FIELD","FLOUR","FROST","GIANT","GLOVE","GRASS","HONEY","IGLOO","JELLY","KOALA","LEMON","MAGIC","MELON","MOUSE","NURSE","OLIVE","ONION","OTTER","PANDA","PEARL","PLUMB","PRIZE","QUILT","RIVER","SCARF","SHARK","SHELL","SHINE","SKATE","SLOTH","SPADE","SPARK","STAIR","STARK","SWORD","TEETH","THUMB","TOWEL","TRACK","TULIP","VOICE","WAGON","WITCH","WOMAN","WRIST"];
