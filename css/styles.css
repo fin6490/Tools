@@ -975,6 +975,8 @@ a.tab { display: block; }
 .classquiz-award { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
 .classquiz-awardlbl { font-weight: 700; color: var(--muted); width: 100%; text-align: center; }
 .classquiz-awardbtn { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); }
+.classquiz-awardbtn.awarded { background: #35d183; color: #06251a; border-color: #2bbf75; }
+.classquiz-awardnext { width: 100%; }
 .classquiz-clock { font-family: var(--mono); font-weight: 800; font-size: clamp(30px, 8vw, 52px); color: var(--muted); line-height: 1; }
 .classquiz-clock.low { color: #ff6b6b; }
 .classquiz-body { display: flex; flex-direction: column; gap: 16px; }

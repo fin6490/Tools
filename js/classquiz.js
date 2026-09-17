@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260915r";
-import { parseEntries } from "./wheel.js?v=20260915r";
-import { getState, save } from "./storage.js?v=20260915r";
-import * as sound from "./sound.js?v=20260915r";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260915s";
+import { parseEntries } from "./wheel.js?v=20260915s";
+import { getState, save } from "./storage.js?v=20260915s";
+import * as sound from "./sound.js?v=20260915s";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
@@ -244,14 +244,22 @@ export function initClassQuiz(root) {
         const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
         aw.appendChild(skip);
       } else {
-        aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points})`));
-        live.teams.forEach((t) => {
+        // Tap every team that got it right (tap again to undo), then Next —
+        // more than one team can score on the same question.
+        aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points} each — tap all that did)`));
+        const awarded = new Set();
+        live.teams.forEach((t, i) => {
           const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${type.points}`);
-          btn.addEventListener("click", () => { t.score += type.points; paintScores(); fx(sound.fanfare); advanceMark(); });
+          btn.addEventListener("click", () => {
+            if (awarded.has(i)) { awarded.delete(i); t.score -= type.points; btn.classList.remove("awarded"); }
+            else { awarded.add(i); t.score += type.points; btn.classList.add("awarded"); fx(sound.fanfare); }
+            paintScores();
+          });
           aw.appendChild(btn);
         });
-        const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
-        aw.appendChild(skip);
+        const next = el("button", "btn primary classquiz-awardnext", "Next →");
+        next.addEventListener("click", () => advanceMark());
+        aw.appendChild(next);
       }
     };
     reveal.addEventListener("click", doReveal);
