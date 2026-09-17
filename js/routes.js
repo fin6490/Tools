@@ -119,6 +119,11 @@ export const ROUTES = {
     "slug": "numberwang",
     "title": "Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks",
     "description": "A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline."
+  },
+  "pirates": {
+    "slug": "maths-pirates",
+    "title": "Maths Pirates — Free Coordinates Treasure Game for the Classroom | SpinDecks",
+    "description": "A coordinate-reading treasure game for the whiteboard. Print a unique treasure map for every pirate, then call grid squares at random or by click. Gold and power-ups in a different arrangement on every map. Free, no sign-up, works offline."
   }
 };
 

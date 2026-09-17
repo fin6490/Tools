@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915s",
+  token: "20260915t",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -700,6 +700,34 @@ export const TOOLS = [
       ["How is Numberwang decided?", "It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun."],
       ["Is this the official Numberwang?", "No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch."],
       ["How many can play?", "Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "maths-pirates",
+    view: "pirates",
+    nav: "Maths Pirates",
+    title: "Maths Pirates — Free Coordinates Treasure Game for the Classroom | SpinDecks",
+    description:
+      "A coordinate-reading treasure game for the whiteboard. Print a unique treasure map for every pirate, then call grid squares at random or by click. Gold and power-ups in a different arrangement on every map. Free, no sign-up, works offline.",
+    h1: "Maths Pirates — coordinates treasure game",
+    intro:
+      "A whole-class coordinates game for the board. Print a treasure map for every pirate — each one has the gold and power-ups scattered in a different random arrangement — then call squares from the grid, at random or by clicking. Everyone reads the same coordinate on their own map to see what they've found, so no two pirates have the same voyage. A brilliant way to practise reading grid references.",
+    steps: [
+      "Choose a grid size (6×6, 8×8 or 10×10) and print a map for each student.",
+      "Press “Start calling”, then “Pick a random square” — or click any square to choose it.",
+      "Read the coordinate out (along the columns, then up the rows). Everyone finds it on their own map.",
+      "Students add up gold and use power-ups as they land on them; called squares are ticked off so none repeat.",
+    ],
+    whoFor: [
+      ["Teachers", "practise reading coordinates with a whole-class treasure hunt — no two maps the same."],
+      ["Tutors", "a fun, low-prep way to drill grid references and mental addition."],
+      ["Anyone", "a pirate treasure game for a rainy afternoon."],
+    ],
+    faq: [
+      ["How do students get different maps?", "The print button makes a batch of unique maps — each has the gold and power-ups in its own random arrangement, so the same called square means something different for each pirate."],
+      ["How are squares chosen?", "From the board you can press “Pick a random square” for a random uncalled coordinate, or click any square to call it yourself. Called squares are ticked off so they can't repeat."],
+      ["What are the power-ups?", "Gold, treasure chests and diamonds for points, plus Double, Steal, Swap, Shield, and hazards like Cannonball, Shark and Walk the plank. A legend on every map explains each one."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },
