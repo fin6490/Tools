@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="A coordinate-reading treasure game for the whiteboard. Print a unique treasure map for every pirate, then call grid squares at random or by click. Gold and power-ups in a different arrangement on every map. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20260915t" />
+<link rel="stylesheet" href="/css/styles.css?v=20260915u" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -32,7 +32,7 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Maths Pirates — coordinates treasure game",
+  "name": "Maths Pirates — pirate coordinates game",
   "url": "https://spindecks.app/maths-pirates/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
@@ -56,18 +56,10 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How do students get different maps?",
+      "name": "How do you play the board game?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The print button makes a batch of unique maps — each has the gold and power-ups in its own random arrangement, so the same called square means something different for each pirate."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How are squares chosen?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "From the board you can press “Pick a random square” for a random uncalled coordinate, or click any square to call it yourself. Called squares are ticked off so they can't repeat."
+        "text": "Teams take turns choosing a square on the shared grid. Gold goes into your “unbanked” pot, which rivals can steal or sink — until you land a Bank square and make it safe. Highest total when the board is cleared wins."
       }
     },
     {
@@ -75,7 +67,15 @@
       "name": "What are the power-ups?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Gold, treasure chests and diamonds for points, plus Double, Steal, Swap, Shield, and hazards like Cannonball, Shark and Walk the plank. A legend on every map explains each one."
+        "text": "Gold (200–5000), Double, Bank, Steal, Sink, Bomb (unblockable), Swap, Gift 1000, Shield (blocks an attack), Mirror (reflects it back), Mystic Ball, and answer-a-question-to-steal. A legend explains each one."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I still print maps?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — “Print maps” makes a unique treasure map for every pirate, and the “Coordinate caller” calls squares at random or by click for everyone to check on their own map."
       }
     },
     {
@@ -628,37 +628,37 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Maths Pirates — coordinates treasure game</h1>
-      <p class="tool-intro">A whole-class coordinates game for the board. Print a treasure map for every pirate — each one has the gold and power-ups scattered in a different random arrangement — then call squares from the grid, at random or by clicking. Everyone reads the same coordinate on their own map to see what they've found, so no two pirates have the same voyage. A brilliant way to practise reading grid references.</p>
+      <h1>Maths Pirates — pirate coordinates game</h1>
+      <p class="tool-intro">The classic pirate game for the whiteboard. Split the class into teams and take turns choosing squares on a shared grid to grab gold and power-ups — but bank it before a rival steals it! Steal, sink, bomb, swap, shield and mirror keep it tactical, and the scores keep themselves. Prefer the coordinates version? Print a unique treasure map for every pirate and call the squares from the board.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Choose a grid size (6×6, 8×8 or 10×10) and print a map for each student.</li>
-        <li>Press “Start calling”, then “Pick a random square” — or click any square to choose it.</li>
-        <li>Read the coordinate out (along the columns, then up the rows). Everyone finds it on their own map.</li>
-        <li>Students add up gold and use power-ups as they land on them; called squares are ticked off so none repeat.</li>
+            <li>Set the number of teams (and names), pick a grid size, then “Play on the board”.</li>
+        <li>On your team's turn, click a square — or “Pick a random square” — to reveal gold or a power-up.</li>
+        <li>Bank your gold to keep it safe; use Steal, Sink, Bomb, Swap and Gift on rivals, and hold a Shield or Mirror to defend.</li>
+        <li>When the board's cleared, the most gold wins. Or use “Print maps” and the “Coordinate caller” for the print-and-play version.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Teachers:</strong> practise reading coordinates with a whole-class treasure hunt — no two maps the same.</li>
-        <li><strong>Tutors:</strong> a fun, low-prep way to drill grid references and mental addition.</li>
-        <li><strong>Anyone:</strong> a pirate treasure game for a rainy afternoon.</li>
+            <li><strong>Teachers:</strong> a high-energy team game that rewards a bit of strategy — great as a reward or revision wrap-up.</li>
+        <li><strong>Tutors:</strong> practise coordinates and mental addition with a game everyone wants to win.</li>
+        <li><strong>Anyone:</strong> a tactical pirate treasure game for a group.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>How do students get different maps?</summary>
-          <p>The print button makes a batch of unique maps — each has the gold and power-ups in its own random arrangement, so the same called square means something different for each pirate.</p>
-        </details>
-        <details>
-          <summary>How are squares chosen?</summary>
-          <p>From the board you can press “Pick a random square” for a random uncalled coordinate, or click any square to call it yourself. Called squares are ticked off so they can't repeat.</p>
+          <summary>How do you play the board game?</summary>
+          <p>Teams take turns choosing a square on the shared grid. Gold goes into your “unbanked” pot, which rivals can steal or sink — until you land a Bank square and make it safe. Highest total when the board is cleared wins.</p>
         </details>
         <details>
           <summary>What are the power-ups?</summary>
-          <p>Gold, treasure chests and diamonds for points, plus Double, Steal, Swap, Shield, and hazards like Cannonball, Shark and Walk the plank. A legend on every map explains each one.</p>
+          <p>Gold (200–5000), Double, Bank, Steal, Sink, Bomb (unblockable), Swap, Gift 1000, Shield (blocks an attack), Mirror (reflects it back), Mystic Ball, and answer-a-question-to-steal. A legend explains each one.</p>
+        </details>
+        <details>
+          <summary>Can I still print maps?</summary>
+          <p>Yes — “Print maps” makes a unique treasure map for every pirate, and the “Coordinate caller” calls squares at random or by click for everyone to check on their own map.</p>
         </details>
         <details>
           <summary>Is it free and private?</summary>
@@ -725,8 +725,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20260915t"></script>
-<script type="module" src="/js/app.js?v=20260915t"></script>
+  <script type="module" src="/js/suggest.js?v=20260915u"></script>
+<script type="module" src="/js/app.js?v=20260915u"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>
