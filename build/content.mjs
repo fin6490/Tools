@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915t",
+  token: "20260915u",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -710,24 +710,24 @@ export const TOOLS = [
     title: "Maths Pirates — Free Coordinates Treasure Game for the Classroom | SpinDecks",
     description:
       "A coordinate-reading treasure game for the whiteboard. Print a unique treasure map for every pirate, then call grid squares at random or by click. Gold and power-ups in a different arrangement on every map. Free, no sign-up, works offline.",
-    h1: "Maths Pirates — coordinates treasure game",
+    h1: "Maths Pirates — pirate coordinates game",
     intro:
-      "A whole-class coordinates game for the board. Print a treasure map for every pirate — each one has the gold and power-ups scattered in a different random arrangement — then call squares from the grid, at random or by clicking. Everyone reads the same coordinate on their own map to see what they've found, so no two pirates have the same voyage. A brilliant way to practise reading grid references.",
+      "The classic pirate game for the whiteboard. Split the class into teams and take turns choosing squares on a shared grid to grab gold and power-ups — but bank it before a rival steals it! Steal, sink, bomb, swap, shield and mirror keep it tactical, and the scores keep themselves. Prefer the coordinates version? Print a unique treasure map for every pirate and call the squares from the board.",
     steps: [
-      "Choose a grid size (6×6, 8×8 or 10×10) and print a map for each student.",
-      "Press “Start calling”, then “Pick a random square” — or click any square to choose it.",
-      "Read the coordinate out (along the columns, then up the rows). Everyone finds it on their own map.",
-      "Students add up gold and use power-ups as they land on them; called squares are ticked off so none repeat.",
+      "Set the number of teams (and names), pick a grid size, then “Play on the board”.",
+      "On your team's turn, click a square — or “Pick a random square” — to reveal gold or a power-up.",
+      "Bank your gold to keep it safe; use Steal, Sink, Bomb, Swap and Gift on rivals, and hold a Shield or Mirror to defend.",
+      "When the board's cleared, the most gold wins. Or use “Print maps” and the “Coordinate caller” for the print-and-play version.",
     ],
     whoFor: [
-      ["Teachers", "practise reading coordinates with a whole-class treasure hunt — no two maps the same."],
-      ["Tutors", "a fun, low-prep way to drill grid references and mental addition."],
-      ["Anyone", "a pirate treasure game for a rainy afternoon."],
+      ["Teachers", "a high-energy team game that rewards a bit of strategy — great as a reward or revision wrap-up."],
+      ["Tutors", "practise coordinates and mental addition with a game everyone wants to win."],
+      ["Anyone", "a tactical pirate treasure game for a group."],
     ],
     faq: [
-      ["How do students get different maps?", "The print button makes a batch of unique maps — each has the gold and power-ups in its own random arrangement, so the same called square means something different for each pirate."],
-      ["How are squares chosen?", "From the board you can press “Pick a random square” for a random uncalled coordinate, or click any square to call it yourself. Called squares are ticked off so they can't repeat."],
-      ["What are the power-ups?", "Gold, treasure chests and diamonds for points, plus Double, Steal, Swap, Shield, and hazards like Cannonball, Shark and Walk the plank. A legend on every map explains each one."],
+      ["How do you play the board game?", "Teams take turns choosing a square on the shared grid. Gold goes into your “unbanked” pot, which rivals can steal or sink — until you land a Bank square and make it safe. Highest total when the board is cleared wins."],
+      ["What are the power-ups?", "Gold (200–5000), Double, Bank, Steal, Sink, Bomb (unblockable), Swap, Gift 1000, Shield (blocks an attack), Mirror (reflects it back), Mystic Ball, and answer-a-question-to-steal. A legend explains each one."],
+      ["Can I still print maps?", "Yes — “Print maps” makes a unique treasure map for every pirate, and the “Coordinate caller” calls squares at random or by click for everyone to check on their own map."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },

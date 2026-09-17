@@ -1438,3 +1438,25 @@ a.tab { display: block; }
   .pirates-print { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: repeat(2, 1fr); }
   .pirates-noprint { display: none !important; }
 }
+
+/* Maths Pirates — team board game */
+.bank { color: #2aa3c4; }
+.pirates-names { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.pirates-nameinput { width: 100%; }
+.pirates-teams { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 10px 0; }
+.pirates-team { display: flex; flex-direction: column; align-items: center; min-width: 120px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel-2); }
+.pirates-team.on { border-color: var(--gold); box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent); }
+.pirates-tname { font-weight: 700; color: var(--ink); font-size: 13px; }
+.pirates-ttotal { font-family: var(--mono); font-weight: 800; font-size: 26px; color: var(--gold); line-height: 1.1; }
+.pirates-tsplit { font-size: 11px; color: var(--muted); }
+.pirates-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 1px 5px; border-radius: 5px; }
+.pirates-badge.sh { background: color-mix(in srgb, #2bbf75 30%, var(--panel)); color: #2bbf75; }
+.pirates-badge.mi { background: color-mix(in srgb, #4f7fd1 30%, var(--panel)); color: #4f7fd1; }
+.pirates-status { text-align: center; font-weight: 700; color: var(--ink); min-height: 22px; margin: 6px 0; }
+.pirates-action { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+.pirates-awardlbl { width: 100%; text-align: center; color: var(--muted); font-weight: 700; }
+.pirates-target, .pirates-qopt { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.pirates-gctrls { justify-content: center; margin-top: 10px; }
+.pirates-gcell { aspect-ratio: 1 / 1; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-2); cursor: pointer; font-family: var(--mono); font-weight: 800; font-size: clamp(9px, 1.7vw, 15px); color: currentColor; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; line-height: 1; transition: transform .05s; }
+.pirates-gcell:hover:not(:disabled) { border-color: var(--ink); transform: translateY(-1px); }
+.pirates-gcell.used { opacity: .28; text-decoration: line-through; cursor: default; }
