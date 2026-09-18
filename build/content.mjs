@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260915z",
+  token: "20260916a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -728,6 +728,34 @@ export const TOOLS = [
       ["How do you play the board game?", "Teams take turns choosing a square on the shared grid. Gold goes into your “unbanked” pot, which rivals can steal or sink — until you land a Bank square and make it safe. Highest total when the board is cleared wins."],
       ["What are the power-ups?", "Gold (200–5000), Double, Bank, Steal, Sink, Bomb (unblockable), Swap, Gift 1000, Shield (blocks an attack), Mirror (reflects it back), Mystic Ball, and answer-a-question-to-steal. A legend explains each one."],
       ["Can I still print maps?", "Yes — “Print maps” makes a unique treasure map for every pirate, and the “Coordinate caller” calls squares at random or by click for everyone to check on their own map."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "lobster-pots",
+    view: "lobster",
+    nav: "Lobster Pots",
+    title: "Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks",
+    description:
+      "A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline.",
+    h1: "Lobster Pots — print-and-play business game",
+    intro:
+      "Run a lobster-fishing business and end with the biggest balance. Every fisher gets a printed log sheet and, each day, splits their pots between the safe inshore (low catch) and the risky offshore (big catch — unless a storm destroys it). The teacher rolls the daily weather and draws event cards — loans from Biscoes Bank, cheap pots from Dodgy Dave, the Inspector's fines and more. A great context for money, multiplication and a bit of nerve.",
+    steps: [
+      "Set the number of days and starting pots/cash, then “Print log sheets” — one per fisher.",
+      "Each day, fishers split their pots between inshore and offshore on their sheet.",
+      "In “Teacher tools”, roll the weather for the class, then draw any event card, the lottery number or a die.",
+      "Work out each day's catch, buy pots, bank cash — biggest balance at the end wins.",
+    ],
+    whoFor: [
+      ["Teachers", "a rich context for money, multiplication and risk — runs over a lesson or a series of starters."],
+      ["Tutors", "practise arithmetic and decision-making with a game that rewards planning."],
+      ["Anyone", "a light business/economics game for a group."],
+    ],
+    faq: [
+      ["How does the weather work?", "Each day the teacher rolls for the class: around 75% of days are lovely (inshore £1, offshore £6 a pot) and 25% are storms (inshore £3, but every offshore pot is destroyed). It's the core risk of the game."],
+      ["What are the event cards?", "Random events the teacher draws for everyone: Biscoes Bank loans, Dodgy Dave's cheap pots, Black Market Burt's triple prices, the Inspector's fines, Skilled Sally's skill bonus, Stock Clearance and Fish Toss."],
+      ["Do I need to print anything?", "Yes — print a log sheet for each fisher. The teacher screen has the weather roller, event cards, lottery draw and dice; there's nothing to print for that."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },
