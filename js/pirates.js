@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20260915x";
-import { getState, save } from "./storage.js?v=20260915x";
-import { Wheel, parseEntries } from "./wheel.js?v=20260915x";
-import { SUPPORT } from "./support.js?v=20260915x";
-import * as sound from "./sound.js?v=20260915x";
+import { el, shuffle } from "./quizkit.js?v=20260915y";
+import { getState, save } from "./storage.js?v=20260915y";
+import { Wheel, parseEntries } from "./wheel.js?v=20260915y";
+import { SUPPORT } from "./support.js?v=20260915y";
+import * as sound from "./sound.js?v=20260915y";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
@@ -480,14 +480,22 @@ export function initPirates(root) {
     leg.appendChild(el("p", "pirates-plegtitle", "The rules"));
     leg.appendChild(el("span", "pirates-plegitem", `<b class="gold">200+</b> Collect gold`));
     Object.values(POW).forEach((it) => { const s = el("span", "pirates-plegitem"); s.innerHTML = `<span class="pirates-pic ${it.cls}">${it.icon || "<b>" + it.code + "</b>"}</span> ${it.name.split(" —")[0].split(" (")[0]}${it.hands ? ' <span class="pirates-pic pirates-plhand">' + IC.hand + "</span>" : ""}`; leg.appendChild(s); });
+    // A Banked box sits under the rules — pirates bank many times, so give them
+    // several lines and a running total rather than a single blank.
+    const bank = el("div", "pirates-pbank");
+    bank.innerHTML = `<p class="pirates-pbanklbl">Banked gold (safe)</p>
+      <div class="pirates-pbanklines"></div>
+      <p class="pirates-pbanktot">Total banked <span class="pirates-line"></span></p>`;
+    const right = el("div", "pirates-pright");
+    right.append(leg, bank);
     const top = el("div", "pirates-ptop");
-    top.append(grid, leg);
+    top.append(grid, right);
     cardEl.appendChild(top);
     // Room for working out the maths — full width, below the grid.
     const work = el("div", "pirates-pwork");
     work.appendChild(el("p", "pirates-pworklbl", "Working out"));
     cardEl.appendChild(work);
-    // Held tokens + running totals for the pirate to fill in.
+    // Held tokens + running gold total for the pirate to fill in.
     const foot = el("div", "pirates-pfoot");
     foot.innerHTML = `
       <div class="pirates-tokens">
@@ -497,7 +505,6 @@ export function initPirates(root) {
       </div>
       <div class="pirates-totals">
         <span class="pirates-total">Gold total <span class="pirates-line"></span></span>
-        <span class="pirates-total">Banked <span class="pirates-line"></span></span>
       </div>`;
     cardEl.appendChild(foot);
     return cardEl;
