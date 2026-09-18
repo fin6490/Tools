@@ -8,9 +8,9 @@
 //    fire the timetabled event cards, and run the class Bank so anyone who
 //    goes bust can borrow — all tracked centrally on the board.
 // Zero deps. All original code.
-import { el } from "./quizkit.js?v=20260916b";
-import { getState, save } from "./storage.js?v=20260916b";
-import * as sound from "./sound.js?v=20260916b";
+import { el } from "./quizkit.js?v=20260916c";
+import { getState, save } from "./storage.js?v=20260916c";
+import * as sound from "./sound.js?v=20260916c";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const YT_LOVELY = "https://www.youtube.com/results?search_query=bill+withers+lovely+day";
