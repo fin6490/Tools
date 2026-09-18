@@ -1460,3 +1460,47 @@ a.tab { display: block; }
 .pirates-gcell { aspect-ratio: 1 / 1; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-2); cursor: pointer; font-family: var(--mono); font-weight: 800; font-size: clamp(9px, 1.7vw, 15px); color: currentColor; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; line-height: 1; transition: transform .05s; }
 .pirates-gcell:hover:not(:disabled) { border-color: var(--ink); transform: translateY(-1px); }
 .pirates-gcell.used { opacity: .28; text-decoration: line-through; cursor: default; }
+
+/* Maths Pirates — icons, embedded wheels, print footer (favourite version) */
+.pirates-ic { display: inline-flex; align-items: center; justify-content: center; }
+.pirates-ic svg { width: 1.5em; height: 1.5em; display: block; }
+.pirates-legend-item .pirates-ic { flex: 0 0 auto; width: 30px; }
+.pirates-legend-item .pirates-ic svg { width: 22px; height: 22px; }
+.pirates-legend-item .pirates-ic b { font-family: var(--mono); font-size: 11px; }
+.pirates-gcell .pirates-ic svg { width: clamp(16px, 3vw, 26px); height: clamp(16px, 3vw, 26px); }
+
+/* Caller tools row + embedded Wheel of Names */
+.pirates-toolbtns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 4px 0 12px; }
+.pirates-wheelwrap { display: flex; justify-content: center; margin: 8px 0; }
+.pirates-wheelcanvas { width: min(420px, 88vw); height: auto; aspect-ratio: 1 / 1; }
+.pirates-namesrc { margin-bottom: 6px; }
+.pirates-namebox { min-height: 96px; }
+
+/* Question-to-steal generator */
+.pirates-qbox { margin: 10px auto; max-width: 620px; text-align: center; }
+.pirates-qcat { font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 0 0 6px; font-size: 13px; }
+.pirates-qtext { font-size: clamp(18px, 3.4vw, 26px); font-weight: 700; color: var(--ink); margin: 0 0 10px; }
+.pirates-qans { font-size: clamp(16px, 3vw, 22px); font-weight: 800; color: var(--gold); margin: 0 0 10px; }
+
+/* Printed map: power-up icons, hands-up badge, held tokens, running totals */
+.pirates-pcell { position: relative; }
+.pirates-pic { display: inline-flex; align-items: center; justify-content: center; color: #111; }
+.pirates-pcell .pirates-pic svg { width: clamp(13px, 2.4vw, 20px); height: clamp(13px, 2.4vw, 20px); }
+.pirates-pcell .pirates-pic { color: inherit; }
+.pirates-pcell.gold { color: #d9a406; }
+.pirates-pcell.chest { color: #c0700f; } .pirates-pcell.diamond { color: #1f86a0; }
+.pirates-pcell.double { color: #5b3fd6; } .pirates-pcell.steal { color: #b0347f; } .pirates-pcell.swap { color: #3a63ad; }
+.pirates-pcell.shield { color: #1f9d5c; } .pirates-pcell.cannon { color: #c24a30; } .pirates-pcell.shark { color: #a32020; } .pirates-pcell.bank { color: #1f86a0; }
+.pirates-handbadge { position: absolute; top: -4px; right: -4px; background: #111; color: #fff; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; }
+.pirates-handbadge svg { width: 10px; height: 10px; }
+.pirates-pfoot { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #aaa; color: #111; }
+.pirates-tokens { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; font-weight: 700; }
+.pirates-tok { display: inline-flex; align-items: center; gap: 4px; }
+.pirates-tok .pirates-pic svg { width: 15px; height: 15px; }
+.pirates-box { display: inline-block; width: 13px; height: 13px; border: 1.5px solid #333; border-radius: 3px; }
+.pirates-totals { display: flex; gap: 16px; font-size: 12px; font-weight: 800; }
+.pirates-total { display: inline-flex; align-items: center; gap: 6px; }
+.pirates-line { display: inline-block; flex: 1; min-width: 60px; border-bottom: 1.5px solid #333; height: 14px; }
+.pirates-plhand svg { width: 12px; height: 12px; }
+.pirates-plegitem { display: inline-flex; align-items: center; gap: 4px; }
+.pirates-plegitem .pirates-pic svg { width: 14px; height: 14px; }
