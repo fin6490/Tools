@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20260915v";
-import { getState, save } from "./storage.js?v=20260915v";
-import { Wheel, parseEntries } from "./wheel.js?v=20260915v";
-import { SUPPORT } from "./support.js?v=20260915v";
-import * as sound from "./sound.js?v=20260915v";
+import { el, shuffle } from "./quizkit.js?v=20260915w";
+import { getState, save } from "./storage.js?v=20260915w";
+import { Wheel, parseEntries } from "./wheel.js?v=20260915w";
+import { SUPPORT } from "./support.js?v=20260915w";
+import * as sound from "./sound.js?v=20260915w";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
@@ -48,6 +48,9 @@ const POW = {
   mirror: { code: "MIRROR", name: "Mirror — reflects the next attack back", cls: "swap", hands: false, icon: IC.mirror },
   mystic: { code: "BALL", name: "Crystal ball — look at someone's score", cls: "diamond", hands: false, icon: IC.ball },
 };
+// Short labels printed under the icon on the student sheets, so every action
+// square is unmistakable — especially the random BOMB and the STEAL? question.
+const PLAB = { x2: "×2", bank: "BANK", steal: "STEAL", sink: "SINK", bomb: "BOMB", swap: "SWAP", gift: "GIFT", quiz: "STEAL?", choose: "PICK", shield: "SHIELD", mirror: "MIRROR", mystic: "BALL" };
 const SPECIALS = { x2: 2, bank: 3, steal: 2, sink: 1, bomb: 1, swap: 1, gift: 1, quiz: 1, choose: 1, shield: 1, mirror: 1, mystic: 1 };
 const GOLD_W = [[200, 16], [1000, 12], [3000, 4], [5000, 1]];
 const GW = GOLD_W.reduce((s, g) => s + g[1], 0);
@@ -468,11 +471,15 @@ export function initPirates(root) {
         if (it.kind === "gold") { grid.appendChild(el("div", "pirates-pcell gold", String(it.value))); continue; }
         const p = POW[it.kind];
         const cell = el("div", "pirates-pcell " + p.cls);
-        cell.innerHTML = (p.icon ? `<span class="pirates-pic">${p.icon}</span>` : `<b>${p.code}</b>`) + (p.hands ? `<span class="pirates-handbadge">${IC.hand}</span>` : "");
+        cell.innerHTML = (p.icon ? `<span class="pirates-pic">${p.icon}</span>` : "") + `<span class="pirates-plab">${PLAB[it.kind]}</span>` + (p.hands ? `<span class="pirates-handbadge">${IC.hand}</span>` : "");
         grid.appendChild(cell);
       }
     }
     cardEl.appendChild(grid);
+    // Room for working out the maths.
+    const work = el("div", "pirates-pwork");
+    work.appendChild(el("p", "pirates-pworklbl", "Working out"));
+    cardEl.appendChild(work);
     // Held tokens + running totals for the pirate to fill in.
     const foot = el("div", "pirates-pfoot");
     foot.innerHTML = `
