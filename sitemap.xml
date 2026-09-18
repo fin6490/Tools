@@ -131,6 +131,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://spindecks.app/lobster-pots/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://spindecks.app/about/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

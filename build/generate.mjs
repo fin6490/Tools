@@ -69,7 +69,7 @@ const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
   { label: "Quiz games", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim"] },
-  { label: "Games", slugs: ["countdown", "axiom", "hangman", "noughts-and-crosses", "lexicon", "numberwang", "maths-pirates"] },
+  { label: "Games", slugs: ["countdown", "axiom", "hangman", "noughts-and-crosses", "lexicon", "numberwang", "maths-pirates", "lobster-pots"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -180,6 +180,7 @@ function footer() {
     "lexicon": "Lexicon",
     "numberwang": "Numberwang",
     "maths-pirates": "Maths Pirates",
+    "lobster-pots": "Lobster Pots",
   };
   const toolLinks = TOOLS.map((t) => `<a href="/${t.slug}/">${footerLabels[t.slug] || t.nav}</a>`).join("\n        ");
   return `<footer class="site-footer">
@@ -626,6 +627,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- MATHS PIRATES (coordinates treasure game; pirates.js builds the screens) -->
   <main class="view view-pirates" data-view-panel="pirates" hidden>
     <section class="panel pirates-panel" aria-label="Maths Pirates coordinates treasure game"></section>
+  </main>
+  <!-- LOBSTER POTS (print-and-play business game; lobster.js builds the screens) -->
+  <main class="view view-lobster" data-view-panel="lobster" hidden>
+    <section class="panel lobster-panel" aria-label="Lobster Pots print-and-play business game"></section>
   </main>`;
 
 const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>

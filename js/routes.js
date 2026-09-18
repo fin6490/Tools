@@ -124,6 +124,11 @@ export const ROUTES = {
     "slug": "maths-pirates",
     "title": "Maths Pirates — Free Coordinates Treasure Game for the Classroom | SpinDecks",
     "description": "A coordinate-reading treasure game for the whiteboard. Print a unique treasure map for every pirate, then call grid squares at random or by click. Gold and power-ups in a different arrangement on every map. Free, no sign-up, works offline."
+  },
+  "lobster": {
+    "slug": "lobster-pots",
+    "title": "Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks",
+    "description": "A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline."
   }
 };
 

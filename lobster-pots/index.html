@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks</title>
-<meta name="description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
+<title>Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks</title>
+<meta name="description" content="A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
-<link rel="canonical" href="https://spindecks.app/numberwang/" />
+<link rel="canonical" href="https://spindecks.app/lobster-pots/" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
-<meta property="og:title" content="Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks" />
-<meta property="og:description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
-<meta property="og:url" content="https://spindecks.app/numberwang/" />
+<meta property="og:title" content="Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks" />
+<meta property="og:description" content="A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline." />
+<meta property="og:url" content="https://spindecks.app/lobster-pots/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Numberwang — The Nonsense Maths Game for the Whiteboard | SpinDecks" />
-<meta name="twitter:description" content="A gloriously silly maths game show for the classroom, an affectionate homage to the sketch. Take turns choosing a number and find out if it's Numberwang. Rotate the board! Free, no sign-up, works offline." />
+<meta name="twitter:title" content="Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks" />
+<meta name="twitter:description" content="A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
 <link rel="stylesheet" href="/css/styles.css?v=20260916a" />
@@ -32,8 +32,8 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Numberwang — the nonsense maths game",
-  "url": "https://spindecks.app/numberwang/",
+  "name": "Lobster Pots — print-and-play business game",
+  "url": "https://spindecks.app/lobster-pots/",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -56,26 +56,26 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How is Numberwang decided?",
+      "name": "How does the weather work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun."
+        "text": "Each day the teacher rolls for the class: around 75% of days are lovely (inshore £1, offshore £6 a pot) and 25% are storms (inshore £3, but every offshore pot is destroyed). It's the core risk of the game."
       }
     },
     {
       "@type": "Question",
-      "name": "Is this the official Numberwang?",
+      "name": "What are the event cards?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch."
+        "text": "Random events the teacher draws for everyone: Biscoes Bank loans, Dodgy Dave's cheap pots, Black Market Burt's triple prices, the Inspector's fines, Skilled Sally's skill bonus, Stock Clearance and Fish Toss."
       }
     },
     {
       "@type": "Question",
-      "name": "How many can play?",
+      "name": "Do I need to print anything?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first."
+        "text": "Yes — print a log sheet for each fisher. The teacher screen has the weather roller, event cards, lottery draw and dice; there's nothing to print for that."
       }
     },
     {
@@ -91,7 +91,7 @@
 </script>
 </head>
 <body>
-<div id="app" data-view="numberwang">
+<div id="app" data-view="lobster">
   <header class="topbar">
     <a class="brand" href="/" aria-label="SpinDecks home">
       <span class="brand-mark" aria-hidden="true">
@@ -141,9 +141,9 @@
           <a class="tab" data-view-btn="hangman" href="/hangman/">Hangman</a>
           <a class="tab" data-view-btn="noughts" href="/noughts-and-crosses/">Noughts &amp; crosses</a>
           <a class="tab" data-view-btn="lexicon" href="/lexicon/">Lexicon</a>
-          <a class="tab is-active" data-view-btn="numberwang" aria-current="page" href="/numberwang/">Numberwang</a>
+          <a class="tab" data-view-btn="numberwang" href="/numberwang/">Numberwang</a>
           <a class="tab" data-view-btn="pirates" href="/maths-pirates/">Maths Pirates</a>
-          <a class="tab" data-view-btn="lobster" href="/lobster-pots/">Lobster Pots</a>
+          <a class="tab is-active" data-view-btn="lobster" aria-current="page" href="/lobster-pots/">Lobster Pots</a>
         </div>
       </details>
     </nav>
@@ -570,7 +570,7 @@
     <section class="panel lexicon-panel" aria-label="Lexicon word puzzle"></section>
   </main>
   <!-- NUMBERWANG (nonsense maths game show; numberwang.js builds the screens) -->
-  <main class="view view-numberwang" data-view-panel="numberwang">
+  <main class="view view-numberwang" data-view-panel="numberwang" hidden>
     <section class="panel numberwang-panel" aria-label="Numberwang nonsense maths game"></section>
   </main>
   <!-- MATHS PIRATES (coordinates treasure game; pirates.js builds the screens) -->
@@ -578,7 +578,7 @@
     <section class="panel pirates-panel" aria-label="Maths Pirates coordinates treasure game"></section>
   </main>
   <!-- LOBSTER POTS (print-and-play business game; lobster.js builds the screens) -->
-  <main class="view view-lobster" data-view-panel="lobster" hidden>
+  <main class="view view-lobster" data-view-panel="lobster">
     <section class="panel lobster-panel" aria-label="Lobster Pots print-and-play business game"></section>
   </main>
   <div id="winnerModal" class="modal" hidden>
@@ -633,37 +633,37 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 <section class="tool-copy">
-      <h1>Numberwang — the nonsense maths game</h1>
-      <p class="tool-intro">The maths quiz that everyone loves to play — a light-hearted homage to the famous sketch. Two contestants, a board of numbers, and a host who decides what's Numberwang. Best not to ask how. A daft, no-prep bit of fun for the end of a lesson.</p>
+      <h1>Lobster Pots — print-and-play business game</h1>
+      <p class="tool-intro">Run a lobster-fishing business and end with the biggest balance. Every fisher gets a printed log sheet and, each day, splits their pots between the safe inshore (low catch) and the risky offshore (big catch — unless a storm destroys it). The teacher rolls the daily weather and draws event cards — loans from Biscoes Bank, cheap pots from Dodgy Dave, the Inspector's fines and more. A great context for money, multiplication and a bit of nerve.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Enter two contestants' names (optional) and how many Numberwangs win the game.</li>
-        <li>Press “Let's play Numberwang!” — players take turns choosing a number on the board.</li>
-        <li>The host announces whether it's Numberwang — on no logic at all, which is the point.</li>
-        <li>Watch for “Rotate the board!” and “Wangernumb!”. First to the target is the champion.</li>
+            <li>Set the number of days and starting pots/cash, then “Print log sheets” — one per fisher.</li>
+        <li>Each day, fishers split their pots between inshore and offshore on their sheet.</li>
+        <li>In “Teacher tools”, roll the weather for the class, then draw any event card, the lottery number or a die.</li>
+        <li>Work out each day's catch, buy pots, bank cash — biggest balance at the end wins.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Teachers:</strong> a daft, no-stakes end-of-lesson treat that gets the whole class shouting numbers.</li>
-        <li><strong>Fans of the sketch:</strong> a playable tribute to the maths game show that makes no sense whatsoever.</li>
-        <li><strong>Anyone:</strong> a quick, silly two-player game for a bit of a laugh.</li>
+            <li><strong>Teachers:</strong> a rich context for money, multiplication and risk — runs over a lesson or a series of starters.</li>
+        <li><strong>Tutors:</strong> practise arithmetic and decision-making with a game that rewards planning.</li>
+        <li><strong>Anyone:</strong> a light business/economics game for a group.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
-          <summary>How is Numberwang decided?</summary>
-          <p>It isn't — that's the joke. The host's verdict is completely random, just like the sketch. There's no maths skill involved; it's pure nonsense and good fun.</p>
+          <summary>How does the weather work?</summary>
+          <p>Each day the teacher rolls for the class: around 75% of days are lovely (inshore £1, offshore £6 a pot) and 25% are storms (inshore £3, but every offshore pot is destroyed). It's the core risk of the game.</p>
         </details>
         <details>
-          <summary>Is this the official Numberwang?</summary>
-          <p>No — it's an original, unofficial homage made for a laugh. It doesn't use any material from the show; it just borrows the daft spirit of the sketch.</p>
+          <summary>What are the event cards?</summary>
+          <p>Random events the teacher draws for everyone: Biscoes Bank loans, Dodgy Dave's cheap pots, Black Market Burt's triple prices, the Inspector's fines, Skilled Sally's skill bonus, Stock Clearance and Fish Toss.</p>
         </details>
         <details>
-          <summary>How many can play?</summary>
-          <p>Two contestants (or two teams calling out), racing to reach the target number of Numberwangs first.</p>
+          <summary>Do I need to print anything?</summary>
+          <p>Yes — print a log sheet for each fisher. The teacher screen has the weather roller, event cards, lottery draw and dice; there's nothing to print for that.</p>
         </details>
         <details>
           <summary>Is it free and private?</summary>
