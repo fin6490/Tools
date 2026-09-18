@@ -1610,3 +1610,50 @@ a.tab { display: block; }
   .lobster-print { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: 1fr; }
   .lobster-noprint { display: none !important; }
 }
+
+/* ===== Lobster Pots — board / spreadsheet / bank ===== */
+.lobster-check, .lobster-diceflag { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.lobster-check { margin: 6px 0 4px; }
+.lobster-diceflag { font-size: 12px; }
+.lobster-sched { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 14px; margin: 10px 0 14px; }
+.lobster-schedrow { display: flex; align-items: center; gap: 8px; }
+.lobster-schedday { font-weight: 700; color: var(--ink); min-width: 52px; }
+
+.lobster-boardtablewrap { overflow-x: auto; margin: 8px 0; }
+.lobster-boardtable { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+.lobster-boardtable th { font-size: 11px; text-transform: uppercase; letter-spacing: .3px; color: var(--muted); border: 1px solid var(--line); padding: 5px 4px; background: var(--panel-2); }
+.lobster-boardtable td { border: 1px solid var(--line); padding: 2px 4px; text-align: center; }
+.lobster-boardtable tr.today td { background: color-mix(in srgb, var(--gold) 18%, transparent); }
+.lobster-bd-day { font-weight: 800; }
+.lobster-bd-bal { font-weight: 800; }
+.lobster-bd-bal.neg { color: #c62f2f; }
+.lobster-cellinput { width: 46px; padding: 3px 2px; text-align: center; font-family: var(--mono); font-weight: 700; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.lobster-bd-weather { cursor: pointer; }
+.lobster-wtag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; }
+.lobster-wtag svg { width: 14px; height: 14px; }
+.lobster-wtag.lovely { color: #d9a406; } .lobster-wtag.storm { color: #4f7fd1; } .lobster-wtag.none { color: var(--muted); }
+
+.lobster-eventslot { max-width: 620px; margin: 8px auto 0; }
+.lobster-ytlink { display: inline-block; margin-top: 6px; font-weight: 700; font-size: 13px; color: var(--accent); }
+
+/* Board bank */
+.lobster-bankpanel { margin: 16px 0 0; border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; background: var(--panel-2); }
+.lobster-bankhead { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--ink); font-size: 17px; margin-bottom: 8px; }
+.lobster-bankhead .lobster-ic.bank { color: #2bbf75; }
+.lobster-banksub { font-weight: 400; font-size: 12px; color: var(--muted); }
+.lobster-bankform { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.lobster-bankname { flex: 1 1 160px; } .lobster-bankamt { width: 120px; }
+.lobster-ledgertable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.lobster-ledgertable th { font-size: 11px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px; }
+.lobster-ledgertable th.l, .lobster-ledgertable td.l { text-align: left; }
+.lobster-ledgertable td { text-align: center; padding: 4px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
+.lobster-owed { font-weight: 800; color: #c62f2f; } .lobster-owed.clear { color: #2bbf75; }
+.lobster-ledgeract { display: flex; gap: 4px; justify-content: center; }
+.lobster-minibtn { padding: 2px 8px; font-size: 12px; }
+
+.lobster-numpad { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+.lobster-numbtn { min-width: 40px; font-size: 18px; font-family: var(--mono); }
+.lobster-drawn { margin-top: 8px; }
+
+/* print: show the timetabled event under the day number */
+.lobster-dayev { display: block; font-family: var(--sans, inherit); font-weight: 700; font-size: 6px; line-height: 1.05; color: #b23020; text-transform: uppercase; letter-spacing: .2px; margin-top: 1px; }
