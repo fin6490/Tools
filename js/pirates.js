@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20260915w";
-import { getState, save } from "./storage.js?v=20260915w";
-import { Wheel, parseEntries } from "./wheel.js?v=20260915w";
-import { SUPPORT } from "./support.js?v=20260915w";
-import * as sound from "./sound.js?v=20260915w";
+import { el, shuffle } from "./quizkit.js?v=20260915x";
+import { getState, save } from "./storage.js?v=20260915x";
+import { Wheel, parseEntries } from "./wheel.js?v=20260915x";
+import { SUPPORT } from "./support.js?v=20260915x";
+import * as sound from "./sound.js?v=20260915x";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
@@ -461,7 +461,7 @@ export function initPirates(root) {
     cardEl.appendChild(el("p", "pirates-printtitle", "TREASURE MAP"));
     cardEl.appendChild(el("p", "pirates-printset", "Name: ________________"));
     const map = buildMap(size);
-    const grid = el("div", "pirates-printgrid"); grid.style.gridTemplateColumns = `auto repeat(${size}, 1fr)`;
+    const grid = el("div", "pirates-printgrid"); grid.style.gridTemplateColumns = `auto repeat(${size}, minmax(0, 1fr))`;
     grid.appendChild(el("div", "pirates-pcorner"));
     for (let c = 0; c < size; c++) grid.appendChild(el("div", "pirates-phead", colLetter(c)));
     for (let r = 0; r < size; r++) {
@@ -475,8 +475,15 @@ export function initPirates(root) {
         grid.appendChild(cell);
       }
     }
-    cardEl.appendChild(grid);
-    // Room for working out the maths.
+    // Rules run down the right of the grid, so the space below is free for working out.
+    const leg = el("div", "pirates-plegend");
+    leg.appendChild(el("p", "pirates-plegtitle", "The rules"));
+    leg.appendChild(el("span", "pirates-plegitem", `<b class="gold">200+</b> Collect gold`));
+    Object.values(POW).forEach((it) => { const s = el("span", "pirates-plegitem"); s.innerHTML = `<span class="pirates-pic ${it.cls}">${it.icon || "<b>" + it.code + "</b>"}</span> ${it.name.split(" —")[0].split(" (")[0]}${it.hands ? ' <span class="pirates-pic pirates-plhand">' + IC.hand + "</span>" : ""}`; leg.appendChild(s); });
+    const top = el("div", "pirates-ptop");
+    top.append(grid, leg);
+    cardEl.appendChild(top);
+    // Room for working out the maths — full width, below the grid.
     const work = el("div", "pirates-pwork");
     work.appendChild(el("p", "pirates-pworklbl", "Working out"));
     cardEl.appendChild(work);
@@ -493,11 +500,6 @@ export function initPirates(root) {
         <span class="pirates-total">Banked <span class="pirates-line"></span></span>
       </div>`;
     cardEl.appendChild(foot);
-    // compact legend
-    const leg = el("div", "pirates-plegend");
-    leg.appendChild(el("span", "pirates-plegitem", `<b class="gold">200+</b> Gold`));
-    Object.values(POW).forEach((it) => { const s = el("span", "pirates-plegitem"); s.innerHTML = `<span class="pirates-pic ${it.cls}">${it.icon || "<b>" + it.code + "</b>"}</span> ${it.name.split(" —")[0].split(" (")[0]}${it.hands ? ' <span class="pirates-pic pirates-plhand">' + IC.hand + "</span>" : ""}`; leg.appendChild(s); });
-    cardEl.appendChild(leg);
     return cardEl;
   }
 
