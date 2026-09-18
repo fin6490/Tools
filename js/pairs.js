@@ -1,9 +1,9 @@
 // pairs.js — Pairs: a match-the-question-to-the-answer memory game for the board.
 // Flip two cards; a question and its answer make a pair. Solo (whole class) or
 // two teams taking turns. Reuses the Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitText } from "./quizkit.js?v=20260915w";
-import { getState, save } from "./storage.js?v=20260915w";
-import * as sound from "./sound.js?v=20260915w";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitText } from "./quizkit.js?v=20260915x";
+import { getState, save } from "./storage.js?v=20260915x";
+import * as sound from "./sound.js?v=20260915x";
 
 export function initPairs(root) {
   const panel = root.querySelector(".pairs-panel");
