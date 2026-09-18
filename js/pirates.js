@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20260915y";
-import { getState, save } from "./storage.js?v=20260915y";
-import { Wheel, parseEntries } from "./wheel.js?v=20260915y";
-import { SUPPORT } from "./support.js?v=20260915y";
-import * as sound from "./sound.js?v=20260915y";
+import { el, shuffle } from "./quizkit.js?v=20260915z";
+import { getState, save } from "./storage.js?v=20260915z";
+import { Wheel, parseEntries } from "./wheel.js?v=20260915z";
+import { SUPPORT } from "./support.js?v=20260915z";
+import * as sound from "./sound.js?v=20260915z";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
@@ -355,7 +355,7 @@ export function initPirates(root) {
       <div class="dojo-toprow"><span class="dojo-set">Random bomb target</span>
         <span class="dojo-topbtns"><button class="btn ghost" id="pwBack">← Caller</button></span></div>
       <p class="dojo-hint">Spin to choose who the unblockable bomb lands on.</p>
-      <div class="pirates-wheelwrap"><canvas id="pwCanvas" class="pirates-wheelcanvas" width="480" height="480" aria-label="Wheel of names"></canvas></div>
+      <div class="pirates-wheelwrap"><div class="pirates-wheelinner"><div class="pirates-wpointer" aria-hidden="true"></div><canvas id="pwCanvas" class="pirates-wheelcanvas" width="480" height="480" aria-label="Wheel of names"></canvas></div></div>
       <div class="pirates-callbar"><button class="btn primary" id="pwSpin">Spin</button><span class="pirates-call" id="pwOut" aria-live="polite"></span></div>
       <div class="dojo-field"><label class="dojo-lbl">Names to spin (one per line) — or load a saved wheel</label>
         <div class="pirates-namesrc"><select class="dojo-select dojo-select-sm" id="pwWheelSel"></select></div>
@@ -385,7 +385,7 @@ export function initPirates(root) {
       <div class="dojo-toprow"><span class="dojo-set">Question to steal</span>
         <span class="dojo-topbtns"><button class="btn ghost" id="qwBack">← Caller</button></span></div>
       <p class="dojo-hint">Spin for a category, then get a general-knowledge question. Answer it right to steal.</p>
-      <div class="pirates-wheelwrap"><canvas id="qwCanvas" class="pirates-wheelcanvas" width="480" height="480" aria-label="Category wheel"></canvas></div>
+      <div class="pirates-wheelwrap"><div class="pirates-wheelinner"><div class="pirates-wpointer" aria-hidden="true"></div><canvas id="qwCanvas" class="pirates-wheelcanvas" width="480" height="480" aria-label="Category wheel"></canvas></div></div>
       <div class="pirates-callbar"><button class="btn primary" id="qwSpin">Spin the categories</button><span class="pirates-call" id="qwCat" aria-live="polite"></span></div>
       <div class="pirates-qbox" id="qwBox"></div>
       <div class="dojo-field"><label class="dojo-lbl">Categories (one per line)</label>
