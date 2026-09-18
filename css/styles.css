@@ -1431,8 +1431,13 @@ a.tab { display: block; }
 .pirates-phead { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 800; font-size: 11px; color: #333; }
 .pirates-pcell { aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; border: 1px solid #999; border-radius: 4px; display: flex; flex-direction: column; gap: 1px; align-items: center; justify-content: center; text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(8px, 1.4vw, 12px); line-height: 1; background: #fff; }
 .pirates-ptop { display: flex; gap: 12px; align-items: flex-start; margin-top: 2px; }
-.pirates-ptop .pirates-printgrid { flex: 0 0 58%; min-width: 0; }
-.pirates-plegend { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 8px; color: #333; }
+.pirates-ptop .pirates-printgrid { flex: 0 0 55%; min-width: 0; }
+.pirates-pright { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.pirates-plegend { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 8px; color: #333; }
+.pirates-pbank { border: 1px solid #999; border-radius: 6px; padding: 3px 6px; }
+.pirates-pbanklbl { margin: 0 0 2px; font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #555; }
+.pirates-pbanklines { min-height: 62px; border-radius: 4px; background: repeating-linear-gradient(#fff, #fff 16px, #e6e6e6 16px, #e6e6e6 17px); }
+.pirates-pbanktot { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 800; color: #111; }
 .pirates-plegtitle { margin: 0 0 2px; font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #555; }
 .pirates-plegitem { align-items: flex-start; }
 .pirates-plegitem b { font-family: var(--mono); }
