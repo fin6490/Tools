@@ -1,8 +1,8 @@
 // countdown.js — Countdown: the classic letters, numbers and conundrum starter,
 // built for the whiteboard. Deal the puzzle, run the 30-second clock, reveal.
 // Standalone (no question set needed). Zero deps.
-import { rint, shuffle, el } from "./quizkit.js?v=20260916b";
-import * as sound from "./sound.js?v=20260916b";
+import { rint, shuffle, el } from "./quizkit.js?v=20260916c";
+import * as sound from "./sound.js?v=20260916c";
 
 // Weighted letter bags (roughly the show's mix) and the numbers stacks.
 const VOWELS = "AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIIOOOOOOOOOOOOOUUUUU".split("");
@@ -78,18 +78,76 @@ export function initCountdown(root) {
   function renderLetters() {
     const { slots, ctrls } = shell("Letters round");
     let picked = [];
-    const draw = () => { slots.innerHTML = ""; for (let i = 0; i < 9; i++) slots.appendChild(el("span", "countdown-tile" + (picked[i] ? "" : " empty"), picked[i] || "")); };
+    // Tiles lay out in a single horizontal row (wraps on narrow screens).
+    const draw = () => {
+      slots.innerHTML = "";
+      const row = el("div", "countdown-numrow countdown-letterrow");
+      for (let i = 0; i < 9; i++) row.appendChild(el("span", "countdown-tile" + (picked[i] ? "" : " empty"), picked[i] || ""));
+      slots.appendChild(row);
+    };
     draw();
     const vowel = el("button", "btn ghost", "Vowel");
     const cons = el("button", "btn ghost", "Consonant");
     const start = el("button", "btn primary", "Start 30s"); start.disabled = true;
+    const solBtn = el("button", "btn ghost", "Reveal words"); solBtn.disabled = true;
     const reset = el("button", "btn ghost", "New round");
-    const pick = (bag) => { if (picked.length >= 9) return; picked.push(bag[rint(bag.length)]); draw(); fx(sound.tick); if (picked.length >= 9) { vowel.disabled = cons.disabled = true; start.disabled = false; } };
+    const pick = (bag) => { if (picked.length >= 9) return; picked.push(bag[rint(bag.length)]); draw(); fx(sound.tick); if (picked.length >= 9) { vowel.disabled = cons.disabled = true; start.disabled = false; solBtn.disabled = false; } };
     vowel.addEventListener("click", () => pick(VOWELS));
     cons.addEventListener("click", () => pick(CONS));
     start.addEventListener("click", () => { start.disabled = true; runClock(30, () => fx(sound.fanfare)); });
+    solBtn.addEventListener("click", () => revealWords(picked, slots));
     reset.addEventListener("click", renderLetters);
-    ctrls.append(vowel, cons, start, reset);
+    ctrls.append(vowel, cons, start, solBtn, reset);
+  }
+
+  // Lazy-load the word lists only when solutions are first requested.
+  let WORDLIST = null, RANK = null, wordLoad = null;
+  function loadWords() {
+    if (WORDLIST) return Promise.resolve(WORDLIST);
+    if (!wordLoad) wordLoad = import("./countdown-words.js?v=20260916c").then((m) => {
+      WORDLIST = m.WORDS.split("\n");
+      RANK = new Map();
+      m.COMMON.split("\n").forEach((w, i) => RANK.set(w, i)); // lower index = more common
+      return WORDLIST;
+    });
+    return wordLoad;
+  }
+  // Which words can be spelt from these nine letters (each tile used once)?
+  // Rank by length, then by how everyday the word is, so recognisable answers
+  // surface ahead of obscure (but valid) ones.
+  function findWords(letters, words) {
+    const avail = new Array(26).fill(0);
+    for (const c of letters) avail[c.charCodeAt(0) - 65]++;
+    const out = [];
+    for (const w of words) {
+      if (w.length > letters.length) continue;
+      const need = new Array(26).fill(0);
+      let ok = true;
+      for (let i = 0; i < w.length; i++) { const x = w.charCodeAt(i) - 65; if (++need[x] > avail[x]) { ok = false; break; } }
+      if (ok) out.push(w);
+    }
+    const rankOf = (w) => (RANK && RANK.has(w)) ? RANK.get(w) : Infinity;
+    out.sort((a, b) => b.length - a.length || rankOf(a) - rankOf(b) || (a < b ? -1 : 1));
+    return out;
+  }
+  async function revealWords(letters, slots) {
+    if (letters.length < 9) return;
+    clearTimer();
+    let box = slots.querySelector(".countdown-solution"); if (box) box.remove();
+    box = el("div", "countdown-solution");
+    box.appendChild(el("p", "countdown-solhead", "Finding the best words…"));
+    slots.appendChild(box);
+    let words;
+    try { words = await loadWords(); } catch { box.innerHTML = ""; box.appendChild(el("p", "countdown-solhead", "Couldn't load the word list (offline?).")); return; }
+    const found = findWords(letters, words);
+    box.innerHTML = "";
+    if (!found.length) { box.appendChild(el("p", "countdown-solhead", "No words found from those letters.")); return; }
+    const top = found[0].length;
+    box.appendChild(el("p", "countdown-solhead ok", `Best: ${top} letters · ${found.length} word${found.length === 1 ? "" : "s"} in total`));
+    const list = el("div", "countdown-wordlist");
+    found.slice(0, 30).forEach((w) => list.appendChild(el("span", "countdown-word" + (w.length === top ? " top" : ""), w)));
+    box.appendChild(list);
+    fx(sound.fanfare);
   }
 
   /* ================= NUMBERS ================= */
