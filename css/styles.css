@@ -1481,7 +1481,13 @@ a.tab { display: block; }
 /* Caller tools row + embedded Wheel of Names */
 .pirates-toolbtns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 4px 0 12px; }
 .pirates-wheelwrap { display: flex; justify-content: center; margin: 8px 0; }
-.pirates-wheelcanvas { width: min(420px, 88vw); height: auto; aspect-ratio: 1 / 1; }
+.pirates-wheelinner { position: relative; width: min(420px, 88vw); aspect-ratio: 1 / 1; }
+.pirates-wheelcanvas { width: 100%; height: 100%; display: block; }
+.pirates-wpointer {
+  position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+  border-top: 26px solid var(--gold); filter: drop-shadow(0 3px 5px rgba(0,0,0,.5)); z-index: 5;
+}
 .pirates-namesrc { margin-bottom: 6px; }
 .pirates-namebox { min-height: 96px; }
 
