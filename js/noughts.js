@@ -1,9 +1,9 @@
 // noughts.js — Noughts & crosses (tic-tac-toe) for the whiteboard.
 // Two players take turns, or play one player against a simple unbeatable
 // computer. Running tally across rounds. Zero deps.
-import { el } from "./quizkit.js?v=20260915v";
-import { getState, save } from "./storage.js?v=20260915v";
-import * as sound from "./sound.js?v=20260915v";
+import { el } from "./quizkit.js?v=20260915w";
+import { getState, save } from "./storage.js?v=20260915w";
+import * as sound from "./sound.js?v=20260915w";
 
 const LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
