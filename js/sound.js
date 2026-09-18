@@ -86,6 +86,55 @@ export function buzz() {
   } catch {}
 }
 
+// Sunny, upbeat little riff for a lovely day (original — evokes the mood, not
+// any particular song). A bright major phrase on a warm triangle tone.
+export function sunny() {
+  try {
+    const c = ac();
+    const seq = [[523.25, 0], [659.25, 0.16], [783.99, 0.32], [1046.5, 0.48], [880, 0.66], [1046.5, 0.82]];
+    seq.forEach(([f, delay]) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = "triangle"; o.frequency.value = f;
+      const t = c.currentTime + delay;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.2, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.45);
+    });
+  } catch {}
+}
+
+// Stormy weather: a roll of thunder (filtered noise) under a low, sad fall.
+export function storm() {
+  try {
+    const c = ac();
+    // thunder — a burst of low-passed noise that swells and fades
+    const dur = 1.4;
+    const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
+    const ng = c.createGain();
+    ng.gain.setValueAtTime(0.0001, c.currentTime);
+    ng.gain.exponentialRampToValueAtTime(0.32, c.currentTime + 0.25);
+    ng.gain.exponentialRampToValueAtTime(0.12, c.currentTime + 0.7);
+    ng.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    src.connect(lp).connect(ng).connect(c.destination);
+    src.start(); src.stop(c.currentTime + dur);
+    // a low, mournful two-note fall over the top
+    [[196, 0.1], [146.83, 0.55]].forEach(([f, delay]) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      const t = c.currentTime + delay;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.62);
+    });
+  } catch {}
+}
+
 // Whoosh for powerups (smoke bomb / block).
 export function swoosh() {
   try {
