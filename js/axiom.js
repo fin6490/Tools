@@ -6,9 +6,9 @@
 // lines (< or >) as well as equalities. A few numbers are removed to a rack;
 // place them so every line reads true across and down. One puzzle per day per
 // level, seeded from the date. Self-checking. Zero deps.
-import { el } from "./quizkit.js?v=20260916d";
-import { getState, save } from "./storage.js?v=20260916d";
-import * as sound from "./sound.js?v=20260916d";
+import { el } from "./quizkit.js?v=20260916e";
+import { getState, save } from "./storage.js?v=20260916e";
+import * as sound from "./sound.js?v=20260916e";
 
 function mulberry32(a) {
   return function () {

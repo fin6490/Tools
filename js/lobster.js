@@ -8,9 +8,9 @@
 //    fire the timetabled event cards, and run the class Bank so anyone who
 //    goes bust can borrow — all tracked centrally on the board.
 // Zero deps. All original code.
-import { el } from "./quizkit.js?v=20260916d";
-import { getState, save } from "./storage.js?v=20260916d";
-import * as sound from "./sound.js?v=20260916d";
+import { el } from "./quizkit.js?v=20260916e";
+import { getState, save } from "./storage.js?v=20260916e";
+import * as sound from "./sound.js?v=20260916e";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const YT_LOVELY = "https://www.youtube.com/results?search_query=bill+withers+lovely+day";
@@ -295,24 +295,25 @@ export function initLobster(root) {
     if (ev.tool === "lotto") { const b = el("button", "btn ghost", "Draw the winning number"); b.addEventListener("click", () => drawNumber(cardEl, 10, "Winning number", "Anyone with this number wins £100.")); cardEl.appendChild(b); }
     if (ev.tool === "dice") { const b = el("button", "btn ghost", "Roll the die"); b.addEventListener("click", () => drawNumber(cardEl, 6, "Dice roll", "Sale price = roll × pots sold.")); cardEl.appendChild(b); }
     if (ev.skill && cfg().fishToss) {
-      cardEl.appendChild(el("p", "lobster-evrule", "Optional skill bonus: each fisher calls the coin to enter, then takes 5 beanbag throws on screen. Their multiplier is 1 + (hits ÷ throws) × a dice roll — multiply their final balance by it."));
-      const b = el("button", "btn primary", "Play the skill game"); b.addEventListener("click", () => { const host = el("div", "lobster-fishslot"); cardEl.appendChild(host); playFishToss(host); b.disabled = true; }); cardEl.appendChild(b);
+      cardEl.appendChild(el("p", "lobster-evrule", "Optional skill bonus: one coin flip for the whole class to enter, then each fisher comes up for a go at the beanbag toss — a success or a miss. Everyone tallies their own goes on their sheet; at the very end their multiplier is 1 + (successes ÷ goes) × a dice roll, applied to their final balance."));
+      const b = el("button", "btn primary", "Open the skill game"); b.addEventListener("click", () => { const host = el("div", "lobster-fishslot"); cardEl.appendChild(host); playFishToss(host); b.disabled = true; }); cardEl.appendChild(b);
     }
     slot.appendChild(cardEl); fx(sound.beep);
   }
 
   /* ---------- Fish Toss skill game (optional rule) ----------
-     1) Call heads/tails to enter. 2) Five beanbag throws on screen — time
-     the swinging marker to land in the bucket. 3) Roll a die: the multiplier
-     is 1 + (hits ÷ throws) × die, applied to the fisher's final balance. */
+     One coin flip for the whole class to enter, then fishers come up one at a
+     time for a single beanbag toss — a clean success or miss they tally on
+     their own sheet. A calculator turns their end-of-game tally into the
+     multiplier 1 + (successes ÷ goes) × a dice roll for the final balance. */
   function playFishToss(host) {
     let raf = null;
     const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
-    const st = { throws: 5, thrown: 0, hits: 0 };
 
+    /* -- one class coin flip to enter -- */
     function renderCoin() {
       stop();
-      host.innerHTML = `<p class="lobster-fishstep">Step 1 — call the coin to enter</p>
+      host.innerHTML = `<p class="lobster-fishstep">One flip for the whole class — call it to enter!</p>
         <div class="lobster-fishcoin" id="ftCoin">?</div>
         <div class="dojo-editbtns"><button class="btn primary" id="ftH">Heads</button><button class="btn primary" id="ftT">Tails</button></div>`;
       host.querySelector("#ftH").addEventListener("click", () => flip("H"));
@@ -328,90 +329,114 @@ export function initLobster(root) {
           clearInterval(spin);
           const res = rint(2) === 0 ? "H" : "T";
           coin.textContent = res === "H" ? "HEADS" : "TAILS";
-          if (guess === res) { coin.classList.add("win"); fx(sound.beep); setTimeout(renderSkill, 700); }
-          else { coin.classList.add("lose"); fx(sound.buzz); setTimeout(() => done(1, null, true), 700); }
+          if (guess === res) { coin.classList.add("win"); fx(sound.beep); setTimeout(renderLobbyIn, 700); }
+          else { coin.classList.add("lose"); fx(sound.buzz); setTimeout(renderBlocked, 700); }
         }
       }, 70);
     }
-
-    let pos = 0, dir = 1, bStart = 0.4, bWidth = 0.16;
-    const SPEED = 0.017;
-    function placeBucket() {
-      bStart = 0.08 + Math.random() * 0.72; if (bStart + bWidth > 0.94) bStart = 0.94 - bWidth;
-      const b = host.querySelector("#ftBucket"); if (b) { b.style.left = (bStart * 100) + "%"; b.style.width = (bWidth * 100) + "%"; }
+    function renderBlocked() {
+      host.innerHTML = `<p class="lobster-fishstep">Wrong call — no Fish Toss bonus this round.</p>`;
+      const row = el("div", "dojo-editbtns");
+      const again = el("button", "btn ghost", "Call again"); again.addEventListener("click", renderCoin);
+      row.appendChild(again); host.appendChild(row);
     }
-    function runMarker() {
+    function renderLobbyIn() {
+      stop();
+      host.innerHTML = `<p class="lobster-fishstep">The class is in! Come up one at a time for a go.</p>
+        <p class="dojo-hint">Each go is a success or a miss — tally your own on your sheet. At the very end, your multiplier is 1 + (successes ÷ goes) × a dice roll.</p>
+        <div class="dojo-editbtns"><button class="btn primary" id="ftGo">Have a go</button><button class="btn ghost" id="ftCalc">End-game multiplier</button></div>`;
+      host.querySelector("#ftGo").addEventListener("click", renderThrow);
+      host.querySelector("#ftCalc").addEventListener("click", renderCalc);
+    }
+
+    /* -- the beanbag toss: time the power into the green to land it -- */
+    let power = 0, pdir = 1, center = 0.6, band = 0.09;
+    function renderThrow() {
+      stop();
+      center = 0.5 + Math.random() * 0.38;          // bucket landing spot
+      band = 0.075 + Math.random() * 0.03;           // sweet-spot half-width
+      host.innerHTML = `<p class="lobster-fishstep">Tap THROW when the power meter is in the green!</p>
+        <div class="lobster-tossscene" id="ftScene">
+          <div class="lobster-water"></div>
+          <div class="lobster-thrower">${IC.boat}</div>
+          <div class="lobster-bucket" id="ftBucket"></div>
+          <div class="lobster-bag" id="ftBag" hidden></div>
+          <div class="lobster-fishresult" id="ftResult" hidden></div>
+        </div>
+        <div class="lobster-powerwrap"><div class="lobster-powerband" id="ftBand"></div><div class="lobster-powerfill" id="ftFill"></div></div>
+        <div class="dojo-editbtns"><button class="btn primary lobster-throwbtn" id="ftThrow">THROW!</button><button class="btn ghost" id="ftDone2">Done</button></div>`;
+      const bucket = host.querySelector("#ftBucket"); bucket.style.left = (center * 100) + "%";
+      const bandEl = host.querySelector("#ftBand"); bandEl.style.left = ((center - band) * 100) + "%"; bandEl.style.width = (band * 2 * 100) + "%";
+      power = 0; pdir = 1;
+      runPower();
+      host.querySelector("#ftThrow").addEventListener("click", throwBag);
+      host.querySelector("#ftDone2").addEventListener("click", renderLobbyIn);
+    }
+    function runPower() {
       stop();
       const step = () => {
-        const m = host.querySelector("#ftMarker");
-        if (!m || !host.isConnected) { stop(); return; }
-        pos += dir * SPEED; if (pos >= 1) { pos = 1; dir = -1; } if (pos <= 0) { pos = 0; dir = 1; }
-        m.style.left = (pos * 100) + "%";
+        const fill = host.querySelector("#ftFill");
+        if (!fill || !host.isConnected) { stop(); return; }
+        power += pdir * 0.013; if (power >= 1) { power = 1; pdir = -1; } if (power <= 0) { power = 0; pdir = 1; }
+        fill.style.width = (power * 100) + "%";
         raf = requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
     }
-    function renderSkill() {
-      st.thrown = 0; st.hits = 0;
-      host.innerHTML = `<p class="lobster-fishstep">Step 2 — toss the beanbag into the bucket (${st.throws} throws)</p>
-        <div class="lobster-tosstrack" id="ftTrack">
-          <div class="lobster-tossbucket" id="ftBucket"></div>
-          <div class="lobster-tossmarker" id="ftMarker"></div>
+    function throwBag() {
+      stop();
+      const p = power, success = p >= center - band && p <= center + band;
+      host.querySelector("#ftThrow").disabled = true;
+      const scene = host.querySelector("#ftScene"), bag = host.querySelector("#ftBag");
+      bag.hidden = false;
+      const startX = 0.1, endX = Math.min(0.95, Math.max(0.08, p)), peak = (scene.clientHeight || 150) * 0.7;
+      const t0 = performance.now(), dur = 620;
+      const arc = (now) => {
+        let t = (now - t0) / dur; if (t > 1) t = 1;
+        bag.style.left = ((startX + (endX - startX) * t) * 100) + "%";
+        bag.style.bottom = (14 + 4 * peak * t * (1 - t)) + "px";
+        if (t < 1) requestAnimationFrame(arc); else finishThrow(success);
+      };
+      requestAnimationFrame(arc);
+    }
+    function finishThrow(success) {
+      fx(success ? sound.fanfare : sound.buzz);
+      const bag = host.querySelector("#ftBag"); if (bag) bag.classList.add(success ? "in" : "out");
+      const res = host.querySelector("#ftResult");
+      if (res) { res.hidden = false; res.className = "lobster-fishresult " + (success ? "ok" : "no"); res.textContent = success ? "IN THE BUCKET!" : "MISSED!"; }
+      const row = el("div", "dojo-editbtns lobster-fishafter");
+      const next = el("button", "btn primary", "Next fisher's go"); next.addEventListener("click", renderThrow);
+      const done = el("button", "btn ghost", "Stop"); done.addEventListener("click", renderLobbyIn);
+      row.append(next, done); host.appendChild(row);
+    }
+
+    /* -- end-of-game multiplier from a fisher's tally -- */
+    function renderCalc() {
+      stop();
+      host.innerHTML = `<p class="lobster-fishstep">End-of-game multiplier</p>
+        <p class="dojo-hint">Enter a fisher's tally from their sheet, then roll the die.</p>
+        <div class="lobster-calc">
+          <label>Successes <input type="number" min="0" id="ftSucc" class="lobster-cellinput"></label>
+          <label>Total goes <input type="number" min="0" id="ftAtt" class="lobster-cellinput"></label>
         </div>
-        <p class="lobster-tossscore" id="ftScore">Throw 1 of ${st.throws} · hits 0</p>
-        <div class="dojo-editbtns"><button class="btn primary" id="ftThrow">Throw!</button></div>`;
-      placeBucket(); runMarker();
-      host.querySelector("#ftThrow").addEventListener("click", doThrow);
-    }
-    function doThrow() {
-      stop();
-      const hit = pos >= bStart && pos <= bStart + bWidth;
-      st.thrown++; if (hit) st.hits++;
-      const track = host.querySelector("#ftTrack");
-      const mark = host.querySelector("#ftMarker");
-      if (mark) mark.classList.add(hit ? "hit" : "miss");
-      if (track) { const bag = el("span", "lobster-tossbag " + (hit ? "in" : "out")); bag.style.left = (pos * 100) + "%"; track.appendChild(bag); }
-      fx(hit ? sound.beep : sound.buzz);
-      host.querySelector("#ftScore").textContent = `Throw ${st.thrown} of ${st.throws} · hits ${st.hits}`;
-      const btn = host.querySelector("#ftThrow"); btn.disabled = true;
-      setTimeout(() => {
-        if (st.thrown >= st.throws) return renderDice();
-        placeBucket(); if (mark) mark.classList.remove("hit", "miss"); const old = host.querySelector(".lobster-tossbag"); if (old) old.remove();
-        runMarker(); btn.disabled = false;
-        host.querySelector("#ftScore").textContent = `Throw ${st.thrown + 1} of ${st.throws} · hits ${st.hits}`;
-      }, 800);
-    }
-    function renderDice() {
-      const pct = Math.round((st.hits / st.throws) * 100);
-      host.innerHTML = `<p class="lobster-fishstep">Step 3 — roll for your multiplier</p>
-        <p class="dojo-hint">${st.hits}/${st.throws} in the bucket = ${pct}% success</p>
         <div class="lobster-draw"><p class="lobster-drawlbl">Dice</p><p class="lobster-drawnum" id="ftDie">…</p></div>
-        <div class="dojo-editbtns"><button class="btn primary" id="ftRoll">Roll the die</button></div>`;
-      host.querySelector("#ftRoll").addEventListener("click", rollDie);
-    }
-    function rollDie() {
-      const frac = st.hits / st.throws;
-      const finish = (die) => done(1 + frac * die, die, false);
-      if (cfg().physicalDice) {
-        const box = host.querySelector(".lobster-draw"); box.innerHTML = `<p class="lobster-drawlbl">Tap the die you rolled</p>`;
-        const pad = el("div", "lobster-numpad");
-        for (let i = 1; i <= 6; i++) { const b = el("button", "btn ghost lobster-numbtn", String(i)); b.addEventListener("click", () => finish(i)); pad.appendChild(b); }
-        box.appendChild(pad); host.querySelector("#ftRoll").disabled = true; return;
-      }
-      const die = host.querySelector("#ftDie"), btn = host.querySelector("#ftRoll"); btn.disabled = true;
-      let n = 0; const spin = setInterval(() => { die.textContent = String(1 + rint(6)); fx(sound.tick); if (++n >= 12) { clearInterval(spin); finish(1 + rint(6)); } }, 70);
-    }
-    function done(mult, die, missedCoin) {
-      stop();
-      host.innerHTML = missedCoin
-        ? `<p class="lobster-fishstep">Wrong call — out this round.</p><p class="lobster-fishmult">× 1</p>`
-        : `<p class="lobster-fishstep">Fish Toss multiplier</p>
-           <p class="lobster-fishmult">× ${mult.toFixed(2)}</p>
-           <p class="dojo-hint">1 + (${st.hits} ÷ ${st.throws}) × ${die} = ${mult.toFixed(2)}. Multiply your final balance by this.</p>`;
-      const row = el("div", "dojo-editbtns");
-      const again = el("button", "btn ghost", "Next fisher"); again.addEventListener("click", () => renderCoin());
-      row.appendChild(again); host.appendChild(row);
-      fx(missedCoin ? sound.buzz : sound.fanfare);
+        <p class="lobster-fishmult" id="ftMult" hidden></p>
+        <div class="dojo-editbtns"><button class="btn primary" id="ftRoll">Roll &amp; work it out</button><button class="btn ghost" id="ftBackE">Back</button></div>`;
+      host.querySelector("#ftBackE").addEventListener("click", renderLobbyIn);
+      host.querySelector("#ftRoll").addEventListener("click", () => {
+        const s = Math.max(0, +host.querySelector("#ftSucc").value || 0), a = Math.max(0, +host.querySelector("#ftAtt").value || 0);
+        if (!a) { host.querySelector("#ftAtt").focus(); return; }
+        const frac = Math.min(1, s / a);
+        const show = (die) => { const m = 1 + frac * die; host.querySelector("#ftDie").textContent = String(die); const mEl = host.querySelector("#ftMult"); mEl.hidden = false; mEl.innerHTML = `× ${m.toFixed(2)}<span class="lobster-multwork">1 + (${s} ÷ ${a}) × ${die}</span>`; fx(sound.fanfare); };
+        if (cfg().physicalDice) {
+          const box = host.querySelector(".lobster-draw"); box.innerHTML = `<p class="lobster-drawlbl">Tap the die you rolled</p>`;
+          const pad = el("div", "lobster-numpad");
+          for (let i = 1; i <= 6; i++) { const b = el("button", "btn ghost lobster-numbtn", String(i)); b.addEventListener("click", () => show(i)); pad.appendChild(b); }
+          box.appendChild(pad); host.querySelector("#ftRoll").disabled = true; return;
+        }
+        const die = host.querySelector("#ftDie"), btn = host.querySelector("#ftRoll"); btn.disabled = true;
+        let n = 0; const spin = setInterval(() => { die.textContent = String(1 + rint(6)); fx(sound.tick); if (++n >= 12) { clearInterval(spin); btn.disabled = false; show(1 + rint(6)); } }, 70);
+      });
     }
 
     renderCoin();
@@ -567,6 +592,18 @@ export function initLobster(root) {
     const notes = el("div", "lobster-pnotes");
     notes.appendChild(el("p", "lobster-boxlbl", "Working out"));
     cardEl.appendChild(notes);
+
+    // Fish Toss tally + multiplier (only when the optional rule is on).
+    if (cfg().fishToss) {
+      const fishBox = el("div", "lobster-fishbox");
+      fishBox.innerHTML = `
+        <p class="lobster-boxlbl">Fish Toss — tally each go</p>
+        <div class="lobster-tallyrow"><span class="lobster-tallylbl">Successes</span><span class="lobster-tallyspace"></span></div>
+        <div class="lobster-tallyrow"><span class="lobster-tallylbl">Misses</span><span class="lobster-tallyspace"></span></div>
+        <p class="lobster-fishcalc">Successes <span class="lobster-uline sm"></span> ÷ total goes <span class="lobster-uline sm"></span> × dice <span class="lobster-uline xs"></span> + 1 = multiplier <span class="lobster-uline sm"></span></p>
+        <p class="lobster-fishcalc">Final balance <span class="lobster-uline sm"></span> × multiplier <span class="lobster-uline sm"></span> = <span class="lobster-uline"></span></p>`;
+      cardEl.appendChild(fishBox);
+    }
 
     const fin = el("div", "lobster-final");
     fin.innerHTML = `<span class="lobster-finlbl">FINAL BALANCE</span> <span class="lobster-finline"></span>`;
