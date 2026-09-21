@@ -8,9 +8,9 @@
 //    fire the timetabled event cards, and run the class Bank so anyone who
 //    goes bust can borrow — all tracked centrally on the board.
 // Zero deps. All original code.
-import { el } from "./quizkit.js?v=20260916f";
-import { getState, save } from "./storage.js?v=20260916f";
-import * as sound from "./sound.js?v=20260916f";
+import { el } from "./quizkit.js?v=20260916g";
+import { getState, save } from "./storage.js?v=20260916g";
+import * as sound from "./sound.js?v=20260916g";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const YT_LOVELY = "https://www.youtube.com/results?search_query=bill+withers+lovely+day";
@@ -312,7 +312,7 @@ export function initLobster(root) {
 
     /* -- start screen: a coin to flip + the actions -- */
     function renderStart() {
-      stop();
+      stop(); if (keyHandler) disarmKeys();
       host.innerHTML = `<p class="lobster-fishstep">Fish Toss — the teacher picks who comes up</p>
         <div class="lobster-cointools">
           <div class="lobster-fishcoin" id="ftCoin">?</div>
@@ -333,57 +333,96 @@ export function initLobster(root) {
       }, 70);
     }
 
-    /* -- the fish toss: bucket width == the success zone, so the fish only
-          counts as IN when it actually lands inside the bucket -- */
-    let power = 0, pdir = 1, center = 0.6, half = 0.07;
+    /* -- the fish toss --
+       Difficulty is pure luck of the draw, re-rolled every go: a wildly
+       varying bucket size and power speed, from a huge slow SITTER to a tiny
+       lightning-fast BRUTAL. The bucket width == the success zone, so the fish
+       only counts as IN when it actually lands inside the bucket. */
+    let power = 0, pdir = 1, center = 0.6, half = 0.07, speed = 0.012;
+    const lerp = (a, b, t) => a + (b - a) * t;
+    function tierOf(d) {
+      if (d < 0.16) return { name: "SITTER", cls: "t1" };
+      if (d < 0.34) return { name: "EASY", cls: "t2" };
+      if (d < 0.54) return { name: "FAIR", cls: "t3" };
+      if (d < 0.72) return { name: "TRICKY", cls: "t4" };
+      if (d < 0.88) return { name: "TOUGH", cls: "t5" };
+      return { name: "BRUTAL", cls: "t6" };
+    }
+    let keyHandler = null;
+    const disarmKeys = () => { if (keyHandler) { document.removeEventListener("keydown", keyHandler); keyHandler = null; } };
+    function armThrowKey() {
+      disarmKeys();
+      keyHandler = (e) => {
+        if (e.key !== " " && e.code !== "Space" && e.key !== "Enter") return;
+        const t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+        const btn = host.querySelector("#ftThrow"); if (!btn || btn.disabled) return;
+        e.preventDefault(); throwFish();
+      };
+      document.addEventListener("keydown", keyHandler);
+    }
     function renderThrow() {
       stop();
-      half = 0.055 + Math.random() * 0.025;          // bucket half-width (fraction)
-      center = 0.18 + half + Math.random() * (0.78 - 2 * half); // keep bucket on screen
+      const d = Math.random();                         // luck of the draw
+      const tier = tierOf(d);
+      half = lerp(0.17, 0.022, d);                     // bucket half-width: 34% … 4.4%
+      speed = lerp(0.008, 0.028, d);                   // power sweep speed
+      const margin = 0.14;
+      center = lerp(margin + half, 1 - margin - half, Math.random());
       host.innerHTML = `<p class="lobster-fishstep">Time the power into the green, then throw the fish into the bucket!</p>
+        <div class="lobster-diffbadge ${tier.cls}">Luck of the draw — <b>${tier.name}</b></div>
         <div class="lobster-tossscene" id="ftScene">
           <div class="lobster-water"></div>
           <div class="lobster-thrower">${IC.boat}</div>
+          <div class="lobster-bucketshadow" id="ftShadow"></div>
           <div class="lobster-bucket" id="ftBucket"><span class="lobster-bucketrim"></span></div>
           <div class="lobster-fish" id="ftFish" hidden>${IC.fish}</div>
-          <div class="lobster-fishresult" id="ftResult" hidden></div>
+          <div class="lobster-fishresult" id="ftResult" hidden aria-live="polite"></div>
         </div>
-        <div class="lobster-powerwrap"><div class="lobster-powerband" id="ftBand"></div><div class="lobster-powerfill" id="ftFill"></div></div>
+        <div class="lobster-powerwrap"><div class="lobster-powerband ${tier.cls}" id="ftBand"></div><div class="lobster-powerfill" id="ftFill"></div></div>
+        <p class="dojo-hint lobster-throwhint">Press the button or the spacebar to throw.</p>
         <div class="dojo-editbtns"><button class="btn primary lobster-throwbtn" id="ftThrow">THROW!</button><button class="btn ghost" id="ftDone2">Back</button></div>`;
-      const bucket = host.querySelector("#ftBucket"); bucket.style.left = ((center - half) * 100) + "%"; bucket.style.width = (half * 2 * 100) + "%";
-      const bandEl = host.querySelector("#ftBand"); bandEl.style.left = ((center - half) * 100) + "%"; bandEl.style.width = (half * 2 * 100) + "%";
+      const L = (center - half) * 100, W = half * 2 * 100;
+      const bucket = host.querySelector("#ftBucket"); bucket.style.left = L + "%"; bucket.style.width = W + "%";
+      const shadow = host.querySelector("#ftShadow"); shadow.style.left = L + "%"; shadow.style.width = W + "%";
+      const bandEl = host.querySelector("#ftBand"); bandEl.style.left = L + "%"; bandEl.style.width = W + "%";
       power = 0; pdir = 1;
       runPower();
       host.querySelector("#ftThrow").addEventListener("click", throwFish);
       host.querySelector("#ftDone2").addEventListener("click", renderStart);
+      armThrowKey();
     }
     function runPower() {
       stop();
       const step = () => {
         const fill = host.querySelector("#ftFill");
         if (!fill || !host.isConnected) { stop(); return; }
-        power += pdir * 0.012; if (power >= 1) { power = 1; pdir = -1; } if (power <= 0) { power = 0; pdir = 1; }
+        power += pdir * speed; if (power >= 1) { power = 1; pdir = -1; } if (power <= 0) { power = 0; pdir = 1; }
         fill.style.width = (power * 100) + "%";
         raf = requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
     }
+    function ripple(scene, xFrac) {
+      const r = el("span", "lobster-ripple"); r.style.left = (xFrac * 100) + "%"; scene.appendChild(r);
+      setTimeout(() => r.remove(), 750);
+    }
     function throwFish() {
-      stop();
+      stop(); disarmKeys();
       const p = power, success = p >= center - half && p <= center + half;
       host.querySelector("#ftThrow").disabled = true;
       const scene = host.querySelector("#ftScene"), fish = host.querySelector("#ftFish");
       fish.hidden = false;
-      // The fish lands at x = power; the bucket spans exactly the success zone,
-      // so a landing shown inside the bucket is always a hit (and vice versa).
-      const startX = 0.09, endX = success ? center : Math.min(0.94, Math.max(0.06, p)), peak = (scene.clientHeight || 160) * 0.72;
+      // On a hit the fish lands dead-centre in the bucket; on a miss it lands
+      // where it was thrown — always outside the bucket — so what you see is
+      // always what you score.
+      const startX = 0.09, endX = success ? center : Math.min(0.94, Math.max(0.06, p)), peak = (scene.clientHeight || 170) * 0.72;
       const t0 = performance.now(), dur = 640;
       const arc = (now) => {
         let t = (now - t0) / dur; if (t > 1) t = 1;
         fish.style.left = ((startX + (endX - startX) * t) * 100) + "%";
         fish.style.bottom = (18 + 4 * peak * t * (1 - t)) + "px";
         fish.style.transform = `rotate(${Math.round(t * 500)}deg)`;
-        if (t < 1) requestAnimationFrame(arc); else finishThrow(success);
+        if (t < 1) requestAnimationFrame(arc); else { ripple(scene, endX); finishThrow(success); }
       };
       requestAnimationFrame(arc);
     }
@@ -394,14 +433,14 @@ export function initLobster(root) {
       const res = host.querySelector("#ftResult");
       if (res) { res.hidden = false; res.className = "lobster-fishresult " + (success ? "ok" : "no"); res.textContent = success ? "IN THE BUCKET!" : "MISSED!"; }
       const row = el("div", "dojo-editbtns lobster-fishafter");
-      const next = el("button", "btn primary", "Throw another"); next.addEventListener("click", renderThrow);
+      const next = el("button", "btn primary", "Throw again"); next.addEventListener("click", renderThrow);
       const done = el("button", "btn ghost", "Back"); done.addEventListener("click", renderStart);
       row.append(next, done); host.appendChild(row);
     }
 
     /* -- end-of-game multiplier from a fisher's tally -- */
     function renderCalc() {
-      stop();
+      stop(); disarmKeys();
       host.innerHTML = `<p class="lobster-fishstep">End-of-game multiplier</p>
         <p class="dojo-hint">Enter a fisher's tally from their sheet, then roll the die.</p>
         <div class="lobster-calc">
