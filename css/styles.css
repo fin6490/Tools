@@ -1661,3 +1661,21 @@ a.tab { display: block; }
 
 /* print: show the timetabled event under the day number */
 .lobster-dayev { display: block; font-family: var(--sans, inherit); font-weight: 700; font-size: 6px; line-height: 1.05; color: #b23020; text-transform: uppercase; letter-spacing: .2px; margin-top: 1px; }
+
+/* Lobster Pots — Fish Toss skill game */
+.lobster-fishslot { margin-top: 12px; }
+.lobster-fishstep { font-weight: 800; color: var(--ink); text-align: center; margin: 0 0 8px; }
+.lobster-fishcoin { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--ink); background: color-mix(in srgb, var(--gold) 16%, var(--panel-2)); }
+.lobster-fishcoin.win { border-color: #2bbf75; background: color-mix(in srgb, #2bbf75 20%, var(--panel-2)); }
+.lobster-fishcoin.lose { border-color: #c62f2f; background: color-mix(in srgb, #c62f2f 18%, var(--panel-2)); }
+.lobster-tosstrack { position: relative; height: 84px; margin: 6px auto 4px; max-width: 620px; border: 2px solid var(--line); border-radius: 12px; background: linear-gradient(#bfe3f2 0%, #bfe3f2 60%, #e9d8b0 60%, #e9d8b0 100%); overflow: hidden; }
+.lobster-tossbucket { position: absolute; bottom: 4px; height: 30px; border: 3px solid #7a4a1e; border-top: none; border-radius: 0 0 10px 10px; background: color-mix(in srgb, #b5762f 55%, #fff); }
+.lobster-tossmarker { position: absolute; top: 4px; width: 4px; height: 22px; margin-left: -2px; border-radius: 3px; background: var(--ink); }
+.lobster-tossmarker.hit { background: #2bbf75; } .lobster-tossmarker.miss { background: #c62f2f; }
+.lobster-tossbag { position: absolute; top: 8px; width: 14px; height: 14px; margin-left: -7px; border-radius: 4px; background: #8a5a2b; }
+.lobster-tossbag.in { animation: lobtossin .6s ease forwards; }
+.lobster-tossbag.out { animation: lobtossout .6s ease forwards; }
+@keyframes lobtossin { to { top: 56px; transform: scale(.7); } }
+@keyframes lobtossout { to { top: 74px; transform: translateX(18px) rotate(40deg); opacity: .3; } }
+.lobster-tossscore { text-align: center; font-family: var(--mono); font-weight: 700; color: var(--muted); margin: 2px 0 8px; }
+.lobster-fishmult { text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(40px, 10vw, 72px); color: var(--gold); margin: 4px 0; }
