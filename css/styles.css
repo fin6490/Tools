@@ -1666,22 +1666,26 @@ a.tab { display: block; }
 .lobster-fishslot { margin-top: 12px; max-width: 640px; margin-left: auto; margin-right: auto; }
 .lobster-fishstep { font-weight: 800; color: var(--ink); text-align: center; margin: 0 0 8px; font-size: clamp(15px, 2.4vw, 19px); }
 .lobster-fishcoin { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--ink); background: color-mix(in srgb, var(--gold) 16%, var(--panel-2)); }
-.lobster-fishcoin.win { border-color: #2bbf75; background: color-mix(in srgb, #2bbf75 20%, var(--panel-2)); }
-.lobster-fishcoin.lose { border-color: #c62f2f; background: color-mix(in srgb, #c62f2f 18%, var(--panel-2)); }
+.lobster-fishcoin.heads, .lobster-fishcoin.tails { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--panel-2)); }
+.lobster-cointools { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 10px; }
 
-/* Toss scene — a fisher, a moving arc and a bucket on the dock */
-.lobster-tossscene { position: relative; height: clamp(150px, 26vw, 200px); margin: 6px auto 8px; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); background: linear-gradient(#bfe6f5 0%, #a9dbef 58%, #e9d8b0 58%, #ddc79a 100%); }
-.lobster-water { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255,255,255,.18) 18px 22px); }
-.lobster-thrower { position: absolute; left: 2%; bottom: 6px; width: 46px; height: 46px; color: #24506b; }
-.lobster-thrower svg { width: 46px; height: 46px; }
-.lobster-bucket { position: absolute; bottom: 8px; width: 46px; height: 34px; margin-left: -23px; border: 3px solid #7a4a1e; border-top: none; border-radius: 4px 4px 10px 10px; background: linear-gradient(#c98a3c, #a56a24); box-shadow: inset 0 4px 0 rgba(255,255,255,.25); }
-.lobster-bag { position: absolute; left: 10%; bottom: 14px; width: 18px; height: 18px; margin-left: -9px; border-radius: 5px; background: #7a4a1e; box-shadow: inset -2px -2px 0 rgba(0,0,0,.2); }
-.lobster-bag.in { animation: lobbagin .35s ease forwards; }
-.lobster-bag.out { animation: lobbagout .5s ease forwards; }
-@keyframes lobbagin { to { transform: scale(.5); opacity: .5; } }
-@keyframes lobbagout { to { transform: translateY(10px) rotate(50deg); opacity: 0; } }
+/* Toss scene — a fisher, a thrown fish and a bucket on the dock */
+.lobster-tossscene { position: relative; height: clamp(160px, 28vw, 210px); margin: 6px auto 8px; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); background: linear-gradient(#bfe6f5 0%, #a9dbef 56%, #ecd9ac 56%, #ddc79a 100%); }
+.lobster-water { position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255,255,255,.16) 18px 22px); }
+.lobster-thrower { position: absolute; left: 2%; bottom: 6px; width: 48px; height: 48px; color: #24506b; }
+.lobster-thrower svg { width: 48px; height: 48px; }
+.lobster-bucket { position: absolute; bottom: 8px; height: 40px; min-width: 40px; border: 3px solid #7a4a1e; border-top: none; border-radius: 3px 3px 12px 12px; background: linear-gradient(#c98a3c, #9c6220); box-shadow: inset 0 -6px 8px rgba(0,0,0,.15); }
+.lobster-bucketrim { position: absolute; top: -5px; left: -3px; right: -3px; height: 7px; border-radius: 4px; background: #7a4a1e; }
+.lobster-bucket.splash { animation: lobbucket .4s ease; }
+@keyframes lobbucket { 30% { transform: translateY(3px) scaleY(.92); } 100% { transform: none; } }
+.lobster-fish { position: absolute; left: 9%; bottom: 18px; width: 30px; height: 30px; margin-left: -15px; color: #e07a3c; }
+.lobster-fish svg { width: 30px; height: 30px; }
+.lobster-fish.in { animation: lobfishin .3s ease forwards; }
+.lobster-fish.out { animation: lobfishout .5s ease forwards; }
+@keyframes lobfishin { to { transform: translateY(12px) scale(.55); opacity: 0; } }
+@keyframes lobfishout { to { transform: translateY(14px) rotate(60deg); opacity: .25; } }
 .lobster-fishresult { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(20px, 5vw, 34px); text-shadow: 0 2px 6px rgba(0,0,0,.35); }
-.lobster-fishresult.ok { color: #187f4b; } .lobster-fishresult.no { color: #b12626; }
+.lobster-fishresult.ok { color: #12703f; } .lobster-fishresult.no { color: #b12626; }
 
 /* Power meter */
 .lobster-powerwrap { position: relative; height: 22px; max-width: 620px; margin: 0 auto 10px; border-radius: 11px; border: 2px solid var(--line); background: var(--panel-2); overflow: hidden; }
