@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260916g",
+  token: "20260916h",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.

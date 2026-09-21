@@ -1722,3 +1722,32 @@ a.tab { display: block; }
 .lobster-fishcalc { font-size: 9px; color: #333; margin: 4px 0 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .lobster-uline { display: inline-block; min-width: 46px; border-bottom: 1.5px solid #333; height: 12px; }
 .lobster-uline.sm { min-width: 34px; } .lobster-uline.xs { min-width: 22px; }
+
+/* Lobster Pots — final scoreboard, CIA jail, 50%/day loans */
+.lobster-scform { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.lobster-scnum { width: 92px; }
+.lobster-scdodgy { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.lobster-sctablewrap { overflow-x: auto; }
+.lobster-sctable { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.lobster-sctable th { font-size: 11px; text-transform: uppercase; letter-spacing: .3px; color: var(--muted); border-bottom: 1px solid var(--line); padding: 5px 6px; }
+.lobster-sctable th.l, .lobster-sctable td.l { text-align: left; }
+.lobster-sctable td { text-align: center; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+.lobster-sctable tr.top td { background: color-mix(in srgb, var(--gold) 16%, transparent); }
+.lobster-sctable tr.jailed td { background: color-mix(in srgb, #c62f2f 14%, transparent); color: var(--muted); }
+.lobster-scfinal { font-weight: 800; }
+.lobster-scdie { font-weight: 800; color: var(--accent); }
+.lobster-scempty { color: var(--muted); font-family: var(--sans, inherit); }
+.lobster-dodgytag { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #b0347f; border: 1px solid #b0347f; border-radius: 5px; padding: 0 4px; }
+.lobster-jail { color: #c62f2f; } .lobster-free { color: #2bbf75; } .lobster-ciaq { color: var(--muted); }
+.lobster-scact { display: flex; gap: 4px; justify-content: center; }
+.lobster-ciabtn { border-color: color-mix(in srgb, #c62f2f 45%, var(--line)); color: #c62f2f; }
+.lobster-owedinput { width: 90px; text-align: center; }
+.lobster-scoverlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.lobster-scpad { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 18px 22px; text-align: center; }
+
+/* Printout end-of-game box */
+.lobster-endbox { margin-top: 10px; border: 1px solid #999; border-radius: 6px; padding: 5px 8px; color: #111; }
+.lobster-finalrow { font-size: 10px; margin-top: 5px; }
+.lobster-finalrow b { font-family: var(--mono); letter-spacing: 1px; }
+.lobster-ciarow { margin-top: 5px; border-top: 1px dashed #bbb; padding-top: 4px; color: #b23020; }
+.lobster-ciarow b { color: #b23020; }
