@@ -1663,19 +1663,43 @@ a.tab { display: block; }
 .lobster-dayev { display: block; font-family: var(--sans, inherit); font-weight: 700; font-size: 6px; line-height: 1.05; color: #b23020; text-transform: uppercase; letter-spacing: .2px; margin-top: 1px; }
 
 /* Lobster Pots — Fish Toss skill game */
-.lobster-fishslot { margin-top: 12px; }
-.lobster-fishstep { font-weight: 800; color: var(--ink); text-align: center; margin: 0 0 8px; }
+.lobster-fishslot { margin-top: 12px; max-width: 640px; margin-left: auto; margin-right: auto; }
+.lobster-fishstep { font-weight: 800; color: var(--ink); text-align: center; margin: 0 0 8px; font-size: clamp(15px, 2.4vw, 19px); }
 .lobster-fishcoin { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--ink); background: color-mix(in srgb, var(--gold) 16%, var(--panel-2)); }
 .lobster-fishcoin.win { border-color: #2bbf75; background: color-mix(in srgb, #2bbf75 20%, var(--panel-2)); }
 .lobster-fishcoin.lose { border-color: #c62f2f; background: color-mix(in srgb, #c62f2f 18%, var(--panel-2)); }
-.lobster-tosstrack { position: relative; height: 84px; margin: 6px auto 4px; max-width: 620px; border: 2px solid var(--line); border-radius: 12px; background: linear-gradient(#bfe3f2 0%, #bfe3f2 60%, #e9d8b0 60%, #e9d8b0 100%); overflow: hidden; }
-.lobster-tossbucket { position: absolute; bottom: 4px; height: 30px; border: 3px solid #7a4a1e; border-top: none; border-radius: 0 0 10px 10px; background: color-mix(in srgb, #b5762f 55%, #fff); }
-.lobster-tossmarker { position: absolute; top: 4px; width: 4px; height: 22px; margin-left: -2px; border-radius: 3px; background: var(--ink); }
-.lobster-tossmarker.hit { background: #2bbf75; } .lobster-tossmarker.miss { background: #c62f2f; }
-.lobster-tossbag { position: absolute; top: 8px; width: 14px; height: 14px; margin-left: -7px; border-radius: 4px; background: #8a5a2b; }
-.lobster-tossbag.in { animation: lobtossin .6s ease forwards; }
-.lobster-tossbag.out { animation: lobtossout .6s ease forwards; }
-@keyframes lobtossin { to { top: 56px; transform: scale(.7); } }
-@keyframes lobtossout { to { top: 74px; transform: translateX(18px) rotate(40deg); opacity: .3; } }
-.lobster-tossscore { text-align: center; font-family: var(--mono); font-weight: 700; color: var(--muted); margin: 2px 0 8px; }
-.lobster-fishmult { text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(40px, 10vw, 72px); color: var(--gold); margin: 4px 0; }
+
+/* Toss scene — a fisher, a moving arc and a bucket on the dock */
+.lobster-tossscene { position: relative; height: clamp(150px, 26vw, 200px); margin: 6px auto 8px; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); background: linear-gradient(#bfe6f5 0%, #a9dbef 58%, #e9d8b0 58%, #ddc79a 100%); }
+.lobster-water { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255,255,255,.18) 18px 22px); }
+.lobster-thrower { position: absolute; left: 2%; bottom: 6px; width: 46px; height: 46px; color: #24506b; }
+.lobster-thrower svg { width: 46px; height: 46px; }
+.lobster-bucket { position: absolute; bottom: 8px; width: 46px; height: 34px; margin-left: -23px; border: 3px solid #7a4a1e; border-top: none; border-radius: 4px 4px 10px 10px; background: linear-gradient(#c98a3c, #a56a24); box-shadow: inset 0 4px 0 rgba(255,255,255,.25); }
+.lobster-bag { position: absolute; left: 10%; bottom: 14px; width: 18px; height: 18px; margin-left: -9px; border-radius: 5px; background: #7a4a1e; box-shadow: inset -2px -2px 0 rgba(0,0,0,.2); }
+.lobster-bag.in { animation: lobbagin .35s ease forwards; }
+.lobster-bag.out { animation: lobbagout .5s ease forwards; }
+@keyframes lobbagin { to { transform: scale(.5); opacity: .5; } }
+@keyframes lobbagout { to { transform: translateY(10px) rotate(50deg); opacity: 0; } }
+.lobster-fishresult { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(20px, 5vw, 34px); text-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.lobster-fishresult.ok { color: #187f4b; } .lobster-fishresult.no { color: #b12626; }
+
+/* Power meter */
+.lobster-powerwrap { position: relative; height: 22px; max-width: 620px; margin: 0 auto 10px; border-radius: 11px; border: 2px solid var(--line); background: var(--panel-2); overflow: hidden; }
+.lobster-powerfill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #4f7fd1, #7c5cff); }
+.lobster-powerband { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, #2bbf75 55%, transparent); border-left: 2px solid #2bbf75; border-right: 2px solid #2bbf75; }
+.lobster-throwbtn { font-size: 18px; padding: 12px 30px; }
+.lobster-fishafter { justify-content: center; margin-top: 8px; }
+.lobster-fishmult { text-align: center; font-family: var(--mono); font-weight: 800; font-size: clamp(40px, 10vw, 72px); color: var(--gold); margin: 6px 0; line-height: 1; }
+.lobster-multwork { display: block; font-size: 14px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.lobster-calc { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+.lobster-calc label { display: inline-flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; color: var(--muted); align-items: center; }
+.lobster-calc .lobster-cellinput { width: 80px; font-size: 20px; }
+
+/* Printout Fish Toss tally box */
+.lobster-fishbox { margin-top: 10px; border: 1px solid #999; border-radius: 6px; padding: 5px 8px; color: #111; }
+.lobster-tallyrow { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+.lobster-tallylbl { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; color: #444; width: 62px; flex: 0 0 auto; }
+.lobster-tallyspace { flex: 1; border: 1px solid #bbb; border-radius: 4px; height: 22px; background: repeating-linear-gradient(90deg, #fff 0 26px, #eee 26px 27px); }
+.lobster-fishcalc { font-size: 9px; color: #333; margin: 4px 0 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.lobster-uline { display: inline-block; min-width: 46px; border-bottom: 1.5px solid #333; height: 12px; }
+.lobster-uline.sm { min-width: 34px; } .lobster-uline.xs { min-width: 22px; }
