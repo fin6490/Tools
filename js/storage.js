@@ -42,7 +42,7 @@ const DEFAULTS = () => ({
   lexicon: { lastSolved: 0, streak: 0 },
   numberwang: { target: 3, names: [], maths: false, mathSet: "auto" },
   pirates: { size: 7, printCount: 12, teamCount: 4, names: [], bombNames: "", categories: "Sport\nScience\nHistory\nGeography\nEntertainment" },
-  lobster: { days: 14, startPots: 5, startCash: 0, printCount: 8, physicalDice: false, fishToss: false, lottoPrize: 100, schedule: null, ledger: [], demo: null, scoreboard: [] },
+  lobster: { days: 14, startPots: 5, startCash: 0, printCount: 8, physicalDice: false, skillGame: false, lottoPrize: 100, schedule: null, schedVer: 2, ledger: [], demo: null, scoreboard: [] },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
