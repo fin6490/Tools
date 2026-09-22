@@ -8,9 +8,9 @@
 // board! Diagonal! Base 12! Wangernumb!). An optional Maths mode makes players
 // solve a real question — auto arithmetic or one of your Dojo sets — to unlock
 // their pick. Zero deps. All original code; no assets or scripts are copied.
-import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260916h";
-import { getState, save } from "./storage.js?v=20260916h";
-import * as sound from "./sound.js?v=20260916h";
+import { el, mathHtml, allSets, isCorrect, answersOf, shuffle } from "./quizkit.js?v=20260916i";
+import { getState, save } from "./storage.js?v=20260916i";
+import * as sound from "./sound.js?v=20260916i";
 
 const YES = ["That's NUMBERWANG!", "NUMBERWANG!", "Ooh — NUMBERWANG!", "Why, that's NUMBERWANG!", "Stone me, it's NUMBERWANG!", "Get in — NUMBERWANG!"];
 const DOUBLE = ["DOUBLE NUMBERWANG!", "It's a DOUBLE NUMBERWANG!!", "Twice the wang — DOUBLE NUMBERWANG!"];
