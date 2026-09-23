@@ -8,9 +8,9 @@
 //    fire the timetabled event cards, and run the class Bank so anyone who
 //    goes bust can borrow — all tracked centrally on the board.
 // Zero deps. All original code.
-import { el } from "./quizkit.js?v=20260916k";
-import { getState, save } from "./storage.js?v=20260916k";
-import * as sound from "./sound.js?v=20260916k";
+import { el } from "./quizkit.js?v=20260916l";
+import { getState, save } from "./storage.js?v=20260916l";
+import * as sound from "./sound.js?v=20260916l";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const YT_LOVELY = "https://www.youtube.com/results?search_query=bill+withers+lovely+day";
@@ -306,7 +306,13 @@ export function initLobster(root) {
     if (ev.tool === "inspect") { const b = el("button", "btn ghost", "Roll the Inspector's die"); b.addEventListener("click", () => drawNumber(cardEl, 6, "Inspector's die", "ODD = caught, penalty applies. Even = you get away with it.")); cardEl.appendChild(b); }
     if (ev.skill) {
       cardEl.appendChild(el("p", "lobster-evrule", "Flip the coin, then send fishers up one at a time to throw a fish into the bucket — a hit or a miss they tally on their own sheet. Sally's challenge comes round again through the game; at the very end their multiplier is 1 + (wins ÷ goes) × a dice roll."));
-      const b = el("button", "btn primary", "Open Sally's skill game"); b.addEventListener("click", () => { const host = el("div", "lobster-fishslot"); cardEl.appendChild(host); playSkillGame(host); b.disabled = true; }); cardEl.appendChild(b);
+      const b = el("button", "btn primary", "Open Sally's skill game");
+      b.addEventListener("click", () => {
+        const host = el("div", "lobster-fishslot"); cardEl.appendChild(host);
+        playSkillGame(host, () => { host.remove(); b.disabled = false; b.textContent = "Open Sally's skill game"; });
+        b.disabled = true;
+      });
+      cardEl.appendChild(b);
     }
     slot.appendChild(cardEl); fx(sound.beep);
   }
@@ -316,9 +322,10 @@ export function initLobster(root) {
      up), then a fish-into-a-bucket toss — time the power into the green and the
      fish arcs to the bucket. A clean hit or miss the fisher tallies on their own
      sheet; Sally turns the tally into the multiplier on the scoreboard. */
-  function playSkillGame(host) {
+  function playSkillGame(host, onClose) {
     let raf = null;
     const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
+    const closeGame = () => { stop(); disarmKeys(); if (typeof onClose === "function") onClose(); };
 
     /* -- start screen: a coin to flip + the actions -- */
     function renderStart() {
@@ -329,9 +336,10 @@ export function initLobster(root) {
           <button class="btn ghost" id="ftFlip">Flip the coin</button>
         </div>
         <p class="dojo-hint">Each go is a hit or a miss — fishers tally their own on their sheet. Sally works out the multiplier from those tallies on the Scoreboard at the end.</p>
-        <div class="dojo-editbtns"><button class="btn primary" id="ftGo">Throw a fish</button></div>`;
+        <div class="dojo-editbtns"><button class="btn primary" id="ftGo">Throw a fish</button><button class="btn ghost" id="ftClose">Close game</button></div>`;
       host.querySelector("#ftFlip").addEventListener("click", flip);
       host.querySelector("#ftGo").addEventListener("click", renderThrow);
+      host.querySelector("#ftClose").addEventListener("click", closeGame);
     }
     function flip() {
       const coin = host.querySelector("#ftCoin"); coin.className = "lobster-fishcoin";
@@ -444,8 +452,9 @@ export function initLobster(root) {
       if (res) { res.hidden = false; res.className = "lobster-fishresult " + (success ? "ok" : "no"); res.textContent = success ? "IN THE BUCKET!" : "MISSED!"; }
       const row = el("div", "dojo-editbtns lobster-fishafter");
       const next = el("button", "btn primary", "Throw again"); next.addEventListener("click", renderThrow);
-      const done = el("button", "btn ghost", "Back"); done.addEventListener("click", renderStart);
-      row.append(next, done); host.appendChild(row);
+      const back = el("button", "btn ghost", "Back"); back.addEventListener("click", renderStart);
+      const done = el("button", "btn ghost", "Close game"); done.addEventListener("click", closeGame);
+      row.append(next, back, done); host.appendChild(row);
     }
 
     renderStart();
@@ -753,9 +762,9 @@ export function initLobster(root) {
     const endBox = el("div", "lobster-endbox");
     let end = `<p class="lobster-boxlbl">End of the game</p>
       <p class="lobster-fishcalc">Sell pots: pots <span class="lobster-uline sm"></span> × sale dice <span class="lobster-uline xs"></span> = £ <span class="lobster-uline sm"></span></p>
-      <p class="lobster-fishcalc">Money <span class="lobster-uline sm"></span> + pot sale <span class="lobster-uline sm"></span> − loan owed <span class="lobster-uline sm"></span> = <span class="lobster-uline sm"></span></p>`;
-    if (true) end += `<p class="lobster-fishcalc">Sally's multiplier = wins <span class="lobster-uline sm"></span> ÷ goes <span class="lobster-uline sm"></span> × mult dice <span class="lobster-uline xs"></span> + 1 = <span class="lobster-uline sm"></span></p>`;
-    end += `<p class="lobster-fishcalc lobster-finalrow"><b>FINAL SCORE</b> ${true ? "= subtotal <span class=\"lobster-uline sm\"></span> × multiplier <span class=\"lobster-uline sm\"></span> " : ""}= <span class="lobster-uline"></span></p>
+      <p class="lobster-fishcalc">Subtotal: money <span class="lobster-uline sm"></span> + pot sale <span class="lobster-uline sm"></span> = <span class="lobster-uline sm"></span></p>`;
+    end += `<p class="lobster-fishcalc">Sally's multiplier = wins <span class="lobster-uline sm"></span> ÷ goes <span class="lobster-uline sm"></span> × mult dice <span class="lobster-uline xs"></span> + 1 = <span class="lobster-uline sm"></span></p>`;
+    end += `<p class="lobster-fishcalc lobster-finalrow"><b>FINAL SCORE</b> = subtotal <span class="lobster-uline sm"></span> × multiplier <span class="lobster-uline sm"></span> − loan owed <span class="lobster-uline sm"></span> = <span class="lobster-uline"></span></p>
       <p class="lobster-fishcalc lobster-ciarow">Took a dodgy deal? Roll a dice — <b>ODD = JAIL</b> (out of the game!): <span class="lobster-uline xs"></span></p>`;
     endBox.innerHTML = end;
     cardEl.appendChild(endBox);
