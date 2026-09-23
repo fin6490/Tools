@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260916l";
-import { parseEntries } from "./wheel.js?v=20260916l";
-import { getState, save } from "./storage.js?v=20260916l";
-import * as sound from "./sound.js?v=20260916l";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260916m";
+import { parseEntries } from "./wheel.js?v=20260916m";
+import { getState, save } from "./storage.js?v=20260916m";
+import * as sound from "./sound.js?v=20260916m";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {

@@ -8,9 +8,9 @@
 //    fire the timetabled event cards, and run the class Bank so anyone who
 //    goes bust can borrow — all tracked centrally on the board.
 // Zero deps. All original code.
-import { el } from "./quizkit.js?v=20260916l";
-import { getState, save } from "./storage.js?v=20260916l";
-import * as sound from "./sound.js?v=20260916l";
+import { el } from "./quizkit.js?v=20260916m";
+import { getState, save } from "./storage.js?v=20260916m";
+import * as sound from "./sound.js?v=20260916m";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const YT_LOVELY = "https://www.youtube.com/results?search_query=bill+withers+lovely+day";
@@ -33,7 +33,7 @@ const IC = {
 /* ---------- event cards (fired at the end of timetabled days) ---------- */
 const EVENTS = {
   lottery: { name: "Fisherman's Lottery", cls: "lott", icon: IC.ticket, tag: "Pick a number",
-    rule: "Everyone writes a number 1–10 on their sheet. Draw the winning number — match it and win £100!", tool: "lotto" },
+    rule: "Everyone writes a number 2–12 on their sheet. The winning number is two dice added together — match it and win the prize!", tool: "lotto" },
   dodgy:   { name: "Dodgy Dave", cls: "dodgy", icon: IC.tag, tag: "Cheap pots",
     rule: "Dave sells pots at £3 each instead of the £5 market price. Buy as many as you dare — write down how many, because they might be dodgy…" },
   burt:    { name: "Black Market Burt", cls: "burt", icon: IC.cash, tag: "Triple price",
@@ -69,6 +69,7 @@ export function initLobster(root) {
     if (typeof d.skillGame !== "boolean") d.skillGame = typeof d.fishToss === "boolean" ? d.fishToss : false;
     delete d.fishToss;
     if (typeof d.lottoPrize !== "number") d.lottoPrize = 100;
+    if (!d.lottoPrizes || typeof d.lottoPrizes !== "object") d.lottoPrizes = {};
     if (!d.schedule || typeof d.schedule !== "object") d.schedule = { ...DEFAULT_SCHEDULE };
     if (d.schedVer !== SCHED_VER) { d.schedule = { ...DEFAULT_SCHEDULE }; d.schedVer = SCHED_VER; }
     if (!Array.isArray(d.ledger)) d.ledger = [];
@@ -76,6 +77,16 @@ export function initLobster(root) {
     if (!d.demo || typeof d.demo !== "object") d.demo = null;
     return d;
   };
+
+  // Lottery prize for a given day: a per-day override if set, else the default.
+  const prizeForDay = (day) => { const o = cfg().lottoPrizes[day]; return (typeof o === "number" && o >= 0) ? o : cfg().lottoPrize; };
+
+  // Board undo: snapshots of the demo state, restored one step at a time.
+  let undoStack = [];
+  const snapshot = () => { if (!demo) return; undoStack.push(JSON.stringify(demo)); if (undoStack.length > 50) undoStack.shift(); const u = panel.querySelector("#loUndo"); if (u) u.disabled = false; };
+
+  // Bank ledger refresh — hoisted so advancing the day recomputes the interest.
+  let refreshBank = () => {};
 
   /* ================= LOBBY ================= */
   function renderLobby(flash) {
@@ -110,7 +121,8 @@ export function initLobster(root) {
 
     const prizeIn = el("input", "dojo-input dojo-select-sm lobster-scnum"); prizeIn.type = "number"; prizeIn.min = "0"; prizeIn.value = cfg().lottoPrize;
     prizeIn.addEventListener("input", () => { cfg().lottoPrize = Math.max(0, +prizeIn.value || 0); save(); });
-    rowF("Lottery prize (£)", prizeIn);
+    rowF("Default lottery prize (£)", prizeIn);
+    card.appendChild(el("p", "dojo-hint lobster-prizehint", "Tip: set bigger prizes for later-day lotteries in Edit timetable, or change the prize live on the board when the lottery comes round."));
 
     const btns = el("div", "dojo-editbtns");
     const play = el("button", "btn primary dojo-begin", "Play on the board");
@@ -158,8 +170,18 @@ export function initLobster(root) {
       const sel = el("select", "dojo-select dojo-select-sm");
       const none = el("option"); none.value = ""; none.textContent = "— none —"; sel.appendChild(none);
       EVENT_ORDER.forEach((k) => { const o = el("option"); o.value = k; o.textContent = EVENTS[k].name; if (cfg().schedule[dnum] === k) o.selected = true; sel.appendChild(o); });
-      sel.addEventListener("change", () => { if (sel.value) cfg().schedule[dnum] = sel.value; else delete cfg().schedule[dnum]; save(); });
       rowEl.appendChild(sel);
+      // Per-lottery-day prize override (blank = use the default).
+      const prizeWrap = el("span", "lobster-schedprize");
+      const prizeInp = el("input", "dojo-input lobster-scnum"); prizeInp.type = "number"; prizeInp.min = "0";
+      prizeInp.placeholder = "£" + cfg().lottoPrize;
+      prizeInp.value = (typeof cfg().lottoPrizes[dnum] === "number") ? cfg().lottoPrizes[dnum] : "";
+      prizeInp.addEventListener("input", () => { const v = +prizeInp.value; if (prizeInp.value === "" || isNaN(v)) delete cfg().lottoPrizes[dnum]; else cfg().lottoPrizes[dnum] = Math.max(0, v); save(); });
+      prizeWrap.appendChild(document.createTextNode("prize ")); prizeWrap.appendChild(prizeInp);
+      const syncPrize = () => { prizeWrap.style.display = sel.value === "lottery" ? "" : "none"; };
+      sel.addEventListener("change", () => { if (sel.value) cfg().schedule[dnum] = sel.value; else delete cfg().schedule[dnum]; save(); syncPrize(); });
+      syncPrize();
+      rowEl.appendChild(prizeWrap);
       grid.appendChild(rowEl);
     }
     card.appendChild(grid);
@@ -219,7 +241,8 @@ export function initLobster(root) {
     bar.innerHTML = `<button class="btn ghost lobster-daybtn" id="loPrev">‹</button>
       <span class="lobster-day" id="loDay"></span>
       <button class="btn ghost lobster-daybtn" id="loNext">›</button>
-      <button class="btn primary" id="loRoll">Roll the weather</button>`;
+      <button class="btn primary" id="loRoll">Roll the weather</button>
+      <button class="btn ghost" id="loUndo" title="Undo the last change">Undo</button>`;
     wrap.appendChild(bar);
     const weather = el("div", "lobster-weather", ""); weather.id = "loWeather"; wrap.appendChild(weather);
     const evbox = el("div", "lobster-eventslot"); evbox.id = "loEventSlot"; wrap.appendChild(evbox);
@@ -237,10 +260,10 @@ export function initLobster(root) {
       const dCell = el("td", "lobster-bd-day", String(i + 1));
       const potsCell = el("td", "lobster-bd-pots");
       const innTd = el("td"), offTd = el("td"), buyTd = el("td");
-      const mkInput = (key) => { const inp = el("input", "lobster-cellinput"); inp.type = "number"; inp.min = "0"; inp.value = r[key] || ""; inp.addEventListener("input", () => { r[key] = Math.max(0, +inp.value || 0); persistDemo(); recompute(); }); return inp; };
+      const mkInput = (key) => { const inp = el("input", "lobster-cellinput"); inp.type = "number"; inp.min = "0"; inp.value = r[key] || ""; inp.addEventListener("focus", snapshot); inp.addEventListener("input", () => { r[key] = Math.max(0, +inp.value || 0); persistDemo(); recompute(); }); return inp; };
       innTd.appendChild(mkInput("inn")); offTd.appendChild(mkInput("off")); buyTd.appendChild(mkInput("buy"));
       const wthrCell = el("td", "lobster-bd-weather");
-      wthrCell.addEventListener("click", () => { r.weather = r.weather === "lovely" ? "storm" : r.weather === "storm" ? "" : "lovely"; persistDemo(); recompute(); });
+      wthrCell.addEventListener("click", () => { snapshot(); r.weather = r.weather === "lovely" ? "storm" : r.weather === "storm" ? "" : "lovely"; persistDemo(); recompute(); });
       const catchCell = el("td", "lobster-bd-catch");
       const totalCell = el("td", "lobster-bd-total");
       const balCell = el("td", "lobster-bd-bal");
@@ -263,10 +286,13 @@ export function initLobster(root) {
     panel.querySelector("#loScore").addEventListener("click", renderScoreboard);
     panel.querySelector("#loReset").addEventListener("click", () => { if (confirm("Clear the board and start a fresh game?")) { demo = freshDemo(); persistDemo(); renderBoard(); } });
     panel.querySelector("#loPhys").addEventListener("change", (e) => { cfg().physicalDice = e.target.checked; save(); });
-    const setDay = () => { panel.querySelector("#loDay").textContent = `Day ${demo.day} of ${cfg().days}`; panel.querySelector("#loPrev").disabled = demo.day <= 1; panel.querySelector("#loNext").disabled = demo.day >= cfg().days; showEventSlot(); highlightDay(); };
+    const setDay = () => { panel.querySelector("#loDay").textContent = `Day ${demo.day} of ${cfg().days}`; panel.querySelector("#loPrev").disabled = demo.day <= 1; panel.querySelector("#loNext").disabled = demo.day >= cfg().days; showEventSlot(); highlightDay(); refreshBank(); };
     panel.querySelector("#loPrev").addEventListener("click", () => { if (demo.day > 1) { demo.day--; persistDemo(); setDay(); } });
     panel.querySelector("#loNext").addEventListener("click", () => { if (demo.day < cfg().days) { demo.day++; persistDemo(); setDay(); } });
     panel.querySelector("#loRoll").addEventListener("click", rollWeather);
+    const undoBtn = panel.querySelector("#loUndo");
+    undoBtn.disabled = !undoStack.length;
+    undoBtn.addEventListener("click", () => { if (!undoStack.length) return; demo = JSON.parse(undoStack.pop()); cfg().demo = demo; save(); renderBoard(); });
 
     recompute = () => {
       const rows = compute();
@@ -294,14 +320,21 @@ export function initLobster(root) {
     slot.innerHTML = "";
     if (!key || !EVENTS[key]) return;
     const ev = EVENTS[key];
-    const ruleText = key === "lottery"
-      ? `Everyone writes a number 2–12 on their sheet. The winning number is two dice added together — match it and win £${cfg().lottoPrize}!`
-      : ev.rule;
+    const lottoText = (p) => `Everyone writes a number 2–12 on their sheet. The winning number is two dice added together — match it and win £${p}!`;
+    const ruleText = key === "lottery" ? lottoText(prizeForDay(demo.day)) : ev.rule;
     const cardEl = el("div", "lobster-eventcard " + ev.cls);
     cardEl.innerHTML = `<div class="lobster-evhead"><span class="lobster-evic">${ev.icon}</span>
         <span class="lobster-evtitles"><span class="lobster-evname">End of day ${demo.day}: ${ev.name}</span><span class="lobster-evtag">${ev.tag}</span></span></div>
       <p class="lobster-evrule">${ruleText}</p>`;
-    if (ev.tool === "lotto") { const b = el("button", "btn ghost", "Draw the winning number"); b.addEventListener("click", () => drawTwoDice(cardEl, cfg().lottoPrize)); cardEl.appendChild(b); }
+    if (key === "lottery") {
+      const pr = el("div", "lobster-prizeedit");
+      pr.appendChild(el("label", "lobster-prizelbl", "Prize £"));
+      const inp = el("input", "dojo-input lobster-scnum"); inp.type = "number"; inp.min = "0"; inp.value = prizeForDay(demo.day);
+      inp.addEventListener("input", () => { const v = Math.max(0, +inp.value || 0); cfg().lottoPrizes[demo.day] = v; save(); const rt = cardEl.querySelector(".lobster-evrule"); if (rt) rt.textContent = lottoText(v); });
+      pr.appendChild(inp);
+      cardEl.appendChild(pr);
+    }
+    if (ev.tool === "lotto") { const b = el("button", "btn ghost", "Draw the winning number"); b.addEventListener("click", () => drawTwoDice(cardEl, prizeForDay(demo.day))); cardEl.appendChild(b); }
     if (ev.tool === "dice") { const b = el("button", "btn ghost", "Roll the die"); b.addEventListener("click", () => drawNumber(cardEl, 6, "Dice roll", "Sale price = roll × pots sold.")); cardEl.appendChild(b); }
     if (ev.tool === "inspect") { const b = el("button", "btn ghost", "Roll the Inspector's die"); b.addEventListener("click", () => drawNumber(cardEl, 6, "Inspector's die", "ODD = caught, penalty applies. Even = you get away with it.")); cardEl.appendChild(b); }
     if (ev.skill) {
@@ -326,6 +359,8 @@ export function initLobster(root) {
     let raf = null;
     const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
     const closeGame = () => { stop(); disarmKeys(); if (typeof onClose === "function") onClose(); };
+    let sThrows = 0, sHits = 0, lastTier = null;   // running tally for this visit
+    const tallyLine = () => sThrows ? `<p class="lobster-sesstally">This visit: <b>${sHits}</b> in of <b>${sThrows}</b></p>` : "";
 
     /* -- start screen: a coin to flip + the actions -- */
     function renderStart() {
@@ -336,6 +371,7 @@ export function initLobster(root) {
           <button class="btn ghost" id="ftFlip">Flip the coin</button>
         </div>
         <p class="dojo-hint">Each go is a hit or a miss — fishers tally their own on their sheet. Sally works out the multiplier from those tallies on the Scoreboard at the end.</p>
+        ${tallyLine()}
         <div class="dojo-editbtns"><button class="btn primary" id="ftGo">Throw a fish</button><button class="btn ghost" id="ftClose">Close game</button></div>`;
       host.querySelector("#ftFlip").addEventListener("click", flip);
       host.querySelector("#ftGo").addEventListener("click", renderThrow);
@@ -381,7 +417,7 @@ export function initLobster(root) {
     function renderThrow() {
       stop();
       const d = Math.random();                         // luck of the draw
-      const tier = tierOf(d);
+      const tier = tierOf(d); lastTier = tier;
       half = lerp(0.17, 0.022, d);                     // bucket half-width: 34% … 4.4%
       speed = lerp(0.008, 0.028, d);                   // power sweep speed
       const margin = 0.14;
@@ -446,10 +482,15 @@ export function initLobster(root) {
     }
     function finishThrow(success) {
       fx(success ? sound.fanfare : sound.buzz);
+      sThrows++; if (success) sHits++;
       const fish = host.querySelector("#ftFish"); if (fish) fish.classList.add(success ? "in" : "out");
       const bucket = host.querySelector("#ftBucket"); if (bucket && success) bucket.classList.add("splash");
+      const hard = lastTier && (lastTier.cls === "t5" || lastTier.cls === "t6");
+      const easy = lastTier && (lastTier.cls === "t1" || lastTier.cls === "t2");
+      const praise = success ? (hard ? "brilliant throw!" : "nice one!") : (easy ? "so close!" : "unlucky!");
       const res = host.querySelector("#ftResult");
-      if (res) { res.hidden = false; res.className = "lobster-fishresult " + (success ? "ok" : "no"); res.textContent = success ? "IN THE BUCKET!" : "MISSED!"; }
+      if (res) { res.hidden = false; res.className = "lobster-fishresult " + (success ? "ok" : "no"); res.innerHTML = `${success ? "IN THE BUCKET!" : "MISSED!"}<span class="lobster-fishtier">${lastTier ? lastTier.name + " — " : ""}${praise}</span>`; }
+      const tally = el("p", "lobster-sesstally"); tally.innerHTML = `This visit: <b>${sHits}</b> in of <b>${sThrows}</b>`; host.appendChild(tally);
       const row = el("div", "dojo-editbtns lobster-fishafter");
       const next = el("button", "btn primary", "Throw again"); next.addEventListener("click", renderThrow);
       const back = el("button", "btn ghost", "Back"); back.addEventListener("click", renderStart);
@@ -463,13 +504,19 @@ export function initLobster(root) {
   /* ---------- weather roll (d6) ---------- */
   function applyWeather(die) {
     const fair = die <= 4;
+    snapshot();
     const r = demo.rows[demo.day - 1]; r.weather = fair ? "lovely" : "storm"; persistDemo(); recompute();
+    // Streak drama: how many days in a row of this same weather, ending today.
+    let streak = 0; const wv = fair ? "lovely" : "storm";
+    for (let i = demo.day - 1; i >= 0; i--) { if (demo.rows[i] && demo.rows[i].weather === wv) streak++; else break; }
+    const drama = streak >= 2 ? (fair ? `${streak} lovely days in a row!` : `${streak} storms in a row!`) : "";
     const w = panel.querySelector("#loWeather");
     w.className = "lobster-weather show " + (fair ? "fair" : "storm");
     w.innerHTML = `<span class="lobster-wic">${fair ? IC.sun : IC.storm}</span>
       <span class="lobster-wtext">${fair ? "Lovely day" : "Storm!"}</span>
       <span class="lobster-wroll">die: ${die} ${fair ? "(1–4)" : "(5–6)"}</span>
       <span class="lobster-wnote">${fair ? "Inshore £1 · Offshore £6 a pot" : "Inshore £3 a pot · offshore pots DESTROYED"}</span>
+      ${drama ? `<span class="lobster-wstreak ${fair ? "fair" : "storm"}">${drama}</span>` : ""}
       ${fair ? `<a class="lobster-ytlink" href="${YT_LOVELY}" target="_blank" rel="noopener">♪ Play “Lovely Day” (Bill Withers)</a>` : ""}`;
     fx(fair ? sound.sunny : sound.storm);
   }
@@ -557,7 +604,7 @@ export function initLobster(root) {
     const F = true;
     const wrap = el("div", "lobster-game");
     wrap.appendChild(el("div", "dojo-toprow", `<span class="dojo-set">Final scoreboard</span>
-      <span class="dojo-topbtns"><button class="btn ghost" id="scClear">Clear all</button><button class="btn ghost" id="scBack">← Board</button></span>`));
+      <span class="dojo-topbtns"><button class="btn ghost" id="scCopy">Copy results</button><button class="btn ghost" id="scProject">Project</button><button class="btn ghost" id="scClear">Clear all</button><button class="btn ghost" id="scBack">← Board</button></span>`));
     wrap.appendChild(el("p", "dojo-lede", `Enter each fisher's pots, money and any loan still owed${F ? ", plus their Skilled Sally wins/goes" : ""}. Roll a die to sell their pots (die × pots)${F ? ", roll a second die for the multiplier" : ""} and take off the loan. Flag anyone who took a dodgy deal — they must survive the “CIA, open up!” roll (odd = jail).`));
 
     // add-player form
@@ -588,6 +635,17 @@ export function initLobster(root) {
     add.addEventListener("click", doAdd);
     [nameIn, potsIn, moneyIn, owedIn, winsIn, goesIn].forEach((i) => i && i.addEventListener("keydown", (e) => { if (e.key === "Enter") doAdd(); }));
     form.append(add);
+    // Prefill pots & money from the teacher's play-along board (its final row).
+    const fromBoard = el("button", "btn ghost", "Fill from board");
+    fromBoard.title = "Use the board's final total pots and balance";
+    fromBoard.addEventListener("click", () => {
+      const d = cfg().demo; if (!d || !Array.isArray(d.rows)) { potsIn.focus(); return; }
+      const saved = demo; demo = d; const rows = compute(); demo = saved;
+      const last = rows[rows.length - 1];
+      if (last) { potsIn.value = last.totalPots; moneyIn.value = Math.max(0, last.balance); }
+      nameIn.focus(); fx(sound.tick);
+    });
+    form.append(fromBoard);
     wrap.appendChild(form);
 
     // table
@@ -624,11 +682,49 @@ export function initLobster(root) {
 
     panel.querySelector("#scBack").addEventListener("click", () => { demo = cfg().demo || freshDemo(); renderBoard(); });
     panel.querySelector("#scClear").addEventListener("click", () => { if (!cfg().scoreboard.length || confirm("Clear the whole scoreboard?")) { cfg().scoreboard = []; save(); renderScoreboard(); } });
+    panel.querySelector("#scCopy").addEventListener("click", () => copyResults(panel.querySelector("#scCopy")));
+    panel.querySelector("#scProject").addEventListener("click", projectResults);
   }
+
+  // Ranked standings as plain text / big-screen list, sharing one builder.
+  function rankedStandings() {
+    const rows = cfg().scoreboard.map((r) => ({ r, d: scoreRow(r) }));
+    return rows.slice().sort((a, b) => sortKey(b.d) - sortKey(a.d));
+  }
+  function scoreLabel(d) { return d.jailed ? "JAILED" : (typeof d.final === "number" ? String(d.final) : "—"); }
+  function copyResults(btn) {
+    const ranked = rankedStandings();
+    if (!ranked.length) return;
+    const lines = ranked.map((row, i) => `${i + 1}. ${row.r.name} — ${scoreLabel(row.d)}`);
+    const text = "Lobster Pots — final standings\n" + lines.join("\n");
+    const done = () => { if (btn) { const t = btn.textContent; btn.textContent = "Copied!"; setTimeout(() => { btn.textContent = t; }, 1400); } fx(sound.beep); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    else fallbackCopy(text, done);
+  }
+  function fallbackCopy(text, done) {
+    const ta = el("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch {} ta.remove();
+  }
+  function projectResults() {
+    const ranked = rankedStandings();
+    const overlay = el("div", "lobster-projoverlay");
+    const box = el("div", "lobster-projbox");
+    let html = `<p class="lobster-projtitle">Lobster Pots — final standings</p>`;
+    if (!ranked.length) html += `<p class="lobster-projempty">No fishers on the scoreboard yet.</p>`;
+    else html += `<ol class="lobster-projlist">${ranked.map((row) => `<li class="${row.d.jailed ? "jailed" : ""}"><span class="lobster-projname">${escapeName(row.r.name)}</span><span class="lobster-projscore">${scoreLabel(row.d)}</span></li>`).join("")}</ol>`;
+    box.innerHTML = html;
+    const close = el("button", "btn primary", "Close"); close.addEventListener("click", () => overlay.remove());
+    box.appendChild(close);
+    overlay.appendChild(box);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    panel.appendChild(overlay); fx(sound.fanfare);
+  }
+  const escapeName = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // kind: "die" (sell pots), "mult" (multiplier die) or "cia" (jail roll)
   const DIE_FIELD = { die: "die", mult: "multDie", cia: "cia" };
   function rollFor(idx, kind) {
     const r = cfg().scoreboard[idx]; if (!r) return;
+    if (kind === "cia") return ciaReveal(idx);
     const cia = kind === "cia", field = DIE_FIELD[kind] || "die";
     const set = (v) => { r[field] = v; save(); fx(cia && v % 2 === 1 ? sound.buzz : sound.fanfare); renderScoreboard(); };
     const prompt = cia ? "CIA, open up! Tap the die (odd = jail)" : kind === "mult" ? "tap the multiplier die" : "tap the sale die";
@@ -644,18 +740,60 @@ export function initLobster(root) {
     fx(sound.tick); set(1 + rint(6));
   }
 
+  // "CIA — open up!" — a full-screen dramatic roll for anyone who took a dodgy
+  // deal. Odd = jail (out of the game); even = they walk free.
+  function ciaReveal(idx) {
+    const r = cfg().scoreboard[idx]; if (!r) return;
+    const overlay = el("div", "lobster-scoverlay lobster-ciareveal");
+    const box = el("div", "lobster-ciabox");
+    box.innerHTML = `<p class="lobster-ciatitle">CIA — OPEN UP!</p>
+      <p class="lobster-ciasub">${escapeName(r.name)}, roll for your freedom… <b>odd = jail</b></p>
+      <div class="lobster-ciadie" id="ciaDie">?</div>`;
+    overlay.appendChild(box); panel.appendChild(overlay);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    const dieEl = box.querySelector("#ciaDie");
+    const finish = (v) => {
+      r.cia = v; save();
+      const jailed = v % 2 === 1;
+      fx(jailed ? sound.buzz : sound.fanfare);
+      dieEl.textContent = v; dieEl.classList.add(jailed ? "jail" : "free");
+      const verdict = el("p", "lobster-ciaverdict " + (jailed ? "jail" : "free"));
+      verdict.textContent = jailed ? "ODD — OFF TO JAIL! Out of the game." : "EVEN — you walk free!";
+      box.appendChild(verdict);
+      const close = el("button", "btn primary", "Done"); close.addEventListener("click", () => { overlay.remove(); renderScoreboard(); });
+      box.appendChild(close);
+    };
+    if (cfg().physicalDice) {
+      box.querySelector(".lobster-ciasub").insertAdjacentText("beforeend", " — tap what you rolled");
+      const pad = el("div", "lobster-numpad");
+      for (let i = 1; i <= 6; i++) { const b = el("button", "btn ghost lobster-numbtn", String(i)); b.addEventListener("click", () => { pad.remove(); finish(i); }); pad.appendChild(b); }
+      box.appendChild(pad);
+    } else {
+      let n = 0; const spin = setInterval(() => { dieEl.textContent = String(1 + rint(6)); fx(sound.tick); if (++n >= 15) { clearInterval(spin); finish(1 + rint(6)); } }, 80);
+    }
+  }
+
   /* ---------- board Bank ledger (Biscoes Bank) ----------
      Loans charge 50% interest a day: tap "+ day" to grow the debt. Whatever is
      still owed at the end is taken off that fisher's final score. */
-  const owedOf = (L) => Math.max(0, L.owed != null ? +L.owed : (+L.borrowed || 0) - (+L.repaid || 0));
+  // Owed now = principal grown by 50% a day since it was taken, up to the
+  // current board day. Legacy loans (a stored `owed`) fall back to that figure.
+  const owedOf = (L) => {
+    if (typeof L.principal === "number" && typeof L.dayTaken === "number") {
+      const cur = demo ? demo.day : L.dayTaken;
+      const days = Math.max(0, cur - L.dayTaken);
+      return Math.round(L.principal * Math.pow(1.5, days));
+    }
+    return Math.max(0, L.owed != null ? +L.owed : (+L.borrowed || 0) - (+L.repaid || 0));
+  };
   function renderBankPanel() {
     const box = el("div", "lobster-bankpanel");
-    box.innerHTML = `<div class="lobster-bankhead"><span class="lobster-ic bank">${IC.bank}</span><span>Biscoes Bank <span class="lobster-banksub">— gone bust? Borrow here. Interest 50% a day; whatever's still owed comes off the final score.</span></span></div>`;
+    box.innerHTML = `<div class="lobster-bankhead"><span class="lobster-ic bank">${IC.bank}</span><span>Biscoes Bank <span class="lobster-banksub">— gone bust? Borrow here. Interest is 50% a day and the debt grows automatically as the days pass; whatever's still owed at the end comes off the final score.</span></span></div>`;
     const form = el("div", "lobster-bankform");
     const nameIn = el("input", "dojo-input lobster-bankname"); nameIn.placeholder = "Fisher's name"; nameIn.maxLength = 24;
     const amtIn = el("input", "dojo-input lobster-bankamt"); amtIn.type = "number"; amtIn.min = "1"; amtIn.placeholder = "£ borrowed";
     const add = el("button", "btn primary", "Lend");
-    const doAdd = () => { const nm = nameIn.value.trim(), amt = Math.max(0, +amtIn.value || 0); if (!nm || !amt) return; cfg().ledger.push({ name: nm, owed: amt }); save(); nameIn.value = ""; amtIn.value = ""; fx(sound.beep); refreshLedger(); };
+    const doAdd = () => { const nm = nameIn.value.trim(), amt = Math.max(0, +amtIn.value || 0); if (!nm || !amt) return; cfg().ledger.push({ name: nm, principal: amt, dayTaken: demo ? demo.day : 1 }); save(); nameIn.value = ""; amtIn.value = ""; fx(sound.beep); refreshLedger(); };
     add.addEventListener("click", doAdd);
     amtIn.addEventListener("keydown", (e) => { if (e.key === "Enter") doAdd(); });
     form.append(nameIn, amtIn, add);
@@ -664,25 +802,35 @@ export function initLobster(root) {
     const refreshLedger = () => {
       list.innerHTML = "";
       if (!cfg().ledger.length) { list.appendChild(el("p", "dojo-hint", "No loans yet.")); return; }
+      const curDay = demo ? demo.day : 1;
       const table = el("table", "lobster-ledgertable");
-      table.innerHTML = "<thead><tr><th class='l'>Fisher</th><th>Owed now</th><th></th></tr></thead>";
+      table.innerHTML = `<thead><tr><th class='l'>Fisher</th><th>Borrowed</th><th>Day taken</th><th>Owed now (day ${curDay})</th><th></th></tr></thead>`;
       const tbody = el("tbody");
       cfg().ledger.forEach((L, idx) => {
+        // Bring any legacy loan up to the auto-calc shape once it's edited/shown.
+        if (typeof L.principal !== "number") { L.principal = owedOf(L); L.dayTaken = curDay; delete L.owed; delete L.borrowed; delete L.repaid; }
         const tr = el("tr");
         const nameTd = el("td", "l", L.name);
+        const borrowedTd = el("td");
+        const borrowedIn = el("input", "dojo-input lobster-owedinput"); borrowedIn.type = "number"; borrowedIn.min = "0"; borrowedIn.value = L.principal;
+        borrowedIn.addEventListener("input", () => { L.principal = Math.max(0, +borrowedIn.value || 0); save(); owedCell.textContent = "£" + owedOf(L); });
+        borrowedTd.appendChild(borrowedIn);
+        const dayTd = el("td");
+        const dayIn = el("input", "dojo-input lobster-dayinput"); dayIn.type = "number"; dayIn.min = "1"; dayIn.max = String(cfg().days); dayIn.value = L.dayTaken;
+        dayIn.addEventListener("input", () => { L.dayTaken = Math.min(cfg().days, Math.max(1, +dayIn.value || 1)); save(); owedCell.textContent = "£" + owedOf(L); });
+        dayTd.appendChild(dayIn);
         const owedTd = el("td");
-        const owedIn = el("input", "dojo-input lobster-owedinput"); owedIn.type = "number"; owedIn.min = "0"; owedIn.value = owedOf(L);
-        owedIn.addEventListener("input", () => { L.owed = Math.max(0, +owedIn.value || 0); delete L.borrowed; delete L.repaid; save(); });
-        owedTd.appendChild(owedIn);
+        const owedCell = el("span", "lobster-owed"); owedCell.textContent = "£" + owedOf(L);
+        owedTd.appendChild(owedCell);
         const actTd = el("td", "lobster-ledgeract");
-        const day = el("button", "btn ghost lobster-minibtn", "+ day (×1.5)"); day.title = "Add a day's 50% interest"; day.addEventListener("click", () => { L.owed = Math.round(owedOf(L) * 1.5); delete L.borrowed; delete L.repaid; save(); fx(sound.tick); refreshLedger(); });
         const del = el("button", "btn ghost lobster-minibtn", "✕"); del.title = "Remove"; del.addEventListener("click", () => { cfg().ledger.splice(idx, 1); save(); refreshLedger(); });
-        actTd.append(day, del);
-        tr.append(nameTd, owedTd, actTd);
+        actTd.appendChild(del);
+        tr.append(nameTd, borrowedTd, dayTd, owedTd, actTd);
         tbody.appendChild(tr);
       });
       table.appendChild(tbody); list.appendChild(table);
     };
+    refreshBank = refreshLedger;
     refreshLedger();
     return box;
   }
@@ -721,7 +869,8 @@ export function initLobster(root) {
     for (let dnum = 1; dnum <= days; dnum++) {
       const tr = el("tr");
       const ev = cfg().schedule[dnum];
-      tr.innerHTML = `<td class="lobster-daycell">${dnum}${ev ? `<span class="lobster-dayev">${EVENTS[ev].name}</span>` : ""}</td>` + "<td></td>".repeat(9);
+      const evLabel = ev ? EVENTS[ev].name + (ev === "lottery" ? ` £${prizeForDay(dnum)}` : "") : "";
+      tr.innerHTML = `<td class="lobster-daycell">${dnum}${ev ? `<span class="lobster-dayev">${evLabel}</span>` : ""}</td>` + "<td></td>".repeat(9);
       tb.appendChild(tr);
     }
     table.appendChild(tb);
@@ -733,7 +882,7 @@ export function initLobster(root) {
       [IC.storm, "storm", "Storm (die 5–6): inshore £3 — offshore DESTROYED"],
       [IC.boat, "boat", "Choose inshore/offshore before the weather"],
       [IC.cash, "cash", "Buy pots £5 each · bank to stay safe"],
-      [IC.ticket, "lott", `Lottery: match the two-dice number, win £${cfg().lottoPrize}`],
+      [IC.ticket, "lott", `Lottery: match the two-dice number to win the day's prize`],
       [IC.badge, "insp", "Inspectors: roll a die, ODD = caught — Dave's pots fined £5 each, Burt's deal loses it all · loans 50%/day"],
       [IC.fish, "sally", "Skilled Sally's toss builds your end multiplier"],
     ];
