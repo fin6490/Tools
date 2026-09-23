@@ -1,8 +1,8 @@
 // countdown.js — Countdown: the classic letters, numbers and conundrum starter,
 // built for the whiteboard. Deal the puzzle, run the 30-second clock, reveal.
 // Standalone (no question set needed). Zero deps.
-import { rint, shuffle, el } from "./quizkit.js?v=20260916l";
-import * as sound from "./sound.js?v=20260916l";
+import { rint, shuffle, el } from "./quizkit.js?v=20260916m";
+import * as sound from "./sound.js?v=20260916m";
 
 // Weighted letter bags (roughly the show's mix) and the numbers stacks.
 const VOWELS = "AAAAAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEIIIIIIIIIIIIIOOOOOOOOOOOOOUUUUU".split("");
@@ -104,7 +104,7 @@ export function initCountdown(root) {
   let WORDLIST = null, RANK = null, wordLoad = null;
   function loadWords() {
     if (WORDLIST) return Promise.resolve(WORDLIST);
-    if (!wordLoad) wordLoad = import("./countdown-words.js?v=20260916l").then((m) => {
+    if (!wordLoad) wordLoad = import("./countdown-words.js?v=20260916m").then((m) => {
       WORDLIST = m.WORDS.split("\n");
       RANK = new Map();
       m.COMMON.split("\n").forEach((w, i) => RANK.set(w, i)); // lower index = more common
