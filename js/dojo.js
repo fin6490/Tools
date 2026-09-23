@@ -4,12 +4,12 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260916m";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260916m";
-import { parseEntries } from "./wheel.js?v=20260916m";
-import { SUPPORT } from "./support.js?v=20260916m";
-import { generateSet, fitText } from "./quizkit.js?v=20260916m";
-import * as sound from "./sound.js?v=20260916m";
+import { getState, save } from "./storage.js?v=20260916n";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260916n";
+import { parseEntries } from "./wheel.js?v=20260916n";
+import { SUPPORT } from "./support.js?v=20260916n";
+import { generateSet, fitText } from "./quizkit.js?v=20260916n";
+import * as sound from "./sound.js?v=20260916n";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -284,7 +284,7 @@ export function initDojo(root) {
     panel.innerHTML = "";
     const card = el("div", "dojo-editor");
     card.appendChild(el("h2", "dojo-title", editing ? "Edit set" : "New question set"));
-    card.appendChild(el("p", "dojo-lede", "One question per line: <code>question | answer | wrong, wrong</code>. Wrong answers are optional — the board fills the rest from the other answers in the set. If a question has several correct answers, separate them with a semicolon: <code>A multiple of 6 | 6; 12; 18; 24</code> — any of them counts."));
+    card.appendChild(el("p", "dojo-lede", "One question per line: <code>question | correct | wrong, wrong</code>. Wrong answers are optional — the board fills the rest from the other answers in the set. <b>If a question has several correct answers, separate them with commas or semicolons</b> — any of them counts: <code>Types of the number 9 | odd, square, integer</code>. (Don't use extra <code>|</code> bars for that — the second bar starts the wrong answers.)"));
 
     const nameIn = el("input", "dojo-input"); nameIn.placeholder = "Set name";
     nameIn.value = seed ? (existing ? seed.name : seed.name + " (copy)") : "";
@@ -292,17 +292,27 @@ export function initDojo(root) {
 
     const ta = el("textarea", "dojo-textarea");
     ta.spellcheck = false;
-    ta.value = seed ? toLines(seed.questions) : "12 \\times 7 | 84\n\\frac{3}{4} of 20 | 15 | 5, 16, 12\nA multiple of 6 | 6; 12; 18; 24 | 10, 14, 20\nCapital of France | Paris | Lyon, Nice";
+    ta.value = seed ? toLines(seed.questions) : "12 \\times 7 | 84\n\\frac{3}{4} of 20 | 15 | 5, 16, 12\nA multiple of 6 | 6, 12, 18, 24 | 10, 14, 20\nTypes of the number 9 | odd, square, integer | even, prime\nCapital of France | Paris | Lyon, Nice";
     card.appendChild(ta);
 
     const preview = el("div", "dojo-preview");
     const renderPreview = () => {
       const qs = parseLines(ta.value);
-      preview.innerHTML = qs.length
-        ? `<span class="dojo-lbl">Preview (${qs.length}) </span>` + mathHtml(qs[0].q) + ' <span class="muted">→</span> ' + answersOf(qs[0]).map(mathHtml).join(' <span class="muted">/</span> ')
-        : '<span class="muted">Add at least one line.</span>';
+      let html;
+      if (!qs.length) { html = '<span class="muted">Add at least one line.</span>'; }
+      else {
+        const ans = answersOf(qs[0]);
+        html = `<span class="dojo-lbl">Preview (${qs.length}) </span>` + mathHtml(qs[0].q) + ' <span class="muted">→</span> ' + ans.map(mathHtml).join(' <span class="muted">/</span> ')
+          + (ans.length > 1 ? ` <span class="dojo-okpill">${ans.length} correct</span>` : "");
+      }
+      // Flag the common mistake: using | bars to separate several correct answers.
+      const warns = [];
+      ta.value.split("\n").forEach((raw, i) => { const l = raw.trim(); if (l && l.split("|").length > 3) warns.push(i + 1); });
+      if (warns.length) html += `<div class="dojo-lintwarn">Line ${warns.join(", ")}: too many <code>|</code> bars — the format is <b>question | correct | wrong</b>. Separate several correct answers with commas, not extra bars.</div>`;
+      preview.innerHTML = html;
     };
     ta.addEventListener("input", renderPreview); renderPreview();
+    card.appendChild(preview);
 
     const row = el("div", "dojo-editbtns");
     const saveBtn = el("button", "btn primary", "Save set");
@@ -358,7 +368,8 @@ export function initDojo(root) {
   function parseLines(text) {
     return text.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
       const parts = line.split("|").map((p) => p.trim());
-      const answers = (parts[1] || "").split(";").map((a) => a.trim()).filter(Boolean);
+      // Several correct answers: separate with commas or semicolons — any counts.
+      const answers = (parts[1] || "").split(/[;,]/).map((a) => a.trim()).filter(Boolean);
       const distractors = (parts[2] || "").split(",").map((d) => d.trim()).filter(Boolean);
       const q = { q: parts[0] || "", a: answers[0] || "", distractors };
       if (answers.length > 1) q.answers = answers; // any of these counts as correct

@@ -1094,6 +1094,9 @@ a.tab { display: block; }
 .dojo-textarea { min-height: 200px; background: var(--panel-2); color: var(--ink); border: 2px solid var(--line); border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6; resize: vertical; }
 .dojo-json { min-height: 90px; font-size: 12px; }
 .dojo-preview { font-family: var(--mono); font-size: 18px; color: var(--ink); min-height: 26px; }
+.dojo-okpill { font-family: var(--sans, inherit); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; color: #17924f; border: 1px solid #2bbf75; background: color-mix(in srgb, #2bbf75 14%, transparent); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+.dojo-lintwarn { font-family: var(--sans, inherit); font-size: 13px; line-height: 1.45; color: #c26e18; background: color-mix(in srgb, #e0872a 12%, transparent); border: 1px solid color-mix(in srgb, #e0872a 45%, var(--line)); border-radius: 8px; padding: 6px 10px; margin-top: 8px; }
+.dojo-lintwarn code { font-family: var(--mono); background: var(--panel-2); padding: 1px 5px; border-radius: 5px; color: var(--ink); }
 .dojo-editbtns { display: flex; flex-wrap: wrap; gap: 8px; }
 .dojo-danger { color: #ff8f88; }
 .dojo-io { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
