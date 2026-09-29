@@ -3,9 +3,10 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916p";
-import { exportAll, importAll } from "./storage.js?v=20260916p";
-import * as supa from "./supa.js?v=20260916p";
+import { el } from "./quizkit.js?v=20260916q";
+import { exportAll, importAll } from "./storage.js?v=20260916q";
+import * as supa from "./supa.js?v=20260916q";
+import { PAYMENTS_ENABLED, PRICE_LABELS } from "./supa-config.js?v=20260916q";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";
@@ -71,6 +72,13 @@ export async function initAccount(doc, opts = {}) {
   }
   if (btn) btn.addEventListener("click", openModal);
 
+  // Any element flagged data-open-account (e.g. the Pro modal's upgrade button)
+  // opens the account modal.
+  doc.querySelectorAll("[data-open-account]").forEach((elx) => elx.addEventListener("click", () => {
+    const sm = doc.querySelector("#supportModal"); if (sm) sm.hidden = true;
+    openModal();
+  }));
+
   // 3. Restore any existing session (never let a network hiccup break the app).
   if (supa.isSignedIn()) {
     try {
@@ -85,6 +93,18 @@ export async function initAccount(doc, opts = {}) {
   setPlanAttr();
   updateBtn();
   if (justSignedIn) { toast("Signed in ✓"); openModal(); }
+
+  // Returned from Stripe Checkout? The webhook grants premium server-side; poll
+  // the profile briefly so the UI catches up.
+  const sp = new URLSearchParams(location.search);
+  if (sp.get("upgrade")) {
+    try { history.replaceState(null, "", location.pathname); } catch {}
+    if (sp.get("upgrade") === "success") {
+      toast("Payment received — activating premium…");
+      const refresh = async () => { try { profile = await supa.getProfile(); setPlanAttr(); updateBtn(); if (isPremium()) toast("Premium active ✓"); } catch {} };
+      setTimeout(refresh, 3000); setTimeout(refresh, 9000);
+    }
+  }
 
   // 4. Auto-sync local changes to the cloud (premium only).
   window.addEventListener("spindeck:saved", () => {
@@ -204,7 +224,8 @@ function renderSignedIn(body) {
     showCloudInfo(body);
     renderBranding(body);
   } else {
-    body.appendChild(el("p", "muted", "You're on the free plan. Enter an unlock code to switch on premium — cloud sync, higher limits, custom branding and leaderboard history."));
+    body.appendChild(el("p", "muted", "You're on the free plan. Go premium for cloud sync, unlimited saved wheels & sets, custom branding and leaderboard export."));
+    if (PAYMENTS_ENABLED) renderUpgrade(body);
     renderRedeem(body);
   }
 
@@ -241,6 +262,25 @@ function renderBranding(body) {
   btns.append(apply, reset);
   wrap.append(row, btns);
   body.appendChild(wrap);
+}
+
+function renderUpgrade(body) {
+  const wrap = el("div", "account-upgrade");
+  const row = el("div", "account-actions");
+  const monthly = el("button", "btn primary", `Go Premium — ${PRICE_LABELS.monthly}`);
+  const lifetime = el("button", "btn", `Lifetime — ${PRICE_LABELS.lifetime}`);
+  const note = el("p", "muted account-note"); note.hidden = true;
+  const buy = async (plan, b) => {
+    const label = b.textContent; b.disabled = true; b.textContent = "Starting checkout…";
+    try { const { url } = await supa.createCheckout(plan); location.href = url; }
+    catch (e) { note.hidden = false; note.textContent = e.message || "Couldn't start checkout."; b.disabled = false; b.textContent = label; }
+  };
+  monthly.addEventListener("click", () => buy("monthly", monthly));
+  lifetime.addEventListener("click", () => buy("lifetime", lifetime));
+  row.append(monthly, lifetime);
+  wrap.append(row, note, el("p", "muted account-note", "Secure checkout by Stripe. Cancel anytime."));
+  body.appendChild(wrap);
+  body.appendChild(el("p", "account-or muted", "— or —"));
 }
 
 function renderRedeem(body) {
