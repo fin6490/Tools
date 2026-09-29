@@ -4,12 +4,13 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20260916n";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20260916n";
-import { parseEntries } from "./wheel.js?v=20260916n";
-import { SUPPORT } from "./support.js?v=20260916n";
-import { generateSet, fitText } from "./quizkit.js?v=20260916n";
-import * as sound from "./sound.js?v=20260916n";
+import { getState, save } from "./storage.js?v=20260916p";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20260916p";
+import { parseEntries } from "./wheel.js?v=20260916p";
+import { SUPPORT } from "./support.js?v=20260916p";
+import { generateSet, fitText } from "./quizkit.js?v=20260916p";
+import * as sound from "./sound.js?v=20260916p";
+import { isPremium, upsell } from "./account.js?v=20260916p";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -320,8 +321,15 @@ export function initDojo(root) {
       const qs = parseLines(ta.value);
       if (!qs.length) return;
       const name = nameIn.value.trim() || "My set";
+      const FREE_SETS = 3; // free plan cap on saved custom sets (premium = unlimited)
       if (editing) { editing.name = name; editing.questions = qs; cfg().activeSetId = editing.id; }
-      else { const id = uid(); cfg().sets.push({ id, name, questions: qs }); cfg().activeSetId = id; }
+      else {
+        if (!isPremium() && cfg().sets.length >= FREE_SETS) {
+          upsell(`Free plan: up to ${FREE_SETS} saved question sets. Unlock premium for unlimited.`);
+          return;
+        }
+        const id = uid(); cfg().sets.push({ id, name, questions: qs }); cfg().activeSetId = id;
+      }
       save(); renderLobby();
     });
     const cancel = el("button", "btn ghost", "Cancel");
@@ -797,13 +805,25 @@ export function initDojo(root) {
     const row = el("div", "dojo-editbtns");
     const back = el("button", "btn primary", live ? "Back to duel" : "New duel");
     back.addEventListener("click", () => { if (live && !live.roundOver) paintRound(); else renderLobby(); });
+    const exportBtn = el("button", "btn ghost", "Export CSV");
+    exportBtn.addEventListener("click", () => {
+      if (!isPremium()) { upsell("Exporting leaderboard results is a premium feature."); return; }
+      if (!rows.length) return;
+      const csvCell = (v) => { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+      const head = ["Rank", "Student", "Tier", "Points", "Wins", "Best", "Rounds"];
+      const body = rows.map((r, i) => [i + 1, r.name, tierFor(r.points).name, r.points, r.wins, r.best, r.games]);
+      const csv = [head, ...body].map((a) => a.map(csvCell).join(",")).join("\n");
+      const label = scope === "overall" ? "overall" : classLabel(scope);
+      const a = el("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+      a.download = `spindeck-leaderboard-${label}.csv`.replace(/[^\w.-]+/g, "-"); a.click();
+    });
     const reset = el("button", "btn ghost dojo-danger", scope === "overall" ? "Reset all boards" : "Reset this class");
     reset.addEventListener("click", () => {
       if (scope === "overall") cfg().leaderboards = {};
       else delete cfg().leaderboards[scope];
       save(); renderLeaderboard("overall");
     });
-    row.append(back, reset);
+    row.append(back, exportBtn, reset);
     card.appendChild(row);
     panel.appendChild(card);
   }

@@ -1,36 +1,37 @@
 // app.js — wires the UI to storage, wheel, timer and counters.
-import * as store from "./storage.js?v=20260916n";
-import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260916n";
-import * as sound from "./sound.js?v=20260916n";
-import { burst } from "./confetti.js?v=20260916n";
-import { initTimer } from "./timer.js?v=20260916n";
-import { initCounters } from "./counter.js?v=20260916n";
-import { initGroups } from "./groups.js?v=20260916n";
-import { initImages } from "./images.js?v=20260916n";
-import { initScores } from "./scores.js?v=20260916n";
-import { initSlots } from "./slots.js?v=20260916n";
-import { initNumbers } from "./numbers.js?v=20260916n";
-import { initDice } from "./dice.js?v=20260916n";
-import { initFirstPlayer } from "./firstplayer.js?v=20260916n";
-import { initScorepad } from "./scorepad.js?v=20260916n";
-import { initChessClock } from "./chessclock.js?v=20260916n";
-import { initBracket } from "./bracket.js?v=20260916n";
-import { initDojo } from "./dojo.js?v=20260916n";
-import { initReveal } from "./reveal.js?v=20260916n";
-import { initPairs } from "./pairs.js?v=20260916n";
-import { initBingo } from "./bingo.js?v=20260916n";
-import { initClassQuiz } from "./classquiz.js?v=20260916n";
-import { initGridClaim } from "./gridclaim.js?v=20260916n";
-import { initCountdown } from "./countdown.js?v=20260916n";
-import { initAxiom } from "./axiom.js?v=20260916n";
-import { initHangman } from "./hangman.js?v=20260916n";
-import { initNoughts } from "./noughts.js?v=20260916n";
-import { initLexicon } from "./lexicon.js?v=20260916n";
-import { initNumberwang } from "./numberwang.js?v=20260916n";
-import { initPirates } from "./pirates.js?v=20260916n";
-import { initLobster } from "./lobster.js?v=20260916n";
-import { initSupport } from "./support.js?v=20260916n";
-import { ROUTES } from "./routes.js?v=20260916n";
+import * as store from "./storage.js?v=20260916p";
+import { Wheel, parseEntries, parseLine } from "./wheel.js?v=20260916p";
+import * as sound from "./sound.js?v=20260916p";
+import { burst } from "./confetti.js?v=20260916p";
+import { initTimer } from "./timer.js?v=20260916p";
+import { initCounters } from "./counter.js?v=20260916p";
+import { initGroups } from "./groups.js?v=20260916p";
+import { initImages } from "./images.js?v=20260916p";
+import { initScores } from "./scores.js?v=20260916p";
+import { initSlots } from "./slots.js?v=20260916p";
+import { initNumbers } from "./numbers.js?v=20260916p";
+import { initDice } from "./dice.js?v=20260916p";
+import { initFirstPlayer } from "./firstplayer.js?v=20260916p";
+import { initScorepad } from "./scorepad.js?v=20260916p";
+import { initChessClock } from "./chessclock.js?v=20260916p";
+import { initBracket } from "./bracket.js?v=20260916p";
+import { initDojo } from "./dojo.js?v=20260916p";
+import { initReveal } from "./reveal.js?v=20260916p";
+import { initPairs } from "./pairs.js?v=20260916p";
+import { initBingo } from "./bingo.js?v=20260916p";
+import { initClassQuiz } from "./classquiz.js?v=20260916p";
+import { initGridClaim } from "./gridclaim.js?v=20260916p";
+import { initCountdown } from "./countdown.js?v=20260916p";
+import { initAxiom } from "./axiom.js?v=20260916p";
+import { initHangman } from "./hangman.js?v=20260916p";
+import { initNoughts } from "./noughts.js?v=20260916p";
+import { initLexicon } from "./lexicon.js?v=20260916p";
+import { initNumberwang } from "./numberwang.js?v=20260916p";
+import { initPirates } from "./pirates.js?v=20260916p";
+import { initLobster } from "./lobster.js?v=20260916p";
+import { initSupport } from "./support.js?v=20260916p";
+import { initAccount, isPremium, upsell } from "./account.js?v=20260916p";
+import { ROUTES } from "./routes.js?v=20260916p";
 
 const $ = (sel) => document.querySelector(sel);
 const app = $("#app");
@@ -196,7 +197,12 @@ wheelSelect.addEventListener("change", () => {
   loadActiveWheelIntoEditor();
 });
 
+const FREE_WHEELS = 5; // free plan cap on saved wheels (premium = unlimited)
 $("#newWheelBtn").addEventListener("click", () => {
+  if (!isPremium() && state.wheels.length >= FREE_WHEELS) {
+    upsell(`Free plan: up to ${FREE_WHEELS} wheels. Unlock premium for unlimited saved wheels.`);
+    return;
+  }
   const name = prompt("Name this wheel:", "Wheel " + (state.wheels.length + 1));
   if (name === null) return;
   store.newWheel(name.trim() || "Untitled");
@@ -571,6 +577,7 @@ initPirates(document);
 initLobster(document);
 slots = initSlots(document, { soundOn: () => state.soundOn });
 support = initSupport(document, { toast });
+initAccount(document, { toast });
 initImages(document, {
   getLabels: () => parseEntries(store.activeWheel().text).map((s) => s.label),
   getMap: () => (store.activeWheel().images ||= {}),

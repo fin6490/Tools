@@ -660,12 +660,12 @@ const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
         <h2 id="supportTitle">SpinDecks <span class="pro-badge">Pro</span></h2>
         <button id="supportClose" class="icon-btn" aria-label="Close">✕</button>
       </div>
-      <p class="muted support-lead">SpinDecks is free and ad-free, and always will be. An optional Pro tier is on the way for creators who want more — here's what's planned.</p>
+      <p class="muted support-lead">SpinDecks is free and ad-free, and always will be. An optional Pro tier adds extras for teachers and creators — sign in with the <strong>Account</strong> button (top right) to turn it on with an unlock code.</p>
       <ul class="pro-list">
-        <li><span class="pro-soon">Soon</span> Cloud sync — your wheels on every device</li>
-        <li><span class="pro-soon">Soon</span> Custom branding — your logo and colours on the wheel</li>
-        <li><span class="pro-soon">Soon</span> Stream overlays — drop the wheel straight into OBS</li>
-        <li><span class="pro-soon">Soon</span> Team wheels — shared lists for classrooms and teams</li>
+        <li><span class="pro-live">Live</span> Cloud sync — your wheels, quiz sets and leaderboards on every device</li>
+        <li><span class="pro-live">Live</span> Custom branding — your accent colour and name on screen</li>
+        <li><span class="pro-live">Live</span> Higher limits — unlimited saved wheels and question sets</li>
+        <li><span class="pro-live">Live</span> Leaderboard export — download class results as CSV</li>
       </ul>
       <form id="waitForm" class="wait-form">
         <label class="sr-only" for="waitEmail">Email for the Pro waitlist</label>
