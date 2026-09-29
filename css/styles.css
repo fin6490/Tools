@@ -1796,3 +1796,21 @@ a.tab { display: block; }
 .lobster-projlist li.jailed { color: var(--muted); background: color-mix(in srgb, #c62f2f 12%, transparent); border-radius: 10px; }
 .lobster-projname { flex: 1; font-weight: 700; color: var(--ink); }
 .lobster-projscore { font-family: var(--mono); font-weight: 800; color: var(--ink); }
+
+/* ---------- Accounts / premium (optional, additive) ---------- */
+#accountBtn.is-premium { color: var(--gold, #ffcf4d); }
+#accountBtn.is-in::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #2bbf75; }
+#accountBtn { position: relative; }
+.account-card { max-width: 460px; }
+.account-body { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.account-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.account-form .dojo-input { flex: 1 1 200px; }
+.account-note { margin: 0; }
+.account-status { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.account-email { font-weight: 700; color: var(--ink); word-break: break-all; }
+.plan-badge { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); flex: 0 0 auto; }
+.plan-badge.is-premium { color: #7a5a00; background: var(--gold, #ffcf4d); border-color: var(--gold, #ffcf4d); }
+.account-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.account-auto { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.account-cloudinfo { font-size: 12px; margin: 0; }
+.account-foot { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--line); }

@@ -73,6 +73,8 @@ function load() {
 let saveTimer = null;
 function writeNow() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  // Let optional features (e.g. cloud sync) react to local changes.
+  try { window.dispatchEvent(new CustomEvent("spindeck:saved")); } catch {}
 }
 export function save() {
   // debounce — the editor can fire on every keystroke
