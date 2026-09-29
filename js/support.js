@@ -68,9 +68,6 @@ export function initSupport(root, { toast } = {}) {
   const supportModal = root.querySelector("#supportModal");
   const tipBlock = root.querySelector("#tipBlock");
   const tipBtn = root.querySelector("#tipBtn");
-  const waitForm = root.querySelector("#waitForm");
-  const waitEmail = root.querySelector("#waitEmail");
-  const waitNote = root.querySelector("#waitNote");
 
   // Tip jar: only show when a link is configured.
   if (SUPPORT.tipUrl) {
@@ -87,51 +84,12 @@ export function initSupport(root, { toast } = {}) {
     tipTop.hidden = false;
   }
 
-  // Waitlist: real submit when an endpoint exists, mailto fallback, else "coming soon".
-  const canPost = !!SUPPORT.waitlistEndpoint;
-  const canMail = !SUPPORT.waitlistEndpoint && !!SUPPORT.contactEmail;
-  if (!canPost && !canMail) {
-    waitForm.hidden = true;
-    waitNote.hidden = false;
-    waitNote.textContent = "The Pro waitlist opens soon — check back shortly.";
-  }
-
-  waitForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = waitEmail.value.trim();
-    if (!email) return;
-
-    if (canMail) {
-      const subject = encodeURIComponent("SpinDecks Pro waitlist");
-      const body = encodeURIComponent(`Please add me to the SpinDecks Pro waitlist: ${email}`);
-      window.location.href = `mailto:${SUPPORT.contactEmail}?subject=${subject}&body=${body}`;
-      return;
-    }
-
-    const btn = waitForm.querySelector("button");
-    const original = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Sending…";
-    try {
-      const res = await fetch(SUPPORT.waitlistEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email, source: "spindeck-pro-waitlist" }),
-      });
-      if (!res.ok) throw new Error("bad status");
-      waitForm.hidden = true;
-      waitNote.hidden = false;
-      waitNote.textContent = "You're on the list — thanks! We'll email you when Pro lands.";
-    } catch {
-      btn.disabled = false;
-      btn.textContent = original;
-      toast?.("Couldn't join the waitlist just now — please try again.");
-    }
-  });
+  // Upgrading now happens in the Account modal (account.js wires the
+  // [data-open-account] button inside this modal).
 
   function open() {
     supportModal.hidden = false;
-    (waitForm.hidden ? supportModal.querySelector("#supportClose") : waitEmail).focus();
+    supportModal.querySelector("#supportClose").focus();
   }
   function close() {
     supportModal.hidden = true;

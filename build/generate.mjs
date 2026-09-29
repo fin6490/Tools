@@ -26,6 +26,10 @@ const THEME_INIT =
 const SW_REG =
   `<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>`;
 
+// Lightweight bootstrap for the hub / legal pages (no full app.js): wires the
+// theme toggle and the optional Account button.
+const SITE_JS = `<script type="module" src="/js/site.js?v=${SITE.token}"></script>`;
+
 function head({ title, description, canonicalPath, jsonld = [] }) {
   const url = SITE.origin + canonicalPath;
   const img = SITE.origin + "/assets/og-image.png?v=4";
@@ -145,11 +149,18 @@ function topbar(active) {
   </header>`;
 }
 
-// A slimmer header for the hub and legal pages (no app controls).
+// A slimmer header for the hub and legal pages. Carries the theme toggle and
+// (via site.js) the Account button, so people can sign in / go premium from the
+// landing page. The heavier tool controls stay on the tool pages only.
 function simpleHeader() {
   return `<header class="topbar topbar-simple">
     ${BRAND}
     ${tabGroups(null, false)}
+    <div class="topbar-actions">
+      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
+      </button>
+    </div>
   </header>`;
 }
 
@@ -667,12 +678,9 @@ const MODALS = String.raw`  <div id="winnerModal" class="modal" hidden>
         <li><span class="pro-live">Live</span> Higher limits — unlimited saved wheels and question sets</li>
         <li><span class="pro-live">Live</span> Leaderboard export — download class results as CSV</li>
       </ul>
-      <form id="waitForm" class="wait-form">
-        <label class="sr-only" for="waitEmail">Email for the Pro waitlist</label>
-        <input id="waitEmail" class="wait-input" type="email" required placeholder="you@example.com" autocomplete="email" />
-        <button type="submit" class="btn primary">Join the waitlist</button>
-      </form>
-      <p id="waitNote" class="muted wait-note" hidden></p>
+      <div class="pro-cta">
+        <button class="btn primary" data-open-account>Sign in &amp; go Premium</button>
+      </div>
       <div id="tipBlock" class="tip-block" hidden>
         <p class="muted">Enjoying it? A small tip keeps it running and ad-free — entirely optional.</p>
         <a id="tipBtn" class="btn tip-btn">Leave a tip</a>
@@ -805,6 +813,7 @@ ${cards}
   </div>
 </main>
 ${footer()}
+${SITE_JS}
 ${SW_REG}
 </body>
 </html>`;
@@ -824,6 +833,7 @@ ${simpleHeader()}
 ${bodyHtml}
 </main>
 ${footer()}
+${SITE_JS}
 ${SW_REG}
 </body>
 </html>`;
@@ -879,6 +889,7 @@ ${simpleHeader()}
   <p><a class="btn primary" href="/">Back to all tools</a></p>
 </main>
 ${footer()}
+${SITE_JS}
 ${SW_REG}
 </body>
 </html>`;

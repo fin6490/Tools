@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916p";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916q";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -132,6 +132,14 @@ export async function saveBranding(branding) {
     body: { branding, updated_at: new Date().toISOString() },
   });
   return res.ok;
+}
+
+// Start a Stripe Checkout session via the Edge Function; returns { url }.
+export async function createCheckout(plan) {
+  const res = await apiFetch("/functions/v1/create-checkout", { method: "POST", body: { plan, origin: location.origin } });
+  let data = {}; try { data = await res.json(); } catch {}
+  if (!res.ok || !data.url) throw new Error(data.error || "Couldn't start checkout.");
+  return data;
 }
 
 export async function redeemCode(code) {
