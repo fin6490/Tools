@@ -3,13 +3,14 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916s";
-import { exportAll, importAll } from "./storage.js?v=20260916s";
-import * as supa from "./supa.js?v=20260916s";
-import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916s";
+import { el } from "./quizkit.js?v=20260916t";
+import { exportAll, importAll } from "./storage.js?v=20260916t";
+import * as supa from "./supa.js?v=20260916t";
+import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916t";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";
+const PENDING_KEY = "spindeck.pendingUpgrade";
 let toast = () => {};
 let profile = null;      // { plan, premium_since, branding }
 let user = null;         // auth user
@@ -115,6 +116,9 @@ export async function initAccount(doc, opts = {}) {
   updateBtn();
   if (justSignedIn) { toast("Signed in ✓"); openModal(); }
 
+  // If they picked a plan before signing in, carry on to checkout now.
+  maybeResumeUpgrade();
+
   // Returned from Stripe Checkout? The webhook grants premium server-side; poll
   // the profile briefly so the UI catches up.
   const sp = new URLSearchParams(location.search);
@@ -134,6 +138,16 @@ export async function initAccount(doc, opts = {}) {
     pushTimer = setTimeout(pushToCloud, 4000);
   });
   window.addEventListener("pagehide", () => { if (isPremium() && autoSyncOn()) pushToCloud(); });
+}
+
+// Resume a pre-sign-in plan choice: send the now-signed-in free user to checkout.
+async function maybeResumeUpgrade() {
+  let plan = null; try { plan = localStorage.getItem(PENDING_KEY); } catch {}
+  if (!plan) return;
+  if (!PAYMENTS_ENABLED || !user || isPremium()) { try { localStorage.removeItem(PENDING_KEY); } catch {} return; }
+  try { localStorage.removeItem(PENDING_KEY); } catch {}
+  try { toast("Taking you to checkout…"); const { url } = await supa.createCheckout(plan); location.href = url; }
+  catch (e) { toast(e.message || "Couldn't start checkout"); }
 }
 
 function updateBtn() {
@@ -198,6 +212,28 @@ function renderBody() {
 }
 
 function renderSignedOut(body) {
+  // Show the premium offer up front. Buying needs an account (so the purchase
+  // can be tied to it), so a plan click stashes the choice and starts sign-in;
+  // we resume straight to checkout once they're back (see maybeResumeUpgrade).
+  if (PAYMENTS_ENABLED) {
+    const up = el("div", "account-upgrade account-upsell");
+    up.appendChild(el("p", "account-subhead", "Go Premium"));
+    up.appendChild(el("p", "muted account-note", `Cloud sync, unlimited saved wheels & sets, custom branding and leaderboard export — ${PRICE_LABELS.monthly} or ${PRICE_LABELS.lifetime}.`));
+    const row = el("div", "account-actions");
+    const m = el("button", "btn primary", `Monthly — ${PRICE_LABELS.monthly}`);
+    const l = el("button", "btn", `Lifetime — ${PRICE_LABELS.lifetime}`);
+    const hint = el("p", "muted account-note"); hint.hidden = true;
+    const startBuy = (plan) => {
+      try { localStorage.setItem(PENDING_KEY, plan); } catch {}
+      hint.hidden = false; hint.textContent = "Pop your email in below and open the sign-in link — we'll take you straight to checkout.";
+      const em = modal.querySelector(".account-form input[type=email]"); if (em) em.focus();
+    };
+    m.addEventListener("click", () => startBuy("monthly"));
+    l.addEventListener("click", () => startBuy("lifetime"));
+    row.append(m, l); up.append(row, hint);
+    up.appendChild(el("p", "account-or muted", "— sign in to continue —"));
+    body.appendChild(up);
+  }
   body.appendChild(el("p", "muted", "Sign in to unlock premium and save your wheels, quiz sets and dojo leaderboards to your account — then restore them on any device. It stays free and offline without an account."));
   if (GOOGLE_ENABLED) {
     const g = el("button", "btn account-google", "Continue with Google");
