@@ -1825,6 +1825,11 @@ a.tab { display: block; }
 .account-brand { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .account-subhead { font-weight: 800; color: var(--ink); margin: 0; }
 .account-colour { width: 46px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); cursor: pointer; flex: 0 0 auto; }
-/* Custom brand name — only visible in fullscreen / present mode */
+/* Custom brand (logo + name) — only visible in fullscreen / present mode */
 .brand-stamp { display: none; }
-#app[data-present="true"] .brand-stamp { display: block; position: fixed; bottom: 14px; right: 18px; z-index: 40; font-weight: 800; font-size: clamp(14px, 2vw, 20px); color: var(--accent-ink, #fff); background: var(--accent, #ff5b52); padding: 6px 14px; border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,.3); pointer-events: none; }
+#app[data-present="true"] .brand-stamp { display: inline-flex; align-items: center; gap: 9px; position: fixed; bottom: 14px; right: 18px; z-index: 40; font-weight: 800; font-size: clamp(14px, 2vw, 20px); color: var(--accent-ink, #fff); background: var(--accent, #ff5b52); padding: 6px 14px; border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,.3); pointer-events: none; }
+.brand-stamp-logo { height: clamp(20px, 3vw, 30px); width: auto; border-radius: 5px; display: block; }
+/* Logo upload controls in the account modal */
+.account-logo-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.account-logo-file { display: none; }
+.account-logo-preview { height: 40px; width: auto; max-width: 120px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); object-fit: contain; }

@@ -3,10 +3,10 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916q";
-import { exportAll, importAll } from "./storage.js?v=20260916q";
-import * as supa from "./supa.js?v=20260916q";
-import { PAYMENTS_ENABLED, PRICE_LABELS } from "./supa-config.js?v=20260916q";
+import { el } from "./quizkit.js?v=20260916r";
+import { exportAll, importAll } from "./storage.js?v=20260916r";
+import * as supa from "./supa.js?v=20260916r";
+import { PAYMENTS_ENABLED, PRICE_LABELS } from "./supa-config.js?v=20260916r";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";
@@ -44,11 +44,32 @@ export function applyBranding(b) {
     ["--accent", "--accent-press", "--accent-ink"].forEach((v) => root.style.removeProperty(v));
   }
   const name = b && b.name ? String(b.name).trim() : "";
+  const logo = b && typeof b.logo === "string" && b.logo.startsWith("data:image/") ? b.logo : "";
   let stamp = document.getElementById("brandStamp");
-  if (name) {
+  if (name || logo) {
     if (!stamp) { stamp = el("div", "brand-stamp"); stamp.id = "brandStamp"; (document.querySelector("#app") || document.body).appendChild(stamp); }
-    stamp.textContent = name;
+    stamp.innerHTML = (logo ? `<img class="brand-stamp-logo" alt="" src="${logo}">` : "") + (name ? `<span class="brand-stamp-name">${escapeHtml(name)}</span>` : "");
   } else if (stamp) { stamp.remove(); }
+}
+
+// Shrink an uploaded image to a small square-ish logo and return a data URL.
+function resizeImage(file, maxDim = 160) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      let out = c.toDataURL("image/png");
+      if (out.length > 60000) out = c.toDataURL("image/jpeg", 0.82); // keep it small for the profile row
+      resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("bad image")); };
+    img.src = url;
+  });
 }
 
 export async function initAccount(doc, opts = {}) {
@@ -241,26 +262,47 @@ function renderBranding(body) {
   const wrap = el("div", "account-brand");
   wrap.appendChild(el("p", "account-subhead", "Custom branding"));
   wrap.appendChild(el("p", "muted account-note", "Set an accent colour and a name that shows on screen in fullscreen — great for classes and streams."));
+  wrap.appendChild(el("p", "muted account-note", "Add a logo too — it shows with your name on screen in fullscreen."));
   const row = el("div", "account-form");
   const colour = el("input", "account-colour"); colour.type = "color"; colour.value = /^#[0-9a-f]{6}$/i.test(b.accent || "") ? b.accent : "#ff5b52";
   const name = el("input", "dojo-input"); name.placeholder = "Brand / class name (optional)"; name.maxLength = 40; name.value = b.name || "";
   row.append(colour, name);
+
+  // Logo upload (resized client-side, stored in the profile).
+  let currentLogo = typeof b.logo === "string" ? b.logo : "";
+  const logoRow = el("div", "account-logo-row");
+  const preview = el("img", "account-logo-preview"); if (currentLogo) preview.src = currentLogo; else preview.style.display = "none";
+  const pick = el("label", "btn ghost account-logo-btn", "Add logo");
+  const file = el("input"); file.type = "file"; file.accept = "image/*"; file.className = "account-logo-file";
+  pick.appendChild(file);
+  const rmLogo = el("button", "btn ghost", "Remove logo"); if (!currentLogo) rmLogo.style.display = "none";
+  file.addEventListener("change", async () => {
+    const f = file.files && file.files[0]; if (!f) return;
+    try { currentLogo = await resizeImage(f); preview.src = currentLogo; preview.style.display = ""; rmLogo.style.display = ""; toast("Logo ready — tap Apply & save"); }
+    catch { toast("Couldn't read that image"); }
+    file.value = "";
+  });
+  rmLogo.addEventListener("click", () => { currentLogo = ""; preview.removeAttribute("src"); preview.style.display = "none"; rmLogo.style.display = "none"; });
+  logoRow.append(pick, preview, rmLogo);
+
   const btns = el("div", "account-actions");
   const apply = el("button", "btn primary", "Apply & save");
   apply.addEventListener("click", async () => {
     const nb = { accent: colour.value, name: name.value.trim() };
+    if (currentLogo) nb.logo = currentLogo;
     writeBrand(nb); applyBranding(nb);
     apply.disabled = true; try { await supa.saveBranding(nb); } catch {} apply.disabled = false;
     toast("Branding applied ✓");
   });
   const reset = el("button", "btn ghost", "Reset");
   reset.addEventListener("click", async () => {
-    writeBrand(null); applyBranding(null); colour.value = "#ff5b52"; name.value = "";
+    currentLogo = ""; writeBrand(null); applyBranding(null); colour.value = "#ff5b52"; name.value = "";
+    preview.removeAttribute("src"); preview.style.display = "none"; rmLogo.style.display = "none";
     try { await supa.saveBranding({}); } catch {}
     toast("Branding reset");
   });
   btns.append(apply, reset);
-  wrap.append(row, btns);
+  wrap.append(row, logoRow, btns);
   body.appendChild(wrap);
 }
 
