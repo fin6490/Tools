@@ -3,10 +3,10 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916r";
-import { exportAll, importAll } from "./storage.js?v=20260916r";
-import * as supa from "./supa.js?v=20260916r";
-import { PAYMENTS_ENABLED, PRICE_LABELS } from "./supa-config.js?v=20260916r";
+import { el } from "./quizkit.js?v=20260916s";
+import { exportAll, importAll } from "./storage.js?v=20260916s";
+import * as supa from "./supa.js?v=20260916s";
+import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916s";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";
@@ -199,6 +199,12 @@ function renderBody() {
 
 function renderSignedOut(body) {
   body.appendChild(el("p", "muted", "Sign in to unlock premium and save your wheels, quiz sets and dojo leaderboards to your account — then restore them on any device. It stays free and offline without an account."));
+  if (GOOGLE_ENABLED) {
+    const g = el("button", "btn account-google", "Continue with Google");
+    g.addEventListener("click", () => supa.signInWithGoogle(location.origin + location.pathname));
+    body.appendChild(g);
+    body.appendChild(el("p", "account-or muted", "— or with email —"));
+  }
   const form = el("div", "account-form");
   const email = el("input", "dojo-input"); email.type = "email"; email.placeholder = "you@school.org"; email.autocomplete = "email";
   const send = el("button", "btn primary", "Email me a sign-in link");
@@ -243,6 +249,16 @@ function renderSignedIn(body) {
     auto.append(cb, document.createTextNode(" Auto-save changes to the cloud"));
     body.appendChild(auto);
     showCloudInfo(body);
+    if (PAYMENTS_ENABLED) {
+      const billing = el("button", "btn ghost account-billing", "Manage billing");
+      billing.title = "Update your card or cancel";
+      billing.addEventListener("click", async () => {
+        billing.disabled = true; const t = billing.textContent; billing.textContent = "Opening…";
+        try { const { url } = await supa.createPortal(); location.href = url; }
+        catch (e) { toast(e.message || "Couldn't open billing"); billing.disabled = false; billing.textContent = t; }
+      });
+      body.appendChild(billing);
+    }
     renderBranding(body);
   } else {
     body.appendChild(el("p", "muted", "You're on the free plan. Go premium for cloud sync, unlimited saved wheels & sets, custom branding and leaderboard export."));

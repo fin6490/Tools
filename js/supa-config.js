@@ -15,3 +15,7 @@ export const PAYMENTS_ENABLED = true;
 // Human-readable prices shown on the upgrade buttons (display only — the real
 // amounts live in Stripe). Update these to match your Stripe prices.
 export const PRICE_LABELS = { monthly: "£0.99 / month", lifetime: "£20 once" };
+
+// Google sign-in. Flip to true once the Google provider is configured in
+// Supabase (Authentication → Providers → Google) — see supabase/AUTH_SETUP.md.
+export const GOOGLE_ENABLED = false;

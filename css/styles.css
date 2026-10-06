@@ -1819,6 +1819,9 @@ a.tab { display: block; }
 .account-auto { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .account-cloudinfo { font-size: 12px; margin: 0; }
 .account-foot { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--line); }
+.account-google { width: 100%; background: #fff; color: #1f2328; border: 1px solid #d0d5dd; font-weight: 700; }
+.account-google:hover { border-color: #9aa2ad; }
+.account-billing { align-self: flex-start; }
 .account-upgrade { display: flex; flex-direction: column; gap: 6px; }
 .account-or { text-align: center; margin: 2px 0; font-size: 12px; letter-spacing: 1px; }
 .pro-cta { margin-top: 4px; }
