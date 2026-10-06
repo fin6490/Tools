@@ -11,7 +11,7 @@ export const SUPABASE_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 // Flip to true once the Stripe secrets + prices are set in Supabase and the
 // webhook is live (see supabase/STRIPE_SETUP.md). Until then, the account modal
 // offers the unlock-code path only.
-export const PAYMENTS_ENABLED = false;
+export const PAYMENTS_ENABLED = true;
 // Human-readable prices shown on the upgrade buttons (display only — the real
 // amounts live in Stripe). Update these to match your Stripe prices.
-export const PRICE_LABELS = { monthly: "£3 / month", lifetime: "£20 once" };
+export const PRICE_LABELS = { monthly: "£0.99 / month", lifetime: "£20 once" };
