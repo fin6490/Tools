@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916r";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916s";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -82,6 +82,15 @@ export async function signInWithEmail(email, redirectTo) {
   return true;
 }
 
+// Redirect to Google's OAuth consent; Supabase handles the handshake and sends
+// the browser back to redirectTo with tokens in the hash (handleRedirect reads them).
+export function signInWithGoogle(redirectTo) {
+  const u = new URL(`${SUPABASE_URL}/auth/v1/authorize`);
+  u.searchParams.set("provider", "google");
+  if (redirectTo) u.searchParams.set("redirect_to", redirectTo);
+  location.href = u.toString();
+}
+
 // If we've just come back from a magic link, capture the tokens from the hash.
 export function handleRedirect() {
   const h = location.hash || "";
@@ -139,6 +148,14 @@ export async function createCheckout(plan) {
   const res = await apiFetch("/functions/v1/create-checkout", { method: "POST", body: { plan, origin: location.origin } });
   let data = {}; try { data = await res.json(); } catch {}
   if (!res.ok || !data.url) throw new Error(data.error || "Couldn't start checkout.");
+  return data;
+}
+
+// Open the Stripe customer portal (manage/cancel subscription, update card).
+export async function createPortal() {
+  const res = await apiFetch("/functions/v1/customer-portal", { method: "POST", body: { origin: location.origin } });
+  let data = {}; try { data = await res.json(); } catch {}
+  if (!res.ok || !data.url) throw new Error(data.error || "Couldn't open billing.");
   return data;
 }
 
