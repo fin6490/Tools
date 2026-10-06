@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916t";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916u";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -78,7 +78,14 @@ export async function signInWithEmail(email, redirectTo) {
     headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
     body: JSON.stringify({ email, create_user: true }),
   });
-  if (!res.ok) { let m = "Couldn't send the sign-in email."; try { m = (await res.json()).msg || (await res.json()).error_description || m; } catch {} throw new Error(m); }
+  if (!res.ok) {
+    let data = {}; try { data = await res.json(); } catch {}
+    const raw = data.msg || data.error_description || data.error || "";
+    if (res.status === 429 || /rate limit/i.test(raw)) {
+      throw new Error("Too many sign-in emails just now — please wait a few minutes and try again.");
+    }
+    throw new Error(raw || "Couldn't send the sign-in email.");
+  }
   return true;
 }
 
