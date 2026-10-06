@@ -548,6 +548,11 @@ h2 { font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; f
   .view { padding: 12px; gap: 12px; }
   .panel { min-width: 0; }
   .wheel-wrap { width: min(62vh, 84vw, 620px); }
+  /* Nav dropdowns: anchor to the tabs row (not the button) so they can't clip
+     off the screen edge. Becomes a near-full-width sheet under the nav. */
+  .tabs { position: relative; }
+  .navgroup { position: static; }
+  .navgroup-menu { left: 12px; right: 12px; transform: none; min-width: 0; width: auto; }
 }
 @media (max-width: 400px) {
   .tab { padding: 6px 8px; font-size: 11px; letter-spacing: .5px; }
