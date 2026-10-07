@@ -3,10 +3,10 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916u";
-import { exportAll, importAll } from "./storage.js?v=20260916u";
-import * as supa from "./supa.js?v=20260916u";
-import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916u";
+import { el } from "./quizkit.js?v=20260916v";
+import { exportAll, importAll } from "./storage.js?v=20260916v";
+import * as supa from "./supa.js?v=20260916v";
+import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916v";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";
@@ -270,7 +270,11 @@ function renderSignedIn(body) {
   body.appendChild(head);
 
   if (isPremium()) {
-    body.appendChild(el("p", "muted", "Premium is active. Your data can sync to your account and back."));
+    const since = profile && profile.premium_since ? new Date(profile.premium_since) : null;
+    const thanks = el("p", "account-thanks");
+    thanks.innerHTML = `<b>★ Premium</b> — thank you for supporting SpinDecks${since && !isNaN(since.getTime()) ? `, a member since ${since.toLocaleDateString()}` : ""}.`;
+    body.appendChild(thanks);
+    body.appendChild(el("p", "muted", "Your data syncs to your account, and donation prompts are off."));
     const row = el("div", "account-actions");
     const saveBtn = el("button", "btn primary", "Save to cloud now");
     saveBtn.addEventListener("click", async () => { saveBtn.disabled = true; saveBtn.textContent = "Saving…"; const ok = await pushToCloud(); toast(ok ? "Saved to your account ✓" : "Save failed"); saveBtn.disabled = false; saveBtn.textContent = "Save to cloud now"; });

@@ -1,8 +1,8 @@
 // site.js — lightweight bootstrap for the hub and legal pages (which don't load
 // the full app.js). Wires the theme toggle and mounts the optional Account UI so
 // people can sign in and go premium from the landing page.
-import { getState, save } from "./storage.js?v=20260916u";
-import { initAccount } from "./account.js?v=20260916u";
+import { getState, save } from "./storage.js?v=20260916v";
+import { initAccount } from "./account.js?v=20260916v";
 
 const state = getState();
 const applyTheme = () => { document.documentElement.dataset.theme = state.theme || "dark"; };
