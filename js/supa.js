@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916u";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20260916v";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();

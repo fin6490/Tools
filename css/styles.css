@@ -1824,6 +1824,11 @@ a.tab { display: block; }
 .account-auto { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .account-cloudinfo { font-size: 12px; margin: 0; }
 .account-foot { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--line); }
+/* Premium perk: no donation nudges once you've paid. */
+:root[data-plan="premium"] .tip-top,
+:root[data-plan="premium"] #tipBlock { display: none !important; }
+.account-thanks { margin: 0 0 2px; font-size: 13px; color: var(--ink); }
+.account-thanks b { color: var(--gold, #ffcf4d); }
 .account-google { width: 100%; background: #fff; color: #1f2328; border: 1px solid #d0d5dd; font-weight: 700; }
 .account-google:hover { border-color: #9aa2ad; }
 .account-billing { align-self: flex-start; }
