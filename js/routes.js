@@ -124,6 +124,11 @@ export const ROUTES = {
     "slug": "lobster-pots",
     "title": "Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks",
     "description": "A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline."
+  },
+  "dash": {
+    "slug": "quiz-dash",
+    "title": "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
+    "description": "A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser."
   }
 };
 
