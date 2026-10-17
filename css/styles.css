@@ -1785,6 +1785,7 @@ a.tab { display: block; }
 .lobster-prizeedit { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
 .lobster-prizelbl { font-size: 13px; font-weight: 700; color: var(--muted); }
 .lobster-prizeedit .lobster-scnum { width: 100px; }
+.lobster-taxout { font-weight: 700; color: var(--text); }
 /* Weather streak flourish */
 .lobster-wstreak { font-family: var(--mono); font-weight: 800; font-size: 14px; margin-top: 2px; padding: 2px 10px; border-radius: 999px; }
 .lobster-wstreak.fair { color: #b8890a; background: color-mix(in srgb, #d9a406 18%, transparent); }

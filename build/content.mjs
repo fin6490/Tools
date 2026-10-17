@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260916z",
+  token: "20261017a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -727,6 +727,34 @@ export const TOOLS = [
       ["How does the weather work?", "Each day the teacher rolls for the class: around 75% of days are lovely (inshore £1, offshore £6 a pot) and 25% are storms (inshore £3, but every offshore pot is destroyed). It's the core risk of the game."],
       ["What are the event cards?", "Random events the teacher draws for everyone: Biscoes Bank loans, Dodgy Dave's cheap pots, Black Market Burt's triple prices, the Inspector's fines, Skilled Sally's skill bonus, Stock Clearance and Fish Toss."],
       ["Do I need to print anything?", "Yes — print a log sheet for each fisher. The teacher screen has the weather roller, event cards, lottery draw and dice; there's nothing to print for that."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "great-elf-game",
+    view: "elf",
+    nav: "Elf Game",
+    title: "The Great Elf Game — Free Print-and-Play Christmas Maths Game | SpinDecks",
+    description:
+      "A print-and-play Christmas business maths game. Each company runs a Christmas-tree business over the 24 days of advent with a team of elves: send them to the Nearby Woods, the Faraway Forest or the Forest Far Beyond, survive the weather and dodge the Tax Man. The teacher rolls the weather and fires the event cards. Free, no sign-up, works offline.",
+    h1: "The Great Elf Game — print-and-play Christmas game",
+    intro:
+      "Run a Christmas-tree business through the 24 days of advent and end with the biggest running total. Each day, companies split their elves between the Nearby Woods (a safe £10 a tree), the risky Faraway Forest (£20 — but nothing in a blizzard) and, once the Mountain Pass opens, the Forest Far Beyond (£50 — but a blizzard loses those elves). The teacher rolls the daily weather and fires event cards — a Mutiny in the ranks, the Tax Man, the Christmas Lottery and Elves for Hire. A festive context for money, multiplication and a bit of nerve.",
+    steps: [
+      "Set the days of advent and elves per company, then “Print accounts sheets” — one per company.",
+      "Each day, companies split their elves between the three woods on their sheet, before the weather is rolled.",
+      "On the teacher board, roll the weather for the class and fire the day's event card — the Tax Man, Mutiny, the Lottery and more.",
+      "Work out each day's takings and keep a running total. Biggest total on Christmas Eve wins.",
+    ],
+    whoFor: [
+      ["Teachers", "a rich, festive context for money, multiplication and risk — runs over a lesson or a series of December starters."],
+      ["Tutors", "practise arithmetic and decision-making with a game that rewards planning."],
+      ["Anyone", "a light business game with a Christmas theme for a group."],
+    ],
+    faq: [
+      ["How does the weather work?", "Each day the teacher rolls a die for the class: 1–4 is a sunny day (Nearby £10, Faraway £20, Far Beyond £50 a tree) and 5–6 is a blizzard (Nearby still £10, but the Faraway Forest earns nothing and any elves in the Forest Far Beyond are lost). It's the core risk of the game."],
+      ["What are the event cards?", "Events the teacher fires on a timetable: a Mutiny in the ranks (work the elves too hard and they may strike), the Tax Man (pay 10% now or gamble on a tax holiday), the Grand Christmas Lottery, the Mountain Pass opening the Forest Far Beyond, and Elves for Hire at £75 each."],
+      ["Do I need to print anything?", "Yes — print an accounts sheet for each company. The teacher board has the weather roller and the event cards with their dice and calculators, so there's nothing to print for that."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },

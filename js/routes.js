@@ -125,6 +125,11 @@ export const ROUTES = {
     "title": "Lobster Pots — Free Print-and-Play Classroom Maths Game | SpinDecks",
     "description": "A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline."
   },
+  "elf": {
+    "slug": "great-elf-game",
+    "title": "The Great Elf Game — Free Print-and-Play Christmas Maths Game | SpinDecks",
+    "description": "A print-and-play Christmas business maths game. Each company runs a Christmas-tree business over the 24 days of advent with a team of elves: send them to the Nearby Woods, the Faraway Forest or the Forest Far Beyond, survive the weather and dodge the Tax Man. The teacher rolls the weather and fires the event cards. Free, no sign-up, works offline."
+  },
   "dash": {
     "slug": "quiz-dash",
     "title": "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",

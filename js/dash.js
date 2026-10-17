@@ -3,10 +3,10 @@
 // questions. Run and jump the spikes; at each glowing gate the game pauses for
 // a multiple-choice question — right keeps your streak, wrong costs a heart.
 // Zero deps, canvas 2D. Solo revision that's actually fun.
-import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20260916z";
-import { SUPPORT } from "./support.js?v=20260916z";
-import { getState, save } from "./storage.js?v=20260916z";
-import * as sound from "./sound.js?v=20260916z";
+import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20261017a";
+import { SUPPORT } from "./support.js?v=20261017a";
+import { getState, save } from "./storage.js?v=20261017a";
+import * as sound from "./sound.js?v=20261017a";
 
 export function initDash(root) {
   const panel = root.querySelector(".dash-panel");
