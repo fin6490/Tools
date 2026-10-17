@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261017a",
+  token: "20261017b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -739,7 +739,7 @@ export const TOOLS = [
       "A print-and-play Christmas business maths game. Each company runs a Christmas-tree business over the 24 days of advent with a team of elves: send them to the Nearby Woods, the Faraway Forest or the Forest Far Beyond, survive the weather and dodge the Tax Man. The teacher rolls the weather and fires the event cards. Free, no sign-up, works offline.",
     h1: "The Great Elf Game — print-and-play Christmas game",
     intro:
-      "Run a Christmas-tree business through the 24 days of advent and end with the biggest running total. Each day, companies split their elves between the Nearby Woods (a safe £10 a tree), the risky Faraway Forest (£20 — but nothing in a blizzard) and, once the Mountain Pass opens, the Forest Far Beyond (£50 — but a blizzard loses those elves). The teacher rolls the daily weather and fires event cards — a Mutiny in the ranks, the Tax Man, the Christmas Lottery and Elves for Hire. A festive context for money, multiplication and a bit of nerve.",
+      "Run a Christmas-tree business through the 24 days of advent and end with the biggest running total. Each day, companies split their elves between the Nearby Woods (a safe £10 a tree), the risky Faraway Forest (£20 — but nothing in a blizzard) and, once the Mountain Pass opens, the Forest Far Beyond (£50 — but a blizzard loses those elves). The teacher rolls the daily weather, fires event cards — a Mutiny in the ranks, the Tax Man, the Christmas Lottery, buying extra elves off a truck or by drone — and can draw random surprise cards to shake things up. Biscoes Bank lends to anyone who loses all their elves. A festive context for money, multiplication and a bit of nerve.",
     steps: [
       "Set the days of advent and elves per company, then “Print accounts sheets” — one per company.",
       "Each day, companies split their elves between the three woods on their sheet, before the weather is rolled.",
@@ -753,8 +753,11 @@ export const TOOLS = [
     ],
     faq: [
       ["How does the weather work?", "Each day the teacher rolls a die for the class: 1–4 is a sunny day (Nearby £10, Faraway £20, Far Beyond £50 a tree) and 5–6 is a blizzard (Nearby still £10, but the Faraway Forest earns nothing and any elves in the Forest Far Beyond are lost). It's the core risk of the game."],
-      ["What are the event cards?", "Events the teacher fires on a timetable: a Mutiny in the ranks (work the elves too hard and they may strike), the Tax Man (pay 10% now or gamble on a tax holiday), the Grand Christmas Lottery, the Mountain Pass opening the Forest Far Beyond, and Elves for Hire at £75 each."],
-      ["Do I need to print anything?", "Yes — print an accounts sheet for each company. The teacher board has the weather roller and the event cards with their dice and calculators, so there's nothing to print for that."],
+      ["When can I use the Forest Far Beyond?", "Not until the Mountain Pass opens — by default on day 17, and the board locks that column until then. Once it's open the Forest Far Beyond pays £50 a tree, but a blizzard loses every elf you sent there for the rest of the season."],
+      ["Can I get more elves during the game?", "Yes — a lorry visits twice selling elves off the back of a truck at the regular £75 each. Once the Mountain Pass opens you can also have elves air-dropped by Amazon drone, but that express service costs double at £150 each."],
+      ["What if I lose all my elves?", "Biscoes Bank lends emergency money on the board so you can buy more. Interest is 50% a day and the debt grows automatically as the days pass, so whatever's still owed at the end comes off your final total — borrow carefully."],
+      ["What are the event and surprise cards?", "Scheduled events fire on a timetable: a Mutiny in the ranks, the Tax Man (pay 10% now or gamble on 20% later), the Grand Christmas Lottery, the Mountain Pass opening, and the truck and drone elf sales. On top of those the teacher can draw random surprise cards — a reindeer delivery boost, elf flu, a golden tree, frostbite and more — to keep every game different."],
+      ["Do I need to print anything?", "Yes — print an accounts sheet for each company. The teacher board has the weather roller, the event and surprise cards with their dice and calculators, and the bank ledger, so there's nothing to print for that."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
   },
