@@ -95,11 +95,6 @@ export const ROUTES = {
     "title": "Countdown Game — Free Letters, Numbers & Conundrum | SpinDecks",
     "description": "The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline."
   },
-  "axiom": {
-    "slug": "axiom",
-    "title": "Axiom — Free Daily Maths Puzzle | SpinDecks",
-    "description": "A daily maths crossword. Place the number tiles so every line reads as a true equation, across and down. One puzzle a day, the same for everyone, self-checking. Free, no sign-up, works offline."
-  },
   "hangman": {
     "slug": "hangman",
     "title": "Hangman — Free Classroom Word Guessing Game | SpinDecks",

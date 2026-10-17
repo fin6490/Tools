@@ -1435,6 +1435,7 @@ a.tab { display: block; }
 .gold { color: #d9a406; } .chest { color: #e0872a; } .diamond { color: #2aa7c4; }
 .double { color: #7c5cff; } .steal { color: #d14fa0; } .swap { color: #4f7fd1; }
 .shield { color: #2bbf75; } .cannon { color: #e0674d; } .shark { color: #c62f2f; } .plank { color: #b23020; }
+.quiz { color: #cf7a12; }
 
 /* Printable maps */
 .pirates-print-bar { margin-bottom: 6px; }
@@ -1523,6 +1524,7 @@ a.tab { display: block; }
 .pirates-pcell.chest { color: #c0700f; } .pirates-pcell.diamond { color: #1f86a0; }
 .pirates-pcell.double { color: #5b3fd6; } .pirates-pcell.steal { color: #b0347f; } .pirates-pcell.swap { color: #3a63ad; }
 .pirates-pcell.shield { color: #1f9d5c; } .pirates-pcell.cannon { color: #c24a30; } .pirates-pcell.shark { color: #a32020; } .pirates-pcell.bank { color: #1f86a0; }
+.pirates-pcell.quiz { color: #b06a0c; }
 .pirates-plab { font-size: 6px; letter-spacing: .2px; line-height: 1; color: inherit; }
 .pirates-handbadge { position: absolute; top: -4px; right: -4px; background: #111; color: #fff; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; }
 .pirates-handbadge svg { width: 10px; height: 10px; }

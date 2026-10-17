@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20260916v";
-import { getState, save } from "./storage.js?v=20260916v";
-import { Wheel, parseEntries } from "./wheel.js?v=20260916v";
-import { SUPPORT } from "./support.js?v=20260916v";
-import * as sound from "./sound.js?v=20260916v";
+import { el, shuffle } from "./quizkit.js?v=20260916w";
+import { getState, save } from "./storage.js?v=20260916w";
+import { Wheel, parseEntries } from "./wheel.js?v=20260916w";
+import { SUPPORT } from "./support.js?v=20260916w";
+import * as sound from "./sound.js?v=20260916w";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
@@ -39,18 +39,18 @@ const POW = {
   bank:   { code: "BANK", name: "Bank your gold — safe from attacks", cls: "bank", hands: false, icon: IC.bank },
   steal:  { code: "STEAL",name: "Steal someone's unbanked gold", cls: "steal", hands: true, icon: IC.steal },
   sink:   { code: "SINK", name: "Sink someone — their unbanked gold goes to 0", cls: "shark", hands: true, icon: IC.skull },
-  bomb:   { code: "BOMB", name: "Bomb — a random pirate loses 2000, can't be blocked", cls: "cannon", hands: false, icon: IC.bomb },
+  bomb:   { code: "BOMB", name: "Bomb — a random pirate loses half their unbanked gold, can't be blocked", cls: "cannon", hands: false, icon: IC.bomb },
   swap:   { code: "SWAP", name: "Swap total scores with someone", cls: "swap", hands: true, icon: IC.swap },
   gift:   { code: "GIFT", name: "Give 1000 gold to someone", cls: "chest", hands: true, icon: IC.gift },
-  quiz:   { code: "?",    name: "Answer a question to steal gold", cls: "double", hands: true, icon: IC.quiz },
+  quiz:   { code: "?",    name: "Quiz — answer a question, get it right to steal", cls: "quiz", hands: true, icon: IC.quiz },
   choose: { code: "PICK", name: "Choose the next square", cls: "gold", hands: false, icon: IC.choose },
   shield: { code: "SHIELD", name: "Shield — blocks the next attack on you", cls: "shield", hands: false, icon: IC.shield },
   mirror: { code: "MIRROR", name: "Mirror — reflects the next attack back", cls: "swap", hands: false, icon: IC.mirror },
   mystic: { code: "BALL", name: "Crystal ball — look at someone's score", cls: "diamond", hands: false, icon: IC.ball },
 };
 // Short labels printed under the icon on the student sheets, so every action
-// square is unmistakable — especially the random BOMB and the STEAL? question.
-const PLAB = { x2: "×2", bank: "BANK", steal: "STEAL", sink: "SINK", bomb: "BOMB", swap: "SWAP", gift: "GIFT", quiz: "STEAL?", choose: "PICK", shield: "SHIELD", mirror: "MIRROR", mystic: "BALL" };
+// square is unmistakable — especially the random BOMB and the QUIZ question.
+const PLAB = { x2: "×2", bank: "BANK", steal: "STEAL", sink: "SINK", bomb: "BOMB", swap: "SWAP", gift: "GIFT", quiz: "QUIZ", choose: "PICK", shield: "SHIELD", mirror: "MIRROR", mystic: "BALL" };
 const SPECIALS = { x2: 2, bank: 3, steal: 2, sink: 1, bomb: 1, swap: 1, gift: 1, quiz: 1, choose: 1, shield: 1, mirror: 1, mystic: 1 };
 const GOLD_W = [[200, 16], [1000, 12], [3000, 4], [5000, 1]];
 const GW = GOLD_W.reduce((s, g) => s + g[1], 0);
@@ -251,7 +251,7 @@ export function initPirates(root) {
     const a = cur(), t = g.teams[ti];
     if (action === "gift") { t.unbanked += 1000; g.status = `${a.name} gives ${t.name} 1000 gold.`; fx(sound.beep); }
     else if (action === "swap") { const ab = a.banked, au = a.unbanked; a.banked = t.banked; a.unbanked = t.unbanked; t.banked = ab; t.unbanked = au; g.status = `${a.name} swaps scores with ${t.name}!`; fx(sound.beep); }
-    else if (action === "bomb") { let loss = 2000; const u = Math.min(t.unbanked, loss); t.unbanked -= u; loss -= u; const bk = Math.min(t.banked, loss); t.banked -= bk; g.status = `BOMB! It lands on ${t.name} — 2000 gold gone, nothing can block it.`; fx(sound.buzz); }
+    else if (action === "bomb") { const loss = Math.floor((t.unbanked || 0) / 2); t.unbanked -= loss; g.status = loss > 0 ? `BOMB! It hits ${t.name} — they lose ${loss} unbanked gold (banked treasure is safe).` : `BOMB! It hits ${t.name} — but they had no unbanked gold to lose.`; fx(sound.buzz); }
     else if (action === "steal") { if (t.mirror) { t.mirror = false; const amt = a.unbanked; t.unbanked += amt; a.unbanked = 0; g.status = `${t.name}'s Mirror reflects it — ${a.name} loses ${amt} to ${t.name}!`; fx(sound.buzz); } else if (t.shield) { t.shield = false; g.status = `${t.name}'s Shield blocks the steal!`; fx(sound.buzz); } else { const amt = t.unbanked; a.unbanked += amt; t.unbanked = 0; g.status = `${a.name} steals ${amt} gold from ${t.name}!`; fx(sound.fanfare); } }
     else if (action === "sink") { if (t.mirror) { t.mirror = false; a.unbanked = 0; g.status = `${t.name}'s Mirror reflects it — ${a.name} is sunk instead!`; fx(sound.buzz); } else if (t.shield) { t.shield = false; g.status = `${t.name}'s Shield blocks the sinking!`; fx(sound.buzz); } else { t.unbanked = 0; g.status = `${a.name} sinks ${t.name}!`; fx(sound.buzz); } }
     g.phase = "pick"; g.pending = null; finishTurn(false);
