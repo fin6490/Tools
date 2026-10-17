@@ -3,10 +3,10 @@
 // (local-only, offline, no tracking). Signed in, you can unlock premium with a
 // code and back your whole SpinDecks library up to your account and restore it
 // on any device.
-import { el } from "./quizkit.js?v=20260916v";
-import { exportAll, importAll } from "./storage.js?v=20260916v";
-import * as supa from "./supa.js?v=20260916v";
-import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916v";
+import { el } from "./quizkit.js?v=20260916w";
+import { exportAll, importAll } from "./storage.js?v=20260916w";
+import * as supa from "./supa.js?v=20260916w";
+import { PAYMENTS_ENABLED, PRICE_LABELS, GOOGLE_ENABLED } from "./supa-config.js?v=20260916w";
 
 const AUTOSYNC_KEY = "spindeck.supa.autosync";
 const BRAND_KEY = "spindeck.brand";

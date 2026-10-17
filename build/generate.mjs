@@ -73,7 +73,7 @@ const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
   { label: "Quiz games", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim"] },
-  { label: "Games", slugs: ["countdown", "axiom", "hangman", "noughts-and-crosses", "lexicon", "numberwang", "maths-pirates", "lobster-pots"] },
+  { label: "Games", slugs: ["countdown", "hangman", "noughts-and-crosses", "lexicon", "numberwang", "maths-pirates", "lobster-pots"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
 
@@ -185,7 +185,6 @@ function footer() {
     "class-quiz": "Class quiz",
     "grid-claim": "Grid claim",
     "countdown": "Countdown game",
-    "axiom": "Axiom",
     "hangman": "Hangman",
     "noughts-and-crosses": "Noughts & crosses",
     "lexicon": "Lexicon",
@@ -614,10 +613,6 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- COUNTDOWN (letters/numbers/conundrum game; countdown.js builds the screens) -->
   <main class="view view-countdown" data-view-panel="countdown" hidden>
     <section class="panel countdown-panel" aria-label="Countdown letters and numbers game"></section>
-  </main>
-  <!-- AXIOM (daily maths crossword; axiom.js builds the screens) -->
-  <main class="view view-axiom" data-view-panel="axiom" hidden>
-    <section class="panel axiom-panel" aria-label="Axiom daily maths puzzle"></section>
   </main>
   <!-- HANGMAN (word guessing game; hangman.js builds the screens) -->
   <main class="view view-hangman" data-view-panel="hangman" hidden>
