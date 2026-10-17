@@ -2,9 +2,9 @@
 // Teams take turns picking a tile and answering; a correct answer claims it in
 // their colour. Team 1 tries to connect left↔right, Team 2 top↔bottom. First to
 // bridge their sides wins; if the grid fills, most tiles wins. Reuses Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260916x";
-import { getState, save } from "./storage.js?v=20260916x";
-import * as sound from "./sound.js?v=20260916x";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow } from "./quizkit.js?v=20260916y";
+import { getState, save } from "./storage.js?v=20260916y";
+import * as sound from "./sound.js?v=20260916y";
 
 export function initGridClaim(root) {
   const panel = root.querySelector(".gridclaim-panel");
@@ -21,7 +21,9 @@ export function initGridClaim(root) {
   const answersOf = (q) => (Array.isArray(q.answers) && q.answers.length) ? q.answers : [q.a];
 
   let size = 5, grid = [], turn = 1, queue = [], qi = 0, selected = -1, over = false;
+  let bonus = new Set(), useSteal = true, useBonus = true; // gameplay twists
   const TEAM = { 1: { name: "Team 1", goal: "left to right" }, 2: { name: "Team 2", goal: "top to bottom" } };
+  const other = (t) => (t === 1 ? 2 : 1);
 
   /* ================= LOBBY ================= */
   function renderLobby(flash) {
@@ -51,10 +53,24 @@ export function initGridClaim(root) {
     szRow.appendChild(szSel);
     card.appendChild(szRow);
 
+    // Gameplay twists
+    const twRow = el("div", "dojo-field");
+    twRow.appendChild(el("label", "dojo-lbl", "Twists"));
+    const stealLbl = el("label", "lobster-check gridclaim-twist");
+    const stealCb = el("input"); stealCb.type = "checkbox"; stealCb.checked = cfg().steal !== false;
+    stealCb.addEventListener("change", () => { cfg().steal = stealCb.checked; save(); });
+    stealLbl.append(stealCb, document.createTextNode(" Steal on a miss — the other team can grab the tile"));
+    const bonusLbl = el("label", "lobster-check gridclaim-twist");
+    const bonusCb = el("input"); bonusCb.type = "checkbox"; bonusCb.checked = cfg().bonus !== false;
+    bonusCb.addEventListener("change", () => { cfg().bonus = bonusCb.checked; save(); });
+    bonusLbl.append(bonusCb, document.createTextNode(" Bonus ★ tiles — claim one and go again"));
+    twRow.append(stealLbl, bonusLbl);
+    card.appendChild(twRow);
+
     const go = el("button", "btn primary dojo-begin", "Start");
     go.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().size = +szSel.value; save(); start(); });
     card.appendChild(go);
-    card.appendChild(el("p", "dojo-hint", "Tip: pick tiles that build your own line and cut across your rivals' path. A correct answer claims the tile; a miss leaves it open and passes over."));
+    card.appendChild(el("p", "dojo-hint", "Tip: build your own line while cutting across your rivals' path. Grab bonus ★ tiles for an extra turn, and don't hand the other team an easy steal."));
     panel.appendChild(card);
   }
 
@@ -63,8 +79,13 @@ export function initGridClaim(root) {
     const set = activeSet();
     if (!set || !set.questions.length) return;
     size = cfg().size || 5;
+    useSteal = cfg().steal !== false;
+    useBonus = cfg().bonus !== false;
     grid = new Array(size * size).fill(0);
     turn = 1; queue = shuffle(set.questions); qi = 0; selected = -1; over = false;
+    // Sprinkle a few bonus tiles (≈12% of the board, min 2).
+    bonus = new Set();
+    if (useBonus) { const n = Math.max(2, Math.round(size * size * 0.12)); const order = shuffle([...Array(size * size).keys()]); for (let k = 0; k < n; k++) bonus.add(order[k]); }
     buildShell();
     paint();
   }
@@ -99,58 +120,73 @@ export function initGridClaim(root) {
   }
   function updateMute() { const b = panel.querySelector("#gcMute"); if (b) b.textContent = soundOn ? "♪" : "✕"; }
 
-  function paint() {
+  function paint(note) {
     const board = panel.querySelector("#gcBoard");
     [...board.children].forEach((b, i) => {
       b.classList.toggle("t1", grid[i] === 1);
       b.classList.toggle("t2", grid[i] === 2);
       b.classList.toggle("open", grid[i] === 0);
+      const showStar = grid[i] === 0 && bonus.has(i);
+      b.classList.toggle("bonus", showStar);
+      b.innerHTML = showStar ? "★" : "";
       b.disabled = over || grid[i] !== 0;
     });
     const t = panel.querySelector("#gcTurn");
-    if (t) t.innerHTML = `<span class="gridclaim-dot t${turn}"></span> ${TEAM[turn].name}'s turn — connect <strong>${TEAM[turn].goal}</strong>`;
+    if (t) t.innerHTML = note
+      ? note
+      : `<span class="gridclaim-dot t${turn}"></span> ${TEAM[turn].name}'s turn — connect <strong>${TEAM[turn].goal}</strong>`;
   }
+
+  const closeOverlay = () => { const ov = panel.querySelector("#gcOverlay"); if (ov) { ov.hidden = true; ov.innerHTML = ""; } };
 
   function onTile(i) {
     if (over || grid[i] !== 0) return;
     selected = i;
     const q = queue[qi % queue.length]; qi++;
+    const isBonus = bonus.has(i);
     const ov = panel.querySelector("#gcOverlay");
-    ov.hidden = false;
-    ov.innerHTML = "";
+    ov.hidden = false; ov.innerHTML = "";
     const box = el("div", "gridclaim-qbox");
-    box.appendChild(el("p", "gridclaim-qteam", `${TEAM[turn].name} — answer to claim this tile`));
+    box.appendChild(el("p", "gridclaim-qteam", `${TEAM[turn].name} — answer to claim this tile${isBonus ? " · ★ bonus: get it and go again" : ""}`));
     box.appendChild(el("div", "bingo-q", mathHtml(q.q)));
     const ans = el("div", "bingo-ans"); ans.hidden = true; box.appendChild(ans);
-    const reveal = el("button", "btn primary bingo-reveal", "Reveal answer");
     const acts = el("div", "gridclaim-qacts");
-    reveal.addEventListener("click", () => {
-      ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false;
-      reveal.hidden = true; fx(sound.beep);
-      const got = el("button", "btn primary", "Claimed it ✓");
-      got.addEventListener("click", () => resolve(true));
-      const miss = el("button", "btn ghost", "Missed — pass ✗");
-      miss.addEventListener("click", () => resolve(false));
-      acts.append(got, miss);
-    });
-    acts.appendChild(reveal);
+    const reveal = el("button", "btn ghost bingo-reveal", "Reveal answer");
+    reveal.addEventListener("click", () => { ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false; reveal.disabled = true; fx(sound.beep); });
+    const got = el("button", "btn primary", `${TEAM[turn].name} got it ✓`);
+    got.addEventListener("click", () => doClaim(turn, isBonus, false));
+    const miss = el("button", "btn ghost", "Missed ✗");
+    miss.addEventListener("click", () => onMiss());
+    acts.append(reveal, got, miss);
     box.appendChild(acts);
     ov.appendChild(box);
     fx(sound.tick);
   }
 
-  function resolve(correct) {
+  // A miss either passes over, or (steal on) lets the other team grab the tile.
+  function onMiss() {
+    if (!useSteal) { closeOverlay(); turn = other(turn); paint(); return; }
+    const thief = other(turn);
     const ov = panel.querySelector("#gcOverlay");
-    ov.hidden = true; ov.innerHTML = "";
-    if (correct) {
-      grid[selected] = turn; fx(sound.fanfare);
-      if (connected(turn)) { paint(); return win(turn); }
-      if (!grid.includes(0)) { paint(); return decideFull(); }
-      // Neither side can still reach across their edges → the game is decided.
-      if (!canConnect(1) && !canConnect(2)) { paint(); return decideFull(); }
-    }
-    turn = turn === 1 ? 2 : 1;
-    paint();
+    const box = ov.querySelector(".gridclaim-qbox"); box.innerHTML = "";
+    box.appendChild(el("p", "gridclaim-qteam", `${TEAM[turn].name} missed — can ${TEAM[thief].name} steal it?`));
+    const acts = el("div", "gridclaim-qacts");
+    const steal = el("button", "btn primary", `${TEAM[thief].name} steals ✓`);
+    steal.addEventListener("click", () => doClaim(thief, false, true));
+    const pass = el("button", "btn ghost", "No — leave it open");
+    pass.addEventListener("click", () => { closeOverlay(); turn = other(turn); paint(); });
+    acts.append(steal, pass);
+    box.appendChild(acts); fx(sound.buzz);
+  }
+
+  function doClaim(owner, isBonus, viaSteal) {
+    closeOverlay();
+    grid[selected] = owner; fx(sound.fanfare);
+    if (connected(owner)) { paint(); return win(owner); }
+    if (!grid.includes(0) || (!canConnect(1) && !canConnect(2))) { paint(); return decideFull(); }
+    const again = isBonus && !viaSteal; // bonus tile claimed on your own turn → extra go
+    if (!again) turn = other(turn);
+    paint(again ? `<span class="gridclaim-dot t${owner}"></span> Bonus ★ — ${TEAM[owner].name} goes again!` : undefined);
   }
 
   // Flood-fill: is `owner` connected across their two goal edges?
