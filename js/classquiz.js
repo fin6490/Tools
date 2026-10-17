@@ -3,19 +3,24 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260916w";
-import { parseEntries } from "./wheel.js?v=20260916w";
-import { getState, save } from "./storage.js?v=20260916w";
-import * as sound from "./sound.js?v=20260916w";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20260916x";
+import { parseEntries } from "./wheel.js?v=20260916x";
+import { getState, save } from "./storage.js?v=20260916x";
+import * as sound from "./sound.js?v=20260916x";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
   standard: { name: "Mark as you go", desc: "Reveal and mark each question one at a time.", flow: "mark", points: 1 },
   written:  { name: "Written round", desc: "Read all the questions first, teams write answers, then mark together.", flow: "written", points: 1 },
   double:   { name: "Double points", desc: "A written round worth double — great as a finale.", flow: "written", points: 2 },
+  triple:   { name: "Triple points", desc: "A written round worth triple — a grand finale.", flow: "written", points: 3 },
+  risk:     { name: "Risk round", desc: "Written: a right answer is +2, a wrong one is −1. Gamble wisely.", flow: "risk", points: 2, penalty: 1 },
+  wager:    { name: "Wager round", desc: "Teams secretly bet 1–3 points before answering — win or lose that many.", flow: "wager" },
   quickfire:{ name: "Quickfire", desc: "A 20-second clock on every question — beat the buzzer.", flow: "quick", points: 1 },
   bid:      { name: "Bonus bid", desc: "After the answer, the winning team bids 1, 2 or 3 points.", flow: "bid", points: 1 },
 };
+// Rounds whose flow shows the questions first (teams write before marking).
+const WRITTEN_FLOWS = new Set(["written", "risk", "wager"]);
 
 export function initClassQuiz(root) {
   const panel = root.querySelector(".classquiz-panel");
@@ -94,9 +99,15 @@ export function initClassQuiz(root) {
     const rRow = el("div", "dojo-field dojo-field-inline");
     rRow.appendChild(el("label", "dojo-lbl", "Rounds"));
     const rSel = el("select", "dojo-select dojo-select-sm");
-    [[0, "No rounds"], [3, "3 per round"], [5, "5 per round"], [8, "8 per round"], [10, "10 per round"]].forEach(([v, t]) => { const o = el("option"); o.value = v; o.textContent = t; if (v === cfg().roundSize) o.selected = true; rSel.appendChild(o); });
+    const SIZE_PRESETS = [0, 3, 5, 8, 10, 15, 20];
+    SIZE_PRESETS.forEach((v) => { const o = el("option"); o.value = v; o.textContent = v === 0 ? "No rounds" : `${v} per round`; if (v === cfg().roundSize) o.selected = true; rSel.appendChild(o); });
+    // Keep a custom value visible in the dropdown if it isn't a preset.
+    if (cfg().roundSize > 0 && !SIZE_PRESETS.includes(cfg().roundSize)) { const o = el("option"); o.value = cfg().roundSize; o.textContent = `${cfg().roundSize} per round`; o.selected = true; rSel.appendChild(o); }
     rSel.addEventListener("change", () => { cfg().roundSize = +rSel.value; save(); });
     rRow.appendChild(rSel);
+    const customIn = el("input", "dojo-input dojo-select-sm classquiz-customsize"); customIn.type = "number"; customIn.min = "1"; customIn.max = "50"; customIn.placeholder = "custom";
+    customIn.addEventListener("change", () => { const v = Math.max(1, Math.min(50, Math.round(+customIn.value || 0))); if (v) { cfg().roundSize = v; save(); renderLobby(); } });
+    rRow.append(el("span", "dojo-hint", "or"), customIn);
     card.appendChild(rRow);
 
     const clsRow = el("div", "dojo-field");
@@ -121,7 +132,7 @@ export function initClassQuiz(root) {
     const go = el("button", "btn primary dojo-begin", "Start quiz");
     go.addEventListener("click", () => { cfg().activeSetId = sel.value; cfg().teamCount = +nSel.value; cfg().roundSize = +rSel.value; save(); start(); });
     card.appendChild(go);
-    if (cfg().roundSize > 0) card.appendChild(el("p", "dojo-hint", "With rounds on you'll pick a round type before each round — mark as you go, written, double points, quickfire or bonus bid."));
+    if (cfg().roundSize > 0) card.appendChild(el("p", "dojo-hint", "With rounds on you'll pick a type before each round — mark as you go, written, double/triple points, risk, wager, quickfire or bonus bid."));
     panel.appendChild(card);
   }
 
@@ -189,7 +200,7 @@ export function initClassQuiz(root) {
 
   function beginRound(k) {
     live.type = k; live.qi = 0;
-    live.phase = ROUND_TYPES[k].flow === "written" ? "ask" : "mark";
+    live.phase = WRITTEN_FLOWS.has(ROUND_TYPES[k].flow) ? "ask" : "mark";
     renderPhase();
   }
   function renderPhase() { live.phase === "ask" ? renderAsk() : renderMark(); }
@@ -227,11 +238,30 @@ export function initClassQuiz(root) {
     fitBlock(qEl, 0.34, 60, 22);
     const aw = el("div", "classquiz-award"); aw.hidden = true; b.appendChild(aw);
 
+    // Wager round: each team secretly sets a 1–3 bet before the reveal.
+    if (type.flow === "wager") {
+      live.teams.forEach((t) => { if (!t.wager) t.wager = 1; });
+      const wrap = el("div", "classquiz-wagers");
+      wrap.appendChild(el("span", "classquiz-awardlbl", "Set your wagers (keep them secret):"));
+      live.teams.forEach((t) => {
+        const row = el("div", "classquiz-wagerrow");
+        row.appendChild(el("span", "classquiz-wagername", escapeHtml(t.name)));
+        [1, 2, 3].forEach((n) => {
+          const wb = el("button", "btn classquiz-wagerbtn" + (t.wager === n ? " on" : ""), String(n));
+          wb.addEventListener("click", () => { t.wager = n; row.querySelectorAll(".classquiz-wagerbtn").forEach((x) => x.classList.remove("on")); wb.classList.add("on"); fx(sound.tick); });
+          row.appendChild(wb);
+        });
+        wrap.appendChild(row);
+      });
+      stage.insertBefore(wrap, reveal);
+    }
+
     const doReveal = () => {
       clearQTimer();
       ans.innerHTML = answersOf(q).map(mathHtml).join(' <span class="muted">/</span> '); ans.hidden = false;
       fitBlock(ans, 0.3, 54, 20);
       reveal.hidden = true; fx(sound.beep);
+      const wagersEl = stage.querySelector(".classquiz-wagers"); if (wagersEl) wagersEl.hidden = true;
       aw.hidden = false; aw.innerHTML = "";
       if (type.flow === "bid") {
         // Tap the team that got it, then how many they bid (1–3).
@@ -244,21 +274,31 @@ export function initClassQuiz(root) {
         const skip = el("button", "btn ghost", "No one →"); skip.addEventListener("click", () => advanceMark());
         aw.appendChild(skip);
       } else {
-        // Tap every team that got it right (tap again to undo), then Next —
-        // more than one team can score on the same question.
-        aw.appendChild(el("span", "classquiz-awardlbl", `Who got it? (+${type.points} each — tap all that did)`));
+        // Tap every team that got it right (tap again to undo), then Next.
+        // Risk/wager: teams that didn't get it lose their stake on Next.
+        const deltaFor = (t) => type.flow === "wager" ? (t.wager || 1) : type.points;
+        const penaltyFor = (t) => type.flow === "wager" ? (t.wager || 1) : (type.penalty || 0);
+        const lbl = type.flow === "wager" ? "Who got it? (win or lose your wager — tap all that did)"
+          : type.flow === "risk" ? `Who got it? (+${type.points} right · −${type.penalty} wrong — tap all that did)`
+            : `Who got it? (+${type.points} each — tap all that did)`;
+        aw.appendChild(el("span", "classquiz-awardlbl", lbl));
         const awarded = new Set();
         live.teams.forEach((t, i) => {
-          const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${type.points}`);
+          const d = deltaFor(t);
+          const btn = el("button", "btn classquiz-awardbtn", `${escapeHtml(t.name)} +${d}`);
           btn.addEventListener("click", () => {
-            if (awarded.has(i)) { awarded.delete(i); t.score -= type.points; btn.classList.remove("awarded"); }
-            else { awarded.add(i); t.score += type.points; btn.classList.add("awarded"); fx(sound.fanfare); }
+            if (awarded.has(i)) { awarded.delete(i); t.score -= d; btn.classList.remove("awarded"); }
+            else { awarded.add(i); t.score += d; btn.classList.add("awarded"); fx(sound.fanfare); }
             paintScores();
           });
           aw.appendChild(btn);
         });
         const next = el("button", "btn primary classquiz-awardnext", "Next →");
-        next.addEventListener("click", () => advanceMark());
+        next.addEventListener("click", () => {
+          live.teams.forEach((t, i) => { if (!awarded.has(i)) { const p = penaltyFor(t); if (p) t.score -= p; } });
+          paintScores();
+          advanceMark();
+        });
         aw.appendChild(next);
       }
     };

@@ -991,6 +991,13 @@ a.tab { display: block; }
 .classquiz-awardbtn { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); }
 .classquiz-awardbtn.awarded { background: #35d183; color: #06251a; border-color: #2bbf75; }
 .classquiz-awardnext { width: 100%; }
+/* Wager round: per-team 1–3 bet picker */
+.classquiz-wagers { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 8px; }
+.classquiz-wagerrow { display: flex; align-items: center; gap: 8px; }
+.classquiz-wagername { min-width: 110px; text-align: right; font-weight: 700; color: var(--ink); }
+.classquiz-wagerbtn { min-width: 40px; padding: 6px 12px; }
+.classquiz-wagerbtn.on { background: var(--gold, #ffcf4d); color: #2b0b09; border-color: var(--gold, #ffcf4d); }
+.classquiz-customsize { width: 84px; }
 .classquiz-clock { font-family: var(--mono); font-weight: 800; font-size: clamp(30px, 8vw, 52px); color: var(--muted); line-height: 1; }
 .classquiz-clock.low { color: #ff6b6b; }
 .classquiz-body { display: flex; flex-direction: column; gap: 16px; }
