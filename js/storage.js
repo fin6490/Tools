@@ -42,6 +42,7 @@ const DEFAULTS = () => ({
   numberwang: { target: 3, names: [], maths: false, mathSet: "auto" },
   pirates: { size: 7, printCount: 12, teamCount: 4, names: [], bombNames: "", categories: "Sport\nScience\nHistory\nGeography\nEntertainment" },
   lobster: { days: 14, startPots: 5, startCash: 0, printCount: 8, physicalDice: false, skillGame: false, lottoPrize: 100, lottoPrizes: {}, schedule: null, schedVer: 2, ledger: [], demo: null, scoreboard: [] },
+  dash: { topic: "", best: 0 },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,

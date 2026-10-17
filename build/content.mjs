@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20260916y",
+  token: "20260916z",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -728,6 +728,34 @@ export const TOOLS = [
       ["What are the event cards?", "Random events the teacher draws for everyone: Biscoes Bank loans, Dodgy Dave's cheap pots, Black Market Burt's triple prices, the Inspector's fines, Skilled Sally's skill bonus, Stock Clearance and Fish Toss."],
       ["Do I need to print anything?", "Yes — print a log sheet for each fisher. The teacher screen has the weather roller, event cards, lottery draw and dice; there's nothing to print for that."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
+    ],
+  },
+  {
+    slug: "quiz-dash",
+    view: "dash",
+    nav: "Quiz Dash",
+    title: "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
+    description:
+      "A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser.",
+    h1: "Quiz Dash — a geometry-dash-style AI quiz runner",
+    intro:
+      "A fast, arcade-style way to revise. Type a topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump the spikes, and every so often you hit a question gate. Pick the right answer to blast through and keep your streak; get it wrong and you lose a heart. Three hearts, one score, one more go.",
+    steps: [
+      "Type a topic and press “Generate & play” — or pick one of your saved quiz sets.",
+      "Jump the spikes with Space, a tap or a click as your character runs.",
+      "At each gate, choose the right answer to pass — wrong answers cost a heart.",
+      "Beat your best distance; run again with the same topic or try a new one.",
+    ],
+    whoFor: [
+      ["Students", "turn revision into a quick arcade run — any subject, any topic."],
+      ["Teachers", "a lesson-end brain-break that's still on-topic, generated in seconds."],
+      ["Anyone", "a bite-sized quiz game you can pick up for one more go."],
+    ],
+    faq: [
+      ["Where do the questions come from?", "Type a topic and they're generated for you by AI. If generation isn't available you can play from any of your saved quiz sets instead, fully offline."],
+      ["How do I play?", "Your character runs on its own. Tap, click or press Space to jump the spikes. At each glowing gate the game pauses for a multiple-choice question — answer correctly to carry on."],
+      ["What happens if I get one wrong?", "You lose one of your three hearts and your streak resets, but the run continues. Lose all three hearts and the run ends."],
+      ["Is it free?", "Yes — free and ad-free, no sign-up. It runs in your browser."],
     ],
   },
 ];
