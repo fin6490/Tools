@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261017b";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261019a";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -190,4 +190,47 @@ export async function putCloudState(data) {
     body: { user_id: uid, data, updated_at: new Date().toISOString() },
   });
   return res.ok;
+}
+
+/* ---------- Quiz Dash global leaderboard (no sign-in needed) ----------
+   A public high-score board: anyone can read the top runs and post their own.
+   Row-Level Security keeps posts within sane bounds (see the dash_scores
+   migration). These calls use the anon key directly — no account required. */
+
+// A stable-ish per-browser id, just so a board can de-dupe a device's spam.
+function deviceId() {
+  try {
+    let id = localStorage.getItem("spindeck.device");
+    if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : "d" + Math.random().toString(36).slice(2)); localStorage.setItem("spindeck.device", id); }
+    return id;
+  } catch { return ""; }
+}
+
+// Top runs, highest first. Returns [] on any error so the UI can shrug it off.
+export async function topDashScores(limit = 12) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/dash_scores?select=name,score,topic,level,created_at&order=score.desc,created_at.desc&limit=${Math.max(1, Math.min(50, limit | 0))}`, {
+      headers: { apikey: SUPABASE_ANON_KEY },
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch { return []; }
+}
+
+// Post a run to the board. Clamps/sanitises so a bad value can't 400 the user.
+export async function submitDashScore({ name, score, topic, level }) {
+  const row = {
+    name: String(name || "Anon").trim().slice(0, 24) || "Anon",
+    topic: String(topic || "").trim().slice(0, 60),
+    score: Math.max(0, Math.min(100000, Math.round(+score || 0))),
+    level: Math.max(1, Math.min(999, Math.round(+level || 1))),
+    device_id: deviceId(),
+  };
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/dash_scores`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify(row),
+  });
+  if (!res.ok) { let d = {}; try { d = await res.json(); } catch {} throw new Error(d.message || "Couldn't post your score."); }
+  return true;
 }

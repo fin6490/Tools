@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks</title>
-<meta name="description" content="A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser." />
+<meta name="description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://spindecks.app/quiz-dash/" />
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
 <meta property="og:title" content="Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks" />
-<meta property="og:description" content="A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser." />
+<meta property="og:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta property="og:url" content="https://spindecks.app/quiz-dash/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
@@ -20,10 +20,10 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks" />
-<meta name="twitter:description" content="A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser." />
+<meta name="twitter:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261017b" />
+<link rel="stylesheet" href="/css/styles.css?v=20261019a" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -59,15 +59,39 @@
       "name": "Where do the questions come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Type a topic and they're generated for you by AI. If generation isn't available you can play from any of your saved quiz sets instead, fully offline."
+        "text": "Maths topics — times tables, addition, subtraction, division, square numbers, doubling and halving — are generated right in your browser, so the answers are always correct. Anything else is written for you by AI, and you can also play from any of your saved quiz sets, fully offline."
       }
     },
     {
       "@type": "Question",
-      "name": "How do I play?",
+      "name": "My times-tables questions had wrong answers — is that fixed?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Your character runs on its own. Tap, click or press Space to jump the spikes. At each glowing gate the game pauses for a multiple-choice question — answer correctly to carry on."
+        "text": "Yes. Arithmetic is now built locally with guaranteed-correct answers and sensible near-miss options, instead of relying on the AI writer, so a times-tables run is always accurate. Use a quick-pick like “Times tables”, or type something like “7 times table”."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do the streaks and powerups work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each correct answer builds your streak. Every third correct answer in a row earns a shield that absorbs the next hit; every fifth gives you an extra heart (up to five). A longer streak also scores more distance, so accuracy pays off."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the levels and difficulty?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the spikes come thicker — including double spikes at higher levels — so each run ramps up the challenge."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a leaderboard?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — post your run to a global high-score board with a name of your choice, and see the top distances. No account needed. The top scores also show on the start screen."
       }
     },
     {
@@ -75,7 +99,7 @@
       "name": "What happens if I get one wrong?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "You lose one of your three hearts and your streak resets, but the run continues. Lose all three hearts and the run ends."
+        "text": "A wrong answer resets your streak and costs a heart — unless you're holding a shield, which takes the hit instead. Spikes work the same way. Lose all your hearts and the run ends."
       }
     },
     {
@@ -636,36 +660,48 @@
 </div>
 <section class="tool-copy">
       <h1>Quiz Dash — a geometry-dash-style AI quiz runner</h1>
-      <p class="tool-intro">A fast, arcade-style way to revise. Type a topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump the spikes, and every so often you hit a question gate. Pick the right answer to blast through and keep your streak; get it wrong and you lose a heart. Three hearts, one score, one more go.</p>
+      <p class="tool-intro">A fast, arcade-style way to revise. Pick a maths quick-pick (times tables, addition, division, squares…) or type any topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump the spikes, and every so often you hit a question gate. Pick the right answer to blast through and build a streak that earns shields and extra hearts; get it wrong, or hit a spike, and you lose a heart. The further you get, the faster and busier it becomes — and you can post your run to a global high-score board.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
-            <li>Type a topic and press “Generate & play” — or pick one of your saved quiz sets.</li>
+            <li>Tap a maths quick-pick for instant, always-correct questions, or type any topic and press “Generate & play”. Choose a difficulty — Chill, Normal or Hard.</li>
         <li>Jump the spikes with Space, a tap or a click as your character runs.</li>
-        <li>At each gate, choose the right answer to pass — wrong answers cost a heart.</li>
-        <li>Beat your best distance; run again with the same topic or try a new one.</li>
+        <li>At each gate, choose the right answer to pass — a wrong answer or a spike costs a heart. Build an answer streak for a shield (every 3) and an extra heart (every 5).</li>
+        <li>Climb the levels as you go, beat your best distance, and add your run to the global leaderboard.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
-            <li><strong>Students:</strong> turn revision into a quick arcade run — any subject, any topic.</li>
-        <li><strong>Teachers:</strong> a lesson-end brain-break that's still on-topic, generated in seconds.</li>
-        <li><strong>Anyone:</strong> a bite-sized quiz game you can pick up for one more go.</li>
+            <li><strong>Students:</strong> turn revision into a quick arcade run — any subject, any topic, with correct maths built in.</li>
+        <li><strong>Teachers:</strong> a lesson-end brain-break that's still on-topic, with times tables and arithmetic generated accurately in seconds.</li>
+        <li><strong>Anyone:</strong> a bite-sized quiz game you can pick up for one more go — and a high score to chase.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
           <summary>Where do the questions come from?</summary>
-          <p>Type a topic and they're generated for you by AI. If generation isn't available you can play from any of your saved quiz sets instead, fully offline.</p>
+          <p>Maths topics — times tables, addition, subtraction, division, square numbers, doubling and halving — are generated right in your browser, so the answers are always correct. Anything else is written for you by AI, and you can also play from any of your saved quiz sets, fully offline.</p>
         </details>
         <details>
-          <summary>How do I play?</summary>
-          <p>Your character runs on its own. Tap, click or press Space to jump the spikes. At each glowing gate the game pauses for a multiple-choice question — answer correctly to carry on.</p>
+          <summary>My times-tables questions had wrong answers — is that fixed?</summary>
+          <p>Yes. Arithmetic is now built locally with guaranteed-correct answers and sensible near-miss options, instead of relying on the AI writer, so a times-tables run is always accurate. Use a quick-pick like “Times tables”, or type something like “7 times table”.</p>
+        </details>
+        <details>
+          <summary>How do the streaks and powerups work?</summary>
+          <p>Each correct answer builds your streak. Every third correct answer in a row earns a shield that absorbs the next hit; every fifth gives you an extra heart (up to five). A longer streak also scores more distance, so accuracy pays off.</p>
+        </details>
+        <details>
+          <summary>What are the levels and difficulty?</summary>
+          <p>Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the spikes come thicker — including double spikes at higher levels — so each run ramps up the challenge.</p>
+        </details>
+        <details>
+          <summary>Is there a leaderboard?</summary>
+          <p>Yes — post your run to a global high-score board with a name of your choice, and see the top distances. No account needed. The top scores also show on the start screen.</p>
         </details>
         <details>
           <summary>What happens if I get one wrong?</summary>
-          <p>You lose one of your three hearts and your streak resets, but the run continues. Lose all three hearts and the run ends.</p>
+          <p>A wrong answer resets your streak and costs a heart — unless you're holding a shield, which takes the hit instead. Spikes work the same way. Lose all your hearts and the run ends.</p>
         </details>
         <details>
           <summary>Is it free?</summary>
@@ -734,8 +770,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261017b"></script>
-<script type="module" src="/js/app.js?v=20261017b"></script>
+  <script type="module" src="/js/suggest.js?v=20261019a"></script>
+<script type="module" src="/js/app.js?v=20261019a"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>
