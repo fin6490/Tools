@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Axiom — Free 2–4 Player Equation Board Game | SpinDecks</title>
-<meta name="description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
+<meta name="description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://spindecks.app/axiom/" />
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
 <meta property="og:title" content="Axiom — Free 2–4 Player Equation Board Game | SpinDecks" />
-<meta property="og:description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
+<meta property="og:description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
 <meta property="og:url" content="https://spindecks.app/axiom/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
@@ -20,10 +20,10 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Axiom — Free 2–4 Player Equation Board Game | SpinDecks" />
-<meta name="twitter:description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
+<meta name="twitter:description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261019b" />
+<link rel="stylesheet" href="/css/styles.css?v=20261019c" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -59,7 +59,15 @@
       "name": "How do you score points?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Place a true line on the board. An = line scores the value both sides equal (which can be negative!). A true inequality (, ≥) scores a flat “X” you set at the start. A true ≠ scores 5. A ×2 card doubles the line's score."
+        "text": "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. A ×2 doubles your best line that turn. Scored lines lock in your colour."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How many tiles can I place a turn?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Up to two cards from your hand, plus as many free = tiles as you like, all in one row. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble."
       }
     },
     {
@@ -72,10 +80,18 @@
     },
     {
       "@type": "Question",
-      "name": "What do the action cards do?",
+      "name": "Where do the cards come from?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "×2 doubles a line; Gift sends a line's score to another player (great for dumping a negative result on a rival); Draw +1 draws an extra card; Extra play lets you build a second line; Swap replaces a card already on the board (a broken line is removed); Skip skips a rival's next turn; and Block cancels a Skip or Gift aimed at you."
+        "text": "You draw back up to five number cards and five operation cards each turn. The operations deck mixes the four operations, the relation tiles ( ≥ ≠) and the power-up/action cards — so a ×2, Gift, Swap, Skip or Block is only yours to use once you've drawn it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What do the power-ups and actions do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "×2 doubles your best scoring line this turn; Gift sends a line's score to another player (great for dumping a negative on a rival); Draw +1 draws a card; Extra tile lets you place one more tile; Swap exchanges an un-locked board tile with one from your hand; Skip skips a rival's next turn; Block cancels a Skip or Gift aimed at you. All are free to play."
       }
     },
     {
@@ -83,7 +99,7 @@
       "name": "How does it end?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The moment a player reaches the target score, or when the 8×8 board fills up — then the highest score wins. You choose the target (20, 30 or 50) at the start."
+        "text": "When a player reaches the target score (20, 30 or 50, chosen at the start), the board fills, or everyone passes a round — then the highest score wins."
       }
     },
     {
@@ -649,40 +665,48 @@
 </div>
 <section class="tool-copy">
       <h1>Axiom — the equation board game</h1>
-      <p class="tool-intro">A tactical maths card-and-board game for 2–4 players on one shared screen. Everyone holds number cards (−5 to 12) and operation/action cards, plus a free equals. On your turn, build a true equation or inequality onto the shared 8×8 board: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Double a score with ×2, gift a score to a rival (perfect for dumping a negative on them), draw extra cards, swap a card already on the board, or skip a player’s turn — and hold a Block to foil them. First to the target score, or the top score when the board fills, wins.</p>
+      <p class="tool-intro">A tactical maths tile game for 2–4 players on one shared screen — think Scrabble with sums. Everyone holds five number cards (−5 to 12) and five operation/action cards, plus a free, unlimited equals. On your turn you lay up to two cards from your hand (and as many free = tiles as you like) into one row of the shared 8×8 board. When a line of tiles reads as a true statement it scores and locks in your colour: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Power-ups come from the operations deck and are free to use — double your best line with ×2, gift a line’s score to a rival (perfect for dumping a negative on them), draw extra cards, swap an un-locked tile, or skip a player — with a Block to foil them. First to the target score, or the top score when nobody can move, wins.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
             <li>Set 2–4 players and names, pick a target score and the inequality score “X”, then start.</li>
-        <li>On your turn, tap cards to build a line — number, operation, number… then a relation (=, <, >, ≠…) and the other side.</li>
-        <li>When the line is true, place it on the board to score. Apply ×2 or Gift, or play an action card (Draw, Extra play, Swap, Skip).</li>
-        <li>Keep taking turns until someone reaches the target score, or the board fills and the top score wins.</li>
+        <li>On your turn, tap a card then tap a board square to place it — up to two of your cards a turn, plus any free = tiles, all in one row.</li>
+        <li>When a line of tiles reads as a true equation or inequality it scores and locks. Build on earlier tiles over several turns to complete longer lines.</li>
+        <li>Power-ups (×2, Gift) and actions (Draw, Extra tile, Swap, Skip, Block) are free — they don't use up a placement. Keep going until someone hits the target, or no one can move and the top score wins.</li>
           </ol>
           <h2>Who it's for</h2>
           <ul class="tool-who">
             <li><strong>Teachers:</strong> a competitive arithmetic game for a small group or a maths club — negative numbers, operations and quick mental calculation, with real tactics.</li>
-        <li><strong>Families:</strong> a pass-and-play board game that rewards sharp sums and cheeky card play.</li>
+        <li><strong>Families:</strong> a pass-and-play tile game that rewards sharp sums and cheeky card play.</li>
         <li><strong>Anyone:</strong> a strategic numbers game you can pick up in minutes.</li>
           </ul>
           <h2>FAQ</h2>
           <div class="tool-faq">
             <details>
           <summary>How do you score points?</summary>
-          <p>Place a true line on the board. An = line scores the value both sides equal (which can be negative!). A true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start. A true ≠ scores 5. A ×2 card doubles the line's score.</p>
+          <p>A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. A ×2 doubles your best line that turn. Scored lines lock in your colour.</p>
+        </details>
+        <details>
+          <summary>How many tiles can I place a turn?</summary>
+          <p>Up to two cards from your hand, plus as many free = tiles as you like, all in one row. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble.</p>
         </details>
         <details>
           <summary>How are equations worked out?</summary>
           <p>Strictly left to right — there's no BIDMAS/order-of-operations, so 2 + 3 × 4 is (2 + 3) × 4 = 20. Every line must use at least one of the four operations, so a bare comparison like 4 > 2 doesn't count.</p>
         </details>
         <details>
-          <summary>What do the action cards do?</summary>
-          <p>×2 doubles a line; Gift sends a line's score to another player (great for dumping a negative result on a rival); Draw +1 draws an extra card; Extra play lets you build a second line; Swap replaces a card already on the board (a broken line is removed); Skip skips a rival's next turn; and Block cancels a Skip or Gift aimed at you.</p>
+          <summary>Where do the cards come from?</summary>
+          <p>You draw back up to five number cards and five operation cards each turn. The operations deck mixes the four operations, the relation tiles (< ≤ > ≥ ≠) and the power-up/action cards — so a ×2, Gift, Swap, Skip or Block is only yours to use once you've drawn it.</p>
+        </details>
+        <details>
+          <summary>What do the power-ups and actions do?</summary>
+          <p>×2 doubles your best scoring line this turn; Gift sends a line's score to another player (great for dumping a negative on a rival); Draw +1 draws a card; Extra tile lets you place one more tile; Swap exchanges an un-locked board tile with one from your hand; Skip skips a rival's next turn; Block cancels a Skip or Gift aimed at you. All are free to play.</p>
         </details>
         <details>
           <summary>How does it end?</summary>
-          <p>The moment a player reaches the target score, or when the 8×8 board fills up — then the highest score wins. You choose the target (20, 30 or 50) at the start.</p>
+          <p>When a player reaches the target score (20, 30 or 50, chosen at the start), the board fills, or everyone passes a round — then the highest score wins.</p>
         </details>
         <details>
           <summary>Is it free and private?</summary>
@@ -752,8 +776,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261019b"></script>
-<script type="module" src="/js/app.js?v=20261019b"></script>
+  <script type="module" src="/js/suggest.js?v=20261019c"></script>
+<script type="module" src="/js/app.js?v=20261019c"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>
