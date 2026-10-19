@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261019c",
+  token: "20261019d",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -801,7 +801,7 @@ export const TOOLS = [
       "A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline.",
     h1: "Axiom — the equation board game",
     intro:
-      "A tactical maths tile game for 2–4 players on one shared screen — think Scrabble with sums. Everyone holds five number cards (−5 to 12) and five operation/action cards, plus a free, unlimited equals. On your turn you lay up to two cards from your hand (and as many free = tiles as you like) into one row of the shared 8×8 board. When a line of tiles reads as a true statement it scores and locks in your colour: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Power-ups come from the operations deck and are free to use — double your best line with ×2, gift a line’s score to a rival (perfect for dumping a negative on them), draw extra cards, swap an un-locked tile, or skip a player — with a Block to foil them. First to the target score, or the top score when nobody can move, wins.",
+      "A tactical maths tile game for 2–4 players on one shared screen — think Scrabble with sums. Everyone holds five number cards (−5 to 12) and five operation/action cards, plus a free, unlimited equals. On your turn you lay up to two cards from your hand (and as many free = tiles as you like) into one row or column of the shared 8×8 board. When a line of tiles — across or down — reads as a true statement it scores and locks in your colour, and lines can cross like a crossword: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Power-ups come from the operations deck and are free to use — double your best line with ×2, gift a line’s score to a rival (perfect for dumping a negative on them), draw extra cards, swap an un-locked tile, or skip a player — with a Block to foil them. First to the target score, or the top score when nobody can move, wins.",
     steps: [
       "Set 2–4 players and names, pick a target score and the inequality score “X”, then start.",
       "On your turn, tap a card then tap a board square to place it — up to two of your cards a turn, plus any free = tiles, all in one row.",
@@ -815,7 +815,7 @@ export const TOOLS = [
     ],
     faq: [
       ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. A ×2 doubles your best line that turn. Scored lines lock in your colour."],
-      ["How many tiles can I place a turn?", "Up to two cards from your hand, plus as many free = tiles as you like, all in one row. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble."],
+      ["How many tiles can I place a turn?", "Up to two cards from your hand, plus as many free = tiles as you like, all in one row or one column. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble — and lines can run across or down and cross each other at a shared tile."],
       ["How are equations worked out?", "Strictly left to right — there's no BIDMAS/order-of-operations, so 2 + 3 × 4 is (2 + 3) × 4 = 20. Every line must use at least one of the four operations, so a bare comparison like 4 > 2 doesn't count."],
       ["Where do the cards come from?", "You draw back up to five number cards and five operation cards each turn. The operations deck mixes the four operations, the relation tiles (< ≤ > ≥ ≠) and the power-up/action cards — so a ×2, Gift, Swap, Skip or Block is only yours to use once you've drawn it."],
       ["What do the power-ups and actions do?", "×2 doubles your best scoring line this turn; Gift sends a line's score to another player (great for dumping a negative on a rival); Draw +1 draws a card; Extra tile lets you place one more tile; Swap exchanges an un-locked board tile with one from your hand; Skip skips a rival's next turn; Block cancels a Skip or Gift aimed at you. All are free to play."],

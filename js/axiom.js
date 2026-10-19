@@ -1,15 +1,16 @@
 // axiom.js — Axiom: a 2–4 player equation board game, pass-and-play on one
 // shared screen, played like "maths Scrabble". Each turn you lay up to TWO
-// cards from your hand (plus as many free = tiles as you like) into one row of
+// cards from your hand (plus as many free = tiles as you like) into one row or
+// column of
 // the shared 8×8 board. When a contiguous run becomes a true equation or
 // inequality it scores for whoever completed it and locks. Operation/action
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019c";
-import { getState, save } from "./storage.js?v=20261019c";
-import * as sound from "./sound.js?v=20261019c";
-import { OPS, parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019c";
+import { el } from "./quizkit.js?v=20261019d";
+import { getState, save } from "./storage.js?v=20261019d";
+import * as sound from "./sound.js?v=20261019d";
+import { OPS, parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019d";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -52,7 +53,7 @@ export function initAxiom(root) {
     if (typeof d.ineqScore !== "number") d.ineqScore = 5;
     if (!d.game || typeof d.game !== "object") d.game = null;
     // Drop any game saved under an older rules model (incompatible board shape).
-    if (d.game && d.game.ver !== 2) d.game = null;
+    if (d.game && d.game.ver !== 3) d.game = null;
     return d;
   };
   const G = () => cfg().game;
@@ -92,7 +93,7 @@ export function initAxiom(root) {
     const card = el("div", "axiom-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "2–4 players · pass & play"));
     card.appendChild(el("h2", "dojo-title", "Axiom"));
-    card.appendChild(el("p", "dojo-lede", "Maths Scrabble. Each turn, lay up to two cards from your hand (plus as many free = tiles as you like) into one row of the shared board. When a line of tiles reads as a true equation or inequality it scores — an = line scores the value it equals, a true inequality scores “X”, a true ≠ scores 5 — and locks in your colour. Operation and power-up cards come from the operations deck; using a power-up or action is free. First to the target score, or the top score when nobody can move, wins."));
+    card.appendChild(el("p", "dojo-lede", "Maths Scrabble. Each turn, lay up to two cards from your hand (plus as many free = tiles as you like) into one row or column of the shared board. When a line of tiles — across or down — reads as a true equation or inequality it scores, and lines can cross: an = line scores the value it equals, a true inequality scores “X”, a true ≠ scores 5. Operation and power-up cards come from the operations deck; using a power-up or action is free. First to the target score, or the top score when nobody can move, wins."));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const d = cfg();
@@ -156,7 +157,7 @@ export function initAxiom(root) {
     const names = [];
     for (let i = 0; i < d.players; i++) names.push((d.names[i] || `Player ${i + 1}`).trim() || `Player ${i + 1}`);
     const g = {
-      ver: 2,
+      ver: 3,
       players: d.players, names,
       scores: Array(d.players).fill(0),
       board: Array.from({ length: ROWS }, () => Array(COLS).fill(null)),
@@ -202,35 +203,47 @@ export function initAxiom(root) {
   function canDropAt(r, c) {
     if (sel == null) return false;
     if (at(r, c) || staged.some((x) => x.r === r && x.c === c)) return false;
-    if (staged.length && staged[0].r !== r) return false;            // one row per turn
-    if ((at(r, c - 1) && at(r, c - 1).locked) || (at(r, c + 1) && at(r, c + 1).locked)) return false; // not beside a locked run
+    // This turn's tiles must share a single line — all one row OR all one column.
+    const rs = new Set([...staged.map((x) => x.r), r]);
+    const cs = new Set([...staged.map((x) => x.c), c]);
+    if (rs.size > 1 && cs.size > 1) return false;
+    // Don't extend an already-scored run along its own axis (crossing it is fine).
+    if ((at(r, c - 1) && at(r, c - 1).hLock) || (at(r, c + 1) && at(r, c + 1).hLock)) return false;
+    if ((at(r - 1, c) && at(r - 1, c).vLock) || (at(r + 1, c) && at(r + 1, c).vLock)) return false;
     if (sel !== "eq" && handPlaced() >= tileLimit()) return false;   // hand-card limit (= is free)
     return true;
   }
 
-  // Maximal contiguous runs in a row, using the effective board; each run's
-  // tokens + whether it is a brand-new true statement (scores this turn).
-  function rowRuns(r) {
-    const runs = []; let cur = null;
-    for (let c = 0; c <= COLS; c++) {
-      const cell = c < COLS ? eff(r, c) : null;
-      if (cell) { if (!cur) cur = { c0: c, cells: [] }; cur.cells.push({ c, cell, committed: !!at(r, c), locked: !!(at(r, c) && at(r, c).locked) }); }
-      else if (cur) { runs.push(cur); cur = null; }
-    }
-    return runs.map((run) => {
-      const tokens = run.cells.map((x) => ({ kind: x.cell.kind, v: x.cell.v }));
-      const parsed = parseLine(tokens);
-      const isTrue = parsed.ok && relTrue(parsed.leftVal, parsed.rel, parsed.rightVal);
-      const anyLocked = run.cells.some((x) => x.locked);
-      const hasStaged = run.cells.some((x) => !x.committed);
-      const sc = isTrue ? scoreLine(parsed, { x2: false, ineqScore: cfg().ineqScore }) : { score: 0 };
-      return { ...run, parsed, isTrue, anyLocked, hasStaged, base: sc.score };
-    });
+  // The maximal contiguous run of effective tiles through (r,c) along (dr,dc).
+  function maximalRun(r, c, dr, dc) {
+    let r0 = r, c0 = c;
+    while (eff(r0 - dr, c0 - dc)) { r0 -= dr; c0 -= dc; }
+    const cells = []; let rr = r0, cc = c0;
+    while (eff(rr, cc)) { cells.push({ r: rr, c: cc, cell: eff(rr, cc) }); rr += dr; cc += dc; }
+    return cells;
   }
-  // Runs that would score on commit: true, not already locked, and touched this turn.
+  // Runs (horizontal and vertical) that would score on commit: true statements,
+  // touched by a tile placed this turn, and not already locked on that axis.
   function scoringRuns() {
     if (!staged.length) return [];
-    return rowRuns(staged[0].r).filter((run) => run.isTrue && !run.anyLocked && run.hasStaged);
+    const out = [], seen = new Set();
+    staged.forEach((s) => {
+      [[0, 1], [1, 0]].forEach(([dr, dc]) => {
+        const axis = dr === 0 ? "h" : "v";
+        const cells = maximalRun(s.r, s.c, dr, dc);
+        if (cells.length < 3) return;
+        const key = axis + cells[0].r + "," + cells[0].c + ":" + cells.length;
+        if (seen.has(key)) return; seen.add(key);
+        const parsed = parseLine(cells.map((x) => ({ kind: x.cell.kind, v: x.cell.v })));
+        if (!parsed.ok || !relTrue(parsed.leftVal, parsed.rel, parsed.rightVal)) return;
+        const already = cells.every((x) => { const t = at(x.r, x.c); return t && (axis === "h" ? t.hLock : t.vLock); });
+        if (already) return;
+        const hasStaged = cells.some((x) => staged.some((y) => y.r === x.r && y.c === x.c));
+        if (!hasStaged) return;
+        out.push({ cells, axis, base: scoreLine(parsed, { ineqScore: cfg().ineqScore }).score });
+      });
+    });
+    return out;
   }
 
   /* ---------- render ---------- */
@@ -269,18 +282,19 @@ export function initAxiom(root) {
     // Board
     const boardWrap = el("div", "axiom-boardwrap");
     const grid = el("div", "axiom-board");
-    const scoringCells = new Set(scoring.flatMap((run) => run.cells.map((x) => x.c + "," + staged[0].r)));
+    const scoringCells = new Set(scoring.flatMap((run) => run.cells.map((x) => x.r + "," + x.c)));
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const committed = at(r, c);
         const stagedHere = staged.find((x) => x.r === r && x.c === c);
+        const locked = !!(committed && (committed.hLock || committed.vLock));
         const cell = el("div", "axiom-cell");
         if (committed) {
           cell.classList.add("filled");
-          if (committed.locked) cell.classList.add("locked", PLAYER_CLASS[committed.player]);
+          if (locked) cell.classList.add("locked", PLAYER_CLASS[committed.player]);
           if (committed.kind !== "num") cell.classList.add("sym");
           cell.textContent = cardLabel(committed);
-          if (swapMode && !committed.locked) { cell.classList.add("swaptarget"); cell.addEventListener("click", () => doSwapPick(r, c)); }
+          if (swapMode && !locked) { cell.classList.add("swaptarget"); cell.addEventListener("click", () => doSwapPick(r, c)); }
         } else if (stagedHere) {
           cell.classList.add("filled", "staged");
           const sc = stagedCard(stagedHere);
@@ -292,7 +306,7 @@ export function initAxiom(root) {
           cell.classList.add("empty");
           if (canDropAt(r, c)) { cell.classList.add("drop"); cell.addEventListener("click", () => { staged.push({ r, c, src: sel === "eq" ? "eq" : sel.src, idx: sel === "eq" ? -1 : sel.idx }); sel = null; render(); }); }
         }
-        if (scoringCells.has(c + "," + r)) cell.classList.add("willscore");
+        if (scoringCells.has(r + "," + c)) cell.classList.add("willscore");
         grid.appendChild(cell);
       }
     }
@@ -424,22 +438,21 @@ export function initAxiom(root) {
   function commitTurn() {
     const g = G();
     if (staged.length) {
-      const r = staged[0].r;
       const scoring = scoringRuns();
       // commit tiles to the board (un-locked for now)
       const usedNum = [], usedOp = [];
       staged.forEach((s) => {
         const sc = stagedCard(s);
-        g.board[r][s.c] = { kind: sc.kind, v: sc.v, player: g.turn, locked: false };
+        g.board[s.r][s.c] = { kind: sc.kind, v: sc.v, player: g.turn, hLock: false, vLock: false };
         if (s.src === "num") usedNum.push(s.idx); else if (s.src === "op") usedOp.push(s.idx);
       });
       removeIdx(g.hands[g.turn].num, usedNum, g.decks.numDisc);
       removeIdx(g.hands[g.turn].op, usedOp, g.decks.opDisc);
 
-      // score + lock each completed run
+      // score + lock each completed run (on its own axis, so crossings can still form)
       let best = null;
       scoring.forEach((run) => {
-        run.cells.forEach((x) => { const cell = g.board[r][x.c]; cell.locked = true; cell.player = g.turn; });
+        run.cells.forEach((x) => { const cell = g.board[x.r][x.c]; if (run.axis === "h") cell.hLock = true; else cell.vLock = true; cell.player = g.turn; });
         if (!best || run.base > best.base) best = run;
       });
       let gained = scoring.reduce((a, run) => a + run.base, 0);
@@ -523,7 +536,7 @@ export function initAxiom(root) {
 
   function startSwap() { if (!G().hands[G().turn].op.some((c) => c.kind === "act" && c.v === "swap")) return; swapMode = true; render(); }
   function doSwapPick(r, c) {
-    const g = G(); const tile = g.board[r][c]; if (!tile || tile.locked) return;
+    const g = G(); const tile = g.board[r][c]; if (!tile || tile.hLock || tile.vLock) return;
     const h = g.hands[g.turn];
     const pool = tile.kind === "num" ? h.num.map((card, i) => ({ card, list: "num", i })) : h.op.filter((card) => card.kind === "op" || card.kind === "rel").map((card) => ({ card, list: "op", i: h.op.indexOf(card) }));
     if (!pool.length) { alert("You have no matching card to swap in."); return; }
