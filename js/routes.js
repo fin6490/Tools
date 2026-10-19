@@ -138,7 +138,7 @@ export const ROUTES = {
   "axiom": {
     "slug": "axiom",
     "title": "Axiom — Free 2–4 Player Equation Board Game | SpinDecks",
-    "description": "A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline."
+    "description": "A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline."
   }
 };
 
