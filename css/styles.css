@@ -1888,3 +1888,29 @@ a.tab { display: block; }
 .dash-gameover .dojo-editbtns { justify-content: center; margin-top: 12px; }
 .dash-foot { text-align: center; }
 @media (max-width: 480px) { .dash-opts { grid-template-columns: 1fr; } }
+/* Quiz Dash — quick-picks, difficulty, HUD extras, streak flash, leaderboard */
+.dash-quick { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.dash-quicklbl { margin-right: 2px; }
+.dash-chip { cursor: pointer; }
+.dash-diffrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dash-diff { display: inline-flex; }
+.dash-lvl { font-family: var(--mono); font-weight: 800; color: #b79bff; }
+.dash-streak { font-weight: 800; color: #ff9f43; }
+.dash-shield { font-size: 16px; }
+.dash-flash { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-weight: 800; font-size: clamp(16px, 3vw, 22px); padding: 6px 14px; border-radius: 999px; background: rgba(10,6,20,.78); color: var(--gold, #ffcf4d); pointer-events: none; animation: dashflash .85s ease-out forwards; z-index: 3; }
+.dash-flash.good { color: #44e08a; }
+.dash-flash.warn { color: #ff6b6b; }
+@keyframes dashflash { 0% { opacity: 0; transform: translate(-50%, 8px); } 15% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -14px); } }
+.dash-board { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.dash-boardttl { font-weight: 800; margin: 0 0 6px; }
+.dash-boardlist { list-style: none; margin: 0; padding: 0; counter-reset: dashrank; display: flex; flex-direction: column; gap: 2px; }
+.dash-boardrow { counter-increment: dashrank; display: grid; grid-template-columns: 26px 1fr auto auto; gap: 8px; align-items: baseline; padding: 3px 6px; border-radius: 8px; font-size: 14px; }
+.dash-boardrow:nth-child(-n+3) { font-weight: 700; }
+.dash-boardrow.you { background: color-mix(in srgb, var(--gold, #ffcf4d) 18%, transparent); }
+.dash-brank::before { content: counter(dashrank); color: var(--muted); font-family: var(--mono); }
+.dash-btopic { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 30vw; }
+.dash-bscore { font-family: var(--mono); font-weight: 800; color: var(--gold, #ffcf4d); }
+.dash-submit { margin: 10px 0 2px; }
+.dash-submitrow { display: flex; gap: 8px; justify-content: center; }
+.dash-nameinput { max-width: 180px; }
+.dash-gameover .dash-board { text-align: left; }

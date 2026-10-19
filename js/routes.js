@@ -133,7 +133,7 @@ export const ROUTES = {
   "dash": {
     "slug": "quiz-dash",
     "title": "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
-    "description": "A solo quiz runner: type any topic and AI writes the questions. Run and jump the spikes, then answer a multiple-choice gate to keep going — a right answer builds your streak, a wrong one costs a heart. Free, no sign-up, works in your browser."
+    "description": "A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up."
   }
 };
 

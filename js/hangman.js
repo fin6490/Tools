@@ -1,9 +1,9 @@
 // hangman.js — Hangman for the whiteboard. Pick a category (or type your own
 // secret word) and the class guesses letters. Classic six-miss figure, drawn
 // piece by piece. Zero deps.
-import { el } from "./quizkit.js?v=20261017b";
-import { getState, save } from "./storage.js?v=20261017b";
-import * as sound from "./sound.js?v=20261017b";
+import { el } from "./quizkit.js?v=20261019a";
+import { getState, save } from "./storage.js?v=20261019a";
+import * as sound from "./sound.js?v=20261019a";
 
 const CATEGORIES = {
   animals:   { name: "Animals", words: ["ELEPHANT", "GIRAFFE", "DOLPHIN", "PENGUIN", "KANGAROO", "OCTOPUS", "CHEETAH", "HEDGEHOG", "TORTOISE", "SQUIRREL", "BUTTERFLY", "CROCODILE", "FLAMINGO", "RHINOCEROS", "CHIMPANZEE"] },
