@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019d";
-import { getState, save } from "./storage.js?v=20261019d";
-import * as sound from "./sound.js?v=20261019d";
-import { OPS, parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019d";
+import { el } from "./quizkit.js?v=20261019e";
+import { getState, save } from "./storage.js?v=20261019e";
+import * as sound from "./sound.js?v=20261019e";
+import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019e";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -59,20 +59,30 @@ export function initAxiom(root) {
   const G = () => cfg().game;
   const persist = () => save();
 
-  /* ---------- decks ---------- */
+  /* ---------- decks ----------
+     Numbers skew strongly positive (small numbers are the most common), with
+     only a few negatives for subtraction and the Gift tactic. The operations
+     deck is mostly the four operations, then relation tiles, with power-ups and
+     actions a small minority — so most of what you draw is maths, not gimmicks. */
   function buildNumberDeck() {
     const cards = [];
-    for (let v = -5; v <= 12; v++) { const copies = v >= 1 && v <= 9 ? 4 : 3; for (let k = 0; k < copies; k++) cards.push({ kind: "num", v }); }
+    const add = (v, n) => { for (let k = 0; k < n; k++) cards.push({ kind: "num", v }); };
+    add(-5, 1); add(-4, 1); add(-3, 2); add(-2, 2); add(-1, 2); add(0, 2);   // ~13% negatives
+    for (let v = 1; v <= 6; v++) add(v, 5);   // small positives: the bread and butter
+    for (let v = 7; v <= 9; v++) add(v, 4);
+    for (let v = 10; v <= 12; v++) add(v, 3);
     return shuffle(cards);
   }
   function buildOpDeck() {
     const cards = [];
     const add = (spec, n, kind) => { for (let k = 0; k < n; k++) cards.push({ kind, v: spec }); };
-    OPS.forEach((o) => add(o, 9, "op"));
-    ["<", "≤", ">", "≥"].forEach((r) => add(r, 3, "rel"));
-    add("≠", 4, "rel");
-    add("x2", 4, "mod"); add("gift", 4, "mod");
-    add("draw", 4, "act"); add("extra", 3, "act"); add("swap", 3, "act"); add("skip", 3, "act"); add("block", 4, "act");
+    // Operations dominate (~59%).
+    add("+", 14, "op"); add("−", 11, "op"); add("×", 10, "op"); add("÷", 7, "op");
+    // Relations for inequalities (~25%).
+    add("<", 4, "rel"); add("≤", 3, "rel"); add(">", 4, "rel"); add("≥", 3, "rel"); add("≠", 4, "rel");
+    // Power-ups & actions — a small minority (~15%), just for spice.
+    add("x2", 2, "mod"); add("gift", 2, "mod");
+    add("draw", 2, "act"); add("extra", 1, "act"); add("swap", 1, "act"); add("skip", 1, "act"); add("block", 2, "act");
     return shuffle(cards);
   }
   function drawFrom(which) {
@@ -141,6 +151,7 @@ export function initAxiom(root) {
       ["=", "Free & unlimited for everyone — score the value both sides equal."],
       ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
       ["≠", "Not-equal — a true ≠ scores 5."],
+      ["Longer lines", "+1 point for every tile past the minimum of five — build big and cross lines."],
       ["×2", "Double your best scoring line this turn (free)."],
       ["Gift", "Give your best line's score to another player (dump a negative!)."],
       ["Draw +1 / Extra tile", "Draw a card, or place one more tile this turn (free)."],
@@ -240,7 +251,10 @@ export function initAxiom(root) {
         if (already) return;
         const hasStaged = cells.some((x) => staged.some((y) => y.r === x.r && y.c === x.c));
         if (!hasStaged) return;
-        out.push({ cells, axis, base: scoreLine(parsed, { ineqScore: cfg().ineqScore }).score });
+        // Length bonus: +1 for every tile beyond the 5-tile minimum, rewarding
+        // longer lines and crossings over safe little inequalities.
+        const bonus = Math.max(0, cells.length - 5);
+        out.push({ cells, axis, base: scoreLine(parsed, { ineqScore: cfg().ineqScore }).score + bonus });
       });
     });
     return out;
@@ -544,7 +558,7 @@ export function initAxiom(root) {
       if (!spend("swap")) return;
       // put the board tile into hand, place the chosen card on the board
       const boardCard = { kind: tile.kind, v: tile.v };
-      g.board[r][c] = { kind: p.card.kind, v: p.card.v, player: g.turn, locked: false };
+      g.board[r][c] = { kind: p.card.kind, v: p.card.v, player: g.turn, hLock: false, vLock: false };
       if (p.list === "num") g.hands[g.turn].num.splice(p.i, 1, boardCard); else g.hands[g.turn].op.splice(p.i, 1, boardCard.kind === "num" ? { kind: "num", v: boardCard.v } : boardCard);
       swapMode = false; logLine(`${g.names[g.turn]} swapped a board tile.`); persist(); render();
     });
