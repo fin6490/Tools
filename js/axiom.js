@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019f";
-import { getState, save } from "./storage.js?v=20261019f";
-import * as sound from "./sound.js?v=20261019f";
-import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019f";
+import { el } from "./quizkit.js?v=20261019g";
+import { getState, save } from "./storage.js?v=20261019g";
+import * as sound from "./sound.js?v=20261019g";
+import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019g";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };

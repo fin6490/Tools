@@ -11,9 +11,9 @@
 //  • Teacher plays along on a live accounts spreadsheet; each pupil fills a
 //    printed sheet. Biggest running total wins.
 // Reuses the lobster-* styling for a consistent print-and-play look. Zero deps.
-import { el } from "./quizkit.js?v=20261019f";
-import { getState, save } from "./storage.js?v=20261019f";
-import * as sound from "./sound.js?v=20261019f";
+import { el } from "./quizkit.js?v=20261019g";
+import { getState, save } from "./storage.js?v=20261019g";
+import * as sound from "./sound.js?v=20261019g";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 
@@ -177,7 +177,7 @@ export function initElf(root) {
       [IC.mountain, "stock", "The Forest Far Beyond stays shut until the Mountain Pass opens on the 17th."],
       [IC.truck, "dodgy", "Buy elves off a truck twice (£75) — or by Amazon drone (£150) once the Pass is open."],
       [IC.bank, "cash", "Lost all your elves? Borrow from Biscoes Bank on the board — 50% interest a day."],
-      [IC.gift, "lott", "The teacher can draw surprise cards any day to shake things up."],
+      [IC.gift, "lott", "Surprise cards pop up at random as you roll the weather — or draw one yourself any time."],
     ];
     items.forEach(([ic, cls, txt]) => {
       const rowEl = el("div", "lobster-legend-item");
@@ -302,7 +302,7 @@ export function initElf(root) {
     panel.querySelector("#elfReset").addEventListener("click", () => { if (confirm("Clear the board and start a fresh game?")) { demo = freshDemo(); persistDemo(); renderBoard(); } });
     panel.querySelector("#elfPhys").addEventListener("change", (e) => { cfg().physicalDice = e.target.checked; save(); });
     panel.querySelector("#elfSurprise").addEventListener("click", drawSurprise);
-    const setDay = () => { panel.querySelector("#elfDay").textContent = `Day ${demo.day} of ${cfg().days}`; panel.querySelector("#elfPrev").disabled = demo.day <= 1; panel.querySelector("#elfNext").disabled = demo.day >= cfg().days; showEventSlot(); highlightDay(); refreshBank(); };
+    const setDay = () => { panel.querySelector("#elfDay").textContent = `Day ${demo.day} of ${cfg().days}`; panel.querySelector("#elfPrev").disabled = demo.day <= 1; panel.querySelector("#elfNext").disabled = demo.day >= cfg().days; showEventSlot(); showSurpriseSlot(); highlightDay(); refreshBank(); };
     panel.querySelector("#elfPrev").addEventListener("click", () => { if (demo.day > 1) { demo.day--; persistDemo(); setDay(); } });
     panel.querySelector("#elfNext").addEventListener("click", () => { if (demo.day < cfg().days) { demo.day++; persistDemo(); setDay(); } });
     panel.querySelector("#elfRoll").addEventListener("click", rollWeather);
@@ -350,10 +350,8 @@ export function initElf(root) {
     slot.appendChild(cardEl); fx(sound.beep);
   }
 
-  // Draw a random surprise card into its own slot.
-  function drawSurprise() {
-    const slot = panel.querySelector("#elfSurpriseSlot"); if (!slot) return;
-    const ev = SURPRISE[rint(SURPRISE.length)];
+  // Build a surprise card (ev) into the surprise slot.
+  function renderSurpriseCard(slot, ev) {
     slot.innerHTML = "";
     const cardEl = el("div", "lobster-eventcard " + (ev.cls || "lott"));
     cardEl.innerHTML = `<div class="lobster-evhead"><span class="lobster-evic">${ev.icon}</span>
@@ -362,7 +360,29 @@ export function initElf(root) {
     if (ev.tool === "d6") { const b = el("button", "btn ghost", "Roll the die"); b.addEventListener("click", () => drawNumber(cardEl, 6, "Surprise roll", "Follow the card.")); cardEl.appendChild(b); }
     if (ev.tool === "wheelhint") cardEl.appendChild(el("p", "dojo-hint", "Tip: use the Wheel of Names to pick the lucky company."));
     const again = el("button", "btn ghost", "Draw another"); again.addEventListener("click", drawSurprise); cardEl.appendChild(again);
-    slot.appendChild(cardEl); fx(sound.beep);
+    slot.appendChild(cardEl);
+  }
+  // Show whatever surprise has been drawn/rolled for the current day (persisted
+  // per day, so it stays put as you move between days).
+  function showSurpriseSlot() {
+    const slot = panel.querySelector("#elfSurpriseSlot"); if (!slot) return;
+    slot.innerHTML = "";
+    const r = demo.rows[demo.day - 1];
+    if (r && typeof r.surprise === "number") renderSurpriseCard(slot, SURPRISE[r.surprise]);
+  }
+  // The 🎁 button: draw (or re-draw) a random surprise for the current day.
+  function drawSurprise() {
+    const r = demo.rows[demo.day - 1]; if (!r) return;
+    r.surprise = rint(SURPRISE.length); persistDemo();
+    showSurpriseSlot(); fx(sound.beep);
+  }
+  // When the weather is rolled, a surprise sometimes turns up on its own
+  // (about 1 day in 4). Decided once per day, then it sticks.
+  function maybeAutoSurprise() {
+    const r = demo.rows[demo.day - 1]; if (!r) return;
+    if (r.surprise === undefined) { r.surprise = rint(100) < 25 ? rint(SURPRISE.length) : null; persistDemo(); }
+    showSurpriseSlot();
+    if (typeof r.surprise === "number") fx(sound.beep);
   }
 
   // A quick percentage calculator for the Tax Man.
@@ -401,6 +421,7 @@ export function initElf(root) {
       <span class="lobster-wroll">die: ${die} ${sunny ? "(1–4)" : "(5–6)"}</span>
       <span class="lobster-wnote">${sunny ? "Nearby £10 · Faraway £20 · Far Beyond £50 a tree" : "Nearby £10 · Faraway £0 · Far Beyond elves LOST" + lostNote}</span>`;
     fx(sunny ? sound.sunny : sound.storm);
+    maybeAutoSurprise();
   }
   function rollWeather() {
     if (cfg().physicalDice) return askPhysical(6, "Weather die (1–6)", applyWeather);

@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261019f",
+  token: "20261019g",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -756,7 +756,7 @@ export const TOOLS = [
       ["When can I use the Forest Far Beyond?", "Not until the Mountain Pass opens — by default on day 17, and the board locks that column until then. Once it's open the Forest Far Beyond pays £50 a tree, but a blizzard loses every elf you sent there for the rest of the season."],
       ["Can I get more elves during the game?", "Yes — a lorry visits twice selling elves off the back of a truck at the regular £75 each. Once the Mountain Pass opens you can also have elves air-dropped by Amazon drone, but that express service costs double at £150 each."],
       ["What if I lose all my elves?", "Biscoes Bank lends emergency money on the board so you can buy more. Interest is 50% a day and the debt grows automatically as the days pass, so whatever's still owed at the end comes off your final total — borrow carefully."],
-      ["What are the event and surprise cards?", "Scheduled events fire on a timetable: a Mutiny in the ranks, the Tax Man (pay 10% now or gamble on 20% later), the Grand Christmas Lottery, the Mountain Pass opening, and the truck and drone elf sales. On top of those the teacher can draw random surprise cards — a reindeer delivery boost, elf flu, a golden tree, frostbite and more — to keep every game different."],
+      ["What are the event and surprise cards?", "Scheduled events fire on a timetable: a Mutiny in the ranks, the Tax Man (pay 10% now or gamble on 20% later), the Grand Christmas Lottery, the Mountain Pass opening, and the truck and drone elf sales. On top of those, random surprise cards — a reindeer delivery boost, elf flu, a golden tree, frostbite and more — pop up on their own now and then as you roll the daily weather (and the teacher can draw one any time), to keep every game different."],
       ["Do I need to print anything?", "Yes — print an accounts sheet for each company. The teacher board has the weather roller, the event and surprise cards with their dice and calculators, and the bank ledger, so there's nothing to print for that."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded."],
     ],
