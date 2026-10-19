@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261019d",
+  token: "20261019e",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -814,7 +814,7 @@ export const TOOLS = [
       ["Anyone", "a strategic numbers game you can pick up in minutes."],
     ],
     faq: [
-      ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. A ×2 doubles your best line that turn. Scored lines lock in your colour."],
+      ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. Longer lines earn a bonus (+1 per tile past the minimum of five), so ambitious equations and crossings pay off, and a ×2 doubles your best line that turn. Scored lines lock in your colour."],
       ["How many tiles can I place a turn?", "Up to two cards from your hand, plus as many free = tiles as you like, all in one row or one column. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble — and lines can run across or down and cross each other at a shared tile."],
       ["How are equations worked out?", "Strictly left to right — there's no BIDMAS/order-of-operations, so 2 + 3 × 4 is (2 + 3) × 4 = 20. Every line must use at least one of the four operations, so a bare comparison like 4 > 2 doesn't count."],
       ["Where do the cards come from?", "You draw back up to five number cards and five operation cards each turn. The operations deck mixes the four operations, the relation tiles (< ≤ > ≥ ≠) and the power-up/action cards — so a ×2, Gift, Swap, Skip or Block is only yours to use once you've drawn it."],
