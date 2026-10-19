@@ -44,7 +44,7 @@ const DEFAULTS = () => ({
   lobster: { days: 14, startPots: 5, startCash: 0, printCount: 8, physicalDice: false, skillGame: false, lottoPrize: 100, lottoPrizes: {}, schedule: null, schedVer: 2, ledger: [], demo: null, scoreboard: [] },
   elf: { days: 24, elves: 12, printCount: 8, physicalDice: false, jackpot: 1000, schedule: null, schedVer: 2, ledger: [], demo: null },
   dash: { topic: "", best: 0 },
-  axiom: { players: 2, names: [], target: 30, ineqScore: 5, game: null },
+  axiom: { players: 2, names: [], target: 30, ineqScore: 3, game: null },
   scoring: {
     mode: "free", // free | target | golf | rounds | darts | cricket
     target: 50,
