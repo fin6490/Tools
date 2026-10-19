@@ -6,12 +6,12 @@
 // streak and earns powerups, a wrong one (or a spike) costs a heart. Levels get
 // faster and busier the further you go, and there's a global high-score board.
 // Zero deps, canvas 2D.
-import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20261019c";
-import { SUPPORT } from "./support.js?v=20261019c";
-import { getState, save } from "./storage.js?v=20261019c";
-import { SUPABASE_ENABLED } from "./supa-config.js?v=20261019c";
-import { topDashScores, submitDashScore } from "./supa.js?v=20261019c";
-import * as sound from "./sound.js?v=20261019c";
+import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20261019d";
+import { SUPPORT } from "./support.js?v=20261019d";
+import { getState, save } from "./storage.js?v=20261019d";
+import { SUPABASE_ENABLED } from "./supa-config.js?v=20261019d";
+import { topDashScores, submitDashScore } from "./supa.js?v=20261019d";
+import * as sound from "./sound.js?v=20261019d";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 
