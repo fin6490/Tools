@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019e";
-import { getState, save } from "./storage.js?v=20261019e";
-import * as sound from "./sound.js?v=20261019e";
-import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019e";
+import { el } from "./quizkit.js?v=20261019f";
+import { getState, save } from "./storage.js?v=20261019f";
+import * as sound from "./sound.js?v=20261019f";
+import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019f";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -50,7 +50,7 @@ export function initAxiom(root) {
     if (typeof d.players !== "number") d.players = 2;
     if (!Array.isArray(d.names)) d.names = [];
     if (typeof d.target !== "number") d.target = 30;
-    if (typeof d.ineqScore !== "number") d.ineqScore = 5;
+    if (typeof d.ineqScore !== "number") d.ineqScore = 3;
     if (!d.game || typeof d.game !== "object") d.game = null;
     // Drop any game saved under an older rules model (incompatible board shape).
     if (d.game && d.game.ver !== 3) d.game = null;
@@ -151,6 +151,7 @@ export function initAxiom(root) {
       ["=", "Free & unlimited for everyone — score the value both sides equal."],
       ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
       ["≠", "Not-equal — a true ≠ scores 5."],
+      ["Connect up", "New tiles must touch the tiles already down (crossword-style), unless the board is empty or holds only completed sums."],
       ["Longer lines", "+1 point for every tile past the minimum of five — build big and cross lines."],
       ["×2", "Double your best scoring line this turn (free)."],
       ["Gift", "Give your best line's score to another player (dump a negative!)."],
@@ -210,6 +211,15 @@ export function initAxiom(root) {
     return c ? { kind: c.kind, v: c.v } : null;
   }
 
+  // Must new tiles connect to what's already on the board? Yes, unless the
+  // board is empty (first play) or every tile on it is part of a completed
+  // (locked) sum — then you may open a fresh line anywhere.
+  function connectRequired() {
+    const b = G().board; let committed = 0, locked = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const t = b[r][c]; if (t) { committed++; if (t.hLock || t.vLock) locked++; } }
+    return committed > 0 && locked < committed; // a loose (in-progress) tile exists
+  }
+
   // Legal to drop the currently selected card into empty cell r,c?
   function canDropAt(r, c) {
     if (sel == null) return false;
@@ -221,6 +231,13 @@ export function initAxiom(root) {
     // Don't extend an already-scored run along its own axis (crossing it is fine).
     if ((at(r, c - 1) && at(r, c - 1).hLock) || (at(r, c + 1) && at(r, c + 1).hLock)) return false;
     if ((at(r - 1, c) && at(r - 1, c).vLock) || (at(r + 1, c) && at(r + 1, c).vLock)) return false;
+    // Tiles must connect to the existing cluster: the first one touches a
+    // committed tile; later ones touch a committed or an already-staged tile.
+    if (connectRequired()) {
+      const adjCommitted = !!(at(r - 1, c) || at(r + 1, c) || at(r, c - 1) || at(r, c + 1));
+      const adjStaged = staged.some((s) => Math.abs(s.r - r) + Math.abs(s.c - c) === 1);
+      if (staged.length === 0 ? !adjCommitted : (!adjCommitted && !adjStaged)) return false;
+    }
     if (sel !== "eq" && handPlaced() >= tileLimit()) return false;   // hand-card limit (= is free)
     return true;
   }
@@ -290,7 +307,7 @@ export function initAxiom(root) {
     const preview = scoring.reduce((a, r) => a + r.base, 0);
     wrap.appendChild(el("p", "axiom-turnbanner",
       `${escapeH(g.names[g.turn])}'s turn — ${Math.max(0, tileLimit() - handPlaced())} tile${tileLimit() - handPlaced() === 1 ? "" : "s"} left`
-      + (swapMode ? " · pick an un-locked board tile to swap" : "")
+      + (swapMode ? " · pick an un-locked board tile to swap" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
       + (preview ? ` · this turn scores ${preview}${useX2 ? " (×2 ready)" : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : "")));
 
     // Board
@@ -525,7 +542,8 @@ export function initAxiom(root) {
     const g = G();
     const hi = Math.max(...g.scores);
     const boardFull = g.board.every((row) => row.every((c) => c));
-    if (hi >= cfg().target || boardFull || (g.passes || 0) >= g.players) {
+    // Softer stall net: only end on no-progress after two full rounds of passes.
+    if (hi >= cfg().target || boardFull || (g.passes || 0) >= g.players * 2) {
       g.over = true; g.winner = g.scores.indexOf(hi); persist(); renderOver(); return true;
     }
     return false;
