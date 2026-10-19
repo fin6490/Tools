@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261019a",
+  token: "20261019b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -790,6 +790,35 @@ export const TOOLS = [
       ["Is there a leaderboard?", "Yes — post your run to a global high-score board with a name of your choice, and see the top distances. No account needed. The top scores also show on the start screen."],
       ["What happens if I get one wrong?", "A wrong answer resets your streak and costs a heart — unless you're holding a shield, which takes the hit instead. Spikes work the same way. Lose all your hearts and the run ends."],
       ["Is it free?", "Yes — free and ad-free, no sign-up. It runs in your browser."],
+    ],
+  },
+  {
+    slug: "axiom",
+    view: "axiom",
+    nav: "Axiom",
+    title: "Axiom — Free 2–4 Player Equation Board Game | SpinDecks",
+    description:
+      "A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline.",
+    h1: "Axiom — the equation board game",
+    intro:
+      "A tactical maths card-and-board game for 2–4 players on one shared screen. Everyone holds number cards (−5 to 12) and operation/action cards, plus a free equals. On your turn, build a true equation or inequality onto the shared 8×8 board: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Double a score with ×2, gift a score to a rival (perfect for dumping a negative on them), draw extra cards, swap a card already on the board, or skip a player’s turn — and hold a Block to foil them. First to the target score, or the top score when the board fills, wins.",
+    steps: [
+      "Set 2–4 players and names, pick a target score and the inequality score “X”, then start.",
+      "On your turn, tap cards to build a line — number, operation, number… then a relation (=, <, >, ≠…) and the other side.",
+      "When the line is true, place it on the board to score. Apply ×2 or Gift, or play an action card (Draw, Extra play, Swap, Skip).",
+      "Keep taking turns until someone reaches the target score, or the board fills and the top score wins.",
+    ],
+    whoFor: [
+      ["Teachers", "a competitive arithmetic game for a small group or a maths club — negative numbers, operations and quick mental calculation, with real tactics."],
+      ["Families", "a pass-and-play board game that rewards sharp sums and cheeky card play."],
+      ["Anyone", "a strategic numbers game you can pick up in minutes."],
+    ],
+    faq: [
+      ["How do you score points?", "Place a true line on the board. An = line scores the value both sides equal (which can be negative!). A true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start. A true ≠ scores 5. A ×2 card doubles the line's score."],
+      ["How are equations worked out?", "Strictly left to right — there's no BIDMAS/order-of-operations, so 2 + 3 × 4 is (2 + 3) × 4 = 20. Every line must use at least one of the four operations, so a bare comparison like 4 > 2 doesn't count."],
+      ["What do the action cards do?", "×2 doubles a line; Gift sends a line's score to another player (great for dumping a negative result on a rival); Draw +1 draws an extra card; Extra play lets you build a second line; Swap replaces a card already on the board (a broken line is removed); Skip skips a rival's next turn; and Block cancels a Skip or Gift aimed at you."],
+      ["How does it end?", "The moment a player reaches the target score, or when the 8×8 board fills up — then the highest score wins. You choose the target (20, 30 or 50) at the start."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and it works offline once loaded. It's played pass-and-play on one shared screen."],
     ],
   },
 ];

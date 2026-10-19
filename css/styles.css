@@ -1914,3 +1914,86 @@ a.tab { display: block; }
 .dash-submitrow { display: flex; gap: 8px; justify-content: center; }
 .dash-nameinput { max-width: 180px; }
 .dash-gameover .dash-board { text-align: left; }
+
+/* ===================== AXIOM (equation board game) ===================== */
+.axiom-lobby { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.axiom-names { display: flex; gap: 8px; flex-wrap: wrap; }
+.axiom-nameinput { flex: 1 1 120px; min-width: 100px; }
+.axiom-legend { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-top: 4px; }
+.axiom-legend-title { font-weight: 800; margin: 0 0 8px; }
+.axiom-legend-grid { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.axiom-legend-item { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: baseline; font-size: 14px; }
+.axiom-legend-key { font-family: var(--mono); font-weight: 800; color: var(--gold, #ffcf4d); }
+.axiom-legend-txt { color: var(--muted); }
+
+.axiom-game { display: flex; flex-direction: column; gap: 10px; }
+/* player palette */
+.axiom-game .p1, .axiom-scorechip.p1 { --pc: #3fd0c9; }
+.axiom-game .p2, .axiom-scorechip.p2 { --pc: #ff9f43; }
+.axiom-game .p3, .axiom-scorechip.p3 { --pc: #b78bff; }
+.axiom-game .p4, .axiom-scorechip.p4 { --pc: #ff6b8a; }
+
+.axiom-scoreboard { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.axiom-scorechip { display: inline-flex; gap: 8px; align-items: baseline; padding: 4px 12px; border-radius: 999px; border: 2px solid var(--line); background: color-mix(in srgb, var(--pc) 12%, transparent); }
+.axiom-scorechip.turn { border-color: var(--pc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc) 40%, transparent); }
+.axiom-scname { font-weight: 700; color: var(--pc); }
+.axiom-scval { font-family: var(--mono); font-weight: 800; }
+.axiom-target { margin-left: auto; }
+.axiom-turnbanner { font-weight: 800; margin: 2px 0; }
+
+.axiom-boardwrap { display: flex; justify-content: center; }
+.axiom-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; width: min(100%, 560px); }
+.axiom-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-family: var(--mono); font-weight: 800; font-size: clamp(12px, 2.6vw, 18px); border: 1.5px solid var(--line); }
+.axiom-cell.empty { background: color-mix(in srgb, var(--line) 22%, transparent); border-style: dashed; }
+.axiom-cell.filled { color: #06231f; background: var(--pc); border-color: color-mix(in srgb, var(--pc) 60%, #000 10%); }
+.axiom-cell.filled.sym { background: color-mix(in srgb, var(--pc) 72%, #fff 18%); }
+.axiom-cell.swaptarget.filled { cursor: pointer; outline: 2px dashed #fff; outline-offset: -4px; }
+
+.axiom-composer { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.axiom-build { display: flex; gap: 6px; flex-wrap: wrap; min-height: 40px; align-items: center; }
+.axiom-buildhint { font-size: 14px; }
+.axiom-buildtok { font-family: var(--mono); font-weight: 800; font-size: 17px; padding: 6px 12px; border-radius: 8px; border: 2px solid var(--gold, #ffcf4d); background: color-mix(in srgb, var(--gold, #ffcf4d) 16%, transparent); color: var(--ink); cursor: pointer; }
+.axiom-buildtok.sym { border-color: #7c5cff; background: color-mix(in srgb, #7c5cff 18%, transparent); }
+.axiom-feedback { min-height: 20px; font-size: 14px; }
+.axiom-good { color: #35d183; font-weight: 700; }
+.axiom-bad { color: #ff6b6b; font-weight: 700; }
+.axiom-comptools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.axiom-comptools .chip.on { background: var(--gold, #ffcf4d); color: #2b1c00; border-color: var(--gold, #ffcf4d); }
+
+.axiom-hand { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.axiom-handlbl { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.axiom-handrow { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.axiom-card { font-family: var(--mono); font-weight: 800; font-size: 17px; min-width: 42px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); cursor: pointer; }
+.axiom-card.num { border-color: #3fd0c9; }
+.axiom-card.op, .axiom-card.rel { border-color: #7c5cff; }
+.axiom-card.mod, .axiom-card.act { border-color: var(--gold, #ffcf4d); font-size: 13px; }
+.axiom-card.info { opacity: .85; cursor: help; }
+.axiom-card:disabled { opacity: .4; cursor: not-allowed; }
+
+.axiom-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.axiom-actbtn { font-size: 13px; }
+
+.axiom-side { display: flex; flex-direction: column; gap: 8px; }
+.axiom-opps { display: flex; gap: 8px; flex-wrap: wrap; }
+.axiom-opp { border: 1px solid var(--line); border-left: 4px solid var(--pc); border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; flex: 1 1 180px; }
+.axiom-oppname { font-weight: 700; color: var(--pc); font-size: 13px; }
+.axiom-oppcards { display: flex; gap: 3px; flex-wrap: wrap; }
+.axiom-minic { font-family: var(--mono); font-weight: 700; font-size: 11px; padding: 2px 5px; border-radius: 5px; border: 1px solid var(--line); }
+.axiom-minic.num { color: #3fd0c9; }
+.axiom-minic.op, .axiom-minic.rel { color: #b79bff; }
+.axiom-minic.mod, .axiom-minic.act { color: var(--gold, #ffcf4d); }
+.axiom-log { border-top: 1px solid var(--line); padding-top: 6px; }
+.axiom-logline { margin: 1px 0; font-size: 12px; color: var(--muted); }
+
+.axiom-overlay { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(8,5,16,.6); padding: 16px; }
+.axiom-ovcard { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 18px 20px; width: min(94%, 420px); text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+.axiom-ovtitle { font-weight: 800; margin: 0 0 12px; }
+.axiom-ovbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.axiom-ovbtns .btn.p1 { background: #3fd0c9; color: #06231f; } .axiom-ovbtns .btn.p2 { background: #ff9f43; color: #2b1200; }
+.axiom-ovbtns .btn.p3 { background: #b78bff; color: #1a0a33; } .axiom-ovbtns .btn.p4 { background: #ff6b8a; color: #330512; }
+
+.axiom-winner { font-weight: 800; font-size: clamp(20px, 4vw, 28px); text-align: center; color: var(--gold, #ffcf4d); }
+.axiom-finallist { list-style: none; margin: 8px auto 0; padding: 0; width: min(100%, 360px); display: flex; flex-direction: column; gap: 4px; }
+.axiom-finalrow { display: flex; justify-content: space-between; padding: 6px 12px; border-radius: 10px; border-left: 4px solid var(--pc); background: color-mix(in srgb, var(--pc) 10%, transparent); font-weight: 700; }
+.axiom-finalscore { font-family: var(--mono); font-weight: 800; }
+@media (max-width: 480px) { .axiom-card { font-size: 15px; min-width: 36px; padding: 7px 8px; } }

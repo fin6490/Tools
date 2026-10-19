@@ -134,6 +134,11 @@ export const ROUTES = {
     "slug": "quiz-dash",
     "title": "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
     "description": "A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up."
+  },
+  "axiom": {
+    "slug": "axiom",
+    "title": "Axiom — Free 2–4 Player Equation Board Game | SpinDecks",
+    "description": "A 2–4 player equation board game for the classroom, pass-and-play on one screen. Build true equations and inequalities from number and operation cards onto an 8×8 board to score. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline."
   }
 };
 
