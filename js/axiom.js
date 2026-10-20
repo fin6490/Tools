@@ -7,15 +7,16 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019h";
-import { getState, save } from "./storage.js?v=20261019h";
-import * as sound from "./sound.js?v=20261019h";
-import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019h";
+import { el } from "./quizkit.js?v=20261019i";
+import { getState, save } from "./storage.js?v=20261019i";
+import * as sound from "./sound.js?v=20261019i";
+import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019i";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const COLS = 8, ROWS = 8;
 const TILES_PER_TURN = 2;
+const MULTI_BONUS = 5; // bonus points per extra calculation completed in one go
 const PLAYER_CLASS = ["p1", "p2", "p3", "p4"];
 
 const ACT_LABEL = { draw: "Draw +1", extra: "Extra tile", swap: "Swap board tile", skip: "Skip a player", block: "Block", del: "Delete tile" };
@@ -153,8 +154,9 @@ export function initAxiom(root) {
       ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
       ["≠", "Not-equal — a true ≠ scores 5."],
       ["Connect up", "New tiles must touch the tiles already down (crossword-style), unless the board is empty or holds only completed sums."],
-      ["Alternate", "Tiles alternate number, symbol, number… — you can't place two numbers or two symbols next to each other."],
+      ["Make numbers", "Number tiles side by side combine into a multi-digit number (3,5 → 35; −2,0 → −20; a negative only leads). Two symbols still can't touch."],
       ["Longer lines", "+1 point for every tile past the minimum of five — build big and cross lines."],
+      ["Multi bonus", "Complete more than one calculation in a single go for +5 points each extra."],
       ["×2", "Double your best scoring line this turn (free)."],
       ["Gift", "Give your best line's score to another player (dump a negative!)."],
       ["Draw +1 / Extra tile", "Draw a card, or place one more tile this turn (free)."],
@@ -222,6 +224,12 @@ export function initAxiom(root) {
     const card = (sel.src === "num" ? h.num : h.op)[sel.idx];
     return card && card.kind === "num" ? "num" : "sym";
   }
+  // Is the selected card a negative number tile?
+  function selNeg() {
+    if (!sel || sel === "eq" || sel.src !== "num") return false;
+    const card = G().hands[G().turn].num[sel.idx];
+    return !!card && card.v < 0;
+  }
 
   // Must new tiles connect to what's already on the board? Yes, unless the
   // board is empty (first play) or every tile on it is part of a completed
@@ -243,12 +251,18 @@ export function initAxiom(root) {
     // Don't extend an already-scored run along its own axis (crossing it is fine).
     if ((at(r, c - 1) && at(r, c - 1).hLock) || (at(r, c + 1) && at(r, c + 1).hLock)) return false;
     if ((at(r - 1, c) && at(r - 1, c).vLock) || (at(r + 1, c) && at(r + 1, c).vLock)) return false;
-    // Tiles in a run must alternate: no two numbers and no two symbols may sit
-    // orthogonally next to each other (in either direction).
-    const myCat = selCat();
-    for (const [nr, nc] of [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]) {
-      const e = eff(nr, nc);
-      if (e && (e.kind === "num" ? "num" : "sym") === myCat) return false;
+    // Two symbols may never sit next to each other. Numbers MAY (they combine
+    // into a multi-digit number), but a negative tile must lead its group.
+    if (selCat() === "sym") {
+      for (const [nr, nc] of [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]) { const e = eff(nr, nc); if (e && e.kind !== "num") return false; }
+    } else {
+      if (selNeg()) { // a negative must lead — nothing numeric immediately left or above it
+        const L = eff(r, c - 1), U = eff(r - 1, c);
+        if ((L && L.kind === "num") || (U && U.kind === "num")) return false;
+      }
+      // a number can't sit immediately before an existing negative (to its right/below)
+      const R = eff(r, c + 1), D = eff(r + 1, c);
+      if ((R && R.kind === "num" && R.v < 0) || (D && D.kind === "num" && D.v < 0)) return false;
     }
     // Tiles must connect to the existing cluster: the first one touches a
     // committed tile; later ones touch a committed or an already-staged tile.
@@ -295,6 +309,15 @@ export function initAxiom(root) {
     });
     return out;
   }
+  const bestRun = (scoring) => scoring.reduce((b, r) => (!b || r.base > b.base ? r : b), null);
+  // Total points a turn's placements would score: line scores, +X2 on the best
+  // line, +MULTI_BONUS per extra calculation completed this go.
+  function turnScore(scoring) {
+    const base = scoring.reduce((a, r) => a + r.base, 0);
+    const multi = scoring.length >= 2 ? (scoring.length - 1) * MULTI_BONUS : 0;
+    const x2extra = (useX2 && handHas("mod", "x2") && bestRun(scoring)) ? bestRun(scoring).base : 0;
+    return base + multi + x2extra;
+  }
 
   /* ---------- render ---------- */
   let render = () => {};
@@ -323,11 +346,11 @@ export function initAxiom(root) {
     wrap.appendChild(sb);
 
     const scoring = scoringRuns();
-    const preview = scoring.reduce((a, r) => a + r.base, 0);
+    const preview = turnScore(scoring);
     wrap.appendChild(el("p", "axiom-turnbanner",
       `${escapeH(g.names[g.turn])}'s turn — ${Math.max(0, tileLimit() - handPlaced())} tile${tileLimit() - handPlaced() === 1 ? "" : "s"} left`
       + (swapMode ? " · pick an un-locked board tile to swap" : delMode ? " · pick an un-locked board tile to delete" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
-      + (preview ? ` · this turn scores ${preview}${useX2 ? " (×2 ready)" : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : "")));
+      + (scoring.length ? ` · this turn scores ${preview}${scoring.length >= 2 ? ` (${scoring.length} lines!)` : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : "")));
 
     // Board
     const boardWrap = el("div", "axiom-boardwrap");
@@ -443,7 +466,7 @@ export function initAxiom(root) {
     clear.addEventListener("click", () => { staged = []; sel = null; render(); });
     box.appendChild(clear);
 
-    const end = el("button", "btn primary", staged.length ? (scoring.length ? `Place & score ${scoring.reduce((a, r) => a + r.base, 0) * (useX2 ? 2 : 1)}` : "Place tiles") : "End turn");
+    const end = el("button", "btn primary", staged.length ? (scoring.length ? `Place & score ${turnScore(scoring)}` : "Place tiles") : "End turn");
     end.addEventListener("click", commitTurn);
     box.appendChild(end);
     return box;
@@ -509,6 +532,9 @@ export function initAxiom(root) {
         if (!best || run.base > best.base) best = run;
       });
       let gained = scoring.reduce((a, run) => a + run.base, 0);
+      // Bonus for completing more than one calculation in a single go.
+      const multiBonus = scoring.length >= 2 ? (scoring.length - 1) * MULTI_BONUS : 0;
+      gained += multiBonus;
       // ×2 / Gift apply to the best line
       let x2Applied = false, gifted = null;
       if (best && useX2 && handHas("mod", "x2")) { gained += best.base; x2Applied = true; pullCard("mod", "x2"); }
@@ -524,7 +550,7 @@ export function initAxiom(root) {
 
       if (scoring.length) {
         const lines = scoring.map((run) => run.cells.map((x) => cardLabel(x.cell)).join(" ")).join("  &  ");
-        logLine(`${g.names[g.turn]}: ${lines} → ${gained}${x2Applied ? " (×2)" : ""}${gifted != null ? ` to ${g.names[gifted]}` : ""}`);
+        logLine(`${g.names[g.turn]}: ${lines} → ${gained}${multiBonus ? ` (+${multiBonus} multi)` : ""}${x2Applied ? " (×2)" : ""}${gifted != null ? ` to ${g.names[gifted]}` : ""}`);
         fx(gained >= 0 ? sound.fanfare : sound.buzz);
         g.passes = 0;
       } else {
