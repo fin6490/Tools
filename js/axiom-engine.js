@@ -113,3 +113,28 @@ export function scoreLine(parsed, { x2 = false, ineqScore = 5 } = {}) {
   if (x2) s *= 2;
   return { true: true, score: s };
 }
+
+// Classify a line for commit validation — so you can only lay tiles that build
+// or complete a real equation, never a dead false sum or an inert clump of
+// digits that just blocks squares. Returns { status, hasOp }:
+//   "true"    — a complete, TRUE equation/inequality (it scores)
+//   "false"   — a complete statement that is FALSE (illegal to leave on board)
+//   "garbage" — malformed / can never become true (e.g. two relations, ÷0)
+//   "partial" — a well-formed beginning of an equation, still completable
+// hasOp = the line already contains an operation or relation (a genuine
+// calculation in progress), as opposed to a bare multi-digit number.
+export function classifyLine(cells) {
+  const sg = segment(cells);
+  if (!sg.ok) return { status: "garbage", hasOp: false };
+  const segs = sg.segs;
+  const hasOp = segs.some((s) => s.t === "op" || s.t === "rel");
+  const rels = segs.filter((s) => s.t === "rel").length;
+  if (rels > 1) return { status: "garbage", hasOp };            // two relations: nonsense
+  const parsed = parseLine(cells);
+  if (parsed.ok) {
+    return { status: relTrue(parsed.leftVal, parsed.rel, parsed.rightVal) ? "true" : "false", hasOp, parsed };
+  }
+  // Not a complete statement. A ÷0 anywhere makes the line un-completable.
+  for (let i = 0; i + 2 < segs.length; i++) if (segs[i].t === "num" && segs[i + 1].t === "op" && segs[i + 1].v === "÷" && segs[i + 2].t === "num" && segs[i + 2].v === 0) return { status: "garbage", hasOp };
+  return { status: "partial", hasOp };
+}
