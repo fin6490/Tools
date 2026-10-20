@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019g";
-import { getState, save } from "./storage.js?v=20261019g";
-import * as sound from "./sound.js?v=20261019g";
-import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019g";
+import { el } from "./quizkit.js?v=20261019h";
+import { getState, save } from "./storage.js?v=20261019h";
+import * as sound from "./sound.js?v=20261019h";
+import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019h";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -18,13 +18,14 @@ const COLS = 8, ROWS = 8;
 const TILES_PER_TURN = 2;
 const PLAYER_CLASS = ["p1", "p2", "p3", "p4"];
 
-const ACT_LABEL = { draw: "Draw +1", extra: "Extra tile", swap: "Swap board tile", skip: "Skip a player", block: "Block" };
+const ACT_LABEL = { draw: "Draw +1", extra: "Extra tile", swap: "Swap board tile", skip: "Skip a player", block: "Block", del: "Delete tile" };
 const ACT_DESC = {
   draw: "Draw one extra card now (free — doesn't use a placement).",
   extra: "Place one more tile this turn (free).",
   swap: "Swap an un-locked tile on the board with one from your hand (free).",
   skip: "Skip an opponent's next turn — they discard and redraw. A Block cancels it. (Free.)",
   block: "Reactive: cancel a Skip or a Gift aimed at you.",
+  del: "Remove an un-locked tile from the board (free).",
 };
 const MOD_LABEL = { x2: "×2", gift: "Gift" };
 
@@ -82,7 +83,7 @@ export function initAxiom(root) {
     add("<", 4, "rel"); add("≤", 3, "rel"); add(">", 4, "rel"); add("≥", 3, "rel"); add("≠", 4, "rel");
     // Power-ups & actions — a small minority (~15%), just for spice.
     add("x2", 2, "mod"); add("gift", 2, "mod");
-    add("draw", 2, "act"); add("extra", 1, "act"); add("swap", 1, "act"); add("skip", 1, "act"); add("block", 2, "act");
+    add("draw", 2, "act"); add("extra", 1, "act"); add("swap", 1, "act"); add("skip", 1, "act"); add("block", 1, "act"); add("del", 2, "act");
     return shuffle(cards);
   }
   function drawFrom(which) {
@@ -152,11 +153,13 @@ export function initAxiom(root) {
       ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
       ["≠", "Not-equal — a true ≠ scores 5."],
       ["Connect up", "New tiles must touch the tiles already down (crossword-style), unless the board is empty or holds only completed sums."],
+      ["Alternate", "Tiles alternate number, symbol, number… — you can't place two numbers or two symbols next to each other."],
       ["Longer lines", "+1 point for every tile past the minimum of five — build big and cross lines."],
       ["×2", "Double your best scoring line this turn (free)."],
       ["Gift", "Give your best line's score to another player (dump a negative!)."],
       ["Draw +1 / Extra tile", "Draw a card, or place one more tile this turn (free)."],
-      ["Swap / Skip / Block", "Swap an un-locked board tile; skip a rival; block a Skip/Gift."],
+      ["Swap / Delete", "Swap an un-locked board tile for one from your hand, or delete one outright."],
+      ["Skip / Block", "Skip a rival's next turn; block a Skip or Gift aimed at you."],
     ];
     items.forEach(([k, txt]) => { const r = el("div", "axiom-legend-item"); r.appendChild(el("span", "axiom-legend-key", k)); r.appendChild(el("span", "axiom-legend-txt", txt)); grid.appendChild(r); });
     box.appendChild(grid);
@@ -191,8 +194,9 @@ export function initAxiom(root) {
   let sel = null;       // selected hand card: { src:'num'|'op', idx } | 'eq' | null
   let extraBonus = 0;   // extra tiles granted by "Extra tile" cards
   let useX2 = false, giftTo = null;
-  let swapMode = false;
-  function resetTurn() { staged = []; sel = null; extraBonus = 0; useX2 = false; giftTo = null; swapMode = false; }
+  let swapMode = false, delMode = false;
+  const busy = () => swapMode || delMode;
+  function resetTurn() { staged = []; sel = null; extraBonus = 0; useX2 = false; giftTo = null; swapMode = false; delMode = false; }
   const handPlaced = () => staged.filter((s) => s.src !== "eq").length;
   const tileLimit = () => TILES_PER_TURN + extraBonus;
 
@@ -209,6 +213,14 @@ export function initAxiom(root) {
     const h = G().hands[G().turn];
     const c = (s.src === "num" ? h.num : h.op)[s.idx];
     return c ? { kind: c.kind, v: c.v } : null;
+  }
+  // Category of the currently selected card: "num" or "sym" (operation/relation).
+  function selCat() {
+    if (sel === "eq") return "sym";
+    if (!sel) return "sym";
+    const h = G().hands[G().turn];
+    const card = (sel.src === "num" ? h.num : h.op)[sel.idx];
+    return card && card.kind === "num" ? "num" : "sym";
   }
 
   // Must new tiles connect to what's already on the board? Yes, unless the
@@ -231,6 +243,13 @@ export function initAxiom(root) {
     // Don't extend an already-scored run along its own axis (crossing it is fine).
     if ((at(r, c - 1) && at(r, c - 1).hLock) || (at(r, c + 1) && at(r, c + 1).hLock)) return false;
     if ((at(r - 1, c) && at(r - 1, c).vLock) || (at(r + 1, c) && at(r + 1, c).vLock)) return false;
+    // Tiles in a run must alternate: no two numbers and no two symbols may sit
+    // orthogonally next to each other (in either direction).
+    const myCat = selCat();
+    for (const [nr, nc] of [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]) {
+      const e = eff(nr, nc);
+      if (e && (e.kind === "num" ? "num" : "sym") === myCat) return false;
+    }
     // Tiles must connect to the existing cluster: the first one touches a
     // committed tile; later ones touch a committed or an already-staged tile.
     if (connectRequired()) {
@@ -307,7 +326,7 @@ export function initAxiom(root) {
     const preview = scoring.reduce((a, r) => a + r.base, 0);
     wrap.appendChild(el("p", "axiom-turnbanner",
       `${escapeH(g.names[g.turn])}'s turn — ${Math.max(0, tileLimit() - handPlaced())} tile${tileLimit() - handPlaced() === 1 ? "" : "s"} left`
-      + (swapMode ? " · pick an un-locked board tile to swap" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
+      + (swapMode ? " · pick an un-locked board tile to swap" : delMode ? " · pick an un-locked board tile to delete" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
       + (preview ? ` · this turn scores ${preview}${useX2 ? " (×2 ready)" : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : "")));
 
     // Board
@@ -326,6 +345,7 @@ export function initAxiom(root) {
           if (committed.kind !== "num") cell.classList.add("sym");
           cell.textContent = cardLabel(committed);
           if (swapMode && !locked) { cell.classList.add("swaptarget"); cell.addEventListener("click", () => doSwapPick(r, c)); }
+          if (delMode && !locked) { cell.classList.add("swaptarget"); cell.addEventListener("click", () => doDelPick(r, c)); }
         } else if (stagedHere) {
           cell.classList.add("filled", "staged");
           const sc = stagedCard(stagedHere);
@@ -371,7 +391,7 @@ export function initAxiom(root) {
     h.num.forEach((c, i) => {
       const b = el("button", "axiom-card num" + (selected("num", i) ? " picked" : ""));
       b.textContent = numLabel(c.v);
-      b.disabled = stagedUses("num", i) || (handPlaced() >= tileLimit() && !selected("num", i)) || swapMode;
+      b.disabled = stagedUses("num", i) || (handPlaced() >= tileLimit() && !selected("num", i)) || busy();
       b.addEventListener("click", () => { sel = selected("num", i) ? null : { src: "num", idx: i }; render(); });
       nums.appendChild(b);
     });
@@ -380,7 +400,7 @@ export function initAxiom(root) {
     // free equals tile first
     const eqb = el("button", "axiom-card rel free" + (sel === "eq" ? " picked" : ""));
     eqb.textContent = "="; eqb.title = "Free unlimited equals tile";
-    eqb.disabled = swapMode;
+    eqb.disabled = busy();
     eqb.addEventListener("click", () => { sel = sel === "eq" ? null : "eq"; render(); });
     ops.appendChild(eqb);
     h.op.forEach((c, i) => {
@@ -388,7 +408,7 @@ export function initAxiom(root) {
       const b = el("button", "axiom-card " + c.kind + (selected("op", i) ? " picked" : ""));
       b.textContent = cardLabel(c);
       if (placeable) {
-        b.disabled = stagedUses("op", i) || (handPlaced() >= tileLimit() && !selected("op", i)) || swapMode;
+        b.disabled = stagedUses("op", i) || (handPlaced() >= tileLimit() && !selected("op", i)) || busy();
         b.addEventListener("click", () => { sel = selected("op", i) ? null : { src: "op", idx: i }; render(); });
       } else {
         b.classList.add("info"); b.disabled = true;
@@ -433,16 +453,18 @@ export function initAxiom(root) {
     const g = G();
     const box = el("div", "axiom-actions");
     const has = (v) => g.hands[g.turn].op.some((c) => c.kind === "act" && c.v === v);
-    const mk = (v, onClick) => { const b = el("button", "btn ghost axiom-actbtn", ACT_LABEL[v]); b.disabled = !has(v) || swapMode; b.title = ACT_DESC[v]; b.addEventListener("click", onClick); return b; };
+    const mk = (v, onClick) => { const b = el("button", "btn ghost axiom-actbtn", ACT_LABEL[v]); b.disabled = !has(v) || busy(); b.title = ACT_DESC[v]; b.addEventListener("click", onClick); return b; };
     box.appendChild(mk("draw", doDraw));
     box.appendChild(mk("extra", doExtra));
     box.appendChild(mk("swap", startSwap));
+    box.appendChild(mk("del", startDelete));
     box.appendChild(mk("skip", doSkip));
-    const pass = el("button", "btn ghost axiom-actbtn", "Discard & redraw"); pass.disabled = swapMode || !!staged.length;
+    const pass = el("button", "btn ghost axiom-actbtn", "Discard & redraw"); pass.disabled = busy() || !!staged.length;
     pass.title = "Stuck? Discard your hand, redraw, and end your turn.";
     pass.addEventListener("click", doPass);
     box.appendChild(pass);
     if (swapMode) { const cx = el("button", "btn ghost axiom-actbtn", "Cancel swap"); cx.addEventListener("click", () => { swapMode = false; render(); }); box.appendChild(cx); }
+    if (delMode) { const cx = el("button", "btn ghost axiom-actbtn", "Cancel delete"); cx.addEventListener("click", () => { delMode = false; render(); }); box.appendChild(cx); }
     return box;
   }
 
@@ -567,6 +589,14 @@ export function initAxiom(root) {
   function pullOpFrom(pi, kind, v) { const h = G().hands[pi].op; const i = h.findIndex((c) => c.kind === kind && c.v === v); if (i >= 0) G().decks.opDisc.push(h.splice(i, 1)[0]); }
 
   function startSwap() { if (!G().hands[G().turn].op.some((c) => c.kind === "act" && c.v === "swap")) return; swapMode = true; render(); }
+  function startDelete() { if (!G().hands[G().turn].op.some((c) => c.kind === "act" && c.v === "del")) return; delMode = true; render(); }
+  function doDelPick(r, c) {
+    const g = G(); const tile = g.board[r][c]; if (!tile || tile.hLock || tile.vLock) return;
+    if (!spend("del")) return;
+    (tile.kind === "num" ? g.decks.numDisc : g.decks.opDisc).push({ kind: tile.kind, v: tile.v });
+    g.board[r][c] = null;
+    delMode = false; logLine(`${g.names[g.turn]} deleted a board tile.`); persist(); render();
+  }
   function doSwapPick(r, c) {
     const g = G(); const tile = g.board[r][c]; if (!tile || tile.hLock || tile.vLock) return;
     const h = g.hands[g.turn];
