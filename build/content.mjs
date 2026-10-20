@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261020a",
+  token: "20261020b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -801,7 +801,7 @@ export const TOOLS = [
       "A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline.",
     h1: "Axiom — the equation board game",
     intro:
-      "A tactical maths tile game for 2–4 players on one shared screen — think Scrabble with sums. Everyone holds five number cards (−5 to 12) and five operation/action cards, plus a free, unlimited equals. On your turn you lay up to two cards from your hand (and as many free = tiles as you like) into one row or column of the shared 8×8 board. When a line of tiles — across or down — reads as a true statement it scores and locks in your colour, and lines can cross like a crossword: an = line scores the value it equals, a true inequality scores a flat “X”, and a true ≠ scores 5. Power-ups come from the operations deck and are free to use — double your best line with ×2, gift a line’s score to a rival (perfect for dumping a negative on them), draw extra cards, swap an un-locked tile, or skip a player — with a Block to foil them. First to the target score, or the top score when nobody can move, wins.",
+      "A tactical maths tile game for 2–4 players on one shared screen — think Scrabble with sums. Everyone holds five number cards (−5 to 12) and five operation/action cards, plus a free, unlimited equals. On your turn you lay up to two cards from your hand (and as many free = tiles as you like) into one row or column of the shared 8×8 board. When a line of tiles — across or down — reads as a true statement it scores and locks in your colour, and lines can cross like a crossword: an = line scores the value it equals, a true inequality scores “X” plus a little more the wider the gap, and a true ≠ scores 5. Power-ups come from the operations deck and are free to use — double your best line with ×2, gift a line’s score to a rival (perfect for dumping a negative on them), draw extra cards, swap an un-locked tile, or skip a player — with a Block to foil them. First to the target score, or the top score when nobody can move, wins.",
     steps: [
       "Set 2–4 players and names, pick a target score and the inequality score “X”, then start.",
       "On your turn, tap a card then tap a board square to place it — up to two of your cards a turn, plus any free = tiles, all in one row.",
@@ -814,7 +814,7 @@ export const TOOLS = [
       ["Anyone", "a strategic numbers game you can pick up in minutes."],
     ],
     faq: [
-      ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. Longer lines earn a bonus (+1 per tile past the minimum of five), completing more than one calculation in a single go earns +5 for each extra, and a ×2 doubles your best line that turn. Scored lines lock in your colour."],
+      ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores the “X” you set at the start plus a little more the wider the gap between the two sides (capped at X), so a bold 12 × 3 > 5 beats a safe 4 > 3; a true ≠ scores 5. Longer lines earn a bonus (+1 per tile past the minimum of five), completing more than one calculation in a single go earns +5 for each extra, and a ×2 doubles your best line that turn. Scored lines lock in your colour."],
       ["How many tiles can I place a turn?", "Up to two cards from your hand, plus as many free = tiles as you like, all in one row or one column. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble — and lines can run across or down and cross each other at a shared tile."],
       ["Where can I place tiles?", "Crossword-style: your tiles must connect to the tiles already on the board — unless it's the opening play, or every tile down is part of a completed sum, in which case you may start a fresh line anywhere. Two symbols can't sit next to each other, but two numbers can: side-by-side number tiles combine into one multi-digit number (3 then 5 is 35, −2 then 0 is −20), and a negative tile may only lead a number."],
       ["Can I just place tiles to block?", "No — that's the point of the rule. Every placement has to build toward or complete a genuine equation: you can't leave a false sum like 3 + 4 = 8 on the board, and you can't dump an inert clump of digits with no operation just to wall off squares. If you're stuck, Discard & redraw instead of blocking."],

@@ -1,9 +1,9 @@
 // bingo.js — Bingo: the teacher calls questions, students mark the answers on
 // their cards. Auto-builds printable cards from a question set's answers and
 // runs a caller that reveals one answer at a time. Reuses the Dojo sets.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261020a";
-import { getState, save } from "./storage.js?v=20261020a";
-import * as sound from "./sound.js?v=20261020a";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261020b";
+import { getState, save } from "./storage.js?v=20261020b";
+import * as sound from "./sound.js?v=20261020b";
 
 export function initBingo(root) {
   const panel = root.querySelector(".bingo-panel");

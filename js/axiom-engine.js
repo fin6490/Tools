@@ -11,7 +11,9 @@
 // one of the four arithmetic operations. A true line scores:
 //   =            → the value both sides equal (can be negative)
 //   ≠            → NEQ_SCORE
-//   < ≤ > ≥      → the game's inequality score "X"
+//   < ≤ > ≥      → the game's inequality score "X", plus a little more the
+//                  wider the gap between the two sides (capped at X), so a
+//                  bold 12 × 3 > 5 beats a safe little 4 > 3.
 // A ×2 modifier doubles the line's score.
 
 export const OPS = ["+", "−", "×", "÷"];
@@ -109,7 +111,7 @@ export function scoreLine(parsed, { x2 = false, ineqScore = 5 } = {}) {
   let s;
   if (parsed.rel === "=") s = parsed.leftVal;
   else if (parsed.rel === "≠") s = NEQ_SCORE;
-  else s = ineqScore;
+  else s = ineqScore + Math.min(ineqScore, Math.abs(parsed.leftVal - parsed.rightVal)); // X + margin (capped at X)
   if (x2) s *= 2;
   return { true: true, score: s };
 }

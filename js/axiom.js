@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261020a";
-import { getState, save } from "./storage.js?v=20261020a";
-import * as sound from "./sound.js?v=20261020a";
-import { parseLine, scoreLine, relTrue, classifyLine } from "./axiom-engine.js?v=20261020a";
+import { el } from "./quizkit.js?v=20261020b";
+import { getState, save } from "./storage.js?v=20261020b";
+import * as sound from "./sound.js?v=20261020b";
+import { parseLine, scoreLine, relTrue, classifyLine } from "./axiom-engine.js?v=20261020b";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -105,7 +105,7 @@ export function initAxiom(root) {
     const card = el("div", "axiom-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "2–4 players · pass & play"));
     card.appendChild(el("h2", "dojo-title", "Axiom"));
-    card.appendChild(el("p", "dojo-lede", "Maths Scrabble. Each turn, lay up to two cards from your hand (plus as many free = tiles as you like) into one row or column of the shared board. When a line of tiles — across or down — reads as a true equation or inequality it scores, and lines can cross: an = line scores the value it equals, a true inequality scores “X”, a true ≠ scores 5. Operation and power-up cards come from the operations deck; using a power-up or action is free. First to the target score, or the top score when nobody can move, wins."));
+    card.appendChild(el("p", "dojo-lede", "Maths Scrabble. Each turn, lay up to two cards from your hand (plus as many free = tiles as you like) into one row or column of the shared board. When a line of tiles — across or down — reads as a true equation or inequality it scores, and lines can cross: an = line scores the value it equals, a true inequality scores “X” plus a little more the wider the gap, a true ≠ scores 5. Operation and power-up cards come from the operations deck; using a power-up or action is free. First to the target score, or the top score when nobody can move, wins."));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const d = cfg();
@@ -151,7 +151,7 @@ export function initAxiom(root) {
     const items = [
       ["+ − × ÷", "Operations — a line is worked left to right (no BIDMAS)."],
       ["=", "Free & unlimited for everyone — score the value both sides equal."],
-      ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
+      ["< ≤ > ≥", "Relation tiles — a true inequality scores X, plus a little more the wider the gap (capped at X)."],
       ["≠", "Not-equal — a true ≠ scores 5."],
       ["Connect up", "New tiles must touch the tiles already down (crossword-style), unless the board is empty or holds only completed sums."],
       ["No blocking", "Every placement must build toward or complete a real equation — you can't leave a false sum or an inert clump of digits just to wall off squares."],
@@ -163,6 +163,7 @@ export function initAxiom(root) {
       ["Draw +1 / Extra tile", "Draw a card, or place one more tile this turn (free)."],
       ["Swap / Delete", "Swap an un-locked board tile for one from your hand, or delete one outright."],
       ["Skip / Block", "Skip a rival's next turn; block a Skip or Gift aimed at you."],
+      ["Stuck?", "If nothing obvious plays, the banner nudges you — Discard & redraw swaps your whole hand and ends your turn."],
     ];
     items.forEach(([k, txt]) => { const r = el("div", "axiom-legend-item"); r.appendChild(el("span", "axiom-legend-key", k)); r.appendChild(el("span", "axiom-legend-txt", txt)); grid.appendChild(r); });
     box.appendChild(grid);
@@ -198,6 +199,7 @@ export function initAxiom(root) {
   let extraBonus = 0;   // extra tiles granted by "Extra tile" cards
   let useX2 = false, giftTo = null;
   let swapMode = false, delMode = false;
+  let stuckNudge = false; // "nothing obvious to play" — set each render when the hand looks stuck
   const busy = () => swapMode || delMode;
   function resetTurn() { staged = []; sel = null; extraBonus = 0; useX2 = false; giftTo = null; swapMode = false; delMode = false; }
   const handPlaced = () => staged.filter((s) => s.src !== "eq").length;
@@ -341,6 +343,39 @@ export function initAxiom(root) {
     return null;
   }
 
+  // Is there at least one obvious legal placement — a single hand tile (or the
+  // free =), or any opening on an empty board — that builds toward or completes
+  // an equation? Used only to gently nudge a stuck player toward Discard &
+  // redraw; phrased as "nothing obvious" so a missed tricky two-tile play is
+  // no lie. Probes by temporarily driving sel/staged, then restores them.
+  function hasEasyMove() {
+    const g = G();
+    let committed = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (at(r, c)) committed++;
+    if (committed === 0) return true; // you can always open with two tiles
+    const h = g.hands[g.turn];
+    const seen = new Set(), cands = [];
+    const addC = (src, idx, c) => { const k = c.kind + ":" + c.v; if (seen.has(k)) return; seen.add(k); cands.push({ src, idx }); };
+    h.num.forEach((c, i) => addC("num", i, c));
+    h.op.forEach((c, i) => { if (c.kind === "op" || c.kind === "rel") addC("op", i, c); });
+    cands.push("eq");
+    const savedSel = sel, savedStaged = staged;
+    let ok = false;
+    try {
+      for (const cand of cands) {
+        if (ok) break;
+        sel = cand; staged = [];
+        for (let r = 0; r < ROWS && !ok; r++) for (let c = 0; c < COLS; c++) {
+          if (!canDropAt(r, c)) continue;
+          staged = [{ r, c, src: cand === "eq" ? "eq" : cand.src, idx: cand === "eq" ? -1 : cand.idx }];
+          if (placementIssue() === null) { ok = true; break; }
+          staged = [];
+        }
+      }
+    } finally { sel = savedSel; staged = savedStaged; }
+    return ok;
+  }
+
   const bestRun = (scoring) => scoring.reduce((b, r) => (!b || r.base > b.base ? r : b), null);
   // Total points a turn's placements would score: line scores, +X2 on the best
   // line, +MULTI_BONUS per extra calculation completed this go.
@@ -380,11 +415,13 @@ export function initAxiom(root) {
     const scoring = scoringRuns();
     const preview = turnScore(scoring);
     const issue = placementIssue();
+    stuckNudge = !staged.length && !busy() && !hasEasyMove();
     const banner = el("p", "axiom-turnbanner",
       `${escapeH(g.names[g.turn])}'s turn — ${Math.max(0, tileLimit() - handPlaced())} tile${tileLimit() - handPlaced() === 1 ? "" : "s"} left`
       + (swapMode ? " · pick an un-locked board tile to swap" : delMode ? " · pick an un-locked board tile to delete" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
       + (scoring.length ? ` · this turn scores ${preview}${scoring.length >= 2 ? ` (${scoring.length} lines!)` : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : ""));
     if (issue) { banner.appendChild(el("span", "axiom-issue", " · " + issue)); }
+    else if (stuckNudge) { banner.appendChild(el("span", "axiom-nudge", " · nothing obvious to play — Discard & redraw for a fresh hand")); }
     wrap.appendChild(banner);
 
     // Board
@@ -520,7 +557,7 @@ export function initAxiom(root) {
     box.appendChild(mk("swap", startSwap));
     box.appendChild(mk("del", startDelete));
     box.appendChild(mk("skip", doSkip));
-    const pass = el("button", "btn ghost axiom-actbtn", "Discard & redraw"); pass.disabled = busy() || !!staged.length;
+    const pass = el("button", "btn ghost axiom-actbtn" + (stuckNudge ? " axiom-nudgebtn" : ""), "Discard & redraw"); pass.disabled = busy() || !!staged.length;
     pass.title = "Stuck? Discard your hand, redraw, and end your turn.";
     pass.addEventListener("click", doPass);
     box.appendChild(pass);
