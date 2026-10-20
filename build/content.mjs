@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261019i",
+  token: "20261020a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -805,7 +805,7 @@ export const TOOLS = [
     steps: [
       "Set 2–4 players and names, pick a target score and the inequality score “X”, then start.",
       "On your turn, tap a card then tap a board square to place it — up to two of your cards a turn, plus any free = tiles, all in one row.",
-      "When a line of tiles reads as a true equation or inequality it scores and locks. Build on earlier tiles over several turns to complete longer lines.",
+      "When a line of tiles reads as a true equation or inequality it scores and locks. Build on earlier tiles over several turns to complete longer lines — every placement must work toward a real sum, so you can't leave a false equation or block with dead tiles.",
       "Power-ups (×2, Gift) and actions (Draw, Extra tile, Swap, Skip, Block) are free — they don't use up a placement. Keep going until someone hits the target, or no one can move and the top score wins.",
     ],
     whoFor: [
@@ -817,6 +817,7 @@ export const TOOLS = [
       ["How do you score points?", "A line of tiles scores the moment it reads as a true statement. An = line scores the value both sides equal (which can be negative!); a true inequality (<, ≤, >, ≥) scores a flat “X” you set at the start; a true ≠ scores 5. Longer lines earn a bonus (+1 per tile past the minimum of five), completing more than one calculation in a single go earns +5 for each extra, and a ×2 doubles your best line that turn. Scored lines lock in your colour."],
       ["How many tiles can I place a turn?", "Up to two cards from your hand, plus as many free = tiles as you like, all in one row or one column. Power-ups and action cards are free and don't count towards the two. You build longer equations up over several turns, like Scrabble — and lines can run across or down and cross each other at a shared tile."],
       ["Where can I place tiles?", "Crossword-style: your tiles must connect to the tiles already on the board — unless it's the opening play, or every tile down is part of a completed sum, in which case you may start a fresh line anywhere. Two symbols can't sit next to each other, but two numbers can: side-by-side number tiles combine into one multi-digit number (3 then 5 is 35, −2 then 0 is −20), and a negative tile may only lead a number."],
+      ["Can I just place tiles to block?", "No — that's the point of the rule. Every placement has to build toward or complete a genuine equation: you can't leave a false sum like 3 + 4 = 8 on the board, and you can't dump an inert clump of digits with no operation just to wall off squares. If you're stuck, Discard & redraw instead of blocking."],
       ["How are equations worked out?", "Strictly left to right — there's no BIDMAS/order-of-operations, so 2 + 3 × 4 is (2 + 3) × 4 = 20. Every line must use at least one of the four operations, so a bare comparison like 4 > 2 doesn't count."],
       ["Where do the cards come from?", "You draw back up to five number cards and five operation cards each turn. The operations deck mixes the four operations, the relation tiles (< ≤ > ≥ ≠) and the power-up/action cards — so a ×2, Gift, Swap, Skip or Block is only yours to use once you've drawn it."],
       ["What do the power-ups and actions do?", "×2 doubles your best scoring line this turn; Gift sends a line's score to another player (great for dumping a negative on a rival); Draw +1 draws a card; Extra tile lets you place one more tile; Swap exchanges an un-locked board tile with one from your hand; Delete removes an un-locked board tile outright (handy for wrecking a rival's half-built line); Skip skips a rival's next turn; Block cancels a Skip or Gift aimed at you. All are free to play."],

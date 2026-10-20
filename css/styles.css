@@ -1944,6 +1944,7 @@ a.tab { display: block; }
 .axiom-scval { font-family: var(--mono); font-weight: 800; }
 .axiom-target { margin-left: auto; }
 .axiom-turnbanner { font-weight: 800; margin: 2px 0; }
+.axiom-issue { color: #d94646; font-weight: 700; }
 
 .axiom-boardwrap { display: flex; justify-content: center; }
 .axiom-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; width: min(100%, 560px); padding: 10px; border-radius: 14px; background: #2c2538; border: 1px solid #44395a; }

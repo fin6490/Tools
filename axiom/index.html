@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="A 2–4 player equation board game for the classroom, pass-and-play on one screen — maths Scrabble. Lay up to two number/operation tiles a turn onto an 8×8 board; a line scores when it reads as a true equation or inequality. Use ×2, gift a score, draw, swap and skip. First to the target wins. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261019i" />
+<link rel="stylesheet" href="/css/styles.css?v=20261020a" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -76,6 +76,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Crossword-style: your tiles must connect to the tiles already on the board — unless it's the opening play, or every tile down is part of a completed sum, in which case you may start a fresh line anywhere. Two symbols can't sit next to each other, but two numbers can: side-by-side number tiles combine into one multi-digit number (3 then 5 is 35, −2 then 0 is −20), and a negative tile may only lead a number."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I just place tiles to block?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No — that's the point of the rule. Every placement has to build toward or complete a genuine equation: you can't leave a false sum like 3 + 4 = 8 on the board, and you can't dump an inert clump of digits with no operation just to wall off squares. If you're stuck, Discard & redraw instead of blocking."
       }
     },
     {
@@ -681,7 +689,7 @@
           <ol class="tool-steps">
             <li>Set 2–4 players and names, pick a target score and the inequality score “X”, then start.</li>
         <li>On your turn, tap a card then tap a board square to place it — up to two of your cards a turn, plus any free = tiles, all in one row.</li>
-        <li>When a line of tiles reads as a true equation or inequality it scores and locks. Build on earlier tiles over several turns to complete longer lines.</li>
+        <li>When a line of tiles reads as a true equation or inequality it scores and locks. Build on earlier tiles over several turns to complete longer lines — every placement must work toward a real sum, so you can't leave a false equation or block with dead tiles.</li>
         <li>Power-ups (×2, Gift) and actions (Draw, Extra tile, Swap, Skip, Block) are free — they don't use up a placement. Keep going until someone hits the target, or no one can move and the top score wins.</li>
           </ol>
           <h2>Who it's for</h2>
@@ -703,6 +711,10 @@
         <details>
           <summary>Where can I place tiles?</summary>
           <p>Crossword-style: your tiles must connect to the tiles already on the board — unless it's the opening play, or every tile down is part of a completed sum, in which case you may start a fresh line anywhere. Two symbols can't sit next to each other, but two numbers can: side-by-side number tiles combine into one multi-digit number (3 then 5 is 35, −2 then 0 is −20), and a negative tile may only lead a number.</p>
+        </details>
+        <details>
+          <summary>Can I just place tiles to block?</summary>
+          <p>No — that's the point of the rule. Every placement has to build toward or complete a genuine equation: you can't leave a false sum like 3 + 4 = 8 on the board, and you can't dump an inert clump of digits with no operation just to wall off squares. If you're stuck, Discard & redraw instead of blocking.</p>
         </details>
         <details>
           <summary>How are equations worked out?</summary>
@@ -788,8 +800,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261019i"></script>
-<script type="module" src="/js/app.js?v=20261019i"></script>
+  <script type="module" src="/js/suggest.js?v=20261020a"></script>
+<script type="module" src="/js/app.js?v=20261020a"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

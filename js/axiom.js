@@ -7,10 +7,10 @@
 // cards live in the operations deck (5 drawn each turn); using an action or a
 // ×2 / Gift never uses up one of your two placements. Rules engine lives in
 // axiom-engine.js (pure, unit-tested). Zero deps.
-import { el } from "./quizkit.js?v=20261019i";
-import { getState, save } from "./storage.js?v=20261019i";
-import * as sound from "./sound.js?v=20261019i";
-import { parseLine, scoreLine, relTrue } from "./axiom-engine.js?v=20261019i";
+import { el } from "./quizkit.js?v=20261020a";
+import { getState, save } from "./storage.js?v=20261020a";
+import * as sound from "./sound.js?v=20261020a";
+import { parseLine, scoreLine, relTrue, classifyLine } from "./axiom-engine.js?v=20261020a";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rint(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -154,6 +154,7 @@ export function initAxiom(root) {
       ["< ≤ > ≥", "Relation tiles — a true inequality scores X."],
       ["≠", "Not-equal — a true ≠ scores 5."],
       ["Connect up", "New tiles must touch the tiles already down (crossword-style), unless the board is empty or holds only completed sums."],
+      ["No blocking", "Every placement must build toward or complete a real equation — you can't leave a false sum or an inert clump of digits just to wall off squares."],
       ["Make numbers", "Number tiles side by side combine into a multi-digit number (3,5 → 35; −2,0 → −20; a negative only leads). Two symbols still can't touch."],
       ["Longer lines", "+1 point for every tile past the minimum of five — build big and cross lines."],
       ["Multi bonus", "Complete more than one calculation in a single go for +5 points each extra."],
@@ -309,6 +310,37 @@ export function initAxiom(root) {
     });
     return out;
   }
+  // Every maximal run (across & down, length ≥ 2) that this turn's tiles touch,
+  // classified by the engine — used to forbid pointless blocking.
+  function touchedLines() {
+    if (!staged.length) return [];
+    const out = [], seen = new Set();
+    staged.forEach((s) => {
+      [[0, 1], [1, 0]].forEach(([dr, dc]) => {
+        const axis = dr === 0 ? "h" : "v";
+        const cells = maximalRun(s.r, s.c, dr, dc);
+        if (cells.length < 2) return;
+        const key = axis + cells[0].r + "," + cells[0].c + ":" + cells.length;
+        if (seen.has(key)) return; seen.add(key);
+        const cl = classifyLine(cells.map((x) => ({ kind: x.cell.kind, v: x.cell.v })));
+        out.push({ cells, axis, ...cl });
+      });
+    });
+    return out;
+  }
+  // Why a placement can't be committed yet (or null if it's fine). You may only
+  // lay tiles that build or complete a real equation: no false sums, no broken
+  // lines, and not just a blocking clump of digits with no operation.
+  function placementIssue() {
+    if (!staged.length) return null;
+    const lines = touchedLines();
+    if (lines.some((l) => l.status === "false")) return "That makes a false equation — fix it before you place.";
+    if (lines.some((l) => l.status === "garbage")) return "That line doesn't work as a sum — check it over.";
+    const building = lines.some((l) => l.status === "true") || lines.some((l) => l.status === "partial" && l.hasOp);
+    if (!building) return "Place tiles that build or complete an equation — not just a blocking number.";
+    return null;
+  }
+
   const bestRun = (scoring) => scoring.reduce((b, r) => (!b || r.base > b.base ? r : b), null);
   // Total points a turn's placements would score: line scores, +X2 on the best
   // line, +MULTI_BONUS per extra calculation completed this go.
@@ -347,10 +379,13 @@ export function initAxiom(root) {
 
     const scoring = scoringRuns();
     const preview = turnScore(scoring);
-    wrap.appendChild(el("p", "axiom-turnbanner",
+    const issue = placementIssue();
+    const banner = el("p", "axiom-turnbanner",
       `${escapeH(g.names[g.turn])}'s turn — ${Math.max(0, tileLimit() - handPlaced())} tile${tileLimit() - handPlaced() === 1 ? "" : "s"} left`
       + (swapMode ? " · pick an un-locked board tile to swap" : delMode ? " · pick an un-locked board tile to delete" : (connectRequired() && !staged.length ? " · build onto existing tiles" : ""))
-      + (scoring.length ? ` · this turn scores ${preview}${scoring.length >= 2 ? ` (${scoring.length} lines!)` : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : "")));
+      + (scoring.length ? ` · this turn scores ${preview}${scoring.length >= 2 ? ` (${scoring.length} lines!)` : ""}${giftTo != null ? " → " + escapeH(g.names[giftTo]) : ""}` : ""));
+    if (issue) { banner.appendChild(el("span", "axiom-issue", " · " + issue)); }
+    wrap.appendChild(banner);
 
     // Board
     const boardWrap = el("div", "axiom-boardwrap");
@@ -375,10 +410,10 @@ export function initAxiom(root) {
           if (sc.kind !== "num") cell.classList.add("sym");
           cell.textContent = cardLabel(sc);
           cell.title = "Tap to take back";
-          cell.addEventListener("click", () => { staged = staged.filter((x) => x !== stagedHere); render(); });
+          cell.addEventListener("click", () => { staged = staged.filter((x) => x !== stagedHere); fx(() => sound.tick(0.04)); render(); });
         } else {
           cell.classList.add("empty");
-          if (canDropAt(r, c)) { cell.classList.add("drop"); cell.addEventListener("click", () => { staged.push({ r, c, src: sel === "eq" ? "eq" : sel.src, idx: sel === "eq" ? -1 : sel.idx }); sel = null; render(); }); }
+          if (canDropAt(r, c)) { cell.classList.add("drop"); cell.addEventListener("click", () => { staged.push({ r, c, src: sel === "eq" ? "eq" : sel.src, idx: sel === "eq" ? -1 : sel.idx }); sel = null; fx(sound.tick); render(); }); }
         }
         if (scoringCells.has(r + "," + c)) cell.classList.add("willscore");
         grid.appendChild(cell);
@@ -453,20 +488,23 @@ export function initAxiom(root) {
     const x2 = el("button", "chip" + (useX2 ? " on" : ""), "×2");
     x2.disabled = !handHas("mod", "x2") || !scoring.length;
     x2.title = handHas("mod", "x2") ? "Double your best scoring line this turn" : "No ×2 card in hand";
-    x2.addEventListener("click", () => { useX2 = !useX2; render(); });
+    x2.addEventListener("click", () => { useX2 = !useX2; if (useX2) fx(sound.swoosh); render(); });
     box.appendChild(x2);
 
     const gift = el("button", "chip" + (giftTo != null ? " on" : ""), giftTo != null ? `Gift → ${escapeH(g.names[giftTo])}` : "Gift");
     gift.disabled = !handHas("mod", "gift") || !scoring.length;
     gift.title = handHas("mod", "gift") ? "Give your best line's score to another player" : "No Gift card in hand";
-    gift.addEventListener("click", () => { if (giftTo != null) { giftTo = null; render(); return; } pickPlayer("Give your best line's score to:", (pi) => { giftTo = pi; render(); }, g.turn); });
+    gift.addEventListener("click", () => { if (giftTo != null) { giftTo = null; render(); return; } pickPlayer("Give your best line's score to:", (pi) => { giftTo = pi; fx(sound.swoosh); render(); }, g.turn); });
     box.appendChild(gift);
 
     const clear = el("button", "btn ghost", "Take back"); clear.disabled = !staged.length;
     clear.addEventListener("click", () => { staged = []; sel = null; render(); });
     box.appendChild(clear);
 
+    const issue = placementIssue();
     const end = el("button", "btn primary", staged.length ? (scoring.length ? `Place & score ${turnScore(scoring)}` : "Place tiles") : "End turn");
+    end.disabled = !!issue;
+    if (issue) end.title = issue;
     end.addEventListener("click", commitTurn);
     box.appendChild(end);
     return box;
@@ -513,6 +551,7 @@ export function initAxiom(root) {
   /* ---------- commit a turn ---------- */
   function commitTurn() {
     const g = G();
+    if (staged.length && placementIssue()) { render(); return; } // shouldn't happen (button disabled)
     if (staged.length) {
       const scoring = scoringRuns();
       // commit tiles to the board (un-locked for now)
@@ -554,7 +593,8 @@ export function initAxiom(root) {
         fx(gained >= 0 ? sound.fanfare : sound.buzz);
         g.passes = 0;
       } else {
-        logLine(`${g.names[g.turn]} placed ${staged.length} tile${staged.length === 1 ? "" : "s"}.`);
+        logLine(`${g.names[g.turn]} built ${staged.length} tile${staged.length === 1 ? "" : "s"} toward an equation.`);
+        fx(() => sound.tick(0.06));
         g.passes = 0; // a placement counts as progress
       }
     } else {
@@ -583,7 +623,7 @@ export function initAxiom(root) {
       if (g.skipNext[next]) { g.skipNext[next] = false; const h = g.hands[next]; g.decks.numDisc.push(...h.num); g.decks.opDisc.push(...h.op); h.num = []; h.op = []; refill(next); logLine(`${g.names[next]} is skipped (hand redrawn).`); continue; }
       break;
     }
-    g.turn = next; resetTurn(); persist(); renderGame();
+    g.turn = next; resetTurn(); persist(); fx(() => sound.tick(0.05)); renderGame();
   }
 
   function checkEnd() {
@@ -592,7 +632,7 @@ export function initAxiom(root) {
     const boardFull = g.board.every((row) => row.every((c) => c));
     // Softer stall net: only end on no-progress after two full rounds of passes.
     if (hi >= cfg().target || boardFull || (g.passes || 0) >= g.players * 2) {
-      g.over = true; g.winner = g.scores.indexOf(hi); persist(); renderOver(); return true;
+      g.over = true; g.winner = g.scores.indexOf(hi); persist(); fx(sound.fanfare); renderOver(); return true;
     }
     return false;
   }
@@ -601,15 +641,15 @@ export function initAxiom(root) {
   function spend(v) { const h = G().hands[G().turn].op; const i = h.findIndex((c) => c.kind === "act" && c.v === v); if (i < 0) return false; G().decks.opDisc.push(h.splice(i, 1)[0]); return true; }
   function holds(pi, v) { return G().hands[pi].op.some((c) => c.kind === "act" && c.v === v); }
 
-  function doDraw() { const g = G(); if (!spend("draw")) return; pickDraw((which) => { const c = drawFrom(which); if (c) g.hands[g.turn][which].push(c); logLine(`${g.names[g.turn]} drew a card.`); persist(); render(); }); }
-  function doExtra() { const g = G(); if (!spend("extra")) return; extraBonus++; logLine(`${g.names[g.turn]} may place an extra tile.`); persist(); render(); }
-  function doPass() { const g = G(); const h = g.hands[g.turn]; if (!confirm("Discard your whole hand, redraw, and end your turn?")) return; g.decks.numDisc.push(...h.num); g.decks.opDisc.push(...h.op); h.num = []; h.op = []; logLine(`${g.names[g.turn]} discarded and redrew.`); g.passes = (g.passes || 0) + 1; persist(); if (checkEnd()) return; endTurn(); }
+  function doDraw() { const g = G(); if (!spend("draw")) return; pickDraw((which) => { const c = drawFrom(which); if (c) g.hands[g.turn][which].push(c); fx(sound.swoosh); logLine(`${g.names[g.turn]} drew a card.`); persist(); render(); }); }
+  function doExtra() { const g = G(); if (!spend("extra")) return; extraBonus++; fx(sound.swoosh); logLine(`${g.names[g.turn]} may place an extra tile.`); persist(); render(); }
+  function doPass() { const g = G(); const h = g.hands[g.turn]; if (!confirm("Discard your whole hand, redraw, and end your turn?")) return; g.decks.numDisc.push(...h.num); g.decks.opDisc.push(...h.op); h.num = []; h.op = []; fx(sound.swoosh); logLine(`${g.names[g.turn]} discarded and redrew.`); g.passes = (g.passes || 0) + 1; persist(); if (checkEnd()) return; endTurn(); }
   function doSkip() {
     const g = G();
     pickPlayer("Skip whose next turn?", (pi) => {
       if (!spend("skip")) return;
-      if (holds(pi, "block") && confirm(`${g.names[pi]} holds a Block. Use it to cancel the skip?`)) { pullOpFrom(pi, "act", "block"); logLine(`${g.names[pi]} blocked the skip!`); persist(); render(); return; }
-      g.skipNext[pi] = true; logLine(`${g.names[g.turn]} will skip ${g.names[pi]}'s next turn.`); persist(); render();
+      if (holds(pi, "block") && confirm(`${g.names[pi]} holds a Block. Use it to cancel the skip?`)) { pullOpFrom(pi, "act", "block"); fx(sound.swoosh); logLine(`${g.names[pi]} blocked the skip!`); persist(); render(); return; }
+      g.skipNext[pi] = true; fx(sound.buzz); logLine(`${g.names[g.turn]} will skip ${g.names[pi]}'s next turn.`); persist(); render();
     }, g.turn);
   }
   function pullOpFrom(pi, kind, v) { const h = G().hands[pi].op; const i = h.findIndex((c) => c.kind === kind && c.v === v); if (i >= 0) G().decks.opDisc.push(h.splice(i, 1)[0]); }
@@ -621,7 +661,7 @@ export function initAxiom(root) {
     if (!spend("del")) return;
     (tile.kind === "num" ? g.decks.numDisc : g.decks.opDisc).push({ kind: tile.kind, v: tile.v });
     g.board[r][c] = null;
-    delMode = false; logLine(`${g.names[g.turn]} deleted a board tile.`); persist(); render();
+    delMode = false; fx(sound.swoosh); logLine(`${g.names[g.turn]} deleted a board tile.`); persist(); render();
   }
   function doSwapPick(r, c) {
     const g = G(); const tile = g.board[r][c]; if (!tile || tile.hLock || tile.vLock) return;
@@ -634,7 +674,7 @@ export function initAxiom(root) {
       const boardCard = { kind: tile.kind, v: tile.v };
       g.board[r][c] = { kind: p.card.kind, v: p.card.v, player: g.turn, hLock: false, vLock: false };
       if (p.list === "num") g.hands[g.turn].num.splice(p.i, 1, boardCard); else g.hands[g.turn].op.splice(p.i, 1, boardCard.kind === "num" ? { kind: "num", v: boardCard.v } : boardCard);
-      swapMode = false; logLine(`${g.names[g.turn]} swapped a board tile.`); persist(); render();
+      swapMode = false; fx(sound.swoosh); logLine(`${g.names[g.turn]} swapped a board tile.`); persist(); render();
     });
   }
 
