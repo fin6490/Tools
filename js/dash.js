@@ -6,12 +6,12 @@
 // streak and earns powerups, a wrong one (or a spike) costs a heart. Levels get
 // faster and busier the further you go, and there's a global high-score board.
 // Zero deps, canvas 2D.
-import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20261020b";
-import { SUPPORT } from "./support.js?v=20261020b";
-import { getState, save } from "./storage.js?v=20261020b";
-import { SUPABASE_ENABLED } from "./supa-config.js?v=20261020b";
-import { topDashScores, submitDashScore } from "./supa.js?v=20261020b";
-import * as sound from "./sound.js?v=20261020b";
+import { el, shuffle, escapeHtml, mathHtml, generateSet, allSets } from "./quizkit.js?v=20261023a";
+import { SUPPORT } from "./support.js?v=20261023a";
+import { getState, save } from "./storage.js?v=20261023a";
+import { SUPABASE_ENABLED } from "./supa-config.js?v=20261023a";
+import { topDashScores, submitDashScore } from "./supa.js?v=20261023a";
+import * as sound from "./sound.js?v=20261023a";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 
@@ -95,7 +95,7 @@ export function initDash(root) {
     const card = el("div", "dash-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "Solo quiz runner"));
     card.appendChild(el("h2", "dojo-title", "Quiz Dash"));
-    card.appendChild(el("p", "dojo-lede", "Pick a topic and we'll generate the questions. Run and jump the spikes — at each gate, answer to keep going. Build a streak for shields and extra hearts; the further you get, the faster and busier it becomes."));
+    card.appendChild(el("p", "dojo-lede", "Pick a topic and we'll generate the questions. Run and jump the hazards — double-jump in the air, land on floating platforms, hop crates and dodge overhead bars. At each gate, answer to keep going. Build a streak for shields and extra hearts; the further you get, the faster and busier it becomes."));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const aiOn = !!SUPPORT.dojoGenerateEndpoint;
@@ -147,7 +147,7 @@ export function initDash(root) {
       card.appendChild(or);
     }
 
-    card.appendChild(el("p", "dojo-hint", `Controls: Space, tap or click to jump. Best run: ${cfg().best || 0} m.`));
+    card.appendChild(el("p", "dojo-hint", `Controls: Space, tap or click to jump — again in mid-air to double-jump. Best run: ${cfg().best || 0} m.`));
 
     // Global leaderboard.
     if (SUPABASE_ENABLED) {
@@ -208,7 +208,7 @@ export function initDash(root) {
         <canvas id="dashCanvas" class="dash-canvas"></canvas>
         <div class="dash-overlay" id="dashOverlay" hidden></div>
       </div>
-      <p class="dojo-hint dash-foot">Space / tap / click to jump.</p>`;
+      <p class="dojo-hint dash-foot">Space / tap / click to jump — press again in the air to double-jump. Land on platforms, hop crates, duck under bars.</p>`;
     panel.appendChild(wrap);
     panel.querySelector("#dashMute").addEventListener("click", () => { soundOn = !soundOn; panel.querySelector("#dashMute").textContent = soundOn ? "♪" : "✕"; });
     panel.querySelector("#dashQuit").addEventListener("click", () => renderLobby());
@@ -233,12 +233,12 @@ export function initDash(root) {
     window.addEventListener("resize", onResize);
 
     const state = {
-      x: 120, y: GROUND, vy: 0, onGround: true,
+      x: 120, y: GROUND, vy: 0, onGround: true, jumps: 2,
       speed: diff.speed, dist: 0, hearts: 3, shield: false, over: false, paused: false,
-      spikes: [], gate: null, nextSpike: 360, nextGate: 680,
+      obs: [], gate: null, nextObs: 360, nextGate: 680,
       qi: 0, streak: 0, bestStreak: 0, level: 1, t: 0, invuln: 0, submitted: false,
     };
-    const GRAV = 1750, JUMP = -620;
+    const GRAV = 1750, JUMP = -620, MAX_JUMPS = 2, PW = 30, PH = 30;
     const qIndex = shuffle(qs.map((_, i) => i));
 
     function renderHud() {
@@ -255,9 +255,15 @@ export function initDash(root) {
       setTimeout(() => f.remove(), 850);
     }
 
+    // Jump — and press again in the air for a (slightly weaker) double jump.
     function jump() {
       if (state.over || state.paused) return;
-      if (state.onGround) { state.vy = JUMP; state.onGround = false; fx(sound.tick); }
+      if (state.jumps <= 0) return;
+      const fromGround = state.onGround;
+      state.vy = fromGround ? JUMP : JUMP * 0.85;
+      state.onGround = false;
+      state.jumps--;
+      fx(fromGround ? sound.tick : sound.swoosh);
     }
     canvas.addEventListener("pointerdown", (e) => { e.preventDefault(); jump(); });
     keyHandler = (e) => {
@@ -371,30 +377,72 @@ export function initDash(root) {
       const lvl = 1 + Math.floor(Math.floor(state.dist / 10) / LEVEL_M);
       if (lvl > state.level) { state.level = lvl; state.speed = Math.min(diff.maxSpeed, state.speed + 12); renderHud(); flash("Level " + lvl + "!", "good"); fx(sound.sunny); }
 
-      // player physics
-      state.vy += GRAV * dt; state.y += state.vy * dt;
-      if (state.y >= GROUND) { state.y = GROUND; state.vy = 0; state.onGround = true; }
+      // player physics (gravity + vertical move)
+      state.vy += GRAV * dt;
+      const prevFeet = state.y;
+      state.y += state.vy * dt;
 
-      // spikes (busier with level; clusters of 2 at higher levels)
-      state.spikes.forEach((s) => { s.x -= state.speed * dt; });
-      state.spikes = state.spikes.filter((s) => s.x > -40);
-      if (state.dist > state.nextSpike && !state.gate) {
-        const cluster = (state.level >= diff.doubleFrom && Math.random() < 0.33) ? 2 : 1;
-        for (let k = 0; k < cluster; k++) state.spikes.push({ x: W + 20 + k * 30, w: 24 + Math.random() * 12 });
+      // scroll + cull obstacles
+      state.obs.forEach((o) => { o.x -= state.speed * dt; });
+      state.obs = state.obs.filter((o) => o.x + (o.w || 24) > -60);
+
+      // land on the highest platform/block top the feet cross while falling
+      let support = null, supTop = Infinity;
+      if (state.vy >= 0) {
+        for (const o of state.obs) {
+          if (o.type !== "platform" && o.type !== "block") continue;
+          const top = o.type === "block" ? GROUND - o.h : o.y;
+          if (prevFeet <= top + 2 && state.y >= top && state.x + PW > o.x && state.x < o.x + o.w && top < supTop) { support = o; supTop = top; }
+        }
+      }
+      if (support) {
+        state.y = supTop; state.vy = 0; state.onGround = true; state.jumps = MAX_JUMPS;
+        if (support.type === "platform" && !support.touched) { support.touched = true; state.dist += 60; flash("+6 m", "good"); fx(sound.tick); }
+      } else if (state.y >= GROUND) { state.y = GROUND; state.vy = 0; state.onGround = true; state.jumps = MAX_JUMPS; }
+      else state.onGround = false;
+
+      // spawn the next obstacle (never during a gate)
+      if (state.dist > state.nextObs && !state.gate) {
+        spawnObstacle();
         const gap = Math.max(diff.spikeGap[1], diff.spikeGap[0] - state.level * 8);
-        state.nextSpike = state.dist + gap + Math.random() * 110;
+        state.nextObs = state.dist + gap + Math.random() * 120;
       }
 
       // gate
       if (!state.gate && state.dist > state.nextGate) state.gate = { x: W + 20 };
       if (state.gate) { state.gate.x -= state.speed * dt; if (state.gate.x <= state.x) askQuestion(); }
 
-      // spike collisions
+      // hazard collisions
       if (state.invuln <= 0) {
-        for (const s of state.spikes) {
-          const px = state.x, pw = 30;
-          if (s.x < px + pw && s.x + s.w > px && state.y > GROUND - 26) { damage(); break; }
+        const top = state.y - PH, bot = state.y, left = state.x, right = state.x + PW;
+        for (const o of state.obs) {
+          const ox2 = o.x + (o.w || 24);
+          if (o.x >= right || ox2 <= left) continue; // no horizontal overlap
+          if (o.type === "spike") { if (bot > GROUND - 26) { damage(); break; } }
+          else if (o.type === "block") { if (bot > GROUND - o.h + 6) { damage(); break; } } // hit the side, not resting on top
+          else if (o.type === "bar") { if (top < o.y + o.h && bot > o.y) { damage(); break; } }
         }
+      }
+    }
+
+    // Spawn a spike, crate (jump over or land on), floating platform, or an
+    // overhead bar (don't jump into it). Variety unlocks with the level.
+    function spawnObstacle() {
+      const lvl = state.level, r = Math.random(), baseX = W + 24;
+      let type = "spike";
+      if (lvl >= 3 && r < 0.14) type = "bar";
+      else if (lvl >= 2 && r < 0.38) type = "platform";
+      else if (lvl >= 2 && r < 0.60) type = "block";
+      if (type === "spike") {
+        const cluster = (lvl >= diff.doubleFrom && Math.random() < 0.33) ? 2 : 1;
+        for (let k = 0; k < cluster; k++) state.obs.push({ type: "spike", x: baseX + k * 30, w: 24 + Math.random() * 12 });
+      } else if (type === "block") {
+        state.obs.push({ type: "block", x: baseX, w: 34 + Math.random() * 16, h: 32 + Math.random() * 28 });
+      } else if (type === "platform") {
+        const high = lvl >= 4 && Math.random() < 0.4;
+        state.obs.push({ type: "platform", x: baseX, w: 96 + Math.random() * 54, y: GROUND - (high ? 138 : 72 + Math.random() * 28) });
+      } else if (type === "bar") {
+        state.obs.push({ type: "bar", x: baseX, w: 60 + Math.random() * 28, y: GROUND - (58 + Math.random() * 20) - 18, h: 18 });
       }
     }
     function draw() {
@@ -411,8 +459,26 @@ export function initDash(root) {
         ctx.fillRect(state.gate.x, 40, 8, GROUND - 14); ctx.restore();
         ctx.fillStyle = "rgba(255,207,77,.18)"; ctx.fillRect(state.gate.x - 6, 40, 20, GROUND - 14);
       }
-      ctx.fillStyle = "#ff5b52";
-      state.spikes.forEach((s) => { ctx.beginPath(); ctx.moveTo(s.x, GROUND + 26); ctx.lineTo(s.x + s.w / 2, GROUND - 2); ctx.lineTo(s.x + s.w, GROUND + 26); ctx.closePath(); ctx.fill(); });
+      // obstacles
+      state.obs.forEach((o) => {
+        if (o.type === "spike") {
+          ctx.fillStyle = "#ff5b52";
+          ctx.beginPath(); ctx.moveTo(o.x, GROUND + 26); ctx.lineTo(o.x + o.w / 2, GROUND - 2); ctx.lineTo(o.x + o.w, GROUND + 26); ctx.closePath(); ctx.fill();
+        } else if (o.type === "block") {
+          const bTop = GROUND - o.h;
+          ctx.fillStyle = "#b5792f"; roundRect(ctx, o.x, bTop, o.w, o.h + 26, 5); ctx.fill();
+          ctx.strokeStyle = "#7a4e18"; ctx.lineWidth = 2; ctx.stroke();
+          ctx.fillStyle = "#d79a4e"; ctx.fillRect(o.x + 3, bTop + 3, o.w - 6, 4);
+        } else if (o.type === "platform") {
+          ctx.fillStyle = "#4a3b78"; roundRect(ctx, o.x, o.y, o.w, 14, 6); ctx.fill();
+          ctx.fillStyle = o.touched ? "#b7a6f5" : "#8f78e0"; ctx.fillRect(o.x + 4, o.y + 2, o.w - 8, 4);
+        } else if (o.type === "bar") {
+          ctx.strokeStyle = "#4b4660"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(o.x + 7, 0); ctx.lineTo(o.x + 7, o.y); ctx.moveTo(o.x + o.w - 7, 0); ctx.lineTo(o.x + o.w - 7, o.y); ctx.stroke();
+          ctx.fillStyle = "#ff9f43"; ctx.fillRect(o.x, o.y, o.w, o.h);
+          ctx.fillStyle = "#7a3f0a"; for (let sx = o.x; sx < o.x + o.w - 6; sx += 14) { ctx.beginPath(); ctx.moveTo(sx, o.y); ctx.lineTo(sx + 7, o.y); ctx.lineTo(sx, o.y + o.h); ctx.closePath(); ctx.fill(); }
+        }
+      });
       // player (with shield ring)
       const blink = state.invuln > 0 && Math.floor(state.t * 12) % 2 === 0;
       const px = state.x, py = state.y;

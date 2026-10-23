@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261020b",
+  token: "20261023a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -767,14 +767,14 @@ export const TOOLS = [
     nav: "Quiz Dash",
     title: "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
     description:
-      "A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up.",
+      "A solo quiz runner: pick times tables or any topic (maths is always correct), then jump and double-jump past spikes, crates, platforms and bars and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up.",
     h1: "Quiz Dash — a geometry-dash-style AI quiz runner",
     intro:
-      "A fast, arcade-style way to revise. Pick a maths quick-pick (times tables, addition, division, squares…) or type any topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump the spikes, and every so often you hit a question gate. Pick the right answer to blast through and build a streak that earns shields and extra hearts; get it wrong, or hit a spike, and you lose a heart. The further you get, the faster and busier it becomes — and you can post your run to a global high-score board.",
+      "A fast, arcade-style way to revise. Pick a maths quick-pick (times tables, addition, division, squares…) or type any topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump — and again in mid-air to double-jump — past spikes, crates, floating platforms and overhead bars, and every so often you hit a question gate. Pick the right answer to blast through and build a streak that earns shields and extra hearts; get it wrong, or hit a hazard, and you lose a heart. The further you get, the faster and busier it becomes — and you can post your run to a global high-score board.",
     steps: [
       "Tap a maths quick-pick for instant, always-correct questions, or type any topic and press “Generate & play”. Choose a difficulty — Chill, Normal or Hard.",
-      "Jump the spikes with Space, a tap or a click as your character runs.",
-      "At each gate, choose the right answer to pass — a wrong answer or a spike costs a heart. Build an answer streak for a shield (every 3) and an extra heart (every 5).",
+      "Jump with Space, a tap or a click — press again in the air to double-jump. Clear spikes, land on floating platforms (they refresh your double-jump), hop crates and duck under overhead bars.",
+      "At each gate, choose the right answer to pass — a wrong answer or a hazard costs a heart. Build an answer streak for a shield (every 3) and an extra heart (every 5).",
       "Climb the levels as you go, beat your best distance, and add your run to the global leaderboard.",
     ],
     whoFor: [
@@ -786,7 +786,8 @@ export const TOOLS = [
       ["Where do the questions come from?", "Maths topics — times tables, addition, subtraction, division, square numbers, doubling and halving — are generated right in your browser, so the answers are always correct. Anything else is written for you by AI, and you can also play from any of your saved quiz sets, fully offline."],
       ["My times-tables questions had wrong answers — is that fixed?", "Yes. Arithmetic is now built locally with guaranteed-correct answers and sensible near-miss options, instead of relying on the AI writer, so a times-tables run is always accurate. Use a quick-pick like “Times tables”, or type something like “7 times table”."],
       ["How do the streaks and powerups work?", "Each correct answer builds your streak. Every third correct answer in a row earns a shield that absorbs the next hit; every fifth gives you an extra heart (up to five). A longer streak also scores more distance, so accuracy pays off."],
-      ["What are the levels and difficulty?", "Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the spikes come thicker — including double spikes at higher levels — so each run ramps up the challenge."],
+      ["What obstacles are there?", "Spikes to jump, solid crates you can leap over or land on top of, floating platforms you can jump up onto (they refresh your double-jump so you can chain hops), and overhead bars you mustn't jump into. Press jump a second time in the air to double-jump, which helps you reach high platforms and control your landings."],
+      ["What are the levels and difficulty?", "Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the obstacles come thicker and more varied — double spikes, crates, platforms and overhead bars unlock as you go — so each run ramps up the challenge."],
       ["Is there a leaderboard?", "Yes — post your run to a global high-score board with a name of your choice, and see the top distances. No account needed. The top scores also show on the start screen."],
       ["What happens if I get one wrong?", "A wrong answer resets your streak and costs a heart — unless you're holding a shield, which takes the hit instead. Spikes work the same way. Lose all your hearts and the run ends."],
       ["Is it free?", "Yes — free and ad-free, no sign-up. It runs in your browser."],

@@ -133,7 +133,7 @@ export const ROUTES = {
   "dash": {
     "slug": "quiz-dash",
     "title": "Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks",
-    "description": "A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up."
+    "description": "A solo quiz runner: pick times tables or any topic (maths is always correct), then jump and double-jump past spikes, crates, platforms and bars and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up."
   },
   "axiom": {
     "slug": "axiom",
