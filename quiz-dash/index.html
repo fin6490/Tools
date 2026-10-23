@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks</title>
-<meta name="description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
+<meta name="description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), then jump and double-jump past spikes, crates, platforms and bars and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://spindecks.app/quiz-dash/" />
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
 <meta property="og:title" content="Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks" />
-<meta property="og:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
+<meta property="og:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), then jump and double-jump past spikes, crates, platforms and bars and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta property="og:url" content="https://spindecks.app/quiz-dash/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
@@ -20,10 +20,10 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Quiz Dash — Geometry-Dash-Style AI Quiz Game | SpinDecks" />
-<meta name="twitter:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), jump the spikes and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
+<meta name="twitter:description" content="A solo quiz runner: pick times tables or any topic (maths is always correct), then jump and double-jump past spikes, crates, platforms and bars and answer the gates. Build a streak for shields and hearts, climb the levels, and post to a global leaderboard. Free, no sign-up." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261020b" />
+<link rel="stylesheet" href="/css/styles.css?v=20261023a" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -80,10 +80,18 @@
     },
     {
       "@type": "Question",
+      "name": "What obstacles are there?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Spikes to jump, solid crates you can leap over or land on top of, floating platforms you can jump up onto (they refresh your double-jump so you can chain hops), and overhead bars you mustn't jump into. Press jump a second time in the air to double-jump, which helps you reach high platforms and control your landings."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "What are the levels and difficulty?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the spikes come thicker — including double spikes at higher levels — so each run ramps up the challenge."
+        "text": "Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the obstacles come thicker and more varied — double spikes, crates, platforms and overhead bars unlock as you go — so each run ramps up the challenge."
       }
     },
     {
@@ -665,15 +673,15 @@
 </div>
 <section class="tool-copy">
       <h1>Quiz Dash — a geometry-dash-style AI quiz runner</h1>
-      <p class="tool-intro">A fast, arcade-style way to revise. Pick a maths quick-pick (times tables, addition, division, squares…) or type any topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump the spikes, and every so often you hit a question gate. Pick the right answer to blast through and build a streak that earns shields and extra hearts; get it wrong, or hit a spike, and you lose a heart. The further you get, the faster and busier it becomes — and you can post your run to a global high-score board.</p>
+      <p class="tool-intro">A fast, arcade-style way to revise. Pick a maths quick-pick (times tables, addition, division, squares…) or type any topic — “Year 8 fractions”, “the Tudors”, “the periodic table” — and the questions are generated for you. Then play: your character auto-runs, you tap or press Space to jump — and again in mid-air to double-jump — past spikes, crates, floating platforms and overhead bars, and every so often you hit a question gate. Pick the right answer to blast through and build a streak that earns shields and extra hearts; get it wrong, or hit a hazard, and you lose a heart. The further you get, the faster and busier it becomes — and you can post your run to a global high-score board.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
             <li>Tap a maths quick-pick for instant, always-correct questions, or type any topic and press “Generate & play”. Choose a difficulty — Chill, Normal or Hard.</li>
-        <li>Jump the spikes with Space, a tap or a click as your character runs.</li>
-        <li>At each gate, choose the right answer to pass — a wrong answer or a spike costs a heart. Build an answer streak for a shield (every 3) and an extra heart (every 5).</li>
+        <li>Jump with Space, a tap or a click — press again in the air to double-jump. Clear spikes, land on floating platforms (they refresh your double-jump), hop crates and duck under overhead bars.</li>
+        <li>At each gate, choose the right answer to pass — a wrong answer or a hazard costs a heart. Build an answer streak for a shield (every 3) and an extra heart (every 5).</li>
         <li>Climb the levels as you go, beat your best distance, and add your run to the global leaderboard.</li>
           </ol>
           <h2>Who it's for</h2>
@@ -697,8 +705,12 @@
           <p>Each correct answer builds your streak. Every third correct answer in a row earns a shield that absorbs the next hit; every fifth gives you an extra heart (up to five). A longer streak also scores more distance, so accuracy pays off.</p>
         </details>
         <details>
+          <summary>What obstacles are there?</summary>
+          <p>Spikes to jump, solid crates you can leap over or land on top of, floating platforms you can jump up onto (they refresh your double-jump so you can chain hops), and overhead bars you mustn't jump into. Press jump a second time in the air to double-jump, which helps you reach high platforms and control your landings.</p>
+        </details>
+        <details>
           <summary>What are the levels and difficulty?</summary>
-          <p>Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the spikes come thicker — including double spikes at higher levels — so each run ramps up the challenge.</p>
+          <p>Pick Chill, Normal or Hard to set the starting pace. As you run, you climb levels: the game speeds up and the obstacles come thicker and more varied — double spikes, crates, platforms and overhead bars unlock as you go — so each run ramps up the challenge.</p>
         </details>
         <details>
           <summary>Is there a leaderboard?</summary>
@@ -776,8 +788,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261020b"></script>
-<script type="module" src="/js/app.js?v=20261020b"></script>
+  <script type="module" src="/js/suggest.js?v=20261023a"></script>
+<script type="module" src="/js/app.js?v=20261023a"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 // chessclock.js — a multi-player game clock (2–6 players). Each player has a
 // time bank; tap your zone to end your turn (with optional Fischer increment).
 // Timestamp-based so it never drifts. Config persists; live game is in memory.
-import { getState, save } from "./storage.js?v=20261020b";
+import { getState, save } from "./storage.js?v=20261023a";
 
 const now = () => performance.now();
 

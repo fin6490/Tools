@@ -11,9 +11,9 @@
 //  • Teacher plays along on a live accounts spreadsheet; each pupil fills a
 //    printed sheet. Biggest running total wins.
 // Reuses the lobster-* styling for a consistent print-and-play look. Zero deps.
-import { el } from "./quizkit.js?v=20261020b";
-import { getState, save } from "./storage.js?v=20261020b";
-import * as sound from "./sound.js?v=20261020b";
+import { el } from "./quizkit.js?v=20261023a";
+import { getState, save } from "./storage.js?v=20261023a";
+import * as sound from "./sound.js?v=20261023a";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 
