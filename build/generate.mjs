@@ -818,12 +818,59 @@ ${simpleHeader()}
 <main class="static-main hub-main">
   <h1>${HUB.h1}</h1>
   <p class="lede">${HUB.intro}</p>
+  <a class="hub-card hr-feature" href="/high-roller/">
+    <span class="hr-badge">Premium</span>
+    <span class="hub-card-title">High Roller — a casino story game</span>
+    <span class="hub-card-desc">Walk a neon town, play nine table games, slots, darts and poker, and solve the mystery of Sal's last hand. Every character talks back with AI.</span>
+  </a>
   <div class="hub-grid">
 ${cards}
   </div>
 </main>
 ${footer()}
 ${SITE_JS}
+${SW_REG}
+</body>
+</html>`;
+}
+
+// High Roller: a premium-only game. The page is a public teaser; the button (gate.js)
+// opens the account modal or, for premium accounts, the game at /high-roller/play/.
+const HIGH_ROLLER = {
+  title: "High Roller — Casino Story Game with AI Characters | SpinDecks Premium",
+  description: "A walkable casino town with nine table games, slots, darts and poker, a four-act mystery, and characters you can talk to in your own words. Included with SpinDecks Premium. Play money only.",
+};
+function highRollerPage() {
+  const h = head({ title: HIGH_ROLLER.title, description: HIGH_ROLLER.description, canonicalPath: "/high-roller/" });
+  const shots = [["town", "Walk the town and step inside every building"], ["table", "Real casino rules, side bets and progressives"], ["chat", "Ask anyone anything: every character answers in their own voice"], ["case", "Crack the case file of Sal's last hand"]];
+  return `<!doctype html>
+<html lang="en">
+<head>
+${h}
+</head>
+<body class="page-static">
+${simpleHeader()}
+<main class="static-main hr-main">
+  <span class="hr-badge">SpinDecks Premium</span>
+  <h1>High Roller</h1>
+  <p class="lede">Your uncle Sal left you a silver dollar, a dented flask and a debt to a loan shark. Work your way from a dive bar to the high-limit salon, and find out what really happened at Sal's last hand.</p>
+  <div class="hr-cta"><div id="hrCta"></div><p id="hrNote" class="muted"></p></div>
+  <div class="hr-shots">
+${shots.map(([k, cap]) => `    <figure><img src="/high-roller/shots/${k}.png" alt="${cap}" loading="lazy" width="390" height="700" /><figcaption>${cap}</figcaption></figure>`).join("\n")}
+  </div>
+  <h2>What's inside</h2>
+  <ul class="hr-list">
+    <li><strong>Nine table games</strong> with real rules: blackjack (up to three hands), Ultimate Texas Hold'em, Mississippi Stud, Three Card Poker, Let It Ride, baccarat, craps, roulette and Casino War, with generous side bets and progressives.</li>
+    <li><strong>A walkable town</strong>: casinos, a diner, a pawn shop, a motel and a steakhouse, all with something to find inside. Hunger, thirst and sleep keep the days honest.</li>
+    <li><strong>The Seventeenth Card</strong>: a four-act mystery with clues, testimony, ciphers and a vault code, plus a trail of postcards from someone signing only "17".</li>
+    <li><strong>Characters who talk back</strong>: chat with dealers, rivals, bartenders and suspects in your own words (and out loud, if you like). AI chat is included: up to 100 messages a day.</li>
+    <li><strong>Slots, darts and a poker room</strong>, plus a career that runs from $500 to a billion.</li>
+  </ul>
+  <p class="muted small">Play money only: there is no real-money gambling, and nothing you win can be cashed out. Your progress is saved on your device.</p>
+</main>
+${footer()}
+${SITE_JS}
+<script type="module" src="/high-roller/gate.js?v=${T}"></script>
 ${SW_REG}
 </body>
 </html>`;
@@ -854,6 +901,8 @@ ${SW_REG}
 const PRIVACY_BODY = `  <p>SpinDecks is designed to collect as little about you as possible. In normal use it collects <strong>nothing at all</strong>: there are no accounts, no cookies, no analytics and no tracking, and your wheels, lists, scores and settings are stored only in your own browser (in <code>localStorage</code>). They never leave your device and we cannot see them.</p>
   <h2>The one thing we do collect</h2>
   <p>If you choose to join the <strong>Pro waitlist</strong>, you give us your email address. That address is sent to a third-party form provider (Formspree) purely so we can email you when the Pro tier launches. We do not sell it, share it, or use it for anything else, and you can ask us to delete it at any time.</p>
+  <h2>High Roller (premium game)</h2>
+  <p>High Roller saves your game in your own browser. Its AI chat only works for signed-in premium accounts: when you type to a character, your message, the recent conversation and some game context (including anything you chose to enter in the game's “Your file”) are sent through our server to Anthropic, whose Claude model writes the reply. We keep a count of how many chats you've sent each day so we can apply the daily limit, but we don't store what you said. Optional “natural voices” send the characters' lines to OpenAI using a key you provide yourself.</p>
   <h2>Third-party links</h2>
   <p>If you tip via the “Leave a tip” button, you’re taken to Ko-fi, which has its own privacy policy. We don’t receive your payment details.</p>
   <h2>Your rights</h2>
@@ -908,14 +957,14 @@ ${SW_REG}
 /* ---------- sitemap / robots ---------- */
 
 function sitemap() {
-  const urls = ["/", ...TOOLS.map((t) => "/" + t.slug + "/"), "/about/", "/privacy/", "/terms/"];
+  const urls = ["/", "/high-roller/", ...TOOLS.map((t) => "/" + t.slug + "/"), "/about/", "/privacy/", "/terms/"];
   const body = urls
     .map((u) => `  <url>\n    <loc>${SITE.origin}${u}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`)
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
 }
 
-const ROBOTS = `User-agent: *\nAllow: /\n\nSitemap: ${SITE.origin}/sitemap.xml`;
+const ROBOTS = `User-agent: *\nAllow: /\nDisallow: /high-roller/play/\n\nSitemap: ${SITE.origin}/sitemap.xml`;
 
 /* ---------- run ---------- */
 
@@ -927,6 +976,7 @@ function routesJs() {
 }
 
 write("index.html", hubPage());
+write("high-roller/index.html", highRollerPage());
 write("js/routes.js", routesJs());
 for (const t of TOOLS) write(`${t.slug}/index.html`, toolPage(t));
 write("privacy/index.html", staticPage(PAGES.privacy, PRIVACY_BODY));

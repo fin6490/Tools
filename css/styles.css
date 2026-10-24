@@ -2001,3 +2001,18 @@ a.tab { display: block; }
 .axiom-finalrow { display: flex; justify-content: space-between; padding: 6px 12px; border-radius: 10px; border-left: 4px solid var(--pc); background: color-mix(in srgb, var(--pc) 14%, transparent); font-weight: 700; }
 .axiom-finalscore { font-family: var(--mono); font-weight: 800; }
 @media (max-width: 480px) { .axiom-card { font-size: 16px; min-width: 38px; padding: 8px 9px; } .axiom-board { gap: 3px; padding: 7px; } }
+
+/* High Roller (premium game teaser) */
+.hr-badge { display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #1b1206; background: linear-gradient(90deg, #f6d27a, #d4a640); border-radius: 999px; padding: 3px 10px; }
+.hr-feature { margin: 0 0 18px; border-color: #d4a640; background: linear-gradient(135deg, var(--panel), rgba(212, 166, 64, .12)); text-align: left; }
+.hr-main { max-width: 860px; }
+.hr-main h1 { margin-top: 10px; }
+.hr-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 8px 0 26px; }
+.hr-cta-btn { font-size: 17px; padding: 12px 22px; text-decoration: none; display: inline-block; }
+.hr-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin: 0 0 26px; }
+.hr-shots figure { margin: 0; }
+.hr-shots img { width: 100%; height: auto; border-radius: 12px; border: 2px solid var(--line); display: block; }
+.hr-shots figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.hr-list li { margin-bottom: 8px; }
+.hr-feature .hr-badge { align-self: flex-start; }
+.hr-shots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }

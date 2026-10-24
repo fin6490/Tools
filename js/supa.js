@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261023a";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261024a";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -48,6 +48,9 @@ async function accessToken() {
   if (session.expires_at && Date.now() > session.expires_at) await refresh();
   return session ? session.access_token : null;
 }
+
+// A fresh access token for calling our own Edge Functions (refreshes if expired).
+export const getAccessToken = accessToken;
 
 function authHeaders(token) {
   const h = { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" };

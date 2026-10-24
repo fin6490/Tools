@@ -1,5 +1,5 @@
 // numbers.js — a random number generator (range, count, no-repeats, presets).
-import { getState, save } from "./storage.js?v=20261023a";
+import { getState, save } from "./storage.js?v=20261024a";
 
 const PRESETS = {
   dice:    { min: 1, max: 6,  count: 1, unique: false },
