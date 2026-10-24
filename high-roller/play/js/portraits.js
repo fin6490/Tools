@@ -84,16 +84,19 @@ const Portrait = (() => {
   }
   function hairFront(L, c) {
     const hi = shade(c, .25);
+    // every style starts from a cap that hugs the whole crown (the head is an ellipse 13.5 x 15 at
+    // 32,27), so no bald scalp shows over the hair; the hairline curve is what tells styles apart
+    const cap = (line, op = 1) => `<path d="M17.4 28A14.6 16.2 0 0 1 46.6 28${line}Z" fill="${c}"${op < 1 ? ` opacity="${op}"` : ''}/>`;
     switch (L.style) {
       case 'bald': return `<ellipse cx="27" cy="17" rx="4" ry="2" fill="#fff" opacity=".25"/>`;
-      case 'buzz': return `<path d="M19 25c0-9 6-12 13-12s13 3 13 12c-3-5-8-7-13-7s-10 2-13 7z" fill="${c}" opacity=".85"/>`;
+      case 'buzz': return cap('C44 22 39 19.5 32 19.5S20 22 17.4 28', .8);
       case 'receding': return `<path d="M18.5 28c-1-6 0-9 3-11-1 4-1 7 0 10zM45.5 28c1-6 0-9-3-11 1 4 1 7 0 10z" fill="${c}"/>`;
-      case 'curly': return [[20, 21], [24, 16], [29, 14], [35, 14], [40, 16], [44, 21], [19, 26], [45, 26]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.6" fill="${c}"/>`).join('');
-      case 'slick': return `<path d="M18.5 27c-1-10 6-15 14-15 8 0 14 5 13 15-2-6-6-9-12-9-7 0-11 3-15 9z" fill="${c}"/><path d="M24 15c4-2 10-2 14 0" stroke="${hi}" stroke-width="1.4" fill="none" opacity=".7"/>`;
-      case 'pomp': return `<path d="M18.5 27c-1-9 3-16 13-17 6-1 12 0 14 5 1 3 0 8 0 12-2-6-6-9-12-9-6 0-11 3-15 9z" fill="${c}"/><path d="M26 12c5-2 11-1 15 2" stroke="${hi}" stroke-width="1.5" fill="none" opacity=".7"/>`;
-      case 'long': case 'bob': return `<path d="M18 30c-2-11 5-17 14-17s16 6 14 17c-2-5-5-8-9-10-5 3-12 4-19 10z" fill="${c}"/>`;
-      case 'pony': case 'bun': case 'beehive': return `<path d="M18.5 28c-1-10 5-15 13.5-15s14.5 5 13.5 15c-3-6-8-8-13.5-8s-10.5 2-13.5 8z" fill="${c}"/>`;
-      default: return `<path d="M18.5 27c-1-9 5-14 13.5-14s14.5 5 13.5 14c-2-4-4-6-6-7-3 1-12 1-16 0-2 1-4 3-5 7z" fill="${c}"/>`;
+      case 'curly': return cap('C44 22 38 20 32 20S20 22 17.4 28') + [[20, 21], [24, 16], [29, 13.5], [35, 13.5], [40, 16], [44, 21], [19, 26], [45, 26], [32, 11.5]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.6" fill="${c}"/>`).join('');
+      case 'slick': return cap('C44 21 40 18.5 32 18.5S20 21 17.4 28') + `<path d="M25.5 15.5c4-1.8 9-1.8 13 0" stroke="${hi}" stroke-width="1.4" fill="none" opacity=".7"/>`;
+      case 'pomp': return cap('C44 21 40 19 33 19S21 21 17.4 28') + `<path d="M19.5 21C20 13 25.5 8.5 33 8.5c7 0 12.5 5 12.8 13C43 16 38 13.5 33 13.8S23 16 19.5 21z" fill="${c}"/><path d="M26 11.5c4-2 9.5-1.8 13.5.6" stroke="${hi}" stroke-width="1.5" fill="none" opacity=".7"/>`;
+      case 'long': case 'bob': return cap('C45 21 40 18.5 36 18.5C31 21 24 22 17.4 30');
+      case 'pony': case 'bun': case 'beehive': return cap('C44 21.5 39 19.5 32 19.5S20 21.5 17.4 28');
+      default: return cap('C44.5 23 42 20.5 39 20C35 21.2 29 21.2 25 20C22 20.5 19.5 23 17.4 28');
     }
   }
   function beard(L, c) {
