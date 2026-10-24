@@ -599,13 +599,21 @@ const Chat = {
   },
 
   /* ---------- the morning paper ---------- */
+  // the paper opens straight away with the town's own news; today's AI front page (if any)
+  // drops in when it arrives. It never holds anything up, and it's written once a day.
   async newspaper() {
     const st = App.state, mode = await this.backend();
-    const out = h('div.paper-body', mode ? h('p.muted', 'The paper boy is running late…') : null);
+    const out = h('div.paper-body');
     const local = Me.headline(); // one small item about you, from your own projects
+    const show = text => { out.innerHTML = ''; text.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => { const [hd, ...rest] = l.split(' — '); out.append(h('div.paper-item', h('b', hd), rest.length ? h('p', rest.join(' — ')) : null)); }); };
     const scripted = () => { out.innerHTML = ''; if (local) { const [hd, ...rest] = local.split(' — '); out.append(h('div.paper-item', h('b', hd), h('p', rest.join(' — ')))); } st.news.slice(0, 6).forEach(n => out.append(h('p', n.text))); };
-    const pop = UI.modal({ title: `📰 The Lucky Ledger · Day ${st.day}`, body: h('div.paper', out), wide: true });
-    if (!mode) { scripted(); return pop; }
+    const cached = st.paper && st.paper.day === st.day ? st.paper.text : null;
+    if (cached) show(cached); else scripted();
+    const note = h('p.muted.small.paper-wait', mode && !cached ? 'The paper boy is running late with the front page…' : '');
+    const pop = UI.modal({ title: `📰 The Lucky Ledger · Day ${st.day}`, body: h('div.paper', note, out), wide: true });
+    if (!mode || cached) return pop;
+    let open = true; pop.then(() => { open = false; ctl.abort(); });
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 20000);
     const prompt = [
       'Write the front page of "The Lucky Ledger", the gossip-hungry daily paper of the casino town in the game High Roller.',
       `Use these facts about the town (don't contradict them):\n${this.worldBrief('paper')}\nRecent events: ${st.news.slice(0, 8).map(n => n.text).join(' | ')}`,
@@ -613,19 +621,21 @@ const Chat = {
       local ? `One of the four items must be a small, affectionate local story inspired by this, about a resident of town (the player, unnamed): ${local}` : '',
       'Write exactly four short items. Each item is one line: a punchy headline in capitals, then " — ", then one or two sentences. Mix casino gossip, rival gamblers, the progressive meters and one strange rumour about Sal. Plain text only, no markdown, no numbering.',
     ].join('\n\n');
-    try {
-      let text;
-      if (mode === 'proxy') text = await this.proxy({ kind: 'paper', prompt });
-      else if (mode === 'sample') ({ text } = await this._sample(prompt, { modelTier: 'quick', cache: { gcTime: 6 * 3600 * 1000 } }));
-      else {
-        const { client } = await this.client();
-        const msg = await client.beta.messages.create({ model: 'claude-opus-5-5', max_tokens: 1024, messages: [{ role: 'user', content: prompt }], output_config: { effort: 'low' }, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' });
-        if (msg.stop_reason === 'refusal') throw { code: 'refused' };
-        text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('');
-      }
-      out.innerHTML = '';
-      text.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => { const [hd, ...rest] = l.split(' — '); out.append(h('div.paper-item', h('b', hd), rest.length ? h('p', rest.join(' — ')) : null)); });
-    } catch (e) { scripted(); }
+    (async () => {
+      try {
+        let text;
+        if (mode === 'proxy') text = await this.proxy({ kind: 'paper', prompt }, null, ctl.signal);
+        else if (mode === 'sample') ({ text } = await this._sample(prompt, { modelTier: 'quick', cache: { gcTime: 6 * 3600 * 1000 }, signal: ctl.signal }));
+        else {
+          const { client } = await this.client();
+        const msg = await client.beta.messages.create({ model: 'claude-opus-5-5', max_tokens: 1024, messages: [{ role: 'user', content: prompt }], output_config: { effort: 'low' }, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' }, { signal: ctl.signal });
+          if (msg.stop_reason === 'refusal') throw { code: 'refused' };
+          text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        }
+        if (text && text.trim()) { st.paper = { day: st.day, text }; App.save(); if (open) show(text); }
+      } catch (e) { /* keep the town's own news */ }
+      finally { clearTimeout(timer); if (open) note.textContent = ''; }
+    })();
     return pop;
   },
 

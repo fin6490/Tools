@@ -101,7 +101,7 @@ const Router = {
   hud() {
     if (!App.state) return;
     const st = App.state, set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
-    set('hud-bank', Math.abs(st.bank) >= 1e5 && innerWidth < 700 ? '$' + (st.bank >= 1e9 ? (st.bank / 1e9).toFixed(2) + 'B' : st.bank >= 995e3 ? (st.bank / 1e6).toFixed(2) + 'M' : (st.bank / 1e3).toFixed(1) + 'K') : fmt(st.bank)); set('hud-day', 'Day ' + st.day); set('hud-clock', World.clockText());
+    set('hud-bank', Math.abs(st.bank) >= 1e5 && innerWidth < 700 ? '$' + (st.bank >= 1e9 ? (st.bank / 1e9).toFixed(2) + 'B' : st.bank >= 995e3 ? (st.bank / 1e6).toFixed(2) + 'M' : (st.bank / 1e3).toFixed(1) + 'K') : fmt(st.bank)); set('hud-day', 'Day ' + st.day); set('hud-clock', (World.isNight() ? '🌙 ' : '☀️ ') + World.clockText());
     set('hud-debt', fmt(App.debt)); set('hud-swag', '★ ' + Career.swagger());
     const d = document.getElementById('hud-debt'); if (d) d.parentElement.classList.toggle('zero', App.debt === 0);
     const tired = Career.tiredness(), emax = Career.energyMax();
