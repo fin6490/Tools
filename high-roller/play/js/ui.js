@@ -378,10 +378,17 @@ UI.meter = function (key, label) {
 
 /* ---------- Toasts and modals ---------- */
 UI.esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-UI.toast = function (msg, type = '') {
+// big news (achievements, side jobs, chapters) stays up long enough to read, with an optional
+// second line; everyday messages slip away after a few seconds. Taps pass through toasts, so they
+// never block the joystick or the table buttons underneath.
+UI.toast = function (msg, type = '', sub = '') {
   let box = $('#toasts'); if (!box) { box = h('div#toasts'); document.body.append(box); }
-  const t = h('div.toast.' + (type || 'info'), msg); box.append(t);
-  setTimeout(() => t.classList.add('out'), 2600); setTimeout(() => t.remove(), 3100);
+  const long = type === 'big' || type === 'award', ms = long ? 8000 : 3200;
+  const t = h('div.toast.' + (type || 'info'), { role: long ? 'status' : null }, sub ? [h('div', msg), h('small.toast-sub', sub)] : msg);
+  let gone = false;
+  const go = () => { if (gone) return; gone = true; t.classList.add('out'); setTimeout(() => t.remove(), 450); };
+  box.append(t);
+  setTimeout(go, ms);
 };
 
 UI.modal = function ({ title, body, buttons, wide, closable = true, cls }) {

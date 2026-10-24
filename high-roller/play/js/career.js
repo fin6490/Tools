@@ -358,7 +358,7 @@ const Career = {
       if (ok) {
         App.state.achievements[a.id] = App.state.day;
         if (a.reward) App.credit(a.reward);
-        UI.toast(`🏅 ${a.name}${a.reward ? ' · +' + fmt(a.reward) : ''}${a.swagger ? ' · +' + a.swagger + ' swagger' : ''}`, 'good');
+        UI.toast(`🏅 Achievement: ${a.name}${a.reward ? ' · +' + fmt(a.reward) : ''}${a.swagger ? ' · ★ +' + a.swagger : ''}`, 'award', a.desc);
         SFX.cash();
       }
     }
