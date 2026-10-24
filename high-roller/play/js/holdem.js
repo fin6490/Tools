@@ -1,0 +1,446 @@
+/* The Back Room: No-Limit Texas Hold'em tournaments. Full betting rules (min-raises, all-ins,
+   side pots, split pots), escalating blinds and antes, AI opponents with personalities that
+   estimate equity by simulation and switch to push/fold when short. Multi-table events simulate
+   the other tables, balance players onto yours, and play down to a final table. */
+const Holdem = (() => {
+  const LEVELS = [[25, 50, 0], [50, 100, 0], [75, 150, 0], [100, 200, 25], [150, 300, 25], [200, 400, 50], [300, 600, 75], [400, 800, 100], [600, 1200, 150], [800, 1600, 200], [1000, 2000, 300], [1500, 3000, 400], [2000, 4000, 500], [3000, 6000, 1000], [5000, 10000, 1000], [8000, 16000, 2000], [12000, 24000, 3000], [20000, 40000, 5000]];
+  const TOURNEYS = {
+    sng6: { name: 'Back Room Sit & Go', field: 6, seats: 6, buyin: 100, fee: 10, perLevel: 6, stack: 10000, desc: 'Six players, one table. Top two paid.' },
+    sng9: { name: 'Nine-Handed Turbo', field: 9, seats: 9, buyin: 1000, fee: 100, perLevel: 5, stack: 10000, desc: 'A full ring that moves fast. Top three paid.' },
+    daily: { name: 'The Spur Daily', field: 27, seats: 9, buyin: 5000, fee: 500, perLevel: 7, stack: 10000, desc: 'Three tables down to a final table. Top six paid.' },
+    major: { name: 'The Tenth-Day Major', field: 45, seats: 9, buyin: 50000, fee: 5000, perLevel: 7, stack: 15000, desc: 'Five tables, deep stacks, the biggest regular field in town. Runs every tenth day (day 10, 20, 30...).', when: () => App.state.day % 10 === 0, req: () => App.state.chapter >= 2 ? null : 'Reach chapter 3 (the Gilded Palace)' },
+    hr: { name: 'High Roller', field: 18, seats: 9, buyin: 500000, fee: 25000, perLevel: 6, stack: 20000, desc: 'Two tables of serious money.', req: () => App.state.chapter >= 3 ? null : 'Reach the Salon Privé (chapter 4)' },
+    shr: { name: 'Super High Roller', field: 9, seats: 9, buyin: 5000000, fee: 100000, perLevel: 6, stack: 20000, desc: 'Nine players, five million each. Legends only.', req: () => App.state.ending ? null : 'Finish the story first' },
+  };
+  const PAYOUTS = n => n <= 6 ? [.65, .35] : n <= 10 ? [.5, .3, .2] : n <= 20 ? [.4, .26, .18, .1, .06] : n <= 30 ? [.36, .22, .15, .11, .09, .07] : [.3, .2, .14, .1, .08, .07, .06, .05];
+  const STYLES = {
+    rock: { loose: .15, agg: .4, bluff: .02, label: 'tight' }, tag: { loose: .3, agg: .7, bluff: .08, label: 'tight-aggressive' },
+    lag: { loose: .55, agg: .8, bluff: .15, label: 'loose-aggressive' }, station: { loose: .6, agg: .2, bluff: .03, label: 'calling station' },
+    maniac: { loose: .8, agg: .95, bluff: .3, label: 'maniac' }, nit: { loose: .1, agg: .3, bluff: 0, label: 'nit' },
+  };
+  const RIVAL_STYLE = { tex: { loose: .65, agg: .7, bluff: .2 }, mei: { loose: .3, agg: .75, bluff: .08 }, baron: { loose: .25, agg: .35, bluff: .05 }, rico: { loose: .55, agg: .8, bluff: .18 } };
+  const NAMES = ['Big Mike', 'Grandma Rose', 'Dutch', 'Lefty Lou', 'The Professor', 'Jenny Jacks', 'Vegas Vic', 'Dmitri', 'Sully', 'Nadia', 'Boomer', 'The Kid', 'Chip Daley', 'Ace Ramirez', 'Lola', 'Priya', 'Hank', 'Moose', 'Whitney', 'Tommy Two-Pair', 'Sergio', 'Yuki', 'Otis', 'Mama Cass', 'Fast Eddie', 'Kat', 'Reno Ray', 'Duchess', 'Slim', 'Bubba', 'Ingrid', 'Paco', 'Doyle-ish', 'Marge', 'Benny', 'Tito', 'Vera', 'Cal', 'Junebug', 'Smokey', 'Lin', 'Gus', 'Rosa', 'Elvis (not that one)'];
+  const FACES = ['🧔', '👵', '🧑‍🦰', '👨‍🦲', '🧓', '👩‍🦱', '🕶️', '🧑', '👨‍🦳', '👩', '🤠', '🧑‍🎤', '👱', '🧕', '👲', '🎅', '🧛', '🦹'];
+  const COLORS = ['#7a2131', '#1f5f8b', '#2c7a7b', '#5b2c6f', '#8a6a24', '#3a5f8a', '#a0522d', '#556b2f'];
+
+  /* ---------- hand reading helpers ---------- */
+  function chen(a, b) {
+    const hi = Math.max(a.r, b.r), lo = Math.min(a.r, b.r);
+    let s = hi === 14 ? 10 : hi === 13 ? 8 : hi === 12 ? 7 : hi === 11 ? 6 : hi / 2;
+    if (a.r === b.r) return Math.max(5, s * 2);
+    if (a.s === b.s) s += 2;
+    const gap = hi - lo - 1;
+    s -= gap <= 0 ? 0 : gap === 1 ? 1 : gap === 2 ? 2 : gap === 3 ? 4 : 5;
+    if (gap <= 1 && hi < 12) s += 1;
+    return Math.ceil(s);
+  }
+  function equity(hole, board, nOpp, iters = 140) {
+    const used = new Set(hole.concat(board).map(c => c.r * 4 + c.s));
+    const deck = []; for (let r = 2; r <= 14; r++) for (let s = 0; s < 4; s++) if (!used.has(r * 4 + s)) deck.push({ r, s });
+    nOpp = Math.max(1, Math.min(nOpp, 4));
+    let score = 0;
+    for (let it = 0; it < iters; it++) {
+      // partial Fisher-Yates for just the cards we need
+      const need = 2 * nOpp + (5 - board.length);
+      for (let i = 0; i < need; i++) { const j = i + Math.floor(Math.random() * (deck.length - i)); const t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+      const b = board.concat(deck.slice(2 * nOpp, need));
+      const me = Poker.best(hole.concat(b)).score;
+      let best = 0, ties = 0, lost = false;
+      for (let o = 0; o < nOpp; o++) {
+        const sc = Poker.best([deck[2 * o], deck[2 * o + 1]].concat(b)).score;
+        if (sc > me) { lost = true; break; }
+        if (sc === me) ties++;
+        best = Math.max(best, sc);
+      }
+      if (!lost) score += ties ? 1 / (ties + 1) : 1;
+    }
+    return score / iters;
+  }
+
+  /* ---------- tournament setup ---------- */
+  let T = null;
+  function newPlayer(i, def) {
+    const style = RNG.pick(Object.keys(STYLES));
+    return { id: 'p' + i, name: NAMES[i % NAMES.length], face: FACES[i % FACES.length], color: COLORS[i % COLORS.length], style: STYLES[style], styleName: STYLES[style].label, stack: def.stack };
+  }
+  function create(key) {
+    const def = TOURNEYS[key], st = App.state;
+    const names = RNG.shuffle(NAMES.slice());
+    const players = [];
+    // rivals who can afford it buy in
+    for (const id of Object.keys(RIVALS)) {
+      const r = st.rivals[id];
+      if (players.length < def.field - 1 && r.where !== 'jail' && r.bank >= def.buyin * 2 && RNG.chance(.7)) {
+        r.bank -= def.buyin + def.fee;
+        players.push({ id, rival: id, name: CHARACTERS[id].name.replace(/^.*"(.+)".*$/, '$1').replace('Baron Felix von Hollow', 'The Baron'), face: CHARACTERS[id].face, color: CHARACTERS[id].color, style: RIVAL_STYLE[id], styleName: 'rival', stack: def.stack });
+      }
+    }
+    let i = 0;
+    while (players.length < def.field - 1) { const p = newPlayer(i, def); p.name = names[i % names.length]; players.push(p); i++; }
+    const me = { id: 'me', me: true, name: st.name, face: '🙂', color: '#2a6', stack: def.stack, style: STYLES.tag };
+    RNG.shuffle(players);
+    const seats = [me].concat(players.slice(0, def.seats - 1));
+    const field = players.slice(def.seats - 1);
+    T = { key, def, seats, field, btn: RNG.int(seats.length), level: 0, hand: 0, entrants: def.field, pool: def.buyin * def.field, busted: [], log: [], fast: false, over: false };
+    return T;
+  }
+  const blinds = () => LEVELS[Math.min(T.level, LEVELS.length - 1)];
+  const alive = () => T.seats.filter(p => p && p.stack > 0).length + T.field.filter(p => p.stack > 0).length;
+  const log = t => { T.log.unshift(t); T.log.length = Math.min(T.log.length, 40); renderLog(); };
+
+  // other tables in a multi-table event play "off camera"
+  function simulateField() {
+    const [, bb] = blinds();
+    const live = T.field.filter(p => p.stack > 0);
+    const tables = Math.ceil(live.length / T.def.seats);
+    for (let t = 0; t < tables; t++) {
+      if (live.length < 2) break;
+      const a = RNG.pick(live), b = RNG.pick(live.filter(p => p !== a));
+      const pressure = bb * 10 / Math.max(1, Math.min(a.stack, b.stack));
+      if (RNG.chance(.08 + Math.min(.4, pressure * .25))) { // all-in confrontation
+        const amt = Math.min(a.stack, b.stack), [w, l] = RNG.chance(a.stack / (a.stack + b.stack) * .3 + .35) ? [a, b] : [b, a];
+        w.stack += amt; l.stack -= amt;
+        if (l.stack <= 0) { eliminate(l); live.splice(live.indexOf(l), 1); }
+      } else { const amt = Math.min(b.stack, Math.round(bb * (1 + RNG.float() * 3))); a.stack += amt; b.stack -= amt; if (b.stack <= 0) { eliminate(b); live.splice(live.indexOf(b), 1); } }
+    }
+  }
+  function eliminate(p) { p.stack = 0; p.place = alive() + 1; T.busted.push(p); }
+  // move players from the field into empty seats, keeping your table full until the final table
+  function balance() {
+    const fieldLive = T.field.filter(p => p.stack > 0);
+    for (let i = 0; i < T.seats.length; i++) {
+      if ((!T.seats[i] || T.seats[i].stack <= 0) && fieldLive.length) {
+        const p = fieldLive.shift(); T.field.splice(T.field.indexOf(p), 1); T.seats[i] = p;
+        log(`${p.name} moves to your table with ${fmtc(p.stack)}.`);
+      }
+    }
+    T.field = T.field.filter(p => p.stack > 0);
+  }
+  const fmtc = n => Math.round(n).toLocaleString();
+
+  /* ---------- one hand of hold'em ---------- */
+  let H = null; // the hand in progress
+  const live = () => T.seats.filter(p => p && p.stack + (p.inHand ? p.total : 0) > 0 && p.inHand);
+  const contenders = () => T.seats.filter(p => p && p.inHand && !p.folded);
+  const nextIdx = (from, pred) => { for (let k = 1; k <= T.seats.length; k++) { const i = (from + k) % T.seats.length; if (pred(T.seats[i], i)) return i; } return -1; };
+  const inHand = p => p && p.inHand;
+
+  async function playHand() {
+    const [sb, bb, ante] = blinds();
+    const shoe = new Shoe(1, 1);
+    T.seats.forEach(p => { if (p) { p.inHand = p.stack > 0; p.cards = []; p.bet = 0; p.total = 0; p.folded = false; p.allin = false; p.acted = false; p.last = ''; p.shown = false; } });
+    const players = T.seats.filter(inHand);
+    if (players.length < 2) return;
+    T.btn = nextIdx(T.btn, p => inHand(p));
+    H = { board: [], pot: 0, currentBet: 0, minRaise: bb, street: 0, shoe };
+    const put = (p, amt) => { amt = Math.min(amt, p.stack); p.stack -= amt; p.bet += amt; p.total += amt; if (p.stack === 0) p.allin = true; return amt; };
+    if (ante) players.forEach(p => { const a = Math.min(ante, p.stack); p.stack -= a; p.total += a; H.pot += a; if (p.stack === 0) p.allin = true; });
+    const headsUp = players.length === 2;
+    const sbi = headsUp ? T.btn : nextIdx(T.btn, inHand), bbi = nextIdx(sbi, inHand);
+    put(T.seats[sbi], sb); put(T.seats[bbi], bb); T.seats[sbi].last = 'SB'; T.seats[bbi].last = 'BB';
+    H.currentBet = bb; H.sbi = sbi; H.bbi = bbi;
+    for (let k = 0; k < 2; k++) for (const p of order(nextIdx(T.btn, inHand))) p.cards.push(shoe.draw());
+    render(); await pause(250);
+    // preflop, flop, turn, river
+    for (let street = 0; street < 4; street++) {
+      H.street = street;
+      if (street > 0) {
+        collect();
+        const n = street === 1 ? 3 : 1; for (let k = 0; k < n; k++) H.board.push(shoe.draw());
+        T.seats.forEach(p => { if (p) { p.bet = 0; p.acted = false; if (p.inHand && !p.folded) p.last = p.allin ? 'All-in' : ''; } });
+        H.currentBet = 0; H.minRaise = bb;
+        SFX.card(); render(); await pause(350);
+      }
+      if (contenders().length <= 1) break;
+      const canAct = contenders().filter(p => !p.allin);
+      if (canAct.length === 0 || (canAct.length === 1 && canAct[0].bet >= H.currentBet)) continue;
+      const first = street === 0 ? (headsUp ? sbi : nextIdx(bbi, inHand)) : nextIdx(T.btn, p => inHand(p) && !p.folded);
+      await bettingRound(first);
+      if (contenders().length <= 1) break;
+    }
+    collect();
+    await showdown();
+    H = null;
+  }
+  function order(startIdx) { const out = []; if (startIdx < 0) return out; for (let k = 0; k < T.seats.length; k++) { const p = T.seats[(startIdx + k) % T.seats.length]; if (inHand(p)) out.push(p); } return out; }
+  function collect() { T.seats.forEach(p => { if (p) { H.pot += p.bet; p.bet = 0; } }); }
+
+  async function bettingRound(startIdx) {
+    let i = startIdx;
+    for (let guard = 0; guard < 200; guard++) {
+      if (contenders().length <= 1) return;
+      const p = T.seats[i];
+      const needs = p && p.inHand && !p.folded && !p.allin && (!p.acted || p.bet < H.currentBet);
+      if (needs) {
+        const act = p.me ? await askMe(p) : await thinkAI(p);
+        apply(p, act);
+        render(); await pause(p.me ? 80 : 420);
+      }
+      const pending = T.seats.some(q => q && q.inHand && !q.folded && !q.allin && (!q.acted || q.bet < H.currentBet));
+      if (!pending) return;
+      i = (i + 1) % T.seats.length;
+    }
+  }
+  function apply(p, act) {
+    const toCall = H.currentBet - p.bet;
+    // a short all-in doesn't reopen the betting for someone who already acted
+    if (act.type === 'raise' && p.acted) act = { type: toCall > 0 ? 'call' : 'check' };
+    if (act.type === 'raise' && act.to <= H.currentBet) act = { type: toCall > 0 ? 'call' : 'check' };
+    if (act.type === 'check' && toCall > 0) act = { type: 'fold' };
+    if (act.type === 'fold') { p.folded = true; p.last = 'Fold'; log(`${p.name} folds.`); if (p.me && App.state.settings.pkSkip !== false) T.fast = true; }
+    else if (act.type === 'check') { p.last = 'Check'; }
+    else if (act.type === 'call') { const amt = Math.min(toCall, p.stack); p.stack -= amt; p.bet += amt; p.total += amt; if (!p.stack) p.allin = true; p.last = p.allin ? 'All-in' : 'Call'; log(`${p.name} ${p.allin ? 'calls all-in' : 'calls'} ${fmtc(p.bet)}.`); SFX.chip(); }
+    else if (act.type === 'raise') {
+      const to = Math.min(act.to, p.bet + p.stack);
+      const raiseBy = to - H.currentBet, add = to - p.bet;
+      p.stack -= add; p.bet = to; p.total += add; if (!p.stack) p.allin = true;
+      if (raiseBy >= H.minRaise) { H.minRaise = raiseBy; T.seats.forEach(q => { if (q && q !== p) q.acted = false; }); }
+      H.currentBet = Math.max(H.currentBet, to);
+      p.last = p.allin ? 'All-in' : toCall === 0 && H.street > 0 ? 'Bet' : 'Raise';
+      log(`${p.name} ${p.allin ? 'goes all-in for' : p.last === 'Bet' ? 'bets' : 'raises to'} ${fmtc(to)}.`); SFX.chip();
+    }
+    p.acted = true;
+  }
+
+  /* ---------- AI ---------- */
+  async function thinkAI(p) {
+    await pause(T.fast ? 0 : 200);
+    const [, bb] = blinds(), toCall = H.currentBet - p.bet, s = p.style;
+    const pot = H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0);
+    const eff = (p.stack + p.bet) / bb, minTo = H.currentBet + H.minRaise, maxTo = p.bet + p.stack;
+    const raiseTo = x => ({ type: 'raise', to: Math.max(Math.min(maxTo, Math.round(x / 25) * 25), Math.min(maxTo, minTo)) });
+    const passive = () => (toCall === 0 ? { type: 'check' } : { type: 'fold' });
+    if (H.street === 0) {
+      const c = chen(p.cards[0], p.cards[1]);
+      if (eff <= 12) { // push or fold
+        const push = 13 - eff * .35 - s.loose * 4, call = 15 - eff * .3 - s.loose * 3;
+        if (toCall <= bb && c >= push) return raiseTo(maxTo);
+        if (toCall > bb) return c >= call || (toCall === 0) ? (toCall === 0 ? { type: 'check' } : { type: 'call' }) : { type: 'fold' };
+        return toCall === 0 ? { type: 'check' } : (c >= push - 1 ? { type: 'call' } : { type: 'fold' });
+      }
+      const unraised = H.currentBet <= bb;
+      if (unraised) {
+        if (c >= 10 - s.loose * 4 && RNG.chance(.5 + s.agg / 2)) return raiseTo(bb * (2.2 + RNG.float()) + toCall * 0);
+        if (c >= 7 - s.loose * 4 || toCall === 0) return toCall === 0 ? { type: 'check' } : { type: 'call' };
+        if (RNG.chance(s.bluff * .5)) return raiseTo(bb * 2.5);
+        return passive();
+      }
+      const frac = toCall / (p.stack + p.bet);
+      if (c >= 13 - s.agg * 2) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6));
+      if (c >= 10 - s.loose * 3 && frac < .35) return { type: 'call' };
+      if (c >= 12 && frac >= .35) return { type: 'call' };
+      return passive();
+    }
+    const opp = contenders().length - 1;
+    const eq = equity(p.cards, H.board, opp, T.fast ? 70 : 140);
+    const odds = toCall / Math.max(1, pot + toCall);
+    if (toCall === 0) {
+      if (eq > .62 - s.agg * .08) return RNG.chance(.6 + s.agg * .35) ? raiseTo(pot * (.5 + RNG.float() * .4)) : { type: 'check' };
+      if (opp <= 2 && RNG.chance(s.bluff)) return raiseTo(pot * .55);
+      return { type: 'check' };
+    }
+    if (eq > .78 - s.agg * .06 && RNG.chance(.4 + s.agg * .5)) return raiseTo(H.currentBet + pot * (.6 + RNG.float() * .5));
+    if (eq > odds + .04 - s.loose * .08) return { type: 'call' };
+    if (RNG.chance(s.bluff * .3) && opp === 1) return raiseTo(H.currentBet * 2.5);
+    return { type: 'fold' };
+  }
+
+  /* ---------- the human ---------- */
+  let resolveMe = null;
+  function askMe(p) {
+    return new Promise(res => {
+      resolveMe = act => { resolveMe = null; res(act); };
+      renderControls(p);
+    });
+  }
+
+  /* ---------- showdown, side pots ---------- */
+  async function showdown() {
+    const cs = contenders();
+    if (cs.length === 1) {
+      const w = cs[0], won = H.pot; w.stack += won; w.last = 'Wins'; log(`${w.name} wins ${fmtc(won)} uncontested.`);
+      H.pot = 0; render(); await pause(700); return;
+    }
+    while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(400); }
+    cs.forEach(p => { p.shown = true; p.eval = Poker.best(p.cards.concat(H.board)); });
+    render(); await pause(T.fast ? 200 : 900);
+    // side pots by contribution level
+    const all = T.seats.filter(p => p && p.inHand);
+    const levels = [...new Set(all.map(p => p.total))].sort((a, b) => a - b);
+    let prev = 0;
+    for (const lv of levels) {
+      const contributors = all.filter(p => p.total >= lv);
+      const amount = (lv - prev) * contributors.length; prev = lv;
+      let eligible = contributors.filter(p => !p.folded);
+      if (!amount) continue;
+      if (!eligible.length) eligible = cs; // chips nobody live matched still go to someone at showdown
+      const best = Math.max(...eligible.map(p => p.eval.score));
+      const winners = eligible.filter(p => p.eval.score === best);
+      const share = Math.floor(amount / winners.length);
+      winners.forEach((w, k) => { w.stack += share + (k === 0 ? amount - share * winners.length : 0); w.last = 'Wins'; });
+      log(`${winners.map(w => w.name).join(' & ')} win${winners.length > 1 ? '' : 's'} ${fmtc(amount)} with ${winners[0].eval.name}.`);
+    }
+    // folded players' extra chips beyond the last level were counted above; nothing is lost
+    H.pot = 0;
+    const meSeat = T.seats.find(p => p && p.me);
+    if (meSeat && meSeat.inHand && !meSeat.folded) { meSeat.last === 'Wins' ? SFX.win() : SFX.lose(); }
+    render(); await pause(T.fast ? 400 : 1600);
+  }
+
+  /* ---------- running the tournament ---------- */
+  async function run() {
+    while (!T.over) {
+      // eliminations at your table
+      // players busted on the same hand: the one who started it with more chips finishes higher
+      const out = T.seats.filter(p => p && p.stack <= 0 && !p.place).sort((a, b) => (b.total || 0) - (a.total || 0));
+      let nextPlace = alive() + out.length;
+      for (const p of out.slice().reverse()) { p.stack = 0; p.place = nextPlace--; T.busted.push(p); }
+      for (const p of out) if (!p.me) log(`💀 ${p.name} is out in ${ordinal(p.place)}.`);
+      const me = T.seats.find(p => p && p.me);
+      if (me.stack <= 0) { await finish(me.place); return; }
+      if (alive() === 1) { await finish(1); return; }
+      if (T.field.length) { simulateField(); balance(); }
+      T.hand++;
+      if (T.hand > 1 && (T.hand - 1) % T.def.perLevel === 0 && T.level < LEVELS.length - 1) { T.level++; const [s, b, a] = blinds(); log(`⏫ Blinds up: ${fmtc(s)}/${fmtc(b)}${a ? ' ante ' + fmtc(a) : ''}.`); }
+      T.fast = false;
+      Career.drain('round', .25); App.state.clock = (App.state.clock || 540) + 1.5;
+      await playHand();
+      if (T.quit) { await finish(alive() + 0); return; }
+    }
+  }
+  const ordinal = n => n + (n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th');
+  async function finish(place) {
+    T.over = true;
+    const pays = PAYOUTS(T.entrants), prize = place <= pays.length ? Math.round(T.pool * pays[place - 1]) : 0;
+    const st = App.state;
+    if (prize) App.credit(prize);
+    st.stats.poker = st.stats.poker || { played: 0, cashes: 0, wins: 0, won: 0, best: 0 };
+    const P = st.stats.poker; P.played++; if (prize) { P.cashes++; P.won += prize; } if (place === 1) { P.wins++; App.count('pokerWin_' + T.key); } P.best = P.best ? Math.min(P.best, place) : place;
+    if (place <= 9 && T.entrants > 9) App.count('finalTables');
+    // rivals collect their results too
+    const everyone = T.seats.filter(Boolean).concat(T.field, T.busted);
+    // whoever is still in when you finish takes the places above yours, biggest stack first
+    const left = T.seats.filter(p => p && !p.me && p.stack > 0 && !p.place).concat(T.field.filter(p => p.stack > 0 && !p.place)).sort((a, b) => b.stack - a.stack);
+    left.forEach((p, i) => { p.place = i + 1; });
+    for (const p of everyone) if (p.rival) {
+      const pl = p.place || T.entrants;
+      const rp = pl <= pays.length ? Math.round(T.pool * pays[pl - 1]) : 0;
+      if (rp) { st.rivals[p.rival].bank += rp; st.rivals[p.rival].net += rp - T.def.buyin; }
+      else st.rivals[p.rival].net -= T.def.buyin;
+    }
+    App.news(`♠️ ${T.def.name}: ${st.name} finished ${ordinal(place)} of ${T.entrants}${prize ? ' for ' + fmt(prize) : ''}.`);
+    Career.checkAchievements(); App.save(); Router.hud();
+    await UI.modal({ title: place === 1 ? '🏆 Champion!' : prize ? '💰 In the money' : '♠️ Knocked out',
+      body: h('div', h('p', `You finished ${ordinal(place)} of ${T.entrants} in ${/^the /i.test(T.def.name) ? '' : 'the '}${T.def.name}.`), prize ? h('p.good', `Prize: ${fmt(prize)}`) : h('p.muted', 'No prize this time.'),
+        h('table.paytable', PAYOUTS(T.entrants).map((pc, i) => h('tr' + (i + 1 === place ? '.me-row' : ''), h('td', ordinal(i + 1)), h('td.num', fmt(Math.round(T.pool * pc))))))),
+      buttons: [{ label: 'Back to the lobby', cls: 'primary' }] });
+    T = null; Router.go('poker');
+  }
+
+  /* ---------- rendering ---------- */
+  let el = null;
+  const pause = ms => sleep(T && T.fast ? Math.min(ms, 30) : ms);
+  function seatPos(i, n) {
+    const a = Math.PI / 2 + (i / n) * Math.PI * 2;
+    return { left: 50 + 44 * Math.cos(a), top: 50 + 38 * Math.sin(a) };
+  }
+  function render() {
+    if (!el || !T) return;
+    const [sb, bb, ante] = blinds();
+    el.info.textContent = `${T.def.name} · Level ${T.level + 1}: ${fmtc(sb)}/${fmtc(bb)}${ante ? ' ante ' + fmtc(ante) : ''} · Players left ${alive()}/${T.entrants} · Hand ${T.hand}`;
+    el.pot.textContent = H ? 'Pot ' + fmtc(H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0)) : '';
+    el.board.innerHTML = ''; if (H) H.board.forEach(c => el.board.append(UI.card(c)));
+    el.seats.innerHTML = '';
+    const n = T.seats.length;
+    T.seats.forEach((p, i) => {
+      const pos = seatPos(i, n);
+      if (!p || p.stack <= 0 && !(p.inHand && H)) { el.seats.append(h('div.pk-seat.empty', { style: { left: pos.left + '%', top: pos.top + '%' } }, p && p.place ? `${p.name} · ${ordinal(p.place)}` : 'Empty')); return; }
+      const cards = h('div.pk-cards');
+      if (p.cards && p.cards.length && p.inHand && !p.folded) p.cards.forEach(c => { const ce = UI.card(c, !(p.me || p.shown)); ce.classList.add('pk-card'); cards.append(ce); });
+      const turn = H && resolveMe && p.me;
+      el.seats.append(h('div.pk-seat' + (p.me ? '.me' : '') + (p.folded ? '.folded' : '') + (p.last === 'Wins' ? '.wins' : '') + (turn ? '.turn' : ''), { style: { left: pos.left + '%', top: pos.top + '%' } },
+        cards,
+        h('div.pk-plate', h('span.pk-face', Portrait.el(p.me ? 'me' : p)), h('div', h('b', p.name), h('span', fmtc(p.stack)))),
+        p.last ? h('div.pk-act', p.last + (p.shown && p.eval ? ' · ' + p.eval.name : '')) : null,
+        T.btn === i ? h('div.pk-btn', 'D') : null));
+      if (p.bet > 0) { const bp = { left: 50 + (pos.left - 50) * .58, top: 50 + (pos.top - 50) * .55 }; el.seats.append(h('div.pk-bet', { style: { left: bp.left + '%', top: bp.top + '%' } }, UI.stack(p.bet), h('span', fmtc(p.bet)))); }
+    });
+    const me = T.seats.find(p => p && p.me);
+    el.myhand.textContent = me && me.cards && me.cards.length && H ? (H.board.length ? Poker.best(me.cards.concat(H.board)).name : `${cardName(me.cards[0])} ${cardName(me.cards[1])}${me.cards[0].r === me.cards[1].r ? ' (pocket pair)' : me.cards[0].s === me.cards[1].s ? ' (suited)' : ''}`) : '';
+  }
+  function renderLog() { if (el) { el.log.innerHTML = ''; T.log.slice(0, 7).forEach(t => el.log.append(h('div', t))); } }
+  function renderControls(p) {
+    render();
+    const [, bb] = blinds(), toCall = H.currentBet - p.bet;
+    const pot = H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0);
+    const minTo = Math.min(p.bet + p.stack, H.currentBet + H.minRaise), maxTo = p.bet + p.stack;
+    const canRaise = maxTo > H.currentBet && !p.acted;
+    const amt = h('input.field.sm#pk-amt', { type: 'number', min: minTo, max: maxTo, step: bb / 2, value: minTo });
+    const slider = h('input#pk-slide', { type: 'range', min: minTo, max: maxTo, step: Math.max(25, bb / 2), value: minTo, oninput: e => { amt.value = e.target.value; } });
+    amt.oninput = () => { slider.value = amt.value; };
+    const preset = (label, to) => h('button.btn.sm.ghost', { onclick: () => { const v = Math.max(minTo, Math.min(maxTo, Math.round(to / 25) * 25)); amt.value = slider.value = v; } }, label);
+    const done = act => { el.ctl.innerHTML = ''; resolveMe(act); };
+    const odds = toCall > 0 ? ` · pot odds ${pctStr(toCall / (pot + toCall), 0)}` : '';
+    el.ctl.innerHTML = '';
+    el.ctl.append(
+      h('div.pk-msg', toCall > 0 ? `${fmtc(toCall)} to call${odds}` : 'Check or bet'),
+      h('div.actions',
+        h('button.btn.ghost', { onclick: () => done({ type: 'fold' }) }, 'Fold'),
+        toCall > 0 ? h('button.btn.primary', { onclick: () => done({ type: 'call' }) }, toCall >= p.stack ? `Call all-in ${fmtc(p.stack)}` : `Call ${fmtc(toCall)}`) : h('button.btn.primary', { onclick: () => done({ type: 'check' }) }, 'Check'),
+        canRaise ? h('button.btn.primary', { onclick: () => done({ type: 'raise', to: Math.max(minTo, Math.min(maxTo, +amt.value || minTo)) }) }, H.currentBet > 0 ? 'Raise to' : 'Bet') : null),
+      canRaise ? h('div.pk-sizer', slider, amt, preset('½ pot', H.currentBet + toCall + pot / 2), preset('Pot', H.currentBet + toCall + pot), preset('All-in', maxTo)) : null);
+  }
+
+  /* ---------- screens ---------- */
+  function lobby(main) {
+    const st = App.state, P = (st.stats.poker || {});
+    const rows = Object.keys(TOURNEYS).map(k => {
+      const d = TOURNEYS[k], why = d.req && d.req(), today = !d.when || d.when();
+      const blocked = why || (!today && 'Not running today') || (st.bank < d.buyin + d.fee && `Needs ${fmt(d.buyin + d.fee)}`);
+      return h('div.item' + (blocked ? '.dim' : ''), h('div.item-i', '♠️'), h('b', d.name), h('p', d.desc),
+        h('div.tags', h('span', `${fmt(d.buyin)} + ${fmt(d.fee)}`), h('span', `${d.field} players`), h('span', `Pool ${fmt(d.buyin * d.field)}`), h('span', `1st ${fmt(Math.round(d.buyin * d.field * PAYOUTS(d.field)[0]))}`)),
+        blocked ? h('div.muted.small', '🔒 ' + blocked) : h('button.btn.sm.primary', { onclick: () => start(k) }, 'Register'));
+    });
+    main.append(h('div.shop', h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, '← Back to the Spur'),
+      h('div', h('h2', '♠️ The Back Room'), h('p.muted', 'Smoke-stained felt, a busted jukebox, and the best poker in town.'))),
+      h('p.muted.small', `Your record: ${P.played || 0} tournaments · ${P.cashes || 0} cashes · ${P.wins || 0} wins · ${fmt(P.won || 0)} won.${App.perk('odds') ? '' : ''} No-limit hold'em: starting stacks are tournament chips; blinds rise every few hands.`),
+      h('div.shopgrid', rows)));
+  }
+  async function start(key) {
+    const d = TOURNEYS[key];
+    if (!(await UI.confirm(`Register: ${d.name}`, `Buy-in ${fmt(d.buyin)} plus ${fmt(d.fee)} fee. ${d.field} players, ${fmt(d.stack)} starting chips. Leaving before the end forfeits your seat.`, 'Register'))) return;
+    if (!App.debit(d.buyin + d.fee)) return UI.toast('Not enough bankroll', 'warn');
+    create(key);
+    Router.go('pokertable');
+  }
+  function table(main) {
+    if (!T) { Router.go('poker'); return; }
+    el = {};
+    main.append(h('div.pk',
+      h('div.table-top', h('button.btn.ghost.sm', { onclick: async () => { if (await UI.confirm('Leave the tournament?', 'You\'ll be blinded out: you finish in the current last place, and win a prize only if that place is in the money.', 'Leave')) { T.quit = true; T.fast = true; if (resolveMe) resolveMe({ type: 'fold' }); } } }, '← Leave'),
+        el.info = h('div.tt-title'), h('button.btn.ghost.sm', { onclick: tableTalk }, '💬 Table talk'), h('div.pk-ff', h('label.small', { title: 'After you fold, the rest of the hand plays out quickly' }, h('input', { type: 'checkbox', checked: App.state.settings.pkSkip !== false, onchange: e => { App.state.settings.pkSkip = e.target.checked; App.save(); } }), ' Auto-skip after I fold'),
+          h('button.btn.ghost.sm', { onclick: () => { if (T) T.fast = true; } }, '⏩ Fast-forward'))),
+      h('div.pk-felt', el.seats = h('div.pk-seats'), h('div.pk-center', el.board = h('div.cards.board'), el.pot = h('div.pk-pot'))),
+      h('div.controls', h('div.pk-mine', 'Your hand: ', el.myhand = h('b')), el.ctl = h('div.pk-ctl'), el.log = h('div.pk-log'))));
+    render(); renderLog();
+    log(`Welcome to the ${T.def.name}. ${T.entrants} players, ${fmtc(T.def.stack)} chips each. Shuffle up and deal!`);
+    run();
+  }
+  // chat with someone at your table between actions
+  async function tableTalk() {
+    if (!T) return;
+    const others = T.seats.filter(p => p && !p.me && p.stack > 0);
+    let pick = null;
+    const body = h('div.menu-list', others.map(p => h('div.menu-row', h('span.mi', Portrait.el(p.me ? 'me' : p)), h('div.mn', h('b', p.name), h('small', `${fmtc(p.stack)} chips${p.styleName ? ' · plays ' + p.styleName : ''}`)),
+      h('button.btn.sm', { onclick: () => { pick = p; dlg.close(); } }, '💬 Talk'))));
+    const dlg = UI.modal({ title: '💬 Who do you want to talk to?', body });
+    await dlg;
+    if (pick && T) Chat.open(Crowd.pokerOpp(pick, T));
+  }
+  // the Back Room door at the Spur
+  function spots(m) {
+    if (m.id !== 'v:spur' || !App.state.flags.pokerRoom) return [];
+    return [{ x: 11, y: 1, id: 'backroom', label: '♠ The Back Room (poker tournaments)', door: true }];
+  }
+  return { lobby, table, spots, TOURNEYS, active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
+})();

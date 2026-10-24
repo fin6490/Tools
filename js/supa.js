@@ -49,6 +49,9 @@ async function accessToken() {
   return session ? session.access_token : null;
 }
 
+// A fresh access token for calling our own Edge Functions (refreshes if expired).
+export const getAccessToken = accessToken;
+
 function authHeaders(token) {
   const h = { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" };
   if (token) h.Authorization = `Bearer ${token}`;
