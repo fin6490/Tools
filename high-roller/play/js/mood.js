@@ -176,6 +176,7 @@ const Mood = {
     else if (s.buzz >= 35) k *= 1 + (s.buzz - 30) / 70;
     if (this.jittery()) k *= 1.25;
     if (s.mood >= 75) k *= .95; else if (s.mood < 25) k *= 1.1;
+    if (s.flags.steadyHand) k *= .92;                     // Mick's breathing trick
     return k;
   },
   // happy people tire slower

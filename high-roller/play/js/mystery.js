@@ -525,7 +525,7 @@ const Mystery = {
   /* ---------- the case file screen ---------- */
   screen(main) {
     const m = this.st(), act = this.act(), st = App.state;
-    const tabs = ['Board', 'Evidence', 'Testimony', 'Crew'].concat(Postcards.st().got ? ['Postcards'] : []);
+    const tabs = ['Board', 'Evidence', 'Testimony', 'Crew'].concat(Postcards.st().got ? ['Postcards'] : [], ['Whispers']);
     let tab = Mystery._tab || 'Board';
     const content = h('div'), tabBar = h('div.tabs');
     const render = () => {
@@ -546,6 +546,7 @@ const Mystery = {
         if (act === 2 || act === 3) content.append(this.timeline());
       }
       if (tab === 'Postcards') content.append(Postcards.panel());
+      if (tab === 'Whispers') content.append(Whispers.panel());
       if (tab === 'Evidence') content.append(h('div.shopgrid', this.owned().map(k => h('div.item', h('div.item-i', CLUES[k].icon), h('b', CLUES[k].name), h('p', CLUES[k].text)))));
       if (tab === 'Testimony') {
         const ids = Object.keys(TESTIMONY).filter(id => m.said[id]);
