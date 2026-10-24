@@ -118,6 +118,14 @@ const SFX = (() => {
     lose() { tone(220, 0.25, 'sine', 0.07); tone(180, 0.3, 'sine', 0.06, 0.1); },
     click() { tone(900, 0.04, 'square', 0.03); },
     cash() { [880, 1320].forEach((f, i) => tone(f, 0.12, 'square', 0.05, i * 0.07)); },
+    // the roulette ball: quick clicks round the rim that slow down, then a rattle into the pocket
+    wheel(ms = 3600) {
+      let t = 0, gap = 45;
+      while (t < ms * .85) { const at = t; setTimeout(() => noise(0.025, 3800, 6, 0.18), at); t += gap; gap *= 1.045; }
+      [0, 90, 150, 230].forEach((d, i) => setTimeout(() => noise(0.04, 2600 - i * 300, 4, 0.4), ms * .85 + d));
+    },
+    reel() { noise(0.02, 2200, 5, 0.08); },
+    reelStop() { tone(110, 0.09, 'sine', 0.12); noise(0.05, 900, 1.5, 0.25); },
   };
 })();
 

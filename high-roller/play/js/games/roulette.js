@@ -121,7 +121,7 @@ GAMES.roulette = (() => {
     $('#rl-res').textContent = '';
     w.style.transition = `transform ${dur}ms cubic-bezier(.12,.6,.15,1)`;
     w.style.transform = `rotate(${angle}deg)`;
-    SFX.dice();
+    SFX.wheel(dur);
     await new Promise(r => setTimeout(r, dur + 80));
     const res = $('#rl-res'); res.textContent = String(n); res.className = 'wheel-center ' + colorOf(n);
     history.push(n); drawHist();

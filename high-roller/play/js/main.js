@@ -378,6 +378,7 @@ const Screens = {
     const body = h('div.menu',
       h('label.lbl', 'Sound'), sel('sound', [[true, 'On'], [false, 'Off']]),
       h('label.lbl', 'Background sound (casino murmur, river, crickets…)'), sel('ambient', [[true, 'On'], [false, 'Off']]),
+      h('label.lbl', 'Music (a live band in every casino)'), sel('music', [[true, 'On'], [false, 'Off']]),
       h('label.lbl', 'Dealing speed'), sel('speed', [['slow', 'Slow'], ['normal', 'Normal'], ['fast', 'Fast'], ['turbo', 'Turbo']]),
       h('label.lbl', 'Strategy hints (when you own the guide)'), sel('hints', [[true, 'Show'], [false, 'Hide']]),
       h('div.menu-btns',
