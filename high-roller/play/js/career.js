@@ -185,6 +185,8 @@ const ACHIEVEMENTS = [
   { id: 'jitters', name: 'Bean There', desc: 'Have six caffeinated drinks in one day', test: () => App.counter('beanSix') >= 1, reward: 25 },
   { id: 'fullDegen', name: 'Full Degen', desc: 'Max out the degen meter', test: () => App.counter('fullDegen') >= 1, reward: 0, swagger: 3 },
   { id: 'cleanWeek', name: 'Clean Living', desc: 'Seven nights in a row with the degen meter under 15', test: () => App.counter('cleanWeek') >= 1, reward: 2000, swagger: 3 },
+  { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
+  { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
   { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
   { id: 'side25', name: 'Side Hustle', desc: 'Win a side bet paying 25 to 1 or better', test: () => App.counter('bigSide') >= 1, reward: 100, swagger: 1 },
   { id: 'prog', name: 'On the Meter', desc: 'Win any progressive payout', test: () => App.counter('progHits') >= 1, reward: 100 },
@@ -467,7 +469,7 @@ const Career = {
       if (!App.debit(m.price)) { UI.toast('Not enough cash', 'warn'); return false; }
       st.flags.hasPie = true; SFX.cash(); UI.toast('🥧 Boxed up a slice for Doc', 'good'); App.save(); return true;
     }
-    const free = this.isComped(place, m);
+    const free = this.isComped(place, m) || (id === 'pie' && st.flags.freePie);
     if (!free && !App.debit(m.price)) { UI.toast('Not enough cash', 'warn'); return false; }
     if (m.hunger) st.hunger = clamp(st.hunger + m.hunger, 0, 100);
     if (m.thirst) st.thirst = clamp(st.thirst + m.thirst, 0, 100);
