@@ -34,7 +34,7 @@ const VENUES = {
       roulette: { wheel: 'american' },
       bac: { ez: false, commission: 0.05 },
     },
-    unlock: { chapter: 1, item: 'suit', bank: 3000, text: 'Clear Sal\'s marker, own a Decent Suit and carry $3,000.' },
+    unlock: { chapter: 1, item: 'suit', bank: 3000, text: 'Make Vinnie\'s first payment on Sal\'s marker, own a Decent Suit and carry $3,000.' },
   },
   palace: {
     name: 'The Gilded Palace', icon: '🏛️', tag: 'Chandeliers, champagne, and a dress code.',
@@ -185,6 +185,8 @@ const ACHIEVEMENTS = [
   { id: 'jitters', name: 'Bean There', desc: 'Have six caffeinated drinks in one day', test: () => App.counter('beanSix') >= 1, reward: 25 },
   { id: 'fullDegen', name: 'Full Degen', desc: 'Max out the degen meter', test: () => App.counter('fullDegen') >= 1, reward: 0, swagger: 3 },
   { id: 'cleanWeek', name: 'Clean Living', desc: 'Seven nights in a row with the degen meter under 15', test: () => App.counter('cleanWeek') >= 1, reward: 2000, swagger: 3 },
+  { id: 'clockwork', name: 'Like Clockwork', desc: 'Make ten weekly payments on Sal\'s marker on time', test: () => App.counter('vigPaid') >= 10, reward: 0, swagger: 3 },
+  { id: 'freeClear', name: 'Free and Clear', desc: 'Pay off every cent of Uncle Sal\'s $500,000 marker', test: () => App.counter('salCleared') >= 1, reward: 0, swagger: 15 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
   { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
@@ -244,18 +246,18 @@ const ACHIEVEMENTS = [
 /* Story chapters. goal() decides when the chapter is complete. */
 const CHAPTERS = [
   {
-    title: "Sal's Marker", goalText: "Pay off Uncle Sal's $2,500 marker to Vinnie (plus interest) before it comes due.",
-    goal: () => !App.state.loans.find(l => l.id === 'sal'),
+    title: "Sal's Marker", goalText: "Uncle Sal left a $500,000 marker. Make Vinnie's first weekly payment ($1,500 by day 7).",
+    goal: () => App.state.flags.firstVig || !App.state.loans.find(l => l.id === 'sal'),
     intro: [
       { who: 'narrator', text: 'Uncle Sal left you three things: a silver dollar, a dented flask, and a debt.' },
-      { who: 'vinnie', text: () => `So you're Sal's kid. ${App.state.name}, right? Sal owed me **$2,500**. Sal's not around, so now you owe me $2,500.` },
-      { who: 'vinnie', text: 'I\'m a reasonable guy. **3% a day**, due in two weeks. You need more walking-around money, my door is always open. The interest is too.' },
+      { who: 'vinnie', text: () => `So you're Sal's kid. ${App.state.name}, right? Sal owed me **half a million dollars**. The bar tab, the boat, the bad nights. Sal's not around, so now you owe me $500,000.` },
+      { who: 'vinnie', text: 'I\'m a reasonable guy. No interest, as long as you pay me every week: **$1,500 by day 7** to start, more as you come up in the world. Miss a week and Nico visits, and the marker gets bigger. Three visits and you leave town.' },
       { who: 'me', text: 'I\'ve got $500 to my name.' },
       { who: 'vinnie', text: 'Then I suggest you get lucky. The Rusty Spur is down the street. Tell Dolores I sent you. Actually, don\'t.' },
       { who: 'dolores', text: 'Sal\'s kid? He used to say the side bets here were the best-kept secret in town. Maybe the paytables are softer than they look, sugar.' },
     ],
     outro: [
-      { who: 'vinnie', text: 'Paid in full. Huh. Sal never managed that. Maybe you\'re smarter than him.' },
+      { who: 'vinnie', text: () => { const l = App.state.loans.find(x => x.id === 'sal'); return l ? `First payment, on time. Huh. Sal was always late. Only ${fmt(l.balance)} to go, kid. Same time next week.` : 'Paid in full. Huh. Sal never managed that. Maybe you\'re smarter than him.'; } },
       { who: 'vinnie', text: 'Word of advice: the Riverboat\'s where the real action is. They don\'t let you on in a sweatshirt, though. Get a **Decent Suit**.' },
       { who: 'dolores', text: 'Before you go: Sal had a friend on that boat. Old guy, sharp eyes. Calls himself **Doc**. Find him.' },
     ],
@@ -326,6 +328,8 @@ const Career = {
   empire() { let v = App.netWorth(); for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].cat === 'Investments' || (App.state.items[k] && ['spurDeed', 'palaceDeed'].includes(k))) v += ITEMS[k].price; return v; },
   upkeep() { let u = 0; for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].upkeep) u += ITEMS[k].upkeep; return u; },
   creditLimit() { return 1000 + Career.swagger() * 400 + App.state.chapter * 5000; },
+  // what Vinnie wants each week on Sal's marker, by how far you've come
+  weeklyFor(ch = App.state.chapter) { return [1500, 3000, 10000, 30000, 60000][Math.min(ch, 4)]; },
   vinnieRate() { return App.state.chapter >= 4 ? 0.01 : 0.04; },
 
   venueOpen(id) {
@@ -406,7 +410,15 @@ const Career = {
     amount = Math.min(amount, l.balance, App.state.bank);
     if (amount <= 0) return;
     App.debit(amount); l.balance = round2(l.balance - amount);
+    if (l.weekly) {
+      const before = l.paidWeek || 0; l.paidWeek = round2(before + amount);
+      if (before < l.weekly && l.paidWeek >= l.weekly && l.balance > 0.005) {
+        if (!App.state.flags.firstVig) App.state.flags.firstVig = App.state.day;
+        UI.toast(`🦈 This week's payment is covered. Next one is due day ${l.due + 7}.`, 'good');
+      }
+    }
     if (l.balance <= 0.005) {
+      if (l.id === 'sal' && l.weekly) { App.count('salCleared'); UI.toast('🦈 Sal\'s marker: paid in full. Vinnie tears it up in front of you.', 'big'); }
       App.state.loans = App.state.loans.filter(x => x !== l);
       if (l.id === 'sal' && l.due && App.state.day <= l.due - 5) App.state.flags.paidEarly = App.state.day;
     }
@@ -592,14 +604,24 @@ const Career = {
   },
 
   // Vinnie checks on overdue markers and anyone over their credit limit
+  // what still has to be paid on a loan before its due day
+  owedNow(l) { return l.weekly ? Math.max(0, round2(Math.min(l.weekly, l.balance) - (l.paidWeek || 0))) : l.balance; },
   async collections() {
     const st = App.state;
+    // a covered week rolls on to the next one
+    for (const l of st.loans) {
+      if (!l.weekly || !l.due || st.day <= l.due || (l.paidWeek || 0) < Math.min(l.weekly, l.balance)) continue;
+      while (l.due < st.day) l.due += 7;
+      l.paidWeek = 0; l.weekly = Math.min(this.weeklyFor(), Math.ceil(l.balance));
+      App.count('vigPaid');
+      UI.toast(`🦈 Paid up. Next payment on Sal's marker: ${fmt(l.weekly)} by day ${l.due}.`, 'good');
+    }
     const overdue = st.loans.find(l => l.due && st.day > l.due);
     const vin = st.loans.find(l => l.id === 'vinnie');
     const over = vin && vin.balance > this.creditLimit() * 1.5;
     if (!overdue && !over) {
-      const soon = st.loans.find(l => l.due && l.due - st.day <= 3 && l.due >= st.day);
-      if (soon) UI.toast(`⏰ ${soon.label} is due on day ${soon.due}: ${fmt(soon.balance)}`, 'warn');
+      const soon = st.loans.find(l => l.due && l.due - st.day <= 3 && l.due >= st.day && this.owedNow(l) > 0);
+      if (soon) UI.toast(`⏰ ${soon.weekly ? 'This week\'s payment on ' + soon.label : soon.label} is due on day ${soon.due}: ${fmt(this.owedNow(soon))}`, 'warn');
       return;
     }
     const target = overdue || vin;
@@ -617,12 +639,15 @@ const Career = {
     st.bank = round2(st.bank - take);
     if (take > 0) target.balance = round2(Math.max(0, target.balance - take));
     if (lost) delete st.items[lost];
-    target.balance = round2(target.balance * 1.15);
+    // the big marker grows by three missed payments; anything else takes a 15% late fee
+    const fee = target.weekly ? `Three weeks' payments (${fmt(target.weekly * 3)}) go on the marker` : 'A 15% late fee goes on the balance';
+    target.balance = round2(target.weekly ? target.balance + target.weekly * 3 : target.balance * 1.15);
+    if (target.weekly) { target.paidWeek = 0; target.weekly = Math.min(this.weeklyFor(), Math.ceil(target.balance)); }
     if (target.due) target.due = st.day + 7;
     if (target.balance <= 0.005) st.loans = st.loans.filter(l => l !== target);
     await UI.dialog([
       { who: 'nico', text: `Vinnie\'s been patient. Vinnie is done being patient. (Strike ${target.strikes} of 3.)` },
-      { who: 'narrator', text: `Nico "collects" **${fmt(take)}** from your wallet${lost ? ' and takes your **' + ITEMS[lost].name + '**' : ''}. A 15% late fee goes on the balance${target.due ? ', and the new due date is day ' + target.due : ''}.` },
+      { who: 'narrator', text: `Nico "collects" **${fmt(take)}** from your wallet${lost ? ' and takes your **' + ITEMS[lost].name + '**' : ''}. ${fee}${target.due ? ', and the new due date is day ' + target.due : ''}.` },
     ]);
     App.save();
   },

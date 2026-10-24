@@ -261,7 +261,9 @@ const Screens = {
     const bar = (label, cur, target) => h('div.gbar', h('div.gl', h('span', label), h('span', `${fmt(Math.min(cur, target))} / ${fmt(target)}`)),
       h('div.bar', h('i', { style: { width: clamp(cur / target, 0, 1) * 100 + '%' } })));
     const sal = st.loans.find(l => l.id === 'sal');
-    if (st.chapter === 0 && sal) wrap.append(h('p.small', `Marker balance ${fmt(sal.balance)} · due day ${sal.due} (${Math.max(0, sal.due - st.day)} days left) · pay at Vinnie's`));
+    if (sal && sal.weekly) wrap.append(bar(`Sal's marker paid off (${fmt(sal.balance)} to go)`, Math.max(0, 500000 - sal.balance), 500000),
+      h('p.small', Career.owedNow(sal) > 0 ? `This week: ${fmt(Career.owedNow(sal))} more to Vinnie by day ${sal.due} (${Math.max(0, sal.due - st.day)} days left)` : `✔ This week's payment is covered. Next due day ${sal.due + 7}.`));
+    else if (st.chapter === 0 && sal) wrap.append(h('p.small', `Marker balance ${fmt(sal.balance)} · due day ${sal.due} (${Math.max(0, sal.due - st.day)} days left) · pay at Vinnie's`));
     if (st.chapter === 1) wrap.append(bar('Bankroll', st.bank, 25000), h('p.small', st.flags.metDoc ? '✔ Met Doc' : '✘ Find Doc on the Riverboat'));
     if (st.chapter === 2) wrap.append(bar('Bankroll', st.bank, 250000), h('p.small', App.has('platinum') ? '✔ Platinum card' : '✘ Platinum Players Card (shop)'));
     if (st.chapter === 3) wrap.append(bar('Deed fund', st.bank, 1000000));
@@ -321,14 +323,19 @@ const Screens = {
         h('div', h('h2', "🦈 Vinnie's Back Room"), h('p.muted', 'Behind the pawn shop. Smells like cigars and bad decisions.'))),
       h('div.dialog.inline', h('div.portrait', Portrait.el('vinnie')),
         h('div.d-text', h('div.d-name', CHARACTERS.vinnie.name), h('p', App.debt === 0 ? '"Clean books! Makes me nervous. Need a little something?"'
-          : `"You owe me ${fmt(App.debt)}. Interest compounds nightly. I'm not a monster. I'm a businessman."`))),
+          : `"You owe me ${fmt(App.debt)}. Pay on time and we stay friends. I'm not a monster. I'm a businessman."`))),
       h('section.panel', h('h3', 'Your markers'),
         st.loans.length ? h('div.loanlist', st.loans.map(l => {
-          const pay = h('input.field.sm', { type: 'number', min: 0, value: Math.min(Math.floor(st.bank), Math.ceil(l.balance)) });
-          return h('div.loan', h('div', h('b', l.label), h('div.muted.small', `${pctStr(l.rate, 0)} per day${l.due ? ` · due day ${l.due}` : ''}${l.strikes ? ` · ⚠ ${l.strikes} strike${l.strikes > 1 ? 's' : ''}` : ''}`)),
+          const owed = Career.owedNow(l);
+          const pay = h('input.field.sm', { type: 'number', min: 0, value: Math.min(Math.floor(st.bank), Math.ceil(l.weekly ? (owed || l.weekly) : l.balance)) });
+          const terms = l.weekly
+            ? `${fmt(l.weekly)} a week, no interest while you pay on time · ${owed > 0 ? `${fmt(owed)} still due by day ${l.due}` : `this week covered, next due day ${l.due + 7}`} · miss one and three weeks' worth goes on the marker`
+            : `${pctStr(l.rate, 0)} per day${l.due ? ` · due day ${l.due}` : ''}`;
+          return h('div.loan', h('div', h('b', l.label), h('div.muted.small', `${terms}${l.strikes ? ` · ⚠ ${l.strikes} strike${l.strikes > 1 ? 's' : ''}` : ''}`)),
             h('div.num.big', fmt(l.balance)),
             h('div.payrow', pay,
               h('button.btn.primary.sm', { onclick: () => { Career.repay(l.id, +pay.value || 0); Router.refresh(); } }, 'Pay'),
+              l.weekly && owed > 0 ? h('button.btn.sm', { onclick: () => { Career.repay(l.id, owed); Router.refresh(); } }, 'Pay this week') : null,
               h('button.btn.sm', { onclick: () => { Career.repay(l.id, l.balance); Router.refresh(); } }, 'Pay all')));
         })) : h('p.muted', 'You don\'t owe anybody. Enjoy the feeling.')),
       h('section.panel', h('h3', 'Borrow'),

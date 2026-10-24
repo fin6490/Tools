@@ -58,7 +58,7 @@ const STACK = [[14, 0], [14, 1], [6, 3], [3, 2], [14, 3], [12, 1], [14, 2], [9, 
 const CREW = {
   mei: { role: 'Law', icon: '🪪', name: 'Mei Lin', text: 'Brings a warrant and watches the shoe, so Kessler can\'t stack the final table. Needed to put Kessler behind bars.', ok: () => Mystery.has('badge') },
   margot: { role: 'Inside', icon: '🗝️', name: 'Margot Laval', text: 'Has a keycard to the vault corridor. Wants the ledger for herself; you\'d better know that going in.', ok: () => Mystery.st().act2Solved },
-  vinnie: { role: 'Muscle', icon: '🦈', name: 'Vinnie & Nico', text: 'Keep Kessler\'s guards busy. Only trusts people who paid him on time and never needed a visit from Nico.', ok: () => !App.state.flags.everStruck && App.state.chapter >= 1 && !App.state.loans.find(l => l.id === 'sal') },
+  vinnie: { role: 'Muscle', icon: '🦈', name: 'Vinnie & Nico', text: 'Keep Kessler\'s guards busy. Only trusts people who never needed a visit from Nico and have made four weekly payments on Sal\'s marker (or cleared it).', ok: () => !App.state.flags.everStruck && App.state.chapter >= 1 && (!App.state.loans.find(l => l.id === 'sal') || App.counter('vigPaid') >= 4) },
   tex: { role: 'Distraction', icon: '🤠', name: 'Tex Calhoun', text: 'Starts the loudest scene the Salon has ever seen. Only if you got him out from under Vinnie\'s thumb.', ok: () => !!App.state.flags.texRescued },
   rico: { role: 'Distraction', icon: '🕺', name: 'Rico Suave', text: 'Dances on the craps table. Owes Sal everything, and you have his chip.', ok: () => Mystery.has('chip') },
 };

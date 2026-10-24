@@ -342,7 +342,7 @@ const Cast = {
     const ch = st.chapter;
     const person = (who, x, y, look, extra = {}) => out.push({ x, y, dir: 'down', who, name: CHARACTERS[who].name, look, dyn: true, story: !RIVALS[who], rival: !!RIVALS[who], ...extra });
     if (m.id === 'town') {
-      if (career && ((App.debt > 0 && st.loans.some(l => l.strikes > 0 || (l.due && l.due - st.day <= 3))) || (Mystery.act() === 2 && Mystery.has('report')))) person('nico', 9, 30, { shirt: '#555', pants: '#333', skin: '#c68863', hair: '#222' }, { wander: true, home: [9, 30] });
+      if (career && ((App.debt > 0 && st.loans.some(l => l.strikes > 0 || (l.due && l.due - st.day <= 3 && Career.owedNow(l) > 0))) || (Mystery.act() === 2 && Mystery.has('report')))) person('nico', 9, 30, { shirt: '#555', pants: '#333', skin: '#c68863', hair: '#222' }, { wander: true, home: [9, 30] });
       person('lou', 45, 21, { shirt: '#1f5f8b', pants: '#f4f4f4', skin: '#f0c19a', hair: '#ddd', hat: true });
       const spots = [[22, 17], [33, 33], [8, 33], [40, 20]];
       Object.keys(RIVALS).forEach((id, i) => { if (career && st.rivals && Rivals.where(id) === 'town') person(id, spots[i][0], spots[i][1], RIVALS[id].look, { wander: true, home: spots[i] }); });
