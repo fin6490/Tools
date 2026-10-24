@@ -55,7 +55,7 @@ const App = {
       bank: career ? 500 : 10000, day: 1,
       stamina: 100, staminaMax: 100, hunger: 80, thirst: 80,
       world: { map: 'town', x: 5, y: 30, dir: 'down' }, clock: 540, event: null, ending: null,
-      loans: career ? [{ id: 'sal', label: "Uncle Sal's marker", balance: 2500, rate: 0.03, due: 15, strikes: 0 }] : [],
+      loans: career ? [{ id: 'sal', label: "Uncle Sal's marker", balance: 500000, rate: 0, weekly: 1500, paidWeek: 0, due: 7, strikes: 0 }] : [],
       items: {}, consumables: {}, equipped: { felt: 'green', back: 'red' },
       chapter: 0, flags: {}, achievements: {},
       venue: 'spur', unlocked: { spur: true },

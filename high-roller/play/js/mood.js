@@ -122,9 +122,13 @@ const Mood = {
     const hung = s.buzz >= 50 || s.flags.hangover;
     if (hung) { add(-10, 'Hangover'); s.flags.hangover = 1; App.count('hangovers'); } else s.flags.hangover = 0;
     s.buzz = 0;
-    const debt = App.debt, strikes = (s.loans || []).reduce((a, l) => a + (l.strikes || 0), 0);
-    if (debt > 0) add(-Math.min(15, 4 + strikes * 4 + Math.floor(debt / 5000)), 'Lying awake about the debt');
-    else add(2, 'No debts');
+    // what keeps you up is a payment you can't cover, strikes, and Vinnie's walking-around money
+    const loans = s.loans || [], strikes = loans.reduce((a, l) => a + (l.strikes || 0), 0);
+    const dueSoon = loans.some(l => l.due && l.due - s.day <= 1 && Career.owedNow(l) > 0);
+    const street = loans.filter(l => !l.weekly).reduce((a, l) => a + l.balance, 0);
+    const worry = strikes * 4 + (dueSoon ? 6 : 0) + (street > 0 ? 3 + Math.floor(street / 5000) : 0);
+    if (worry) add(-Math.min(15, worry), dueSoon ? 'Lying awake about Vinnie\'s payment' : 'Lying awake about the debt');
+    else if (!App.debt) add(2, 'No debts');   // the big marker, paid up this week, doesn't cost sleep
     if (s.today.net > 0) add(Math.min(8, 2 + Math.floor(s.today.net / 2000)), 'A winning day');
     else if (s.today.net < -500) add(-Math.min(8, 2 + Math.floor(-s.today.net / 2000)), 'A losing day');
     // the degen meter cools overnight, faster after a clean day
