@@ -159,11 +159,11 @@ const PLACES = {
 // where you can sleep. energy: fraction of max restored. cost is per night. grace: hours you can stay
 // up before tiredness starts creeping in; base: tiredness you wake up with (a bad night's sleep).
 const LODGING = {
-  motel: { name: 'Starlite Motel', icon: '🛏️', cost: 25, energy: 1, grace: 8, text: 'A bed, a buzzing sign, and a lock that mostly works.' },
-  grand: { name: 'Grand Hotel Suite', icon: '🏨', cost: 350, energy: 1.25, grace: 10, hunger: 25, thirst: 25, text: 'Feather pillows and room-service breakfast. Wake up with extra energy, and stay sharp two hours longer.' },
-  apartment: { name: 'Your Apartment', icon: '🏢', cost: 0, energy: 1.1, grace: 9, item: 'apartment', text: 'Your own place. Rent is paid daily.' },
-  penthouse: { name: 'Your Penthouse', icon: '🌆', cost: 0, energy: 1.35, grace: 11, hunger: 20, thirst: 20, item: 'penthouse', text: 'The whole city glittering below. Wake up unstoppable.' },
-  bench: { name: 'Park Bench', icon: '🪑', cost: 0, energy: 0.6, grace: 6, base: 25, risky: true, text: 'Free. Cold. Somebody might lift your wallet while you sleep.' },
+  motel: { name: 'Starlite Motel', icon: '🛏️', cost: 25, energy: 1, grace: 8, hours: 8, nap: 10, text: 'A bed, a buzzing sign, and a lock that mostly works.' },
+  grand: { name: 'Grand Hotel Suite', icon: '🏨', cost: 350, energy: 1.25, grace: 10, hours: 8, nap: 60, hunger: 25, thirst: 25, text: 'Feather pillows and room-service breakfast. Wake up with extra energy, and stay sharp two hours longer.' },
+  apartment: { name: 'Your Apartment', icon: '🏢', cost: 0, energy: 1.1, grace: 9, hours: 8, nap: 0, item: 'apartment', text: 'Your own place. Rent is paid daily.' },
+  penthouse: { name: 'Your Penthouse', icon: '🌆', cost: 0, energy: 1.35, grace: 11, hours: 8, nap: 0, hunger: 20, thirst: 20, item: 'penthouse', text: 'The whole city glittering below. Wake up unstoppable.' },
+  bench: { name: 'Park Bench', icon: '🪑', cost: 0, energy: 0.6, grace: 6, base: 25, hours: 6, risky: true, text: 'Free. Cold. Somebody might lift your wallet while you sleep.' },
 };
 
 const EVENTS = {
@@ -475,8 +475,10 @@ const Career = {
     SFX.cash(); UI.toast(`${m.icon} ${m.name}${free ? ' (comped)' : ''}`, 'good');
     App.save(); Router.hud(); return true;
   },
+  happyHour(venue) { const t = (App.state.clock || 540) % 1440; return venue === 'spur' && t >= 1020 && t < 1140; },
   isComped(place, m) {
     if (!place || !place.comp || !m.drink || !place.venue) return false;
+    if (this.happyHour(place.venue)) return true;
     return App.state.today.wagered >= VENUES[place.venue].limits.min * 20;
   },
 
@@ -488,12 +490,26 @@ const Career = {
     if (L.risky && st.bank > 20 && RNG.chance(0.3)) { robbed = round2(Math.min(st.bank * 0.15, 5000)); st.bank = round2(st.bank - robbed); }
     await this.endDay(L, robbed);
   },
+  // two hours' sleep without ending the day: takes about three hours of tiredness off, once a day
+  async nap(lodgingId) {
+    const L = LODGING[lodgingId], st = App.state;
+    if (st.today.nap) { UI.toast('You already napped today. Your body wants a real night\'s sleep.', 'warn'); return; }
+    if ((st.clock || 540) > 1680 - 120) { UI.toast('Too late for a nap: just go to bed.', 'warn'); return; }
+    if (L.nap && !App.debit(L.nap)) { UI.toast(`A nap here costs ${fmt(L.nap)}`, 'warn'); return; }
+    st.today.nap = true; st.clock = (st.clock || 540) + 120; st.wokeAt = (st.wokeAt || 540) + 300; // net: about 30% less tired
+    st.hunger = Math.max(0, st.hunger - 5); st.thirst = Math.max(0, st.thirst - 8);
+    st.stamina = Math.min(this.energyCap(), st.stamina + 30);
+    App.save(); Router.hud();
+    await UI.dialog([{ who: 'narrator', text: `You close your eyes for two hours. It's ${World.clockText()} when you wake, groggy but sharper.` }]);
+  },
+  // a proper bed only makes sense once the day is winding down, or when you're truly tired
+  bedtimeOk() { const t = (App.state.clock || 540) % 1440; return !this.needsOn() || t >= 1080 || t < 360 || this.tiredness() >= 40; },
   async passOut() {
     const st = App.state;
     const robbed = st.bank > 20 ? round2(Math.min(st.bank * 0.2, 10000)) : 0;
     st.bank = round2(st.bank - robbed);
     await UI.dialog([{ who: 'narrator', text: `You collapse on the sidewalk and sleep where you fall.${robbed ? ` When you wake up, **${fmt(robbed)}** is missing from your wallet.` : ''} Next time, find a bed before you hit empty.` }]);
-    await this.endDay({ name: 'The sidewalk', energy: 0.5, grace: 5, base: 35 }, 0);
+    await this.endDay({ name: 'The sidewalk', energy: 0.5, grace: 5, base: 35, hours: 7 }, 0);
   },
   async endDay(L = LODGING.motel, robbed = 0) {
     const st = App.state, lines = [];
@@ -513,7 +529,8 @@ const Career = {
     let interest = 0;
     for (const l of st.loans) { const i = round2(l.balance * l.rate); l.balance = round2(l.balance + i); interest += i; }
     if (interest) lines.push(['Loan interest', fmt(-interest)]);
-    st.day++; st.clock = 540; st.wokeAt = 540; st.rest = { grace: L.grace != null ? L.grace : 8, base: L.base || 0 };
+    const bed = st.clock || 540, wake = Math.round(clamp(bed + (L.hours || 8) * 60 - 1440, 360, 840) / 15) * 15;
+    st.day++; st.clock = wake; st.wokeAt = wake; st.rest = { grace: L.grace != null ? L.grace : 8, base: L.base || 0 };
     st.staminaMax = this.staminaMax(); st.restMax = Math.round(st.staminaMax * Math.max(1, L.energy || 1));
     st.stamina = Math.round(Math.min(st.staminaMax * (L.energy || 1), this.energyCap()));
     st.hunger = clamp(st.hunger - 20 + (L.hunger || 0), 0, 100);
@@ -528,7 +545,7 @@ const Career = {
     await UI.modal({
       title: `🌙 Night ${st.day - 1} · ${L.name}`, buttons: [{ label: `Wake up: Day ${st.day}`, cls: 'primary' }],
       body: h('div', h('table.paytable', lines.map(r => h('tr', h('td', r[0]), h('td.num', r[1])))),
-        h('p.muted.small', `Energy ${Math.round(st.stamina)}/${this.energyMax()}. ${(L.grace || 8) >= 10 ? 'Well rested: you\'ll stay sharp a couple of hours longer today. ' : L.base ? 'A rough night: you start the day already a bit tired. ' : ''}You wake up a little hungry and thirsty. Progressive meters grew overnight.`),
+        h('p.muted.small', `You wake at ${World.clockText()}${wake >= 660 ? ' (a late night costs you the morning)' : wake <= 420 ? ', up with the sun' : ''}. Energy ${Math.round(st.stamina)}/${this.energyMax()}. ${(L.grace || 8) >= 10 ? 'Well rested: you\'ll stay sharp a couple of hours longer today. ' : L.base ? 'A rough night: you start the day already a bit tired. ' : ''}You wake up a little hungry and thirsty. Progressive meters grew overnight.`),
         h('button.btn.sm', { onclick: () => Chat.newspaper() }, '📰 Read the morning paper')),
     });
     await this.collections();

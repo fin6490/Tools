@@ -638,6 +638,15 @@ const World = (() => {
     savePos();
   }
 
+  // opening hours for the places that keep them (everything else never closes)
+  const HOURS = { diner: [360, 1380], steak: [1020, 1500], pawn: [600, 1320], shop: [600, 1260], riverboat: [720, 1680] };
+  function openNow(key) {
+    const h = HOURS[key]; if (!h || !Career.needsOn()) return true;
+    const t = clock() % 1440, t2 = t + 1440;
+    return (t >= h[0] && t < h[1]) || (t2 >= h[0] && t2 < h[1]);
+  }
+  const hhmm = m => { const t = ((m % 1440) + 1440) % 1440, hh = Math.floor(t / 60), mm = t % 60; return `${(hh + 11) % 12 + 1}${mm ? ':' + String(mm).padStart(2, '0') : ''} ${hh < 12 ? 'AM' : 'PM'}`; };
+  function hoursText(key) { const h = HOURS[key]; return h ? `${hhmm(h[0])} to ${hhmm(h[1])}` : 'all hours'; }
   async function useDoor(door) {
     S.busy = true; S.keys.clear();
     try {
@@ -650,6 +659,7 @@ const World = (() => {
           return;
         }
         const st = App.state;
+        if (!openNow(id)) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The gangplank is up. A sign on the rail: "${VENUES[id].name} · open ${hoursText(id)}." It's ${clockText()}.` }]); return; }
         if (id === 'salon' && st.mode === 'career') {
           if ((st.flags.salonBanUntil || 0) > st.day) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The doorman doesn't even look up. "Mr. Kessler says you're not welcome until day ${st.flags.salonBanUntil}."` }]); return; }
           if (!isNight()) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `A brass plaque by the door: "Salon Privé · 8 PM until dawn." It's ${clockText()}.` }]); return; }
@@ -660,7 +670,10 @@ const World = (() => {
         await Career.enterVenue(id);
         return;
       }
-      if (door.room) { App.state.world.returnTo = door.out; await go('r:' + door.room); return; }
+      if (door.room) {
+        if (!openNow(door.room)) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The lights are off and the sign on the door says CLOSED. ${(ROOMS[door.room] || {}).name || 'It'} is open ${hoursText(door.room)}. It's ${clockText()}.` }]); return; }
+        App.state.world.returnTo = door.out; await go('r:' + door.room); return;
+      }
       if (door.exit) {
         const town = getMap('town');
         const back = App.state.world.returnTo || Object.values(town.doors).find(d => d.venue === door.exit || d.room === door.exit).out;
@@ -694,7 +707,7 @@ const World = (() => {
     const a = m.acts[fx + ',' + fy];
     if (a) return { kind: a.table ? 'table' : 'act', ...a, game: a.table };
     const d = m.doors[fx + ',' + fy];
-    if (d) return { kind: 'door', door: d, label: d.label };
+    if (d) { const key = d.room || d.venue; return { kind: 'door', door: d, label: d.label + (key && !openNow(key) ? ` (closed · opens ${hoursText(key).split(' to ')[0]})` : '') }; }
     return null;
   }
 
@@ -749,7 +762,8 @@ const World = (() => {
       body.innerHTML = '';
       const comp = P.comp && P.venue && App.state.today.wagered >= VENUES[P.venue].limits.min * 20;
       body.append(h('p', h('i', `"${P.line}"`)), needBars());
-      if (P.comp) body.append(h('p.muted.small', comp ? '🎟️ You\'ve been playing: drinks are comped.' : `Drinks are comped once you've wagered ${fmt(VENUES[P.venue].limits.min * 20)} here today.`));
+      if (P.comp && Career.happyHour(P.venue)) body.append(h('p.muted.small', '🍻 Happy hour until 7 PM: every drink is on the house.'));
+      else if (P.comp) body.append(h('p.muted.small', comp ? '🎟️ You\'ve been playing: drinks are comped.' : `Drinks are comped once you've wagered ${fmt(VENUES[P.venue].limits.min * 20)} here today.${P.venue === 'spur' ? ' Happy hour is 5 to 7 PM.' : ''}`));
       const list = h('div.menu-list');
       for (const id of P.items) {
         const it = MENU[id], free = Career.isComped(P, it);
@@ -794,13 +808,16 @@ const World = (() => {
         continue;
       }
       any = true;
-      list.append(h('div.menu-row', h('span.mi', L.icon), h('div.mn', h('b', L.name), h('small', L.text)),
-        h('button.btn.sm.primary', { disabled: L.cost > st.bank, onclick: async () => { pop.close(); await Career.sleep(id); } }, L.cost ? `Sleep · ${fmt(L.cost)}` : 'Sleep')));
+      const early = !Career.bedtimeOk();
+      list.append(h('div.menu-row', h('span.mi', L.icon), h('div.mn', h('b', L.name), h('small', early ? `It's ${clockText()}: too early for bed. Come back after 6 PM, or once you're properly tired.` : L.text)),
+        h('button.btn.sm.primary', { disabled: early || L.cost > st.bank, onclick: async () => { pop.close(); await Career.sleep(id); } }, L.cost ? `Sleep · ${fmt(L.cost)}` : 'Sleep')));
+      if (L.nap != null && Career.needsOn() && !st.today.nap) list.append(h('div.menu-row', h('span.mi', '💤'), h('div.mn', h('b', 'Nap for two hours'), h('small', 'Takes the edge off tiredness without ending the day. Once a day. Handy before a night at the Salon.')),
+        h('button.btn.sm', { disabled: (L.nap || 0) > st.bank, onclick: async () => { pop.close(); await Career.nap(id); } }, L.nap ? `Nap · ${fmt(L.nap)}` : 'Nap')));
     }
     if (options.includes('motel')) { const lb = Mystery.lockboxRow(() => pop.close()); if (lb) list.append(lb); }
     const desk = STAFF_AT[options.find(o => STAFF_AT[o])]; if (desk) list.append(talkRow(desk, () => pop.close()));
     if (!any) body.append(h('p.muted.small', 'Nowhere to sleep here yet.'));
-    body.append(h('p.muted.small', `Sleeping ends day ${st.day}: loan interest compounds, rent is due, and your players club pays out.`));
+    body.append(h('p.muted.small', `Sleeping ends day ${st.day}: loan interest compounds, rent is due, and your players club pays out. You wake about ${options.includes('bench') ? 6 : 8} hours after you go to bed, so a late night costs you the morning.`));
     const pop = UI.modal({ title: `🛏️ ${label}`, body });
     return pop;
   }
@@ -847,6 +864,7 @@ const World = (() => {
 
   function loop(now) {
     if (!S) return;
+    if (S.busy && !document.querySelector('.modal-bg')) { S.busyIdle = S.busyIdle || now; if (now - S.busyIdle > 2500) { S.busy = false; S.busyIdle = 0; } } else S.busyIdle = 0;
     S.raf = requestAnimationFrame(loop);
     const p = S.p, m = S.m;
     if (p.moving) {
@@ -923,6 +941,12 @@ const World = (() => {
       const t = (App.state.clock || 540) % 1440, dark = t >= 1260 || t < 300 ? .42 : t >= 1140 ? (t - 1140) / 120 * .42 : t < 420 ? (420 - t) / 120 * .42 : 0;
       if (dark > 0) {
         c.fillStyle = `rgba(10, 16, 48, ${dark})`; c.fillRect(0, 0, cv.width, cv.height);
+        // doorways glow when the place behind them is open; closed ones stay dark
+        for (const [k, d] of Object.entries(m.doors)) {
+          const key = d.room || d.venue; if (!key || !openNow(key) || (d.venue === 'salon' && !isNight() && Career.needsOn())) continue;
+          const [x, y] = k.split(',').map(Number), g = c.createRadialGradient(sx(x + .5), sy(y + .5), 0, sx(x + .5), sy(y + .5), 1.6 * TS);
+          g.addColorStop(0, `rgba(255, 200, 110, ${dark * 1.1})`); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(sx(x - 1.5), sy(y - 1.5), 4 * TS, 4 * TS);
+        }
         for (const pr of m.props) if (pr.type === 'lamp') { const g = c.createRadialGradient(sx(pr.x + .5), sy(pr.y + .2), 0, sx(pr.x + .5), sy(pr.y + .2), 2.5 * TS); g.addColorStop(0, `rgba(255, 220, 120, ${dark * .9})`); g.addColorStop(1, 'rgba(255,220,120,0)'); c.fillStyle = g; c.fillRect(sx(pr.x - 2), sy(pr.y - 2), 5 * TS, 5 * TS); }
       }
     }
@@ -982,5 +1006,5 @@ const World = (() => {
   function clock() { return App.state.clock || 540; }
   function isNight() { const t = clock() % 1440; return t >= 1200 || t < 360; }
   function clockText() { const t = Math.floor(clock()) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
-  return { mount, unmount, townMap, drawPerson, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
+  return { mount, unmount, townMap, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
 })();
