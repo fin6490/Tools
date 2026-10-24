@@ -169,6 +169,10 @@ table.paytable td.num { text-align: right; color: var(--gold); white-space: nowr
 .toast.out { opacity: 0; transform: translateY(8px); }
 .toast.warn { border-color: var(--warn); } .toast.good { border-color: var(--good); }
 .toast.big { border-color: var(--gold); background: linear-gradient(#3a2b10, #1d1914); font-weight: 700; font-size: 1.05rem; }
+.toast.award { border: 2px solid var(--gold); background: linear-gradient(#3a2b10, #1d1914); font-weight: 700; font-size: 1.05rem; padding: .75rem 1rem; box-shadow: 0 0 0 1px rgba(0, 0, 0, .4), 0 8px 28px rgba(201, 162, 39, .35); animation: toast-pop .35s ease-out; }
+.toast-sub { display: block; margin-top: .25rem; font-weight: 400; font-size: .85rem; color: var(--muted, #cbb98f); }
+@keyframes toast-pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .toast.award { animation: none; } }
 
 /* ---------- table ---------- */
 .table-screen { display: flex; flex-direction: column; gap: .5rem; }
@@ -931,3 +935,5 @@ body.tipsy .world-cv, body.tipsy .felt { animation: hr-sway 5s ease-in-out infin
 body.drunk .world-cv, body.drunk .felt { animation: hr-sway-big 3.2s ease-in-out infinite; }
 body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 @media (prefers-reduced-motion: reduce) { body.tipsy .world-cv, body.tipsy .felt, body.drunk .world-cv, body.drunk .felt, body.jittery .hud { animation: none; } }
+/* on touch screens, keep map toasts above the D-pad and A button */
+@media (pointer: coarse) { body[data-screen="world"] #toasts { bottom: calc(200px + env(safe-area-inset-bottom)); } }

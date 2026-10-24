@@ -310,7 +310,7 @@ const Quests = {
     this.state()[id] = { s: 'done' };
     if (q.reward.cash) App.credit(q.reward.cash);
     if (q.reward.swagger) st.flags.bonusSwagger = (st.flags.bonusSwagger || 0) + q.reward.swagger;
-    UI.toast(`✅ ${q.title} done${q.reward.cash ? ' · +' + fmt(q.reward.cash) : ''} · ★ +${q.reward.swagger}`, 'big'); SFX.big();
+    UI.toast(`✅ Side job done: ${q.title}${q.reward.cash ? ' · +' + fmt(q.reward.cash) : ''} · ★ +${q.reward.swagger}`, 'award', q.desc); SFX.big();
     App.news(`✅ Finished "${q.title}".`); App.save(); Router.hud();
   },
   bump(id, by = 1) {
