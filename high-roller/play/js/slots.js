@@ -314,7 +314,7 @@ const Slots = (() => {
     const spinning = [0, 1, 2, 3, 4].filter(r => !(sticky && sticky[r]));
     for (let r = 0; r < 5; r++) if (sticky && sticky[r]) for (let k = 0; k < 3; k++) setCell(el.cells[r][k], M.W, 1, true);
     const blurs = [M.A, M.K, M.Q, M.J, M.T, M.H1, M.H2, M.H3, M.H4];
-    const tick = setInterval(() => { for (const r of spinning) for (let k = 0; k < 3; k++) { const c = el.cells[r][k]; c.className = 'sl-cell blur'; c.innerHTML = art(RNG.pick(blurs)); } }, 80);
+    const tick = setInterval(() => { for (const r of spinning) for (let k = 0; k < 3; k++) { const c = el.cells[r][k]; c.className = 'sl-cell blur'; c.innerHTML = art(RNG.pick(blurs)); } if (spinning.length) SFX.reel(); }, 80);
     let slowFrom = null;
     try {
       for (let r = 0; r < 5; r++) {
@@ -322,7 +322,7 @@ const Slots = (() => {
         await sleep(r === 0 ? 380 : slowFrom != null && r >= slowFrom ? 900 : 170);
         spinning.splice(spinning.indexOf(r), 1);
         for (let k = 0; k < 3; k++) { setCell(el.cells[r][k], grid[r][k], mults && mults[r][k], sticky && sticky[r]); el.cells[r][k].classList.add('land'); }
-        SFX.chip();
+        SFX.reelStop();
         if (slowFrom == null && r === 1) {
           const sc = [0, 1].reduce((a, q) => a + grid[q].filter(g => g === M.S).length, 0);
           const bn = grid[0].includes(M.B) && grid[1].includes(M.B);
