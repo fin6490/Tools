@@ -914,3 +914,20 @@ body[data-back="sal"] { --card-back: radial-gradient(circle at 50% 50%, #d4af37 
 .pc-key { height: 120px; border-radius: 0 0 8px 8px; border: 1px solid #999; background: linear-gradient(#fff, #e9e4d8); color: #333; font-weight: 800; display: flex; align-items: flex-end; justify-content: center; padding-bottom: .5rem; cursor: pointer; }
 .pc-key:active { background: linear-gradient(#e2dccb, #cfc8b4); transform: translateY(2px); }
 .pc-played { text-align: center; font-family: Georgia, serif; letter-spacing: .3em; color: var(--gold); min-height: 1.4em; }
+
+/* mood, buzz and jitters */
+.nb.mood span { font-size: .85rem; }
+.nb.mood .bar i { background: linear-gradient(90deg, #f39c12, #f7dc6f); }
+.mood-panel .mood-row { display: grid; grid-template-columns: 84px 1fr auto; gap: .6rem; align-items: center; margin: .35rem 0; }
+.mood-panel .mood-row b { font-size: .85rem; white-space: nowrap; }
+.mood-panel .bar.buzz i { background: linear-gradient(90deg, #f5cd79, #e67e22); }
+.mood-panel .bar.degen i { background: linear-gradient(90deg, #a29bfe, #e84393); }
+.degen-list { list-style: none; padding: 0; margin: .4rem 0; display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+.degen-list li.ok { color: var(--good, #2ecc71); }
+@keyframes hr-sway { 0%, 100% { transform: rotate(0) translateX(0); } 25% { transform: rotate(.35deg) translateX(2px); } 75% { transform: rotate(-.35deg) translateX(-2px); } }
+@keyframes hr-sway-big { 0%, 100% { transform: rotate(0) translateX(0); filter: blur(0); } 30% { transform: rotate(.9deg) translateX(5px); filter: blur(.6px); } 70% { transform: rotate(-.9deg) translateX(-5px); filter: blur(.4px); } }
+@keyframes hr-jitter { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(.6px, -.4px); } 50% { transform: translate(-.5px, .5px); } 75% { transform: translate(.4px, .3px); } }
+body.tipsy .world-cv, body.tipsy .felt { animation: hr-sway 5s ease-in-out infinite; }
+body.drunk .world-cv, body.drunk .felt { animation: hr-sway-big 3.2s ease-in-out infinite; }
+body.jittery .hud { animation: hr-jitter .18s linear infinite; }
+@media (prefers-reduced-motion: reduce) { body.tipsy .world-cv, body.tipsy .felt, body.drunk .world-cv, body.drunk .felt, body.jittery .hud { animation: none; } }

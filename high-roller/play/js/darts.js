@@ -101,7 +101,7 @@ const Darts = (() => {
     if (App.has('salDarts')) a *= .78;
     if (App.has('flights')) a *= .9;
     if (s.mode === 'career') { const e = s.stamina / (s.staminaMax || 100); if (e < .5) a *= 1 + (.5 - e) * 1.2; }
-    return a;
+    return a * Mood.wobbleMult();
   }
   const armLabel = a => a < 15 ? 'Tour pro' : a < 18 ? 'County player' : a < 22 ? 'League regular' : a < 27 ? 'Pub thrower' : 'Wobbly';
   const noise = a => 5 + a * .2; // release error on top of the wobble you time

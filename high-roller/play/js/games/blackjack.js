@@ -208,7 +208,7 @@ GAMES.bj = (() => {
     const canSplit = two && cv(hd.cards[0]) === cv(hd.cards[1]) && hands.length < R.maxHands && App.bank >= hd.spot.amount - 1e-9
       && !(hd.splitAces && !R.rsa);
     const canSur = two && !hd.split && R.surrender;
-    const hint = App.perk('bjhint') && App.state.settings.hints ? strategy(hd, dealer.up) : null;
+    const hint = App.perk('bjhint') && App.state.settings.hints && !Mood.drunk() ? strategy(hd, dealer.up) : null; // the strategy card blurs when you're drunk
     t.msg(hands.length > 1 ? `Hand ${active + 1} of ${hands.length}: ${totalLabel(hd.cards)}` : `You have ${totalLabel(hd.cards)} against a ${rankLabel(dealer.up.r)}.` + (hint ? '' : ''));
     if (hint) t.msg(h('span', `${hands.length > 1 ? `Hand ${active + 1}: ` : ''}${totalLabel(hd.cards)} vs ${rankLabel(dealer.up.r)} · 🃏 Strategy card says `, h('b', { H: 'HIT', S: 'STAND', D: 'DOUBLE', P: 'SPLIT', R: 'SURRENDER' }[hint])));
     t.setActions([

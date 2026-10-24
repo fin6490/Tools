@@ -659,6 +659,7 @@ const World = (() => {
           return;
         }
         const st = App.state;
+        if ((id === 'palace' || id === 'salon') && Mood.drunk()) { stepOut(door); App.count('bounced'); await UI.dialog([{ who: 'narrator', text: `The doorman puts a hand on your chest. "Not tonight, friend. Come back when you can say ${id === 'salon' ? '\'Salon Privé\'' : '\'Gilded Palace\''} without swaying." Some water and a bite to eat would help.` }]); return; }
         if (!openNow(id)) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The gangplank is up. A sign on the rail: "${VENUES[id].name} · open ${hoursText(id)}." It's ${clockText()}.` }]); return; }
         if (id === 'salon' && st.mode === 'career') {
           if ((st.flags.salonBanUntil || 0) > st.day) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The doorman doesn't even look up. "Mr. Kessler says you're not welcome until day ${st.flags.salonBanUntil}."` }]); return; }
