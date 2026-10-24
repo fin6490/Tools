@@ -178,6 +178,14 @@ const ACHIEVEMENTS = [
   { id: 'spot1', name: 'Human Calculator', desc: 'Nail a perfect count for Doc\'s team', test: () => App.counter('spotPerfect') >= 1, reward: 100, swagger: 1 },
   { id: 'spot10', name: 'Team Player', desc: 'Ten perfect counts for Doc\'s team', test: () => App.counter('spotPerfect') >= 10, reward: 2500, swagger: 3 },
   { id: 'postcards', name: 'Seventeen Postcards', desc: 'Follow every postcard signed 17 and hear the tape', test: () => !!(App.state.mystery && App.state.mystery.pc && App.state.mystery.pc.heard), reward: 1717, swagger: 5 },
+  { id: 'livingWell', name: 'Living Well', desc: 'Go to sleep with your mood at 90 or more', test: () => App.counter('livingWell') >= 1, reward: 500, swagger: 2 },
+  { id: 'rockBottom', name: 'Rock Bottom', desc: 'Let your mood hit 5 or less. It can only go up from here.', test: () => App.counter('rockBottom') >= 1, reward: 0, swagger: 1 },
+  { id: 'merry', name: 'One for the Road', desc: 'Get tipsy', test: () => App.counter('gotTipsy') >= 1, reward: 50 },
+  { id: 'hangover', name: 'Hair of the Dog', desc: 'Wake up with a hangover', test: () => App.counter('hangovers') >= 1, reward: 25 },
+  { id: 'jitters', name: 'Bean There', desc: 'Have six caffeinated drinks in one day', test: () => App.counter('beanSix') >= 1, reward: 25 },
+  { id: 'fullDegen', name: 'Full Degen', desc: 'Max out the degen meter', test: () => App.counter('fullDegen') >= 1, reward: 0, swagger: 3 },
+  { id: 'cleanWeek', name: 'Clean Living', desc: 'Seven nights in a row with the degen meter under 15', test: () => App.counter('cleanWeek') >= 1, reward: 2000, swagger: 3 },
+  { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
   { id: 'side25', name: 'Side Hustle', desc: 'Win a side bet paying 25 to 1 or better', test: () => App.counter('bigSide') >= 1, reward: 100, swagger: 1 },
   { id: 'prog', name: 'On the Meter', desc: 'Win any progressive payout', test: () => App.counter('progHits') >= 1, reward: 100 },
   { id: 'jackpot', name: 'JACKPOT', desc: 'Hit a percentage jackpot tier', test: () => App.counter('jackpots') >= 1, reward: 5000, swagger: 10 },
@@ -389,7 +397,7 @@ const Career = {
     let l = st.loans.find(l => l.id === 'vinnie');
     if (!l) { l = { id: 'vinnie', label: 'Vinnie\'s walking-around money', balance: 0, rate: this.vinnieRate(), due: null, strikes: 0 }; st.loans.push(l); }
     l.balance = round2(l.balance + amount); l.rate = this.vinnieRate();
-    App.credit(amount); App.count('borrowed', amount); App.save();
+    App.credit(amount); App.count('borrowed', amount); st.flags.borrowedToday = st.day; App.save();
   },
   repay(loanId, amount) {
     const l = App.state.loans.find(l => l.id === loanId); if (!l) return;
@@ -432,7 +440,9 @@ const Career = {
   // drain the bars. kind = 'round' (k = rounds) or 'step'
   drain(kind, k = 1) {
     const was = App.state ? (App.state.clock || 540) : 0;
-    if (App.state) App.state.clock = (App.state.clock || 540) + (kind === 'round' ? 4 : 0.25) * k;
+    const mins = (kind === 'round' ? 4 : 0.25) * k;
+    if (App.state) App.state.clock = (App.state.clock || 540) + mins;
+    if (App.state) Mood.tick(mins);
     if (!this.needsOn()) return;
     if (was < 1560 && App.state.clock >= 1560) UI.toast('🌙 It\'s 2 AM. The night ends at 4: find a bed before then.', 'warn');
     const st = App.state, starving = st.hunger <= 0 || st.thirst <= 0;
@@ -440,7 +450,7 @@ const Career = {
     const before = { hunger: st.hunger, thirst: st.thirst, stamina: st.stamina };
     st.hunger = Math.max(0, st.hunger - r.h * k);
     st.thirst = Math.max(0, st.thirst - r.t * k);
-    st.stamina = Math.max(0, Math.min(this.energyCap(), st.stamina - r.e * k * (starving ? 3 : 1)));
+    st.stamina = Math.max(0, Math.min(this.energyCap(), st.stamina - r.e * k * (starving ? 3 : 1) * Mood.drainMult()));
     this.tiredWarn();
     const warn = { hunger: '🍔 You\'re getting hungry.', thirst: '💧 You\'re getting thirsty.', stamina: '⚡ You\'re getting tired.' };
     for (const key in warn) {
@@ -473,6 +483,7 @@ const Career = {
       } else st.stamina = clamp(st.stamina + e, 0, this.energyCap());
     }
     SFX.cash(); UI.toast(`${m.icon} ${m.name}${free ? ' (comped)' : ''}`, 'good');
+    Mood.consume(id, m);
     App.save(); Router.hud(); return true;
   },
   happyHour(venue) { const t = (App.state.clock || 540) % 1440; return venue === 'spur' && t >= 1020 && t < 1140; },
@@ -488,7 +499,7 @@ const Career = {
     if (L.cost && !App.debit(L.cost)) { UI.toast(`A night here costs ${fmt(L.cost)}`, 'warn'); return; }
     let robbed = 0;
     if (L.risky && st.bank > 20 && RNG.chance(0.3)) { robbed = round2(Math.min(st.bank * 0.15, 5000)); st.bank = round2(st.bank - robbed); }
-    await this.endDay(L, robbed);
+    await this.endDay({ ...L, id: lodgingId }, robbed);
   },
   // two hours' sleep without ending the day: takes about three hours of tiredness off, once a day
   async nap(lodgingId) {
@@ -529,6 +540,7 @@ const Career = {
     let interest = 0;
     for (const l of st.loans) { const i = round2(l.balance * l.rate); l.balance = round2(l.balance + i); interest += i; }
     if (interest) lines.push(['Loan interest', fmt(-interest)]);
+    for (const l of Mood.night(L)) lines.push(l);
     const bed = st.clock || 540, wake = Math.round(clamp(bed + (L.hours || 8) * 60 - 1440, 360, 840) / 15) * 15;
     st.day++; st.clock = wake; st.wokeAt = wake; st.rest = { grace: L.grace != null ? L.grace : 8, base: L.base || 0 };
     st.staminaMax = this.staminaMax(); st.restMax = Math.round(st.staminaMax * Math.max(1, L.energy || 1));

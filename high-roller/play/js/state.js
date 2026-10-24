@@ -154,6 +154,7 @@ const App = {
     if (st.bank > s.peakBank) s.peakBank = st.bank;
     Progressives.networkTick();
     if (r.wagered > 0 || r.stamina) Career.drain('round', r.stamina != null ? r.stamina : 1);
+    Mood.round(gameId, r, round2(st.bank - r.net));
     Career.afterRound(gameId, r);
     this.save(); Router.hud();
   },

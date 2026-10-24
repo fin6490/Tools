@@ -412,7 +412,8 @@ const Chat = {
       `You are talking ${place}. Casinos in town: The Rusty Spur (dive bar), Lucky Lou's Riverboat, The Gilded Palace, Monte Royale Salon Privé (Kessler's). Also Mel's Diner, the Quik-Stop, Starlite Motel, Grand Hotel, Vinnie's Pawn & Loan, Lucky Strike Outfitters, Prime Cut Steakhouse, Lucky Park.`,
       `Rival gamblers: ${rivals}. Side jobs: ${jobs}.`,
       `Progressive jackpot meters right now: ${meters}.`,
-    ].join('\n');
+      Mood.brief(),
+    ].filter(Boolean).join('\n');
   },
   jobState(id) { const s = Quests.status(id); return s === 'done' ? 'done' : s === 'active' ? 'in progress' : 'not offered yet'; },
   // everything the chat window needs to know about someone: named characters, rivals, or a dealer
@@ -790,7 +791,9 @@ const Crowd = {
   },
   townsfolk(i, line) {
     const t = TOWNSFOLK[i % TOWNSFOLK.length];
-    return this.base('town:' + (i % TOWNSFOLK.length), t.name, t.face, '#556b2f', 'a local out on the street', t.persona, line || 'Nice night for it.', () => 'You are out on the street in town. You know local gossip but nothing about the hidden mystery beyond rumours.');
+    const sp = this.base('town:' + (i % TOWNSFOLK.length), t.name, t.face, '#556b2f', 'a local out on the street', t.persona, line || 'Nice night for it.', () => 'You are out on the street in town. You know local gossip but nothing about the hidden mystery beyond rumours.');
+    if (/^Lonnie/.test(t.name)) sp.panel = api => Mood.questPanel(api); // Lonnie keeps the Degen Diaries
+    return sp;
   },
   regular(venueId, i, line) {
     const pool = REGULARS[venueId] || REGULARS.spur, r = pool[i % pool.length];

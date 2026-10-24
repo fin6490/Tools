@@ -94,7 +94,8 @@ const Router = {
         h('div.hs.bank', h('small', 'Bankroll'), h('b#hud-bank')),
         st.mode === 'career' ? h('div.hs.debt', { onclick: () => this.safeGo('loans'), title: 'Loans' }, h('small', 'Debt'), h('b#hud-debt')) : null,
         st.mode === 'career' ? h('div.hs.needs-h', { title: 'Hunger · Thirst · Energy' },
-          ...[['hunger', '🍔'], ['thirst', '💧'], ['stam', '⚡']].map(([k, i]) => h('div.nb', h('span', i), h('div.bar', h('i#hud-' + k), k === 'stam' ? h('b.lock#hud-lock') : null)))) : null,
+          ...[['hunger', '🍔'], ['thirst', '💧'], ['stam', '⚡']].map(([k, i]) => h('div.nb', h('span', i), h('div.bar', h('i#hud-' + k), k === 'stam' ? h('b.lock#hud-lock') : null))),
+          h('div.nb.mood', h('span#hud-mood-face', '🙂'), h('div.bar', h('i#hud-mood')))) : null,
         st.mode === 'career' ? h('div.hs.swag', h('small', 'Swagger'), h('b#hud-swag')) : null),
       h('button.btn.ghost.sm.menu', { onclick: () => Screens.menu() }, '☰'));
   },
@@ -111,6 +112,7 @@ const Router = {
       e.parentElement.parentElement.title = id === 'hud-stam' && tired >= 5 ? `${Math.round(v)} / ${max} · tiredness ${Math.round(tired)}%: sleep to unlock the striped part` : `${Math.round(v)} / ${max}`;
     }
     const lk = document.getElementById('hud-lock'); if (lk) lk.style.width = tired + '%';
+    Mood.paint();
     if (this.table) $$('.meter').forEach(m => m.update && m.update());
   },
 };
@@ -185,6 +187,7 @@ const Screens = {
           h('h2', st.name), career ? h('div.muted', `Swagger ★ ${Career.swagger()} · Credit line ${fmt(Career.creditLimit())}`) : h('div.muted', 'Free Play'),
           h('div.inv', owned.length ? owned.map(k => h('span.inv-i', { title: ITEMS[k].name }, ITEMS[k].icon)) : h('span.muted.small', 'Nothing yet. The shop awaits.')),
           h('div.net', 'Net worth ', h('b', fmt(App.netWorth()))))),
+      career ? Mood.panel() : null,
       career && ch ? h('section.panel.story',
         h('div.kicker', `Chapter ${st.chapter + 1}`), h('h3', ch.title), h('p', ch.goalText),
         Screens.goalProgress()) : null,
