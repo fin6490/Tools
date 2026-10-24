@@ -3,7 +3,7 @@
 // who's signed in, whether they're premium (and the site owner), and how many AI
 // chats they have left today. AI chat goes through the highroller-chat Edge Function,
 // which holds the Anthropic key. Non-premium visitors are sent back to the teaser page.
-import * as supa from "/js/supa.js?v=20261023a";
+import * as supa from "/js/supa.js?v=20261024a";
 
 const H = window.HR_HOST;
 const OK_KEY = "spindeck.hr.ok"; // last confirmed premium check, for playing offline
