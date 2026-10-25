@@ -944,3 +944,16 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .rel-person { display: flex; gap: .6rem; align-items: flex-start; }
 .rel-person .duel-face { width: 44px; height: 44px; flex: none; }
 .pk-read { display: block; font-size: .62rem; opacity: .75; white-space: nowrap; }
+/* slots feature extras */
+.sl-picks.boosts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sl-picks.boosts .sl-pick { aspect-ratio: 3 / 4; flex-direction: column; gap: .2rem; }
+.sl-box { font-size: clamp(2rem, 10vw, 3.2rem); }
+.sl-picks.boosts .sl-pick.open b { color: #ffe9a8; } .sl-picks.boosts .sl-pick small { color: var(--muted); font-size: .7rem; text-align: center; }
+.sl-cell .sp { font-style: normal; font-weight: 900; font-size: clamp(.5rem, 2.2vw, .7rem); color: #fff; background: #b71c1c; border-radius: 4px; padding: 0 3px; }
+.sl-cell.sp-D .sp { background: #6a1b9a; }
+.sl-pick.open b.x2 { color: #ff8af0; font-size: 1.4rem; } .sl-pick.open b.star { font-size: 1.6rem; } .sl-pick.open small { color: var(--muted); font-size: .65rem; }
+.sl-wheel.inner { border-color: #00bfa5; box-shadow: 0 0 28px rgba(0, 191, 165, .6); }
+.sl-spinbtn { touch-action: none; user-select: none; -webkit-user-select: none; }
+.sl-spinbtn.winding { animation: wind .25s ease-in-out infinite alternate; }
+@keyframes wind { from { transform: scale(1); } to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .sl-spinbtn.winding { animation: none; } }

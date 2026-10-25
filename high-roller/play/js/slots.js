@@ -26,9 +26,9 @@ const SlotMath = (() => {
   ];
   // each machine's character. K scales the line pays (tuned by simulation to ~97.3% overall)
   const CFG = {
-    spur: { K: 2.49, seed: 1700, fs: { type: 'mult', award: { 3: 8, 4: 12, 5: 20 }, extraWild: 1 }, hs: { land: .04 }, bonus: 'pick', bOn: 2 },
+    spur: { K: 2.49, seed: 1700, fs: { type: 'mult', award: { 3: 8, 4: 12, 5: 20 }, extraWild: 1 }, hs: { land: .04, scale: .55 }, bonus: 'pick', bOn: 2, pickScale: .9 },
     riverboat: { K: 2.29, seed: 2100, fs: { type: 'trail', award: { 3: 8, 4: 12, 5: 20 }, extraWild: 1, cap: 6 }, hs: null, bonus: 'wheel', bOn: 2 },
-    palace: { K: 1.94, seed: 2500, fs: { type: 'sticky', award: { 3: 6, 4: 8, 5: 12 }, wild: 1 }, hs: { land: .036 }, bonus: null, bOn: 0 },
+    palace: { K: 1.94, seed: 2500, fs: { type: 'sticky', award: { 3: 6, 4: 8, 5: 12 }, wild: 1 }, hs: { land: .036, scale: .565 }, bonus: null, bOn: 0 },
     salon: { K: 2.27, seed: 2900, fs: { type: 'mult', award: { 3: 8, 4: 12, 5: 20 }, extraWild: 1 }, hs: null, bonus: 'vault', bOn: 2 },
   };
   // Hold & Spin orb values (multiples of the bet) and the fixed jackpots on the orbs
@@ -36,12 +36,17 @@ const SlotMath = (() => {
   const ORB_TOTAL = ORB.reduce((a, [, w]) => a + w, 0);
   function orbValue(rng) { let x = rng() * ORB_TOTAL; for (const [v, w] of ORB) { if ((x -= w) < 0) return v; } return 1; }
   const orbPays = v => typeof v === 'number' ? v : JP[v];
-  // the Paddlewheel: wedges sized by how often they come up
-  const WHEEL = [[15, 14], [20, 14], [25, 12], [30, 11], [40, 10], [50, 9], [75, 7], [100, 6], ['FS', 8], [150, 4], [250, 3], ['MAJOR', 1.5], ['GRAND', .5]];
+  // Hold & Spin extras: a coin that lands can be a COLLECTOR (scoops up every cash coin showing) or a
+  // DOUBLER (doubles every cash coin showing); each feature also starts with one booster you pick
+  const HS_COLLECT = .05, HS_DOUBLE = .035, BOOSTS = ['spin', 'collect', 'double'];
+  // the Paddlewheel: wedges sized by how often they come up; UP spins the Captain's Wheel inside it
+  const WHEEL = [[15, 14], [20, 14], [25, 12], [30, 11], [40, 10], [50, 9], [75, 7], [100, 6], ['FS', 8], [150, 4], [250, 3], ['UP', 5]];
+  const INNER = [[100, 30], [150, 25], [200, 18], [300, 12], ['MAJOR', 8], [500, 5], ['GRAND', 2]];
   // Crack the Vault: which jackpot you match three of
   const VAULT = [['MINI', 58], ['MINOR', 30], ['MAJOR', 10], ['GRAND', 2]];
   const VAULT_PAY = { MINI: 15, MINOR: 40, MAJOR: 150, GRAND: 1000 };
-  // Wanted posters: 12 posters, three say COLLECT
+  // Wanted posters: 12 posters, three say COLLECT, and one is special: ×2 doubles the bounty so far,
+  // the Sheriff's Star saves you from the next COLLECT
   const POSTER = [[4, 25], [6, 22], [10, 18], [16, 12], [20, 10], [30, 6], [50, 4], [100, 2], [200, .6]];
   const pickW = (rng, list) => { const tot = list.reduce((a, [, w]) => a + w, 0); let x = rng() * tot; for (const [v, w] of list) { if ((x -= w) < 0) return v; } return list[0][0]; };
 
@@ -120,29 +125,52 @@ const SlotMath = (() => {
       while (n > 0 && played < 300) { const f = spinFree(rng, fs); total += f.ev.total; if (f.ev.sc >= 3) n += c.fs.award[3]; n--; played++; }
       return { total, played };
     }
-    function holdAndSpin(rng, startGrid) {
-      const cells = startGrid.map(col => col.map(g => g === O ? orbValue(rng) : null));
-      const rounds = []; let left = 3;
+    // returns the coins after the booster, then a snapshot after every respin round, so the screen can
+    // replay it exactly; values are in bets, jackpots are names
+    function holdAndSpin(rng, startGrid, boost) {
+      boost = boost || BOOSTS[Math.floor(rng() * BOOSTS.length)];
+      const sc = c.hs.scale || 1, cash = () => { const v = orbValue(rng); return typeof v === 'number' ? Math.round(v * sc * 100) / 100 : v; };
+      const cells = startGrid.map(col => col.map(g => g === O ? cash() : null)), kind = cells.map(col => col.map(() => ''));
+      const cashSum = () => cells.flat().reduce((a, v) => a + (typeof v === 'number' ? v : 0), 0);
+      const doubleAll = () => { for (const col of cells) for (let k = 0; k < 3; k++) if (typeof col[k] === 'number') col[k] = Math.round(col[k] * 200) / 100; };
+      const empties = () => { const e = []; for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) if (cells[r][k] === null) e.push([r, k]); return e; };
+      const snap = () => ({ cells: cells.map(col => col.slice()), kind: kind.map(col => col.slice()) });
+      const max = boost === 'spin' ? 4 : 3;
+      let startAt = null;
+      if (boost === 'double') doubleAll();
+      if (boost === 'collect') { const e = empties(); const [r, k] = e[Math.floor(rng() * e.length)]; cells[r][k] = cashSum(); kind[r][k] = 'C'; startAt = [r, k]; }
+      const start = snap(), rounds = []; let left = max;
       while (left > 0) {
-        let landed = false; const add = [];
-        for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) if (cells[r][k] === null && rng() < c.hs.land) { cells[r][k] = orbValue(rng); landed = true; add.push([r, k]); }
-        rounds.push(add);
-        if (cells.every(col => col.every(v => v !== null))) break;
-        left = landed ? 3 : left - 1;
+        let landed = false; const add = [], events = [];
+        for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) if (cells[r][k] === null && rng() < c.hs.land) {
+          landed = true; add.push([r, k]); const x = rng();
+          if (x < HS_COLLECT) { cells[r][k] = Math.round(cashSum() * 100) / 100; kind[r][k] = 'C'; events.push('collect'); }
+          else if (x < HS_COLLECT + HS_DOUBLE) { doubleAll(); cells[r][k] = cash(); kind[r][k] = 'D'; events.push('double'); }
+          else cells[r][k] = cash();
+        }
+        rounds.push({ add, events, ...snap() });
+        if (!empties().length) break;
+        left = landed ? max : left - 1;
       }
-      const full = cells.every(col => col.every(v => v !== null));
-      const total = cells.flat().reduce((a, v) => a + (v === null ? 0 : orbPays(v)), 0) + (full ? JP.GRAND : 0);
-      return { cells, rounds, full, total };
+      const full = !empties().length;
+      const total = Math.min(CAP, cells.flat().reduce((a, v) => a + (v === null ? 0 : orbPays(v)), 0) + (full ? JP.GRAND : 0));
+      return { boost, max, start, startAt, cells, rounds, full, total };
     }
     // Wanted posters: 12 face down, three COLLECTs; prizes add up until you turn a COLLECT
     function pickBoard(rng) {
-      const tiles = []; for (let i = 0; i < 9; i++) tiles.push(pickW(rng, POSTER)); tiles.push('COLLECT', 'COLLECT', 'COLLECT');
+      const sc = c.pickScale || 1, tiles = []; for (let i = 0; i < 8; i++) tiles.push(Math.round(pickW(rng, POSTER) * sc * 100) / 100);
+      tiles.push(rng() < .6 ? 'x2' : 'STAR', 'COLLECT', 'COLLECT', 'COLLECT');
       for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; }
       return tiles;
     }
-    function pickValue(tiles, order) { let t = 0; for (const i of order) { if (tiles[i] === 'COLLECT') break; t += tiles[i]; } return t; }
+    function pickValue(tiles, order) {
+      let t = 0, star = 0;
+      for (const i of order) { const v = tiles[i]; if (v === 'COLLECT') { if (star) { star--; continue; } break; } if (v === 'x2') t *= 2; else if (v === 'STAR') star++; else t += v; }
+      return t;
+    }
     function wheelSpin(rng) { const tot = WHEEL.reduce((a, [, w]) => a + w, 0); let x = rng() * tot; for (let i = 0; i < WHEEL.length; i++) { if ((x -= WHEEL[i][1]) < 0) return i; } return 0; }
-    const wheelPays = v => v === 'FS' ? 0 : typeof v === 'number' ? v : JP[v];
+    function innerSpin(rng) { const tot = INNER.reduce((a, [, w]) => a + w, 0); let x = rng() * tot; for (let i = 0; i < INNER.length; i++) { if ((x -= INNER[i][1]) < 0) return i; } return 0; }
+    const wheelPays = v => v === 'FS' || v === 'UP' ? 0 : typeof v === 'number' ? v : JP[v];
     // Crack the Vault: decide the jackpot, then a reveal order where it is the first to reach three
     function vaultRun(rng) {
       const win = pickW(rng, VAULT), others = VAULT.map(([t]) => t).filter(t => t !== win);
@@ -160,17 +188,17 @@ const SlotMath = (() => {
       if (b.ev.bonus) {
         let v = 0;
         if (c.bonus === 'pick') { const t = pickBoard(rng); v = pickValue(t, t.map((_, i) => i).sort(() => rng() - .5)); }
-        if (c.bonus === 'wheel') { const w = WHEEL[wheelSpin(rng)][0]; v = w === 'FS' ? playFree(rng, 8).total : wheelPays(w); }
+        if (c.bonus === 'wheel') { const w = WHEEL[wheelSpin(rng)][0]; v = w === 'FS' ? playFree(rng, 8).total : w === 'UP' ? wheelPays(INNER[innerSpin(rng)][0]) : wheelPays(w); }
         if (c.bonus === 'vault') v = vaultRun(rng).pays;
         total += v; parts.bonus = v;
       }
       return { total: Math.min(CAP, total), parts, trig: { fs: b.ev.sc >= 3, hs: !!c.hs && b.ev.orbs >= 6, bonus: b.ev.bonus, lucky: !!b.lucky } };
     }
-    return { key, cfg: c, PAY, STRIPS, STRIPS_FS, stops, view, evaluate, spinBase, spinFree, freshFS, playFree, holdAndSpin, pickBoard, pickValue, wheelSpin, wheelPays, vaultRun, simulate };
+    return { key, cfg: c, PAY, STRIPS, STRIPS_FS, stops, view, evaluate, spinBase, spinFree, freshFS, playFree, holdAndSpin, pickBoard, pickValue, wheelSpin, innerSpin, wheelPays, vaultRun, simulate };
   }
   const cache = {};
   const machine = key => cache[key] || (cache[key] = make(key));
-  return { W, S, O, H1, H2, H3, H4, A, K: K_, Q, J, T, B, PAYING, SCAT_PAY, CAP, JP, ORB, WHEEL, VAULT, VAULT_PAY, POSTER, LUCKY, CFG, orbPays, machine };
+  return { W, S, O, H1, H2, H3, H4, A, K: K_, Q, J, T, B, PAYING, SCAT_PAY, CAP, JP, ORB, WHEEL, INNER, BOOSTS, VAULT, VAULT_PAY, POSTER, LUCKY, CFG, orbPays, machine };
 })();
 
 /* ======== machine ======== */
@@ -428,24 +456,49 @@ const Slots = (() => {
     await sleep(900);
     return total;
   }
+  // Hold & Spin: pick a booster, then watch the respins. Collectors scoop up every cash coin showing,
+  // doublers double them, and filling all fifteen spots wins the GRAND
+  const BOOST_INFO = { spin: ['🔄', '+1 RESPIN', 'Respins reset to 4, not 3'], collect: ['💰', 'COLLECTOR', 'A collector lands now and scoops up every coin'], double: ['✖️2', 'DOUBLE UP', 'Every starting coin is doubled'] };
   async function holdSpin(grid, B) {
     const s = st(); s.hs++; App.count('slotHS');
     const name = V === 'palace' ? 'DRAGON PEARLS' : 'GOLD RUSH';
     banner(`${name}: HOLD & SPIN!`, 'hs', 2000); SFX.big(); await sleep(1800);
     const res = mach.holdAndSpin(Math.random, grid);
     App.credit(res.total * B); App.save(); Router.hud(); // banked before the show
-    // replay: start with the triggering orbs, then each respin round
-    const shown = grid.map(col => col.map(g => g === M.O));
-    const paint = () => { for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) { const c = el.cells[r][k], v = res.cells[r][k]; c.className = 'sl-cell ' + (shown[r][k] ? 'orb' : 'empty'); c.innerHTML = shown[r][k] ? art(M.O) : ''; if (shown[r][k]) c.append(h('b.ov' + (typeof v === 'string' ? '.jpv' : ''), typeof v === 'string' ? v : money(v * B))); } };
-    paint();
-    let left = 3;
-    for (const add of res.rounds) {
-      el.msg.textContent = `${name} · respins left: ${left}`;
-      await sleep(650);
-      for (const [r, k] of add) { shown[r][k] = true; }
-      paint(); for (const [r, k] of add) el.cells[r][k].classList.add('land');
-      if (add.length) { SFX.chip(); left = 3; } else left--;
-      el.msg.textContent = `${name} · respins left: ${left}`;
+    // the booster: three closed boxes, one is yours
+    const boxes = h('div.sl-picks.boosts'), others = M.BOOSTS.filter(b => b !== res.boost).sort(() => Math.random() - .5);
+    const cards = [0, 1, 2].map(i => h('button.sl-pick', { onclick: () => { if (el._tap && !cards[i].classList.contains('open')) el._tap(i); } }, h('span.sl-box', V === 'palace' ? '🏮' : '🧰')));
+    cards.forEach(c => boxes.append(c));
+    const bstat = h('div.sl-over-s', 'Pick a box for your booster.');
+    overlay(`${name} BOOSTER`, 'One of three boosters, chosen by you', h('div', boxes, bstat));
+    const pick = await tap();
+    cards.forEach((c, i) => { const b = i === pick ? res.boost : others.shift(), [ic, nm, d] = BOOST_INFO[b]; c.classList.add('open'); if (i !== pick) c.classList.add('dim'); c.innerHTML = ''; c.append(h('b', ic), h('b', nm), h('small', d)); });
+    SFX.win(); bstat.textContent = `${BOOST_INFO[res.boost][1]}: ${BOOST_INFO[res.boost][2]}.`;
+    await sleep(1700); closeOverlay();
+    // replay the respins from the snapshots
+    const paint = (snap, fresh = []) => {
+      for (let r = 0; r < 5; r++) for (let k = 0; k < 3; k++) {
+        const c = el.cells[r][k], v = snap.cells[r][k], kd = snap.kind[r][k], on = v !== null;
+        c.className = 'sl-cell ' + (on ? 'orb' + (kd ? ' sp-' + kd : '') : 'empty'); c.innerHTML = on ? art(M.O) : '';
+        if (on) { if (kd) c.append(h('em.sp', kd === 'C' ? 'COLLECT' : '×2')); c.append(h('b.ov' + (typeof v === 'string' ? '.jpv' : ''), typeof v === 'string' ? v : money(v * B))); }
+      }
+      for (const [r, k] of fresh) el.cells[r][k].classList.add('land');
+    };
+    const coins = snap => snap.cells.flat().reduce((a, v) => a + (v === null ? 0 : M.orbPays(v)), 0);
+    const filled = snap => snap.cells.flat().filter(v => v !== null).length;
+    const status = (snap, left) => { el.msg.textContent = `${name} · ${'●'.repeat(left)}${'○'.repeat(res.max - left)} respins · ${money(coins(snap) * B)} · ${filled(snap)}/15 for the GRAND`; };
+    let left = res.max;
+    paint(res.start, res.startAt ? [res.startAt] : []); status(res.start, left);
+    if (res.boost === 'double') { banner('EVERY COIN ×2!', 'hs', 1300); SFX.win(); await sleep(1100); }
+    if (res.boost === 'collect') { banner(`COLLECTOR! ${money(res.start.cells[res.startAt[0]][res.startAt[1]] * B)}`, 'hs', 1300); SFX.win(); await sleep(1100); }
+    for (const rd of res.rounds) {
+      await sleep(rd.add.length ? 700 : 550);
+      paint(rd, rd.add);
+      if (rd.add.length) { SFX.reelStop(); left = res.max; } else left--;
+      status(rd, left);
+      if (rd.events.includes('collect')) { banner('💰 COLLECTOR! Every coin scooped up', 'hs', 1400); SFX.win(); await sleep(1200); }
+      if (rd.events.includes('double')) { banner('✖️2 DOUBLER! Every coin doubled', 'hs', 1400); SFX.win(); await sleep(1200); }
+      if (rd.add.length && filled(rd) >= 13 && !res.full) { banner(`${15 - filled(rd)} TO GO FOR THE GRAND!`, 'jackpot', 1200); await sleep(900); }
     }
     if (res.full) { s.grand++; App.count('slotGrand'); banner(`👑 GRAND JACKPOT! ${money(M.JP.GRAND * B)}`, 'jackpot', 3500); SFX.big(); await sleep(2500); Quests.bump('slots4'); }
     const total = res.total * B;
@@ -474,49 +527,79 @@ const Slots = (() => {
     const tiles = mach.pickBoard(Math.random), order = tiles.map((_, i) => i).sort(() => Math.random() - .5);
     const seq = order.map(i => tiles[i]), win = mach.pickValue(tiles, order) * B;
     App.credit(win); App.save(); Router.hud();
-    let total = 0, n = 0, done = false;
+    let total = 0, n = 0, done = false, star = 0;
     const grid = h('div.sl-picks');
     const cards = Array.from({ length: 12 }, (_, i) => h('button.sl-pick', { onclick: () => { if (!done && !cards[i].classList.contains('open') && el._tap) el._tap(i); } }, h('span.sl-pick-b', h('span', { html: art(M.B) }))));
     cards.forEach(c => grid.append(c));
     const status = h('div.sl-over-s', 'Pick a poster. Keep picking until you find a COLLECT.');
-    overlay('WANTED: DEAD OR ALIVE', 'Every poster hides a bounty, three hide COLLECT', h('div', grid, status));
+    overlay('WANTED: DEAD OR ALIVE', 'Bounties add up until a COLLECT. One poster is special: ×2, or a Sheriff\'s Star that stops a COLLECT', h('div', grid, status));
     while (!done) {
       const i = await tap(), v = seq[n++];
       cards[i].classList.add('open');
       cards[i].innerHTML = '';
-      if (v === 'COLLECT') { cards[i].append(h('b.collect', 'COLLECT')); done = true; SFX.chip(); }
+      if (v === 'COLLECT' && star) { star--; cards[i].append(h('b.collect', 'COLLECT'), h('small', '⭐ blocked!')); SFX.win(); status.textContent = `The Sheriff's Star saves you! Bounties: ${money(total)}. Pick again!`; }
+      else if (v === 'COLLECT') { cards[i].append(h('b.collect', 'COLLECT')); done = true; SFX.chip(); }
+      else if (v === 'x2') { total *= 2; cards[i].append(h('b.x2', '×2')); SFX.big(); status.textContent = `DOUBLE BOUNTY! ${money(total)}. Pick again!`; }
+      else if (v === 'STAR') { star++; cards[i].append(h('b.star', '⭐'), h('small', "Sheriff's Star")); SFX.win(); status.textContent = `A Sheriff's Star: it'll stop the next COLLECT. Bounties: ${money(total)}.`; }
       else { total += v * B; cards[i].append(h('b', money(v * B))); SFX.win(); status.textContent = `Bounties so far: ${money(total)}. Pick again!`; }
     }
     // show what the other posters were hiding
-    let rest = seq.slice(n); cards.forEach(c => { if (!c.classList.contains('open')) { const v = rest.shift(); c.classList.add('open', 'dim'); c.innerHTML = ''; c.append(h(v === 'COLLECT' ? 'b.collect' : 'b', v === 'COLLECT' ? 'COLLECT' : money(v * B))); } });
+    let rest = seq.slice(n); cards.forEach(c => { if (!c.classList.contains('open')) { const v = rest.shift(); c.classList.add('open', 'dim'); c.innerHTML = ''; c.append(h(v === 'COLLECT' ? 'b.collect' : 'b', v === 'COLLECT' ? 'COLLECT' : v === 'x2' ? '×2' : v === 'STAR' ? '⭐' : money(v * B))); } });
     status.textContent = `The sheriff pays ${money(win)}!`;
     await sleep(1800); closeOverlay();
     await countUp(win, B);
     return win;
   }
-  // the Paddlewheel: wedges sized by how often they land
-  async function wheelBonus(B) {
-    const W = M.WHEEL, idx = mach.wheelSpin(Math.random), [val] = W[idx];
-    const cash = val === 'FS' ? 0 : mach.wheelPays(val) * B;
-    if (cash) { App.credit(cash); App.save(); Router.hud(); }
-    const tot = W.reduce((a, [, w]) => a + w, 0);
-    let a0 = 0; const wedges = W.map(([v, w], i) => { const a = a0, span = w / tot * 360; a0 += span; return { v, a, span, i }; });
-    const col = (v, i) => v === 'GRAND' ? '#ffd34d' : v === 'MAJOR' ? '#ff8af0' : v === 'FS' ? '#7c4dff' : ['#c62828', '#1565c0', '#2e7d32', '#ef6c00'][i % 4];
+  // the Paddlewheel: wedges sized by how often they land. UP spins the Captain's Wheel in the middle,
+  // where the big prizes and the jackpots live. You give it the spin: hold the button to wind it up
+  function wheelSvg(list, inner) {
+    const tot = list.reduce((a, [, w]) => a + w, 0);
+    let a0 = 0; const wedges = list.map(([v, w], i) => { const a = a0, span = w / tot * 360; a0 += span; return { v, a, span, i }; });
+    const col = (v, i) => v === 'GRAND' ? '#ffd34d' : v === 'MAJOR' ? '#ff8af0' : v === 'FS' ? '#7c4dff' : v === 'UP' ? '#00bfa5' : (inner ? ['#6d4c41', '#8d6e63', '#4e342e'] : ['#c62828', '#1565c0', '#2e7d32', '#ef6c00'])[i % (inner ? 3 : 4)];
     const P = (a, r) => [50 + r * Math.sin(a * Math.PI / 180), 50 - r * Math.cos(a * Math.PI / 180)];
-    const svg = `<svg viewBox="0 0 100 100" class="sl-wheel-svg">${wedges.map(w => { const [x1, y1] = P(w.a, 48), [x2, y2] = P(w.a + w.span, 48), [tx, ty] = P(w.a + w.span / 2, 31); return `<path d="M50 50 L${x1} ${y1} A48 48 0 ${w.span > 180 ? 1 : 0} 1 ${x2} ${y2} Z" fill="${col(w.v, w.i)}" stroke="#fff3c4" stroke-width=".6"/><text x="${tx}" y="${ty}" font-size="${w.span < 6 ? 3 : w.span < 12 ? 3.8 : 4.6}" font-weight="900" fill="${w.v === 'GRAND' || w.v === 'MAJOR' ? '#3a1d00' : '#fff'}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${w.a + w.span / 2 - 90} ${tx} ${ty})">${w.v === 'FS' ? '8 FREE SPINS' : typeof w.v === 'number' ? w.v + '×' : w.v}</text>`; }).join('')}<circle cx="50" cy="50" r="7" fill="#ffd34d" stroke="#7a4f06" stroke-width="1.5"/></svg>`;
-    const wheel = h('div.sl-wheel', { html: svg }), btn = h('button.btn.primary', 'SPIN THE WHEEL');
-    overlay('THE PADDLEWHEEL', 'Wedges are sized by how often they land', h('div.sl-wheel-wrap', h('div.sl-wheel-ptr'), wheel, h('div.sl-over-s', btn)));
-    await new Promise(res => { btn.onclick = res; });
-    btn.disabled = true;
-    const target = wedges[idx], land = target.a + target.span * (.2 + Math.random() * .6);
-    const turns = 360 * 5 + (360 - land);
-    wheel.style.transition = `transform ${3.6 * Math.max(.5, App.speedFactor())}s cubic-bezier(.12,.7,.2,1)`;
-    requestAnimationFrame(() => { wheel.style.transform = `rotate(${turns}deg)`; });
-    await new Promise(r => setTimeout(r, 3900 * Math.max(.5, App.speedFactor()))); // the wheel's own transition time
+    const label = v => v === 'FS' ? '8 FS' : v === 'UP' ? '⬆ UP' : typeof v === 'number' ? v + '×' : v;
+    const svg = `<svg viewBox="0 0 100 100" class="sl-wheel-svg">${wedges.map(w => { const [x1, y1] = P(w.a, 48), [x2, y2] = P(w.a + w.span, 48), [tx, ty] = P(w.a + w.span / 2, 31); return `<path d="M50 50 L${x1} ${y1} A48 48 0 ${w.span > 180 ? 1 : 0} 1 ${x2} ${y2} Z" fill="${col(w.v, w.i)}" stroke="#111" stroke-width=".4"/><text x="${tx}" y="${ty}" transform="rotate(${w.a + w.span / 2 - 90} ${tx} ${ty})" text-anchor="middle" dominant-baseline="middle" font-size="${w.span < 12 ? 4 : 5}" font-weight="800" fill="#fff">${label(w.v)}</text>`; }).join('')}<circle cx="50" cy="50" r="7" fill="#ffd34d" stroke="#111"/></svg>`;
+    return { el: h('div.sl-wheel' + (inner ? '.inner' : ''), { html: svg }), wedges, label };
+  }
+  async function spinWheel(W, idx, btn) {
+    // hold to wind up (or just tap); the result is already decided, the wind-up only sets the drama
+    let power = 0, t0 = 0;
+    await new Promise(res => {
+      let gone = false; const go = p => { if (gone) return; gone = true; power = p; btn.classList.remove('winding'); res(); };
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); t0 = performance.now(); btn.classList.add('winding'); btn.textContent = 'WINDING UP… LET GO!'; });
+      btn.addEventListener('pointerup', e => { e.preventDefault(); go(t0 ? Math.min(1, (performance.now() - t0) / 1200) : .5); });
+      btn.addEventListener('click', () => go(.6)); // keyboard (Space/Enter) and plain clicks
+    });
+    btn.disabled = true; btn.textContent = power > .8 ? 'WHAT A SPIN!' : 'SPINNING…';
+    const target = W.wedges[idx], land = target.a + target.span * (.2 + Math.random() * .6);
+    const turns = 360 * (4 + Math.round(power * 4)) + (360 - land), secs = (3 + power * 1.6) * Math.max(.5, App.speedFactor());
+    W.el.style.transition = `transform ${secs}s cubic-bezier(.12,.7,.2,1)`;
+    requestAnimationFrame(() => { W.el.style.transform = `rotate(${turns}deg)`; });
+    SFX.wheel(secs * 1000);
+    await new Promise(r => setTimeout(r, secs * 1000 + 300));
+  }
+  async function wheelBonus(B) {
+    const idx = mach.wheelSpin(Math.random), [val] = M.WHEEL[idx];
+    const innerIdx = val === 'UP' ? mach.innerSpin(Math.random) : -1, prize = val === 'UP' ? M.INNER[innerIdx][0] : val;
+    const cash = prize === 'FS' ? 0 : mach.wheelPays(prize) * B;
+    if (cash) { App.credit(cash); App.save(); Router.hud(); }
+    const W = wheelSvg(M.WHEEL), btn = h('button.btn.primary.sl-spinbtn', 'HOLD TO SPIN');
+    const msg = h('div.sl-over-s', 'Hold the button to wind it up, then let go. Land on ⬆ UP to spin the Captain\'s Wheel.');
+    overlay('THE PADDLEWHEEL', 'Wedges are sized by how often they land', h('div.sl-wheel-wrap', h('div.sl-wheel-ptr'), W.el, msg, btn));
+    await spinWheel(W, idx, btn);
     SFX.big();
-    btn.textContent = val === 'FS' ? '8 FREE SPINS!' : `${typeof val === 'number' ? val + '×' : val}: ${money(cash)}`;
-    await sleep(1600); closeOverlay();
-    if (val === 'FS') return freeSpins(8, B);
+    if (val === 'UP') {
+      msg.textContent = '⬆ UPGRADE! The Captain\'s Wheel: every wedge is 100× or better.'; btn.textContent = 'HOLD TO SPIN';
+      await sleep(1300);
+      const I = wheelSvg(M.INNER, true), btn2 = h('button.btn.primary.sl-spinbtn', 'HOLD TO SPIN');
+      el.over.querySelector('.sl-wheel-wrap').replaceWith(h('div.sl-wheel-wrap', h('div.sl-wheel-ptr'), I.el, msg, btn2));
+      el.over.querySelector('.sl-over-h b').textContent = 'THE CAPTAIN\'S WHEEL';
+      await spinWheel(I, innerIdx, btn2);
+      SFX.big(); btn2.textContent = `${I.label(prize)}: ${money(cash)}`;
+      if (prize === 'GRAND' || prize === 'MAJOR') banner(`👑 ${prize}! ${money(cash)}`, 'jackpot', 3000);
+    } else btn.textContent = val === 'FS' ? '8 FREE SPINS!' : `${W.label(val)}: ${money(cash)}`;
+    await sleep(1700); closeOverlay();
+    if (prize === 'FS') return freeSpins(8, B);
     await countUp(cash, B);
     return cash;
   }
@@ -532,17 +615,46 @@ const Slots = (() => {
     const cards = Array.from({ length: 12 }, (_, i) => h('button.sl-pick', { onclick: () => { if (!done && !cards[i].classList.contains('open') && el._tap) el._tap(i); } }, h('span.sl-pick-b', h('span', { html: art(M.B) }))));
     cards.forEach(c => grid.append(c));
     overlay('CRACK THE VAULT', 'Kessler keeps his jackpots in twelve safes', h('div', tally, grid, status));
+    let paid = win, deal = false;
     while (!done) {
       const i = await tap(), v = run.seq[n++];
       cards[i].classList.add('open', 'jp-' + v.toLowerCase()); cards[i].innerHTML = ''; cards[i].append(h('b', v));
       found[v]++; drawTally(); SFX.chip();
-      if (found[v] >= 3) done = true;
+      if (found[v] >= 3) { done = true; break; }
+      // after four safes Kessler tries to buy you out, a little under what the vault is worth on average
+      if (n === 4) {
+        const offer = vaultOffer(found, B);
+        if (offer) {
+          status.innerHTML = '';
+          const take = await new Promise(res => status.append(
+            h('div', `📞 Kessler slides an envelope across: ${money(offer)} to walk away now.`),
+            h('div.ev-row', h('button.btn.sm.primary', { onclick: () => res(true) }, `Take ${money(offer)}`), h('button.btn.sm', { onclick: () => res(false) }, 'Keep cracking'))));
+          status.textContent = take ? '' : 'You push the envelope back. Kessler smiles thinly.';
+          if (take) {
+            deal = true; done = true; paid = offer;
+            if (offer > win) App.credit(offer - win); else App.debit(win - offer);
+            App.save(); Router.hud(); App.count('vaultDeals');
+            // show what was behind the rest
+            let rest = run.seq.slice(n); cards.forEach(c => { if (!c.classList.contains('open') && rest.length) { const x = rest.shift(); c.classList.add('open', 'dim', 'jp-' + x.toLowerCase()); c.innerHTML = ''; c.append(h('b', x)); } });
+          }
+        }
+      }
     }
-    status.textContent = `${run.win}! The vault pays ${money(win)}.`;
+    status.textContent = deal ? `You took the deal: ${money(paid)}. The vault would have paid ${run.win}: ${money(win)}.` : `${run.win}! The vault pays ${money(win)}.`;
     if (run.win === 'GRAND') App.count('slotVaultGrand');
-    await sleep(2000); closeOverlay();
-    await countUp(win, B);
-    return win;
+    await sleep(deal ? 2600 : 2000); closeOverlay();
+    await countUp(paid, B);
+    return paid;
+  }
+  // Kessler's buy-out: what the vault is worth from here, by simulating runs that match what's open
+  function vaultOffer(found, B) {
+    let sum = 0, n = 0;
+    for (let t = 0; t < 8000 && n < 600; t++) {
+      const r = mach.vaultRun(Math.random), c = { MINI: 0, MINOR: 0, MAJOR: 0, GRAND: 0 };
+      r.seq.slice(0, 4).forEach(x => c[x]++);
+      if (Object.keys(c).every(k => c[k] === found[k])) { sum += r.pays; n++; }
+    }
+    return n >= 25 ? Math.round(sum / n * .9 * B) : 0;
   }
 
   /* ---------- autoplay, gamble, paytable ---------- */
@@ -582,10 +694,10 @@ const Slots = (() => {
       h('p', icon(M.W), ' WILD (reels 2 to 4) substitutes for every symbol except scatters, coins and bonus symbols.'),
       h('p', icon(M.S), ` 3, 4 or 5 scatters anywhere pay ${money(B)}, ${money(5 * B)} or ${money(25 * B)} and award ${c.fs.award[3]}, ${c.fs.award[4]} or ${c.fs.award[5]} FREE SPINS. ${fsText}. Three more scatters add ${c.fs.award[3]} spins.`),
     ];
-    if (c.hs) parts.push(h('p', icon(M.O), ` 6 or more ${V === 'palace' ? 'dragon pearls' : 'gold coins'} start HOLD & SPIN: they lock in place with cash values, and you get 3 respins, reset whenever a new one lands. They can carry the MINI (${money(20 * B)}), MINOR (${money(50 * B)}) or MAJOR (${money(250 * B)}); fill all 15 spots for the GRAND (${money(1000 * B)}).`));
-    if (c.bonus === 'pick') parts.push(h('p', icon(M.B), ' A WANTED poster on each of reels 1, 2 and 3 starts the POSTER BONUS: pick from twelve posters, each a bounty, until you turn over one of three COLLECTs.'));
-    if (c.bonus === 'wheel') parts.push(h('p', icon(M.B), ` A PADDLEWHEEL on each of reels 1, 2 and 3 spins the wheel: 15× to 250× your bet, 8 free spins, the MAJOR (${money(250 * B)}) or the GRAND (${money(1000 * B)}). Wedges are sized by how often they land.`));
-    if (c.bonus === 'vault') parts.push(h('p', icon(M.B), ` A SAFE on each of reels 1, 2 and 3 starts CRACK THE VAULT: open safes until three jackpots match. MINI ${money(15 * B)}, MINOR ${money(40 * B)}, MAJOR ${money(150 * B)}, GRAND ${money(1000 * B)}.`));
+    if (c.hs) parts.push(h('p', icon(M.O), ` 6 or more ${V === 'palace' ? 'dragon pearls' : 'gold coins'} start HOLD & SPIN: they lock in place with cash values, and you get 3 respins, reset whenever a new one lands. First pick one of three boxes for a booster: +1 respin (4 each time), a COLLECTOR straight away, or every starting coin doubled. While respinning, a coin can land as a COLLECTOR (scoops up the value of every cash coin showing) or a DOUBLER (doubles every cash coin showing). They can carry the MINI (${money(20 * B)}), MINOR (${money(50 * B)}) or MAJOR (${money(250 * B)}); fill all 15 spots for the GRAND (${money(1000 * B)}).`));
+    if (c.bonus === 'pick') parts.push(h('p', icon(M.B), ' A WANTED poster on each of reels 1, 2 and 3 starts the POSTER BONUS: pick from twelve posters, each a bounty, until you turn over one of three COLLECTs. One poster is special: ×2 doubles everything so far, or the Sheriff\'s Star blocks the next COLLECT.'));
+    if (c.bonus === 'wheel') parts.push(h('p', icon(M.B), ` A PADDLEWHEEL on each of reels 1, 2 and 3 spins the wheel (hold the button to wind it up): 15× to 250× your bet, 8 free spins, or ⬆ UP to the Captain\'s Wheel: 100× to 500×, the MAJOR (${money(250 * B)}) or the GRAND (${money(1000 * B)}). Wedges are sized by how often they land.`));
+    if (c.bonus === 'vault') parts.push(h('p', icon(M.B), ` A SAFE on each of reels 1, 2 and 3 starts CRACK THE VAULT: open safes until three jackpots match. After four safes Kessler offers you cash to walk away: take it, or keep cracking. MINI ${money(15 * B)}, MINOR ${money(40 * B)}, MAJOR ${money(150 * B)}, GRAND ${money(1000 * B)}.`));
     parts.push(h('p', '🍀 SAL\'S LUCKY 17: at random, one or two middle reels turn completely wild before they land.'),
       h('p', '🃏 After an ordinary win (up to 50× your bet) you can gamble it on red or black, up to five times.'),
       h('p', `Mystery jackpots (Copper, Silver, Gold, Diamond) build with every spin by everyone in ${VENUES[V].name}, and each one MUST hit before it reaches its cap. Whoever's spin crosses the hidden trigger wins it, whatever their bet.`),
