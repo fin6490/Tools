@@ -146,10 +146,17 @@ const Holdem = (() => {
       H.street = street;
       if (street > 0) {
         collect();
+        // all-in with nobody left to bet: turn the cards up and run the board out slowly enough to sweat
+        const live = contenders();
+        if (!H.runout && live.length > 1 && live.filter(p => !p.allin).length <= 1) {
+          H.runout = true; live.forEach(p => { p.shown = true; });
+          log('🃏 All in! Cards on their backs.'); render(); await pause(1600);
+        }
         const n = street === 1 ? 3 : 1; for (let k = 0; k < n; k++) H.board.push(shoe.draw());
         T.seats.forEach(p => { if (p) { p.bet = 0; p.acted = false; if (p.inHand && !p.folded) p.last = p.allin ? 'All-in' : ''; } });
+        if (H.runout) live.forEach(p => { p.eval = Poker.best(p.cards.concat(H.board)); });
         H.currentBet = 0; H.minRaise = bb;
-        SFX.card(); render(); await pause(350);
+        SFX.card(); render(); await pause(H.runout ? 1700 : 350);
       }
       if (contenders().length <= 1) break;
       const canAct = contenders().filter(p => !p.allin);
@@ -225,10 +232,17 @@ const Holdem = (() => {
         if (RNG.chance(s.bluff * .5)) return raiseTo(bb * 2.5);
         return passive();
       }
-      const frac = toCall / (p.stack + p.bet);
-      if (c >= 13 - s.agg * 2) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6));
-      if (c >= 10 - s.loose * 3 && frac < .35) return { type: 'call' };
-      if (c >= 12 && frac >= .35) return { type: 'call' };
+      // facing a raise: defend more against small raises and good prices, from the big blind most
+      // of all, and tighten up as the raise eats into the stack; re-raise the best hands, and
+      // now and then a suited or connected bluff
+      const frac = toCall / (p.stack + p.bet), raiseBB = toCall / bb, price = toCall / (pot + toCall);
+      const inBB = p === T.seats[H.bbi];
+      if (c >= 12.5 - s.agg * 2.5 || (c >= 7 && c <= 9 && frac < .25 && RNG.chance(s.bluff * .6))) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6));
+      let need = 9.5 - s.loose * 5 + Math.min(4, Math.max(0, raiseBB - 3) * .5) + frac * 6;
+      if (inBB) need -= 2;
+      if (price < .3) need -= 1;
+      if (c >= need && frac < .5) return { type: 'call' };
+      if (c >= 11 && frac >= .5) return { type: 'call' };
       return passive();
     }
     const opp = contenders().length - 1;
@@ -261,9 +275,9 @@ const Holdem = (() => {
       const w = cs[0], won = H.pot; w.stack += won; w.last = 'Wins'; log(`${w.name} wins ${fmtc(won)} uncontested.`);
       H.pot = 0; render(); await pause(700); return;
     }
-    while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(400); }
+    while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(1500); }
     cs.forEach(p => { p.shown = true; p.eval = Poker.best(p.cards.concat(H.board)); });
-    render(); await pause(T.fast ? 200 : 900);
+    render(); await pause(T.fast ? 200 : 1800);
     // side pots by contribution level
     const all = T.seats.filter(p => p && p.inHand);
     const levels = [...new Set(all.map(p => p.total))].sort((a, b) => a - b);
@@ -283,8 +297,23 @@ const Holdem = (() => {
     // folded players' extra chips beyond the last level were counted above; nothing is lost
     H.pot = 0;
     const meSeat = T.seats.find(p => p && p.me);
-    if (meSeat && meSeat.inHand && !meSeat.folded) { meSeat.last === 'Wins' ? SFX.win() : SFX.lose(); }
-    render(); await pause(T.fast ? 400 : 1600);
+    const mine = meSeat && meSeat.inHand && !meSeat.folded;
+    if (mine) { meSeat.last === 'Wins' ? SFX.win() : SFX.lose(); }
+    render();
+    // a showdown you played in waits for you; anyone else's gets a good look before the next deal
+    if (mine && !T.fast) await nextHand(meSeat); else await pause(T.fast ? 400 : 3000);
+  }
+  function nextHand(me) {
+    return new Promise(res => {
+      if (!el) return res();
+      const go = () => { clearTimeout(auto); document.removeEventListener('keydown', key); el.ctl.innerHTML = ''; res(); };
+      const key = e => { if ((e.key === ' ' || e.key === 'Enter') && !e.target.closest('input, select, textarea')) { e.preventDefault(); go(); } };
+      const auto = setTimeout(go, 30000);
+      el.ctl.innerHTML = '';
+      el.ctl.append(h('div.pk-msg', me.last === 'Wins' ? `🏆 You win with ${me.eval ? me.eval.name : 'the best hand'}.` : `${me.eval ? 'Your ' + me.eval.name + ' loses.' : 'You lose the pot.'}`),
+        h('div.actions', h('button.btn.primary', { onclick: go }, 'Next hand ▶')));
+      document.addEventListener('keydown', key);
+    });
   }
 
   /* ---------- running the tournament ---------- */
@@ -314,6 +343,7 @@ const Holdem = (() => {
     const pays = PAYOUTS(T.entrants), prize = place <= pays.length ? Math.round(T.pool * pays[place - 1]) : 0;
     const st = App.state;
     if (prize) App.credit(prize);
+    Quests.event('poker', { place, prize });
     st.stats.poker = st.stats.poker || { played: 0, cashes: 0, wins: 0, won: 0, best: 0 };
     const P = st.stats.poker; P.played++; if (prize) { P.cashes++; P.won += prize; } if (place === 1) { P.wins++; App.count('pokerWin_' + T.key); } P.best = P.best ? Math.min(P.best, place) : place;
     if (place <= 9 && T.entrants > 9) App.count('finalTables');
@@ -366,7 +396,7 @@ const Holdem = (() => {
       if (p.bet > 0) { const bp = { left: 50 + (pos.left - 50) * .58, top: 50 + (pos.top - 50) * .55 }; el.seats.append(h('div.pk-bet', { style: { left: bp.left + '%', top: bp.top + '%' } }, UI.stack(p.bet), h('span', fmtc(p.bet)))); }
     });
     const me = T.seats.find(p => p && p.me);
-    el.myhand.textContent = me && me.cards && me.cards.length && H ? (H.board.length ? Poker.best(me.cards.concat(H.board)).name : `${cardName(me.cards[0])} ${cardName(me.cards[1])}${me.cards[0].r === me.cards[1].r ? ' (pocket pair)' : me.cards[0].s === me.cards[1].s ? ' (suited)' : ''}`) : '';
+    el.myhand.textContent = (H && H.runout ? '🃏 Running it out · ' : '') + (me && me.cards && me.cards.length && H ? (H.board.length ? Poker.best(me.cards.concat(H.board)).name : `${cardName(me.cards[0])} ${cardName(me.cards[1])}${me.cards[0].r === me.cards[1].r ? ' (pocket pair)' : me.cards[0].s === me.cards[1].s ? ' (suited)' : ''}`) : '');
   }
   function renderLog() { if (el) { el.log.innerHTML = ''; T.log.slice(0, 7).forEach(t => el.log.append(h('div', t))); } }
   function renderControls(p) {

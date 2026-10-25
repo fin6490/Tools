@@ -384,7 +384,7 @@ const Slots = (() => {
       if (!paid) el.msg.textContent = RNG.pick(['So close.', 'Spin again?', '', 'Next one\'s the one.', '']);
       App.state.stats.biggestWin = Math.max(App.state.stats.biggestWin || 0, paid - B);
     } finally {
-      Quests.bump('slots1'); Career.drain('round', .12);
+      Quests.bump('slots1'); Quests.event('spin', { venue: V }); Career.drain('round', .12);
       Career.checkAchievements(); App.save(); Router.hud();
       busy = false; if (el) { el.spin.disabled = false; el.back.disabled = false; }
     }

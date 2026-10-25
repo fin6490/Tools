@@ -273,7 +273,7 @@ class Table {
     if (spot && spot.o.noComp) this.round.noComp = (this.round.noComp || 0) + wager; // zero-edge bets earn no comps
     if (spot && wager > 0) {
       const side = /\b(side|prog)\b/.test(spot.o.cls || '') || !!spot.o.sideBet;
-      (this.roundLog = this.roundLog || []).push({ label: spot.o.label, note, net: round2(back - wager), side });
+      (this.roundLog = this.roundLog || []).push({ key: spot.o.key, label: spot.o.label, note, wager, net: round2(back - wager), side });
       this.renderResults();
     }
   }
@@ -306,7 +306,8 @@ class Table {
       else if (net < 0) { this.showBanner('LOSE ' + fmt(-net), 'lose', 1200); SFX.lose(); }
       else this.showBanner('PUSH', 'push', 1000);
     }
-    App.roundDone(this.game.id, { wagered: r.wagered, returned: r.returned, net, compWagered: round2(r.wagered - (r.noComp || 0)), ...extra });
+    const bets = (this.roundLog || []).map(x => ({ key: x.key, label: x.label, wager: x.wager, net: x.net }));
+    App.roundDone(this.game.id, { wagered: r.wagered, returned: r.returned, net, compWagered: round2(r.wagered - (r.noComp || 0)), bets, ...extra });
     Rivals.afterRound(this, { net });
     return net;
   }

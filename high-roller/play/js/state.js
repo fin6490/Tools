@@ -156,6 +156,7 @@ const App = {
     if (r.wagered > 0 || r.stamina) Career.drain('round', r.stamina != null ? r.stamina : 1);
     Mood.round(gameId, r, round2(st.bank - r.net));
     Career.afterRound(gameId, r);
+    if (r.wagered > 0) Quests.event('round', { gameId, venue: st.venue, ...r });
     this.save(); Router.hud();
   },
 };

@@ -937,3 +937,9 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 @media (prefers-reduced-motion: reduce) { body.tipsy .world-cv, body.tipsy .felt, body.drunk .world-cv, body.drunk .felt, body.jittery .hud { animation: none; } }
 /* on touch screens, keep map toasts above the D-pad and A button */
 @media (pointer: coarse) { body[data-screen="world"] #toasts { bottom: calc(200px + env(safe-area-inset-bottom)); } }
+/* relationships */
+.rel-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--line); }
+.rel-h { letter-spacing: 1px; }
+.rel-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .6rem; }
+.rel-person { display: flex; gap: .6rem; align-items: flex-start; }
+.rel-person .duel-face { width: 44px; height: 44px; flex: none; }
