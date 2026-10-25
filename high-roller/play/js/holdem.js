@@ -13,12 +13,32 @@ const Holdem = (() => {
     shr: { name: 'Super High Roller', field: 9, seats: 9, buyin: 5000000, fee: 100000, perLevel: 6, stack: 20000, desc: 'Nine players, five million each. Legends only.', req: () => App.state.ending ? null : 'Finish the story first' },
   };
   const PAYOUTS = n => n <= 6 ? [.65, .35] : n <= 10 ? [.5, .3, .2] : n <= 20 ? [.4, .26, .18, .1, .06] : n <= 30 ? [.36, .22, .15, .11, .09, .07] : [.3, .2, .14, .1, .08, .07, .06, .05];
+  // personalities. loose: how many hands they play; agg: raise rather than call; bluff: how often
+  // they fire with nothing; cbet: bet the flop after raising preflop; trap: slow-play monsters and
+  // check-raise; stick: how hard they are to bet off a hand; size: their usual bet (share of the
+  // pot); leak: +1 bets bigger with real hands, -1 bigger with bluffs, 0 balanced; adapt: how much
+  // they adjust to how you play; tilt: how much a big lost pot unsettles them; honest: how often
+  // their physical tells mean what they seem to.
   const STYLES = {
-    rock: { loose: .15, agg: .4, bluff: .02, label: 'tight' }, tag: { loose: .3, agg: .7, bluff: .08, label: 'tight-aggressive' },
-    lag: { loose: .55, agg: .8, bluff: .15, label: 'loose-aggressive' }, station: { loose: .6, agg: .2, bluff: .03, label: 'calling station' },
-    maniac: { loose: .8, agg: .95, bluff: .3, label: 'maniac' }, nit: { loose: .1, agg: .3, bluff: 0, label: 'nit' },
+    rock: { label: 'tight-passive rock', loose: .15, agg: .35, bluff: .03, cbet: .45, trap: .3, stick: .1, size: .7, leak: 1, adapt: .1, tilt: .2, honest: .85 },
+    nit: { label: 'nit', loose: .08, agg: .3, bluff: .01, cbet: .35, trap: .15, stick: .02, size: .8, leak: 1, adapt: 0, tilt: .1, honest: .9 },
+    tag: { label: 'tight-aggressive regular', loose: .3, agg: .7, bluff: .1, cbet: .65, trap: .15, stick: .2, size: .62, leak: 0, adapt: .5, tilt: .3, honest: .6 },
+    lag: { label: 'loose-aggressive', loose: .55, agg: .8, bluff: .2, cbet: .75, trap: .1, stick: .3, size: .7, leak: 0, adapt: .4, tilt: .5, honest: .55 },
+    station: { label: 'calling station', loose: .6, agg: .15, bluff: .03, cbet: .3, trap: .05, stick: .7, size: .45, leak: 1, adapt: 0, tilt: .4, honest: .75 },
+    maniac: { label: 'maniac', loose: .8, agg: .95, bluff: .35, cbet: .9, trap: .02, stick: .4, size: 1.1, leak: -1, adapt: 0, tilt: .8, honest: .7 },
+    trapper: { label: 'trapper', loose: .25, agg: .45, bluff: .06, cbet: .4, trap: .65, stick: .25, size: .55, leak: 0, adapt: .3, tilt: .3, honest: .65 },
+    shark: { label: 'shark', loose: .42, agg: .75, bluff: .16, cbet: .6, trap: .25, stick: .25, size: .65, leak: 0, adapt: 1, tilt: .05, honest: .5 },
   };
-  const RIVAL_STYLE = { tex: { loose: .65, agg: .7, bluff: .2 }, mei: { loose: .3, agg: .75, bluff: .08 }, baron: { loose: .25, agg: .35, bluff: .05 }, rico: { loose: .55, agg: .8, bluff: .18 } };
+  const RIVAL_STYLE = {
+    tex: { ...STYLES.maniac, label: 'wild cowboy', loose: .65, bluff: .25, tilt: 1 },
+    mei: { ...STYLES.shark, label: 'calculating shark', honest: .5 },
+    baron: { ...STYLES.rock, label: 'stiff aristocrat', bluff: .08, leak: 1, honest: .9 },
+    rico: { ...STYLES.lag, label: 'showman', size: 1.2, bluff: .22, leak: -1 },
+  };
+  // what you might notice across the felt; each player has one habit for strength and one for
+  // weakness, and how honest it is depends on who they are
+  const TELLS = ['goes very still', 'stares right at you', 'stacks their chips neatly', 'riffles chips loudly', 'glances at their chips', 'starts talking a lot', 'sits back in their chair', 'leans forward', 'sips their drink', 'won\'t look at the board', 'drums their fingers', 'smiles a little too much'];
+  const withTells = p => { const [a, b] = RNG.shuffle(TELLS.slice()); return Object.assign(p, { tellStrong: a, tellWeak: b, st: { hands: 0, vpip: 0, pfr: 0, faced: 0, ftb: 0, agg: 0, calls: 0 } }); };
   const NAMES = ['Big Mike', 'Grandma Rose', 'Dutch', 'Lefty Lou', 'The Professor', 'Jenny Jacks', 'Vegas Vic', 'Dmitri', 'Sully', 'Nadia', 'Boomer', 'The Kid', 'Chip Daley', 'Ace Ramirez', 'Lola', 'Priya', 'Hank', 'Moose', 'Whitney', 'Tommy Two-Pair', 'Sergio', 'Yuki', 'Otis', 'Mama Cass', 'Fast Eddie', 'Kat', 'Reno Ray', 'Duchess', 'Slim', 'Bubba', 'Ingrid', 'Paco', 'Doyle-ish', 'Marge', 'Benny', 'Tito', 'Vera', 'Cal', 'Junebug', 'Smokey', 'Lin', 'Gus', 'Rosa', 'Elvis (not that one)'];
   const FACES = ['🧔', '👵', '🧑‍🦰', '👨‍🦲', '🧓', '👩‍🦱', '🕶️', '🧑', '👨‍🦳', '👩', '🤠', '🧑‍🎤', '👱', '🧕', '👲', '🎅', '🧛', '🦹'];
   const COLORS = ['#7a2131', '#1f5f8b', '#2c7a7b', '#5b2c6f', '#8a6a24', '#3a5f8a', '#a0522d', '#556b2f'];
@@ -61,7 +81,7 @@ const Holdem = (() => {
   let T = null;
   function newPlayer(i, def) {
     const style = RNG.pick(Object.keys(STYLES));
-    return { id: 'p' + i, name: NAMES[i % NAMES.length], face: FACES[i % FACES.length], color: COLORS[i % COLORS.length], style: STYLES[style], styleName: STYLES[style].label, stack: def.stack };
+    return withTells({ id: 'p' + i, name: NAMES[i % NAMES.length], face: FACES[i % FACES.length], color: COLORS[i % COLORS.length], style: STYLES[style], styleName: STYLES[style].label, stack: def.stack });
   }
   function create(key) {
     const def = TOURNEYS[key], st = App.state;
@@ -72,12 +92,12 @@ const Holdem = (() => {
       const r = st.rivals[id];
       if (players.length < def.field - 1 && r.where !== 'jail' && r.bank >= def.buyin * 2 && RNG.chance(.7)) {
         r.bank -= def.buyin + def.fee;
-        players.push({ id, rival: id, name: CHARACTERS[id].name.replace(/^.*"(.+)".*$/, '$1').replace('Baron Felix von Hollow', 'The Baron'), face: CHARACTERS[id].face, color: CHARACTERS[id].color, style: RIVAL_STYLE[id], styleName: 'rival', stack: def.stack });
+        players.push(withTells({ id, rival: id, name: CHARACTERS[id].name.replace(/^.*"(.+)".*$/, '$1').replace('Baron Felix von Hollow', 'The Baron'), face: CHARACTERS[id].face, color: CHARACTERS[id].color, style: RIVAL_STYLE[id], styleName: RIVAL_STYLE[id].label, stack: def.stack }));
       }
     }
     let i = 0;
     while (players.length < def.field - 1) { const p = newPlayer(i, def); p.name = names[i % names.length]; players.push(p); i++; }
-    const me = { id: 'me', me: true, name: st.name, face: '🙂', color: '#2a6', stack: def.stack, style: STYLES.tag };
+    const me = withTells({ id: 'me', me: true, name: st.name, face: '🙂', color: '#2a6', stack: def.stack, style: STYLES.tag });
     RNG.shuffle(players);
     const seats = [me].concat(players.slice(0, def.seats - 1));
     const field = players.slice(def.seats - 1);
@@ -128,7 +148,7 @@ const Holdem = (() => {
   async function playHand() {
     const [sb, bb, ante] = blinds();
     const shoe = new Shoe(1, 1);
-    T.seats.forEach(p => { if (p) { p.inHand = p.stack > 0; p.cards = []; p.bet = 0; p.total = 0; p.folded = false; p.allin = false; p.acted = false; p.last = ''; p.shown = false; } });
+    T.seats.forEach(p => { if (p) { p.inHand = p.stack > 0; p.cards = []; p.bet = 0; p.total = 0; p.folded = false; p.allin = false; p.acted = false; p.last = ''; p.shown = false; p._vp = p._pr = false; if (p.inHand && p.st) p.st.hands++; if (p.tilt) p.tilt--; } });
     const players = T.seats.filter(inHand);
     if (players.length < 2) return;
     T.btn = nextIdx(T.btn, p => inHand(p));
@@ -190,6 +210,7 @@ const Holdem = (() => {
   }
   function apply(p, act) {
     const toCall = H.currentBet - p.bet;
+    track(p, act, toCall);
     // a short all-in doesn't reopen the betting for someone who already acted
     if (act.type === 'raise' && p.acted) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'raise' && act.to <= H.currentBet) act = { type: toCall > 0 ? 'call' : 'check' };
@@ -205,57 +226,134 @@ const Holdem = (() => {
       H.currentBet = Math.max(H.currentBet, to);
       p.last = p.allin ? 'All-in' : toCall === 0 && H.street > 0 ? 'Bet' : 'Raise';
       log(`${p.name} ${p.allin ? 'goes all-in for' : p.last === 'Bet' ? 'bets' : 'raises to'} ${fmtc(to)}.`); SFX.chip();
+      if (!p.me && H.street > 0 && act.tag && p.tellStrong && !T.fast && RNG.chance(.35)) {
+        const truth = RNG.chance(p.style.honest), strong = act.tag === 'value';
+        log(`👀 ${p.name} ${(strong === truth) ? p.tellStrong : p.tellWeak}.`);
+      }
     }
     p.acted = true;
   }
 
+  // what everyone at the table can see you do: hands played, raises, folds to bets
+  function track(p, act, toCall) {
+    const t = p.st; if (!t) return;
+    if (H.street === 0) {
+      if ((act.type === 'call' || act.type === 'raise') && !p._vp) { p._vp = true; t.vpip++; }
+      if (act.type === 'raise') { if (!p._pr) { p._pr = true; t.pfr++; } H.aggr = p; }
+    } else {
+      if (toCall > 0) { t.faced++; if (act.type === 'fold') t.ftb++; }
+      if (act.type === 'raise') t.agg++; else if (act.type === 'call') t.calls++;
+    }
+  }
+  // the read you've built on someone: a stats line after a few hands, a style after more
+  // short: "45/20 LAG", the way a poker HUD shows it; long: spelled out for the table-talk list
+  function readOf(p, long) {
+    const t = p.st; if (!t || t.hands < 6) return '';
+    const v = t.vpip / t.hands, r = t.pfr / t.hands, af = t.agg / Math.max(1, t.calls);
+    const loose = v < .18 ? 0 : v > .38 ? 2 : 1, aggr = r / Math.max(.01, v) > .55 || af > 1.5;
+    const tag = t.hands < 15 ? '' : [['Rock', 'Nit-TAG'], ['Passive', 'Reg'], ['Fish', 'LAG']][loose][aggr ? 1 : 0];
+    if (long) return `plays ${Math.round(v * 100)}% of hands, raises ${Math.round(r * 100)}%` + (tag ? ` · ${['tight', 'solid', 'loose'][loose]}-${aggr ? 'aggressive' : 'passive'}` : ' · still reading them');
+    return `${Math.round(v * 100)}/${Math.round(r * 100)}${tag ? ' ' + tag : ''}`;
+  }
+
   /* ---------- AI ---------- */
+  // a draw on the board: four to a flush or four to a straight that the hole cards help make
+  function drawOf(hole, board) {
+    if (board.length < 3 || board.length > 4) return 0;
+    const all = hole.concat(board);
+    for (let su = 0; su < 4; su++) if (all.filter(c => c.s === su).length === 4 && hole.some(c => c.s === su)) return 2;
+    const rs = new Set(all.map(c => c.r)); if (rs.has(14)) rs.add(1);
+    for (let lo = 1; lo <= 10; lo++) {
+      const win = [0, 1, 2, 3, 4].map(k => lo + k), have = win.filter(r => rs.has(r));
+      if (have.length === 4 && hole.some(c => win.includes(c.r) || (c.r === 14 && lo === 1))) return 1;
+    }
+    return 0;
+  }
+  // how a player is playing right now: their nature, bent by tilt, and adjusted to your habits
+  function mood(p) {
+    const s = { ...p.style };
+    if (p.tilt > 0) { const k = s.tilt; s.loose = Math.min(.95, s.loose + .3 * k); s.agg = Math.min(1, s.agg + .2 * k); s.bluff = Math.min(.6, s.bluff + .2 * k); s.stick += .15 * k; }
+    const me = T.seats.find(q => q && q.me), t = me && me.st;
+    if (t && s.adapt && t.hands >= 8) {
+      const pfr = t.pfr / t.hands, ftb = t.faced >= 4 ? t.ftb / t.faced : .45;
+      s.vsRaiser = Math.max(-1, Math.min(2.5, (pfr - .18) * 10)) * s.adapt;   // you raise a lot: fight back
+      s.bluff *= 1 + Math.max(-.7, Math.min(1.5, (ftb - .45) * 3)) * s.adapt;   // you fold a lot: bluff you
+      s.stick += Math.max(0, (t.agg / Math.max(1, t.calls)) - 1.2) * .08 * s.adapt; // you bet a lot: call you down
+    }
+    return s;
+  }
+  function late(p) { // on the button or the seat before it
+    let k = 0; for (let j = 1; j <= T.seats.length; j++) { const q = T.seats[(T.seats.indexOf(p) + j) % T.seats.length]; if (q === T.seats[T.btn]) return k <= 1; if (q && q.inHand && !q.folded) k++; } return false;
+  }
   async function thinkAI(p) {
     await pause(T.fast ? 0 : 200);
-    const [, bb] = blinds(), toCall = H.currentBet - p.bet, s = p.style;
+    const [, bb] = blinds(), toCall = H.currentBet - p.bet, s = mood(p);
     const pot = H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0);
     const eff = (p.stack + p.bet) / bb, minTo = H.currentBet + H.minRaise, maxTo = p.bet + p.stack;
-    const raiseTo = x => ({ type: 'raise', to: Math.max(Math.min(maxTo, Math.round(x / 25) * 25), Math.min(maxTo, minTo)) });
+    const raiseTo = (x, tag) => ({ type: 'raise', to: Math.max(Math.min(maxTo, Math.round(x / 25) * 25), Math.min(maxTo, minTo)), tag });
     const passive = () => (toCall === 0 ? { type: 'check' } : { type: 'fold' });
+    const call = tag => ({ type: 'call', tag });
     if (H.street === 0) {
-      const c = chen(p.cards[0], p.cards[1]);
+      const c = chen(p.cards[0], p.cards[1]) + (late(p) ? 1.5 : 0) + RNG.float() - .5;
       if (eff <= 12) { // push or fold
-        const push = 13 - eff * .35 - s.loose * 4, call = 15 - eff * .3 - s.loose * 3;
-        if (toCall <= bb && c >= push) return raiseTo(maxTo);
-        if (toCall > bb) return c >= call || (toCall === 0) ? (toCall === 0 ? { type: 'check' } : { type: 'call' }) : { type: 'fold' };
-        return toCall === 0 ? { type: 'check' } : (c >= push - 1 ? { type: 'call' } : { type: 'fold' });
+        const push = 13 - eff * .35 - s.loose * 4, callAt = 15 - eff * .3 - s.loose * 3;
+        if (toCall <= bb && c >= push) return raiseTo(maxTo, c >= 12 ? 'value' : 'bluff');
+        if (toCall > bb) return c >= callAt ? call() : { type: 'fold' };
+        return toCall === 0 ? { type: 'check' } : (c >= push - 1 ? call() : { type: 'fold' });
       }
-      const unraised = H.currentBet <= bb;
-      if (unraised) {
-        if (c >= 10 - s.loose * 4 && RNG.chance(.5 + s.agg / 2)) return raiseTo(bb * (2.2 + RNG.float()) + toCall * 0);
-        if (c >= 7 - s.loose * 4 || toCall === 0) return toCall === 0 ? { type: 'check' } : { type: 'call' };
-        if (RNG.chance(s.bluff * .5)) return raiseTo(bb * 2.5);
+      if (H.currentBet <= bb) {
+        // open: raise, limp (passive players) or fold; sizes vary by player
+        const open = 9 - s.loose * 7;
+        if (c >= open) return RNG.chance(.35 + s.agg * .65) ? raiseTo(bb * (2 + s.size + RNG.float() * .8), c >= 11 ? 'value' : 'bluff') : (toCall === 0 ? { type: 'check' } : call());
+        if (toCall === 0) return RNG.chance(s.agg * .25 + s.bluff) && late(p) ? raiseTo(bb * 2.5, 'bluff') : { type: 'check' };
+        if (RNG.chance(s.bluff * .5) && late(p)) return raiseTo(bb * 2.5, 'bluff');
         return passive();
       }
-      // facing a raise: defend more against small raises and good prices, from the big blind most
-      // of all, and tighten up as the raise eats into the stack; re-raise the best hands, and
-      // now and then a suited or connected bluff
+      // facing a raise: defend wider against small raises, good prices and the big blind;
+      // re-raise the best hands and the odd bluff; fight back harder against frequent raisers
       const frac = toCall / (p.stack + p.bet), raiseBB = toCall / bb, price = toCall / (pot + toCall);
-      const inBB = p === T.seats[H.bbi];
-      if (c >= 12.5 - s.agg * 2.5 || (c >= 7 && c <= 9 && frac < .25 && RNG.chance(s.bluff * .6))) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6));
-      let need = 9.5 - s.loose * 5 + Math.min(4, Math.max(0, raiseBB - 3) * .5) + frac * 6;
-      if (inBB) need -= 2;
+      const fight = s.vsRaiser || 0;
+      if (c >= 12.5 - s.agg * 2.5 - fight * .5) return raiseTo(H.currentBet * (2.5 + RNG.float() * .8), 'value');
+      if (c >= 6 && c <= 9 && frac < .25 && RNG.chance(s.bluff * .6 + fight * .05)) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6), 'bluff');
+      let need = 9.5 - s.loose * 5 + Math.min(4, Math.max(0, raiseBB - 3) * .5) + frac * 6 - fight;
+      if (p === T.seats[H.bbi]) need -= 2;
       if (price < .3) need -= 1;
-      if (c >= need && frac < .5) return { type: 'call' };
-      if (c >= 11 && frac >= .5) return { type: 'call' };
+      if (c >= need && frac < .5) return call();
+      if (c >= 11 && frac >= .5) return call();
       return passive();
     }
+    // after the flop: how strong, how drawn, and who's betting
     const opp = contenders().length - 1;
-    const eq = equity(p.cards, H.board, opp, T.fast ? 70 : 140);
+    const eq = equity(p.cards, H.board, opp, T.fast ? 70 : 160);
+    const draw = drawOf(p.cards, H.board), river = H.board.length === 5;
     const odds = toCall / Math.max(1, pot + toCall);
+    const sizeFor = tag => { let f = s.size * (.75 + RNG.float() * .5); if (s.leak > 0 && tag === 'value') f *= 1.35; if (s.leak > 0 && tag === 'bluff') f *= .7; if (s.leak < 0 && tag === 'bluff') f *= 1.4; return Math.max(bb, pot * f); };
+    const monster = eq > .85, strong = eq > .66, medium = eq > .45;
+    const multi = opp >= 2 ? .5 : 1; // bluffs work worse against a crowd
     if (toCall === 0) {
-      if (eq > .62 - s.agg * .08) return RNG.chance(.6 + s.agg * .35) ? raiseTo(pot * (.5 + RNG.float() * .4)) : { type: 'check' };
-      if (opp <= 2 && RNG.chance(s.bluff)) return raiseTo(pot * .55);
+      if (monster) return RNG.chance(s.trap * (river ? .3 : 1)) ? { type: 'check', tag: 'trap' } : raiseTo(sizeFor('value'), 'value');
+      if (strong) return RNG.chance(.55 + s.agg * .4) ? raiseTo(sizeFor('value'), 'value') : { type: 'check' };
+      if (medium) return RNG.chance(s.agg * .35) ? raiseTo(pot * (.3 + RNG.float() * .2), 'value') : { type: 'check' };
+      if (draw && !river && RNG.chance(s.agg * .6 * multi)) return raiseTo(sizeFor('bluff'), 'bluff');
+      if (H.aggr === p && H.board.length === 3 && RNG.chance(s.cbet * multi)) return raiseTo(pot * (.3 + s.size * .4), 'bluff');
+      if (H.aggr === p && RNG.chance(s.bluff * 1.6 * multi)) return raiseTo(sizeFor('bluff'), 'bluff'); // second barrel
+      if (opp === 1 && late(p) && RNG.chance(s.bluff * multi)) return raiseTo(sizeFor('bluff'), 'bluff');  // stab when checked to
       return { type: 'check' };
     }
-    if (eq > .78 - s.agg * .06 && RNG.chance(.4 + s.agg * .5)) return raiseTo(H.currentBet + pot * (.6 + RNG.float() * .5));
-    if (eq > odds + .04 - s.loose * .08) return { type: 'call' };
-    if (RNG.chance(s.bluff * .3) && opp === 1) return raiseTo(H.currentBet * 2.5);
+    // facing a bet: a bettor's range is stronger than random cards, more so the bigger the bet
+    const eqB = eq - .1 - Math.min(.18, toCall / Math.max(1, pot - toCall) * .15);
+    if (eqB > .8) {
+      const slow = s.trap > .5 && !river && RNG.chance(s.trap);
+      return slow || !RNG.chance(.35 + s.agg * .55) ? call('trap') : raiseTo(H.currentBet + pot * (.6 + RNG.float() * .6), 'value');
+    }
+    if (eqB > .6) return RNG.chance(s.agg * .3) ? raiseTo(H.currentBet * (2.3 + RNG.float()), 'value') : call();
+    if (draw && !river) {
+      if (opp === 1 && RNG.chance(s.agg * s.bluff * 2)) return raiseTo(H.currentBet * 2.6, 'bluff'); // semi-bluff raise
+      return odds < .38 + s.stick * .1 ? call() : { type: 'fold' };
+    }
+    if (eqB > odds + .05 - s.stick * .2 - s.loose * .03) return call();
+    if (opp === 1 && RNG.chance(s.bluff * .3)) return raiseTo(H.currentBet * 2.5, 'bluff');           // bluff-raise
+    if (opp === 1 && !river && late(p) && odds < .3 && RNG.chance(s.loose * .2)) return call('float'); // float to take it later
     return { type: 'fold' };
   }
 
@@ -296,6 +394,8 @@ const Holdem = (() => {
     }
     // folded players' extra chips beyond the last level were counted above; nothing is lost
     H.pot = 0;
+    // losing a big pot gets under some people's skin
+    for (const q of cs) if (!q.me && q.last !== 'Wins' && q.stack > 0 && q.total >= (q.stack + q.total) * .4 && q.style.tilt >= .3) { q.tilt = 3 + Math.round(q.style.tilt * 4); log(`😤 ${q.name} is steaming.`); }
     const meSeat = T.seats.find(p => p && p.me);
     const mine = meSeat && meSeat.inHand && !meSeat.folded;
     if (mine) { meSeat.last === 'Wins' ? SFX.win() : SFX.lose(); }
@@ -390,7 +490,7 @@ const Holdem = (() => {
       const turn = H && resolveMe && p.me;
       el.seats.append(h('div.pk-seat' + (p.me ? '.me' : '') + (p.folded ? '.folded' : '') + (p.last === 'Wins' ? '.wins' : '') + (turn ? '.turn' : ''), { style: { left: pos.left + '%', top: pos.top + '%' } },
         cards,
-        h('div.pk-plate', h('span.pk-face', Portrait.el(p.me ? 'me' : p)), h('div', h('b', p.name), h('span', fmtc(p.stack)))),
+        h('div.pk-plate', { title: p.me ? '' : (readOf(p, true) || 'No read yet') + (p.tilt > 0 ? ' · steaming' : '') }, h('span.pk-face', Portrait.el(p.me ? 'me' : p)), h('div', h('b', p.name + (p.tilt > 0 ? ' 😤' : '')), h('span', fmtc(p.stack)), !p.me && readOf(p) ? h('small.pk-read', readOf(p)) : null)),
         p.last ? h('div.pk-act', p.last + (p.shown && p.eval ? ' · ' + p.eval.name : '')) : null,
         T.btn === i ? h('div.pk-btn', 'D') : null));
       if (p.bet > 0) { const bp = { left: 50 + (pos.left - 50) * .58, top: 50 + (pos.top - 50) * .55 }; el.seats.append(h('div.pk-bet', { style: { left: bp.left + '%', top: bp.top + '%' } }, UI.stack(p.bet), h('span', fmtc(p.bet)))); }
@@ -461,7 +561,7 @@ const Holdem = (() => {
     if (!T) return;
     const others = T.seats.filter(p => p && !p.me && p.stack > 0);
     let pick = null;
-    const body = h('div.menu-list', others.map(p => h('div.menu-row', h('span.mi', Portrait.el(p.me ? 'me' : p)), h('div.mn', h('b', p.name), h('small', `${fmtc(p.stack)} chips${p.styleName ? ' · plays ' + p.styleName : ''}`)),
+    const body = h('div.menu-list', others.map(p => h('div.menu-row', h('span.mi', Portrait.el(p.me ? 'me' : p)), h('div.mn', h('b', p.name), h('small', `${fmtc(p.stack)} chips${!p.me ? ' · ' + (readOf(p, true) || 'no read yet') : ''}`)),
       h('button.btn.sm', { onclick: () => { pick = p; dlg.close(); } }, '💬 Talk'))));
     const dlg = UI.modal({ title: '💬 Who do you want to talk to?', body });
     await dlg;

@@ -943,3 +943,4 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .rel-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .6rem; }
 .rel-person { display: flex; gap: .6rem; align-items: flex-start; }
 .rel-person .duel-face { width: 44px; height: 44px; flex: none; }
+.pk-read { display: block; font-size: .62rem; opacity: .75; white-space: nowrap; }
