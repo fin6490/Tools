@@ -279,6 +279,7 @@ const Darts = (() => {
       else money = `${op.name} pockets your ${fmt(M.stake)}.`;
       if (op.rival) { const r = s.rivals[op.rival]; if (won) r.net -= M.stake; else { r.bank += M.stake * 2; r.net += M.stake; } }
       if (won && !M.tournament) Quests.bump('darts2');
+      if (!M.tournament) Quests.event('darts', { won });
       if (won && M.oppKey === 'mick') App.count('dartBeatMick');
       App.count('dartWagered', M.stake);
     }

@@ -187,6 +187,10 @@ const ACHIEVEMENTS = [
   { id: 'cleanWeek', name: 'Clean Living', desc: 'Seven nights in a row with the degen meter under 15', test: () => App.counter('cleanWeek') >= 1, reward: 2000, swagger: 3 },
   { id: 'clockwork', name: 'Like Clockwork', desc: 'Make ten weekly payments on Sal\'s marker on time', test: () => App.counter('vigPaid') >= 10, reward: 0, swagger: 3 },
   { id: 'freeClear', name: 'Free and Clear', desc: 'Pay off every cent of Uncle Sal\'s $500,000 marker', test: () => App.counter('salCleared') >= 1, reward: 0, swagger: 15 },
+  { id: 'firstFriend', name: 'Regular', desc: 'Become friends with someone in town', test: () => App.counter('friends') >= 1, reward: 0, swagger: 2 },
+  { id: 'innerCircle', name: 'Inner Circle', desc: 'Have three close friends in town', test: () => App.counter('closeFriends') >= 3, reward: 0, swagger: 5 },
+  { id: 'family', name: 'Family', desc: 'Someone in town considers you family', test: () => App.counter('family') >= 1, reward: 0, swagger: 5 },
+  { id: 'jobber', name: 'Odd Jobs', desc: 'Finish ten side jobs', test: () => Object.values((App.state.quests || {})).filter(q => q.s === 'done').length >= 10, reward: 2500, swagger: 4 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
   { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
@@ -313,7 +317,7 @@ const Career = {
     let s = 0;
     for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].swagger) s += ITEMS[k].swagger;
     for (const a of ACHIEVEMENTS) if (App.state.achievements[a.id] && a.swagger) s += a.swagger;
-    return s + (App.state.flags.bonusSwagger || 0);
+    return s + (App.state.flags.bonusSwagger || 0) + Rel.swagger();
   },
   staminaMax() {
     let s = 100; for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].stamina) s += ITEMS[k].stamina;
@@ -323,7 +327,7 @@ const Career = {
     let c = 0.001; for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].comp) c = Math.max(c, ITEMS[k].comp);
     return c;
   },
-  income() { let u = 0; for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].income) u += ITEMS[k].income; return u; },
+  income() { let u = Rel.income(); for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].income) u += ITEMS[k].income; return u; },
   // what you're worth with your businesses counted at their price
   empire() { let v = App.netWorth(); for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].cat === 'Investments' || (App.state.items[k] && ['spurDeed', 'palaceDeed'].includes(k))) v += ITEMS[k].price; return v; },
   upkeep() { let u = 0; for (const k in App.state.items) if (App.state.items[k] && ITEMS[k] && ITEMS[k].upkeep) u += ITEMS[k].upkeep; return u; },
@@ -503,7 +507,7 @@ const Career = {
   happyHour(venue) { const t = (App.state.clock || 540) % 1440; return venue === 'spur' && t >= 1020 && t < 1140; },
   isComped(place, m) {
     if (!place || !place.comp || !m.drink || !place.venue) return false;
-    if (this.happyHour(place.venue)) return true;
+    if (this.happyHour(place.venue) || Rel.comps(place, m)) return true;
     return App.state.today.wagered >= VENUES[place.venue].limits.min * 20;
   },
 
@@ -658,11 +662,11 @@ const Career = {
     if (st.today.shift) { UI.toast('Dolores only has one shift a day, sugar. Come back tomorrow.', 'warn'); return; }
     if (st.stamina < 40) { UI.toast('You\'re too tired to work a shift', 'warn'); return; }
     if ((st.clock || 540) > 1680 - 480) { UI.toast('Too late to start an eight-hour shift tonight', 'warn'); return; }
-    const pay = 120 + st.chapter * 80;
+    const pay = Math.round((120 + st.chapter * 80) * (Rel.close('dolores') ? 1.5 : 1));
     st.stamina -= 40; st.hunger = Math.max(0, st.hunger - 15); st.thirst = Math.max(0, st.thirst - 15);
     App.credit(pay); App.count('shifts'); st.today.shift = true; st.clock = (st.clock || 540) + 480;
     await UI.dialog([{ who: 'dolores', text: `Grab an apron, sugar. Eight hours of washing glasses: **${fmt(pay)}** cash, and your feet will hate you.` }]);
-    App.save(); Router.hud();
+    Quests.event('shift'); App.save(); Router.hud();
   },
 
   buy(id) {

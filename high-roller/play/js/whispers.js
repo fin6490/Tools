@@ -92,7 +92,7 @@ const Whispers = {
       if (w.cash) { App.credit(w.cash); extra = `+${fmt(w.cash)}`; }
       if (w.perk) extra = w.perk();
       if (typeof Mood !== 'undefined') Mood.change(4, 'secrets');
-      App.count('whispers');
+      App.count('whispers'); Rel.add(w.who.replace(/^staff:/, ''), 2, 'secret');
       SFX.big(); UI.toast(`🤫 Whisper: ${w.name}${extra ? ' · ' + extra : ''}`, 'big');
       Career.checkAchievements(); App.save(); Router.hud();
     }

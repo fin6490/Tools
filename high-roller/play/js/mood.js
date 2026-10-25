@@ -133,7 +133,8 @@ const Mood = {
     else if (s.today.net < -500) add(-Math.min(8, 2 + Math.floor(-s.today.net / 2000)), 'A losing day');
     // the degen meter cools overnight, faster after a clean day
     const was = s.degen;
-    s.degen = this.clamp(s.degen - (s.today.rounds ? 8 : 15));
+    if (Rel.friend('doc')) add(4, 'Doc\'s advice');
+    s.degen = this.clamp(s.degen - (s.today.rounds ? 8 : 15) * (Rel.close('doc') ? 2 : 1));
     s.flags.cleanNights = s.degen < 15 ? (s.flags.cleanNights || 0) + 1 : 0;
     if (s.flags.cleanNights >= 7) App.count('cleanWeek');
     if (s.mood >= 90) App.count('livingWell');
@@ -181,6 +182,7 @@ const Mood = {
     if (this.jittery()) k *= 1.25;
     if (s.mood >= 75) k *= .95; else if (s.mood < 25) k *= 1.1;
     if (s.flags.steadyHand) k *= .92;                     // Mick's breathing trick
+    if (Rel.close('mick')) k *= .9; else if (Rel.friend('mick')) k *= .95;
     return k;
   },
   // happy people tire slower
