@@ -516,6 +516,7 @@ const L2 = (() => {
   const ENDINGS = {
     good: { title: 'Eyes Open', kind: 'Good ending', icon: '🌅', text: 'Vale and Rourke were charged the next morning. Tommy Quinn testified. Margaux Reyes resigned. The drifter\'s name was cleared.' },
     horror: { title: 'The House Always Wins', kind: 'Horror ending', icon: '🩸', text: 'Augustin Vale still owns the Meridian. Room 1717 is never let to guests. Housekeeping say the bed is sometimes warm.' },
+    death: { title: 'Closing Time', kind: 'Death', icon: '🥀', text: 'The coroner\'s report ran to a page and a half. The Meridian sent flowers. The case of Nora, Ellie and Sam stayed closed, because the only person still asking had stopped.' },
     mystery: { title: 'The Seventeenth Card', kind: 'Mystery ending', icon: '🃏', text: 'The next morning the drive was on Detective Mori\'s desk. Nobody saw who left it there. Somewhere a bar called the Rusty Spur is open all night, and a man with your face is pouring the coffee.' },
   };
   const LEGACY = { truth: 'good', hollow: 'horror', dark: 'horror' }; // endings from before there were three
@@ -590,21 +591,40 @@ const L2 = (() => {
     App.count('l2_' + e); set('done', e);
     const line = { good: [{ who: 'okafor', text: 'Do you still dream about the town?' }, { who: 'you', text: 'Sometimes. Dolores still pours the coffee. But I know where I am when I wake up.' }, { who: 'okafor', text: 'That\'s all waking up ever is.' }],
       horror: [{ who: 'okafor', text: 'You\'re talking in your sleep again. Something about a hotel with only one room.' }, { who: 'okafor', text: 'I\'ll be here when you\'re ready to wake up. As many times as it takes.' }],
+      death: [{ who: 'narr', text: 'Dr. Okafor signs the form at 4:12 in the morning. Under cause, she writes down what it was. Under notes, she writes: "They were so close."' }],
       mystery: [{ who: 'okafor', text: 'Which was it, then? The town, or the city?' }, { who: 'you', text: 'I don\'t know anymore.' }, { who: 'okafor', text: '...Neither do I. Get some sleep. We\'ll find out together.' }] }[e];
     const bp = L2Bottle.path();
-    if (bp === 'sober') line.unshift({ who: 'you', text: 'I haven\'t had a drink since that night. Mori calls every morning at seven. I pick up.' }, { who: 'okafor', text: 'I know. I can see it in your hands.' });
-    if (bp === 'gaveIn') line.unshift({ who: 'okafor', text: 'And the drinking?' }, { who: 'you', text: 'It helps me sleep.' }, { who: 'okafor', text: 'It helps you not wake up. That isn\'t the same thing. ...My door\'s still open.' });
+    if (bp === 'sober' && e !== 'death') line.unshift({ who: 'you', text: 'I haven\'t had a drink since that night. Mori calls every morning at seven. I pick up.' }, { who: 'okafor', text: 'I know. I can see it in your hands.' });
+    if (bp === 'gaveIn' && e !== 'death') line.unshift({ who: 'okafor', text: 'And the drinking?' }, { who: 'you', text: 'It helps me sleep.' }, { who: 'okafor', text: 'It helps you not wake up. That isn\'t the same thing. ...My door\'s still open.' });
     await say(line);
     Career.checkAchievements(); App.save();
-    const all = Object.keys(ENDINGS).every(k => seen[k]);
-    const o = overlay('wake' + (e === 'horror' ? '.horror' : e === 'mystery' ? '.mystery' : ''));
+    const all = ['good', 'horror', 'mystery'].every(k => seen[k]);
+    const o = overlay('wake' + (e === 'horror' || e === 'death' ? '.horror' : e === 'mystery' ? '.mystery' : ''));
     o.append(h('div.l2-end', h('small', `LEVEL 2 · ${E.kind.toUpperCase()}${isNew ? '' : ' · AGAIN'}`), h('h2', E.title), h('p', E.text),
       h('div.l2-endings', Object.keys(ENDINGS).map(k => h('span' + (seen[k] ? '.got' : ''), { title: seen[k] ? ENDINGS[k].title : 'Not found yet' }, seen[k] ? ENDINGS[k].icon : '?', h('small', seen[k] ? ENDINGS[k].kind : '???')))),
-      h('p.l2-mem', all ? 'You have found every ending. In memory of Nora, Ellie and Sam, who were never real, and who stand for everyone who was.' : `Endings found: ${Object.keys(seen).length} of 3. The roof is still there, if you want to choose again.`),
+      e === 'death' ? h('p.l2-mem', 'Alcohol withdrawal and alcohol poisoning can both kill. If drinking is hurting you or someone you love, please talk to a doctor or a support group.') : null,
+      h('p.l2-mem', e === 'death' ? '' : all ? 'You have found every ending. In memory of Nora, Ellie and Sam, who were never real, and who stand for everyone who was.' : `Endings found: ${['good', 'horror', 'mystery'].filter(k => seen[k]).length} of 3. The roof is still there, if you want to choose again.`),
       h('div.l2-opts',
-        h('button.l2-btn', { onclick: () => { close(o); replay(); } }, '↺ Back to the roof: choose again'),
+        e === 'death' ? h('button.l2-btn', { onclick: () => { close(o); retry(); } }, '↺ Wake up in the clinic: try again') : h('button.l2-btn', { onclick: () => { close(o); replay(); } }, '↺ Back to the roof: choose again'),
         h('button.l2-btn', { onclick: () => { close(o); feverDream(); } }, '😴 Sleep (back to the dream)'),
         h('button.l2-btn.ghost', { onclick: () => { close(o); Router.go('title'); } }, 'Title screen'))));
+  }
+
+  /* ---------- the Barman's third visit ---------- */
+  async function death() {
+    document.querySelectorAll('.l2-over').forEach(n => n.remove());
+    await say([{ who: 'narr', text: 'He doesn\'t grab you this time. He just pulls out a stool, and you sit, because you\'re so tired, and he pours.' }, { who: 'narr', text: 'And pours. And pours. You can\'t lift your hand to stop him. You aren\'t sure you want to.' }, { who: 'narr', text: 'Somewhere a long way off, a siren. It isn\'t coming fast enough. The last thing you see is three faces in the bar mirror, and they look so sad.' }]);
+    S().ending = 'death'; App.count('l2_dead'); L2Bottle.stop();
+    await ending();
+  }
+  // the death was a nightmare inside a nightmare, or a second chance: either way, back to the clinic
+  async function retry() {
+    const st = S(), d = st.drink || {};
+    st.drink = { sev: d.sev || 2, crave: 40, buzz: 0, drinks: 0, refused: {}, steps: {}, path: null, stage: 0, called: 0, strikes: 0, glimpsed: 1, hunts: d.hunts || 0 };
+    st.ending = null; st.flags.done = false; App.save();
+    await goArea('clinic', [-1.8, -.4, 2.2]);
+    await say([{ who: 'narr', text: 'beep. beep. beep.' }, { who: 'okafor', text: `${first()}? You're back. Your heart stopped for two minutes. Two minutes.` }, { who: 'okafor', text: 'Whatever you saw, you don\'t have to see it again. But you can\'t do this alone. Let me help this time.' }]);
+    L2Bottle.start();
   }
 
   /* ---------- sleeping and waking: the fever dream ---------- */
@@ -674,5 +694,5 @@ const L2 = (() => {
     if (c) Router.go('reality');
   }
 
-  return { ui: { say, choose }, screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
+  return { ui: { say, choose }, death, retry, screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
 })();

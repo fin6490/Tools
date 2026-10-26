@@ -199,6 +199,8 @@ const ACHIEVEMENTS = [
   { id: 'l2mystery', name: 'The Seventeenth Card', desc: 'Level 2: the mystery ending', test: () => App.counter('l2_mystery') > 0, reward: 0, swagger: 10 },
   { id: 'l2all', name: 'Every Path', desc: 'Level 2: see all three endings', test: () => { const e = (App.state.l2 && App.state.l2.endings) || {}; return !!(e.good && e.horror && e.mystery); }, reward: 0, swagger: 25 },
   { id: 'l2sober', name: 'One Day at a Time', desc: 'Level 2: get through the night without giving in to the bottle', test: () => App.counter('l2_sober') > 0, reward: 0, swagger: 20 },
+  { id: 'l2death', name: 'Closing Time', desc: 'Level 2: let the Barman catch you one time too many', test: () => App.counter('l2_dead') > 0, reward: 0, swagger: 0 },
+  { id: 'l2outran', name: 'Not Tonight', desc: 'Level 2: outrun the Barman', test: () => App.counter('l2_outran') > 0, reward: 0, swagger: 5 },
   { id: 'l2lastcall', name: 'Last Call', desc: 'Level 2: stop fighting the bottle', test: () => App.counter('l2_gavein') > 0, reward: 0, swagger: 0 },
   { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
