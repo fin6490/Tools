@@ -180,7 +180,7 @@ const Holdem = (() => {
       }
       if (contenders().length <= 1) break;
       const canAct = contenders().filter(p => !p.allin);
-      if (canAct.length === 0 || (canAct.length === 1 && canAct[0].bet >= H.currentBet)) continue;
+      if (canAct.length === 0 || (canAct.length === 1 && owed(canAct[0]) === 0)) continue;
       const first = street === 0 ? (headsUp ? sbi : nextIdx(bbi, inHand)) : nextIdx(T.btn, p => inHand(p) && !p.folded);
       await bettingRound(first);
       if (contenders().length <= 1) break;
@@ -190,6 +190,14 @@ const Holdem = (() => {
     H = null;
   }
   function order(startIdx) { const out = []; if (startIdx < 0) return out; for (let k = 0; k < T.seats.length; k++) { const p = T.seats[(startIdx + k) % T.seats.length]; if (inHand(p)) out.push(p); } return out; }
+  // what p actually has to put in: against nobody but all-in players you only match the most they put in
+  // (a short stack all-in for less than the big blind means a smaller call, or none at all)
+  function owed(p) {
+    const toCall = H.currentBet - p.bet, others = contenders().filter(q => q !== p);
+    if (toCall > 0 && others.length && others.every(q => q.allin)) return Math.max(0, Math.min(toCall, Math.max(...others.map(q => q.bet)) - p.bet));
+    return toCall;
+  }
+  const allOthersAllIn = p => { const o = contenders().filter(q => q !== p); return o.length > 0 && o.every(q => q.allin); };
   function collect() { T.seats.forEach(p => { if (p) { H.pot += p.bet; p.bet = 0; } }); }
 
   async function bettingRound(startIdx) {
@@ -197,20 +205,21 @@ const Holdem = (() => {
     for (let guard = 0; guard < 200; guard++) {
       if (contenders().length <= 1) return;
       const p = T.seats[i];
-      const needs = p && p.inHand && !p.folded && !p.allin && (!p.acted || p.bet < H.currentBet);
+      const needs = p && p.inHand && !p.folded && !p.allin && (!p.acted || owed(p) > 0);
       if (needs) {
         const act = p.me ? await askMe(p) : await thinkAI(p);
         apply(p, act);
         render(); await pause(p.me ? 80 : 420);
       }
-      const pending = T.seats.some(q => q && q.inHand && !q.folded && !q.allin && (!q.acted || q.bet < H.currentBet));
+      const pending = T.seats.some(q => q && q.inHand && !q.folded && !q.allin && (!q.acted || owed(q) > 0));
       if (!pending) return;
       i = (i + 1) % T.seats.length;
     }
   }
   function apply(p, act) {
-    const toCall = H.currentBet - p.bet;
+    const toCall = owed(p);
     track(p, act, toCall);
+    if (act.type === 'raise' && allOthersAllIn(p)) act = { type: toCall > 0 ? 'call' : 'check' }; // nobody left to bet against
     // a short all-in doesn't reopen the betting for someone who already acted
     if (act.type === 'raise' && p.acted) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'raise' && act.to <= H.currentBet) act = { type: toCall > 0 ? 'call' : 'check' };
@@ -288,19 +297,28 @@ const Holdem = (() => {
   }
   async function thinkAI(p) {
     await pause(T.fast ? 0 : 200);
-    const [, bb] = blinds(), toCall = H.currentBet - p.bet, s = mood(p);
+    const [, bb] = blinds(), toCall = owed(p), s = mood(p);
     const pot = H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0);
     const eff = (p.stack + p.bet) / bb, minTo = H.currentBet + H.minRaise, maxTo = p.bet + p.stack;
     const raiseTo = (x, tag) => ({ type: 'raise', to: Math.max(Math.min(maxTo, Math.round(x / 25) * 25), Math.min(maxTo, minTo)), tag });
     const passive = () => (toCall === 0 ? { type: 'check' } : { type: 'fold' });
     const call = tag => ({ type: 'call', tag });
+    // calling an all-in (or a bet that puts us all-in) is a sum: our share of the pot against our chance
+    // of winning it; looser players round in their favour
+    const callShove = () => {
+      const pay = Math.min(toCall, p.stack), price = pay / (pot + pay);
+      const eq = equity(p.cards, H.board, Math.max(1, contenders().length - 1), T.fast ? 80 : 200);
+      return eq >= price - .02 - s.loose * .06 + (s.stick ? -s.stick * .03 : 0);
+    };
     if (H.street === 0) {
       const c = chen(p.cards[0], p.cards[1]) + (late(p) ? 1.5 : 0) + RNG.float() - .5;
       if (eff <= 12) { // push or fold
-        const push = 13 - eff * .35 - s.loose * 4, callAt = 15 - eff * .3 - s.loose * 3;
-        if (toCall <= bb && c >= push) return raiseTo(maxTo, c >= 12 ? 'value' : 'bluff');
-        if (toCall > bb) return c >= callAt ? call() : { type: 'fold' };
-        return toCall === 0 ? { type: 'check' } : (c >= push - 1 ? call() : { type: 'fold' });
+        // the shorter the stack, the wider the shove: at 10 big blinds the top quarter or so of hands,
+        // at 3 almost anything; calling a shove is about the price (a few chips into a big pot: call)
+        const push = eff * .9 - 2 - s.loose * 3 - (late(p) ? 1 : 0);
+        if (H.currentBet <= bb && c >= push) return raiseTo(maxTo, c >= 12 ? 'value' : 'bluff');
+        if (H.currentBet > bb) return callShove() ? call() : { type: 'fold' };
+        return toCall === 0 ? { type: 'check' } : { type: 'fold' }; // short-handed limping is a leak: shove or get out
       }
       if (H.currentBet <= bb) {
         // open: raise, limp (passive players) or fold; sizes vary by player
@@ -314,6 +332,7 @@ const Holdem = (() => {
       // re-raise the best hands and the odd bluff; fight back harder against frequent raisers
       const frac = toCall / (p.stack + p.bet), raiseBB = toCall / bb, price = toCall / (pot + toCall);
       const fight = s.vsRaiser || 0;
+      if (H.aggr && H.aggr.allin && !(c >= 12.5 - s.agg * 2.5)) return callShove() ? call() : passive(); // facing a shove: it's arithmetic now
       if (c >= 12.5 - s.agg * 2.5 - fight * .5) return raiseTo(H.currentBet * (2.5 + RNG.float() * .8), 'value');
       if (c >= 6 && c <= 9 && frac < .25 && RNG.chance(s.bluff * .6 + fight * .05)) return raiseTo(H.currentBet * (2.6 + RNG.float() * .6), 'bluff');
       let need = 9.5 - s.loose * 5 + Math.min(4, Math.max(0, raiseBB - 3) * .5) + frac * 6 - fight;
@@ -585,10 +604,10 @@ const Holdem = (() => {
   function renderLog() { if (el) { el.log.innerHTML = ''; T.log.slice(0, 7).forEach(t => el.log.append(h('div', t))); } }
   function renderControls(p) {
     render();
-    const [, bb] = blinds(), toCall = H.currentBet - p.bet;
+    const [, bb] = blinds(), toCall = owed(p);
     const pot = H.pot + T.seats.reduce((a, q) => a + (q ? q.bet : 0), 0);
     const minTo = Math.min(p.bet + p.stack, H.currentBet + H.minRaise), maxTo = p.bet + p.stack;
-    const canRaise = maxTo > H.currentBet && !p.acted;
+    const canRaise = maxTo > H.currentBet && !p.acted && !allOthersAllIn(p);
     const amt = h('input.field.sm#pk-amt', { type: 'number', min: minTo, max: maxTo, step: bb / 2, value: minTo });
     const slider = h('input#pk-slide', { type: 'range', min: minTo, max: maxTo, step: Math.max(25, bb / 2), value: minTo, oninput: e => { amt.value = e.target.value; } });
     amt.oninput = () => { slider.value = amt.value; };
@@ -668,5 +687,5 @@ const Holdem = (() => {
     if (m.id !== 'v:spur' || !App.state.flags.pokerRoom) return [];
     return [{ x: 11, y: 1, id: 'backroom', label: '♠ The Back Room (poker tournaments)', door: true }];
   }
-  return { lobby, table, spots, TOURNEYS, brief, active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
+  return { lobby, table, spots, TOURNEYS, brief, _owed: p => owed(p), _think: p => thinkAI(p), active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
 })();
