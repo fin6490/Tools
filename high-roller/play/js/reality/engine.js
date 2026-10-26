@@ -126,7 +126,7 @@ const R3 = (() => {
       armL.rotation.x = Math.sin(t * .7 + phase) * .03; armR.rotation.x = -Math.sin(t * .7 + phase) * .03;
       // turn their head, then their body, towards you when you're close
       const dx = P.x - g.position.x, dz = P.z - g.position.z, d = Math.hypot(dx, dz);
-      const want = d < 4.5 ? Math.atan2(dx, dz) : baseYaw;
+      const want = d < 4.5 && !o.still ? Math.atan2(dx, dz) : baseYaw;
       const diff = ((want - g.rotation.y + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
       g.rotation.y += diff * .03; head.rotation.y += (Math.max(-.6, Math.min(.6, diff)) - head.rotation.y) * .08;
       if (o.anim) o.anim(t, { armL, armR, head, torso });

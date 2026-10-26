@@ -113,7 +113,9 @@ const L2 = (() => {
     if (!S().clues.photo) return 'Room 1717. Take the hotel lift to the 17th floor.';
     if (!has('deduced')) return 'Put it together before you go up.';
     if (!has('finale')) return 'The roof.';
-    return 'Go and see them.';
+    if (has('done')) return 'Sleep, or go back to the roof and choose again (☰).';
+    const e = S().ending;
+    return e === 'horror' ? 'Find a way out.' : e === 'mystery' ? 'The man behind the bar.' : 'Go and see them.';
   }
   function hud() { const o = document.querySelector('.l2-obj'); if (o) o.textContent = objective(); const c = document.querySelector('.l2-cash'); if (c) c.textContent = fmt(S().cash); }
 
@@ -193,6 +195,7 @@ const L2 = (() => {
     },
     async driverSeat() {
       await say([{ who: 'narr', text: '*Ellie\'s booster seat is still in the back. A crushed juice box. One of Sam\'s socks.*' }, { who: 'narr', text: '*You sit for a long time. The rain doesn\'t stop. Eventually, neither do you.*' }]);
+      await sleepHere('The rain on the roof of the car. You could close your eyes.');
     },
     async rain() { await say([{ who: 'narr', text: RNG.pick(['*Rain on the city. In the dream it never rained.*', '*Out there, a year of ordinary days happened without you.*', '*You count the drops for a while, the way you used to count cards.*']) }]); },
     async exitGarage() { await say([{ who: 'narr', text: '*You could leave. Drive somewhere. Sleep again, and go back to the town where everyone is only missing.*' }, { who: 'you', text: 'No. Not tonight.' }]); },
@@ -326,7 +329,12 @@ const L2 = (() => {
       if (c === 'call') await phoneCall([{ who: 'mori', text: 'The roof? Don\'t go up there. ...You\'re going up there. Fine. Keep him talking. I\'m eight minutes out.' }]);
       hud();
     },
-    async roomBed() { await say([{ who: 'narr', text: '*Hotel sheets, tight as a drum. You remember Sam climbing into your bed at 5 AM with cold feet. You would give everything for cold feet.*' }]); },
+    async roomBed() { await say([{ who: 'narr', text: '*Hotel sheets, tight as a drum. You remember Sam climbing into your bed at 5 AM with cold feet. You would give everything for cold feet.*' }]); await sleepHere('Lie down for a while?'); },
+    async clinicBed() { await sleepHere('The bed you woke up in. Lie back down?'); },
+    async horrorDoor() { await horrorDoor(); },
+    async horrorLift() { await say([{ who: 'narr', text: '*The lift has one button. It says 17.*' }]); },
+    async sal() { await salAtBar(); },
+    async spurJukebox() { await say([{ who: 'narr', text: '*The same three songs the jukebox always played in the dream. You know every word. You never knew you knew them.*' }]); },
     async toCorridor(from) { await goArea('corridor', from === 'roof' ? [0, -38.4, 0] : [-1, -2 - 8 * 3.6, -Math.PI / 2]); },
     async toRoof() {
       if (!S().clues.photo) return say([{ who: 'narr', text: '*The roof door. Not yet.*' }]);
@@ -464,46 +472,128 @@ const L2 = (() => {
     return true;
   }
 
-  /* ---------- the roof ---------- */
+  /* ---------- the roof: where the paths split ---------- */
+  const ENDINGS = {
+    good: { title: 'Eyes Open', kind: 'Good ending', icon: '🌅', text: 'Vale and Rourke were charged the next morning. Tommy Quinn testified. Margaux Reyes resigned. The drifter\'s name was cleared.' },
+    horror: { title: 'The House Always Wins', kind: 'Horror ending', icon: '🩸', text: 'Augustin Vale still owns the Meridian. Room 1717 is never let to guests. Housekeeping say the bed is sometimes warm.' },
+    mystery: { title: 'The Seventeenth Card', kind: 'Mystery ending', icon: '🃏', text: 'The next morning the drive was on Detective Mori\'s desk. Nobody saw who left it there. Somewhere a bar called the Rusty Spur is open all night, and a man with your face is pouring the coffee.' },
+  };
+  const LEGACY = { truth: 'good', hollow: 'horror', dark: 'horror' }; // endings from before there were three
+  const endingKey = e => LEGACY[e] || e;
+  const found = () => { const st = S(); st.endings = st.endings || {}; if (LEGACY[st.ending] && !Object.keys(st.endings).length) st.endings[endingKey(st.ending)] = 1; return st.endings; };
+  // the moment before the choice is kept, so any ending can be replayed from it
+  function checkpoint() { const st = S(), { checkpoint: _c, endings: _e, games: _g, ...keep } = st; st.checkpoint = JSON.parse(JSON.stringify({ ...keep, ending: null, horrorTries: 0, flags: { ...keep.flags, finale: false, done: false } })); App.save(); }
+  async function replay() {
+    const st = S();
+    if (!st.checkpoint && Object.keys(found()).length) checkpoint(); // an ending from before replays existed
+    const cp = st.checkpoint; if (!cp) return toast('There is no way back up there yet.');
+    const keepCash = st.cash, keepGames = st.games, keepEndings = found();
+    Object.keys(st).forEach(k => { if (k !== 'checkpoint') delete st[k]; });
+    Object.assign(st, JSON.parse(JSON.stringify(cp)), { cash: keepCash, games: keepGames, endings: keepEndings, ending: null, atTable: false });
+    document.querySelectorAll('.l2-over').forEach(n => n.remove()); R3.freeze(false);
+    await goArea('roof', [0, -2.5, Math.PI]);
+    await say([{ who: 'narr', text: 'The rain. The roof. The two of them, waiting. You have been here before, and you will be here again, until you choose.' }]);
+  }
   async function finale() {
+    checkpoint();
     await say(withMeet('vale', [
       { who: 'vale', text: `${first()}. Thank you for coming. You look terrible. Grief is unkind to good bone structure.` },
       { who: 'vale', text: 'I want to say something to you, and I want you to hear it: I never wanted anyone hurt. I wanted a drive back. Cal was supposed to find an empty house.' },
       { who: 'rourke', text: '*says nothing, rain running off his face, one hand inside his coat*' },
       ...(S().met.rourke ? [] : [meet('rourke')].filter(Boolean)),
       { who: 'vale', text: 'Five million dollars. Tonight. For the drive, and your silence, and your future. You could go anywhere. Start again. Sleep without dreaming.' },
-      { who: 'narr', text: '*Ten storeys of rain between you and the street. The city glitters like the dream town did, only colder.*' },
+      { who: 'narr', text: '*Ten storeys of rain between you and the street. The city glitters like the dream town did, only colder. Somewhere under the noise, very faintly, a jukebox is playing.*' },
     ]));
-    const opts = [['sell', 'Take the money'], ['rage', 'Go for Rourke']];
-    if (has('calledMori')) opts.unshift(['mori', 'Keep him talking. Mori is eight minutes out.']); else opts.unshift(['give', 'Refuse. Hold up the drive and walk to the door.']);
+    const opts = [has('calledMori') ? ['good', 'Keep him talking. Mori is eight minutes out.'] : ['good', 'Refuse. Hold up the drive and walk to the door.'], ['horror', 'Take the money. Hand him the drive.'], ['mystery', 'Ask him about the seventeenth card.']];
     const c = await choose('The drive is in your hand.', opts);
-    set('finale', c); S().ending = c === 'mori' || c === 'give' ? 'truth' : c === 'sell' ? 'hollow' : 'dark';
-    if (c === 'mori') await say([{ who: 'you', text: 'Tell me about the house, Augustin. Tell me what "I don\'t care how" means.' }, { who: 'vale', text: '*smiles, and keeps talking, the way rich men do, and the rain swallows the sound of the stairwell door*' }, { who: 'mori', text: 'Augustin Vale. Calvin Rourke. Hands where I can see them.' }, { who: 'narr', text: '*Blue lights on wet concrete. Rourke kneels in the rain. Vale asks for his lawyer as if he\'s ordering wine.*' }, { who: 'mori', text: 'It\'s enough. Tommy\'s statement, the footage, the ledger, the recording. It\'s more than enough. ...Go home. Or go see them. They\'d want you to.' }]);
-    if (c === 'give') await say([{ who: 'you', text: 'No.' }, { who: 'narr', text: '*You walk past them to the door. Rourke takes one step after you, and then the stairwell fills with voices and blue light: Delia called Mori the moment you came up here.*' }, { who: 'mori', text: 'Calvin Rourke. Augustin Vale. Stay exactly where you are.' }, { who: 'narr', text: '*It\'s over in a minute. A year, and it\'s over in a minute.*' }]);
-    if (c === 'sell') await say([{ who: 'narr', text: '*You hand him the drive. He hands you a phone with a bank app open and more zeros than you can read through the rain.*' }, { who: 'vale', text: 'A sensible man. They\'d have wanted you to live well.' }, { who: 'narr', text: '*You don\'t answer. You don\'t know who "they" are anymore. Not really. That\'s the price.*' }]);
-    if (c === 'rage') await say([{ who: 'narr', text: '*You don\'t remember deciding. You remember the rain, and the noise, and the drive skittering over the edge into the dark.*' }, { who: 'narr', text: '*Then sirens. Then a cell with a steel bench. Then, when you close your eyes, a bright little town and a bar called the Rusty Spur.*' }, { name: 'Dolores', who: 'x', text: 'Back again, sugar? Sit down. You look like you\'ve had a night.' }]);
-    if (c === 'rage') { await ending(); return; }
-    await say([{ who: 'narr', text: '*Morning comes up grey, and then less grey.*' }]);
-    await goArea('cemetery');
+    set('finale', c); S().ending = c;
+    if (c === 'good') {
+      if (has('calledMori')) await say([{ who: 'you', text: 'Tell me about the house, Augustin. Tell me what "I don\'t care how" means.' }, { who: 'vale', text: '*smiles, and keeps talking, the way rich men do, and the rain swallows the sound of the stairwell door*' }, { who: 'mori', text: 'Augustin Vale. Calvin Rourke. Hands where I can see them.' }, { who: 'narr', text: '*Blue lights on wet concrete. Rourke kneels in the rain. Vale asks for his lawyer as if he\'s ordering wine.*' }, { who: 'mori', text: 'It\'s enough. Tommy\'s statement, the footage, the ledger, the recording. It\'s more than enough. ...Go home. Or go and see them. They\'d want you to.' }]);
+      else await say([{ who: 'you', text: 'No.' }, { who: 'narr', text: '*You walk past them to the door. Rourke takes one step after you, and then the stairwell fills with voices and blue light: Delia called Mori the moment you came up here.*' }, { who: 'mori', text: 'Calvin Rourke. Augustin Vale. Stay exactly where you are.' }, { who: 'narr', text: '*It\'s over in a minute. A year, and it\'s over in a minute.*' }]);
+      await say([{ who: 'narr', text: '*Morning comes up grey, and then less grey.*' }]);
+      await goArea('cemetery'); return;
+    }
+    if (c === 'horror') {
+      await say([{ who: 'narr', text: '*You hand him the drive. He hands you a phone with a bank app open and more zeros than you can read through the rain.*' }, { who: 'vale', text: 'A sensible man. They\'d have wanted you to live well.' }, { who: 'narr', text: '*Rourke holds the stairwell door open for you. Politely. Too politely.*' }]);
+      await goArea('corridor', [0, -38.4, 0]);
+      await say([{ who: 'narr', text: '*The stairs should go down to the street. They come out on the seventeenth floor. The lights have gone the colour of a wound.*' }, { who: 'narr', text: '*Every door says 1717.*' }]);
+      return;
+    }
+    // mystery
+    await say([{ who: 'you', text: 'Tell me about the seventeenth card, Augustin.' }, { who: 'vale', text: '*frowns* The what?' }, { who: 'narr', text: '*For a second there is a top hat on his head. Then there isn\'t. The rain stops falling and just hangs there, a million silver threads in the air.*' }, { name: 'Kessler', who: 'x', text: 'You never could leave a game unfinished, could you, partner?' }, { who: 'narr', text: '*The roof door swings open on warm light and an old jukebox. Sawdust. The smell of coffee. It can\'t be. It is.*' }]);
+    await goArea('spur');
   }
   async function epilogue() {
     const e = S().ending;
     await say([{ who: 'narr', text: '*Three stones in a row. Somebody has been leaving flowers. Delia, probably. Or Mori.*' },
-      { who: 'you', text: `Hi, Nora. Hi, Ellie. Hey, Sammy.` },
-      { who: 'you', text: e === 'hollow' ? 'I did something I can\'t take back. I told myself it was for you. It wasn\'t. I\'m sorry.' : 'They know now. Everybody knows. It wasn\'t a stranger. It wasn\'t random. And it wasn\'t you, El. Having a cold wasn\'t your fault.' },
+      { who: 'you', text: 'Hi, Nora. Hi, Ellie. Hey, Sammy.' },
+      { who: 'you', text: 'They know now. Everybody knows. It wasn\'t a stranger. It wasn\'t random. And it wasn\'t you, El. Having a cold wasn\'t your fault.' },
       { who: 'you', text: 'I was asleep for a year. I dreamed about a town where everyone I lost was only missing. I\'m awake now.' },
       { who: 'narr', text: '*You leave the drawing on Ellie\'s stone. BISKIT and the purple sun. The wind tries to take it, and you weigh it down with a pebble, the way she used to with her homework.*' }]);
     await ending();
   }
+  // the horror path: a corridor of identical doors
+  async function horrorDoor() {
+    const n = (S().horrorTries = (S().horrorTries || 0) + 1);
+    if (n < 3) return say([{ who: 'narr', text: RNG.pick(['*1717. The handle is warm, as if someone just let go of it from the other side.*', '*1717. Behind it, very faintly, a phone is ringing.*', '*1717. You knock. Something on the other side knocks back. Three times. Then seventeen.*']) }]);
+    await say([{ who: 'narr', text: '*This one opens. The room is tidy, like nobody has ever lived in it.*' }, { who: 'narr', text: '*On the desk is a photograph of a man standing in this room, at this desk, holding this photograph. It was taken from across the street. Tonight.*' }, { who: 'narr', text: '*The phone on the nightstand rings. You pick it up.*' }, { name: 'Your own voice', who: 'x', text: 'Room 1717. Come alone.' }]);
+    await ending();
+  }
+  // the mystery path: the Rusty Spur, real, at the top of the Meridian
+  async function salAtBar() {
+    await say([{ name: 'Dolores', who: 'x', text: 'There you are, sugar. He\'s been waiting on you all night.' }, { who: 'narr', text: '*The man behind the bar has his back to you, polishing a glass. Uncle Sal. Of course it is.*' }, { who: 'narr', text: '*He turns round. He has your face. A little older. A little kinder.*' }, { name: 'Sal', who: 'x', text: 'Took you long enough, kid. Sit down. Coffee\'s on me. It\'s always on me.' }, { who: 'you', text: 'Which one of us is dreaming?' }, { name: 'Sal', who: 'x', text: '*slides a single card across the bar, face down. On the back, in gold: 17* Does it matter, if you keep playing?' }]);
+    await ending();
+  }
   async function ending() {
-    const e = S().ending, titles = { truth: 'Eyes Open', hollow: 'Five Million Reasons', dark: 'Back to Sleep' };
+    const e = S().ending = endingKey(S().ending), E = ENDINGS[e], seen = found();
+    const isNew = !seen[e]; seen[e] = (seen[e] || 0) + 1;
     App.count('l2_' + e); set('done', e);
-    await say([{ who: 'okafor', text: e === 'dark' ? 'You\'re dreaming again. I\'ll be here when you\'re ready to wake up. As many times as it takes.' : e === 'hollow' ? 'You\'re sleeping again. Dreamlessly, you say. I\'m not sure that\'s the same as resting.' : 'Do you still dream about the town?' },
-      ...(e === 'truth' ? [{ who: 'you', text: 'Sometimes. Dolores still pours the coffee. But I know where I am when I wake up.' }, { who: 'okafor', text: 'That\'s all waking up ever is.' }] : [])]);
-    const o = overlay('wake'); o.append(h('div.l2-end', h('small', 'LEVEL 2 · ENDING'), h('h2', titles[e]), h('p', e === 'truth' ? 'Vale and Rourke were charged the next morning. Tommy Quinn testified. Margaux Reyes resigned. The drifter\'s name was cleared.' : e === 'hollow' ? 'Augustin Vale still owns the Meridian. You own a beach house you have never slept in.' : 'The case was never reopened. The town is still there, every night, waiting.'),
-      h('p.l2-mem', 'In memory of Nora, Ellie and Sam, who were never real, and who stand for everyone who was.'),
-      h('div.l2-opts', h('button.l2-btn', { onclick: () => { close(o); Router.go('title'); } }, 'Title screen'), h('button.l2-btn.ghost', { onclick: () => { close(o); App.state.world = App.state.world || { map: 'town', x: 5, y: 30 }; Router.go('world'); } }, 'Go back to the dream'))));
+    const line = { good: [{ who: 'okafor', text: 'Do you still dream about the town?' }, { who: 'you', text: 'Sometimes. Dolores still pours the coffee. But I know where I am when I wake up.' }, { who: 'okafor', text: 'That\'s all waking up ever is.' }],
+      horror: [{ who: 'okafor', text: 'You\'re talking in your sleep again. Something about a hotel with only one room.' }, { who: 'okafor', text: 'I\'ll be here when you\'re ready to wake up. As many times as it takes.' }],
+      mystery: [{ who: 'okafor', text: 'Which was it, then? The town, or the city?' }, { who: 'you', text: 'I don\'t know anymore.' }, { who: 'okafor', text: '...Neither do I. Get some sleep. We\'ll find out together.' }] }[e];
+    await say(line);
     Career.checkAchievements(); App.save();
+    const all = Object.keys(ENDINGS).every(k => seen[k]);
+    const o = overlay('wake' + (e === 'horror' ? '.horror' : e === 'mystery' ? '.mystery' : ''));
+    o.append(h('div.l2-end', h('small', `LEVEL 2 · ${E.kind.toUpperCase()}${isNew ? '' : ' · AGAIN'}`), h('h2', E.title), h('p', E.text),
+      h('div.l2-endings', Object.keys(ENDINGS).map(k => h('span' + (seen[k] ? '.got' : ''), { title: seen[k] ? ENDINGS[k].title : 'Not found yet' }, seen[k] ? ENDINGS[k].icon : '?', h('small', seen[k] ? ENDINGS[k].kind : '???')))),
+      h('p.l2-mem', all ? 'You have found every ending. In memory of Nora, Ellie and Sam, who were never real, and who stand for everyone who was.' : `Endings found: ${Object.keys(seen).length} of 3. The roof is still there, if you want to choose again.`),
+      h('div.l2-opts',
+        h('button.l2-btn', { onclick: () => { close(o); replay(); } }, '↺ Back to the roof: choose again'),
+        h('button.l2-btn', { onclick: () => { close(o); feverDream(); } }, '😴 Sleep (back to the dream)'),
+        h('button.l2-btn.ghost', { onclick: () => { close(o); Router.go('title'); } }, 'Title screen'))));
+  }
+
+  /* ---------- sleeping and waking: the fever dream ---------- */
+  // sleep in the waking world and the fever takes you back to the town, where you left off
+  async function feverDream() {
+    const o = overlay('fever'), t = h('div.l2-wake-t'); o.append(t);
+    const lines = ['Your eyes close.', 'The fever comes back in like a tide.', 'Neon. Cards. The smell of coffee and sawdust.', '"Back again, sugar?"'];
+    for (const l of lines) { t.textContent = l; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in'); await wait(2000); }
+    set('fever'); S().slept = (S().slept || 0) + 1; App.save();
+    o.remove(); R3.freeze(false);
+    Router.go('world'); Career.checkAchievements();
+    const st = App.state, night = st.pendingNight;
+    if (night && LODGING[night.id]) { delete st.pendingNight; App.save(); await UI.dialog([{ who: 'narrator', text: `You open your eyes. ${LODGING[night.id].name}: back in the town, back in the dream. It feels more real than ever, and less.` }]); await Career.endDay({ ...LODGING[night.id], id: night.id }, night.robbed || 0); }
+    else await UI.dialog([{ who: 'narrator', text: 'You\'re back in town. The sun is shining the way it never does in the city. Your bankroll, your debts, your friends: all exactly where you left them.' }, { who: 'narrator', text: 'Whenever you go to bed here, you can choose to stay asleep, or wake up.' }]);
+  }
+  async function sleepHere(where) {
+    const c = await choose(where, [['sleep', '😴 Sleep (the fever dream takes you back to the town)'], ['no', 'Not yet']]);
+    if (c === 'sleep') await feverDream();
+  }
+  // asked when you go to bed in the dream, once its story is over
+  async function dreamChoice() {
+    const v = await UI.modal({ title: 'Half asleep', body: h('div', h('p', 'Somewhere far away a heart monitor is beeping. The town goes soft at the edges.'), h('p.muted.small', 'Stay in the dream and the night passes as usual. Wake up and you go to the Meridian; the next time you sleep there, you\'ll wake up here in the morning.')),
+      buttons: [{ label: 'Stay in the dream', value: false, cls: 'ghost' }, { label: '👁️ Wake up to reality', value: true, cls: 'primary' }] });
+    return !!v;
+  }
+  // the dream's story is over: you wake up whether you want to or not (the first time)
+  async function wakeUp(forced) {
+    const o = h('div.l2-over.wake'), t = h('div.l2-wake-t'); o.append(t); document.body.append(o);
+    const lines = forced ? ['The Salon goes white. Too white, like a hospital corridor.', 'Kessler\'s voice stretches, and slows, and stops.', 'Somebody is saying your name.'] : ['beep.', 'beep.'];
+    for (const l of lines) { t.textContent = l; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in'); await wait(forced ? 2300 : 900); }
+    o.remove();
+    Router.go('reality');
   }
 
   /* ---------- notebook and menu ---------- */
@@ -512,7 +602,7 @@ const L2 = (() => {
       const tab = h('div.l2-tabs'), body = h('div.l2-jb');
       const show = k => {
         tab.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); body.innerHTML = '';
-        if (k === 'now') body.append(h('p.l2-obj2', objective()), h('p.l2-read', `${fmt(S().cash)} in your wallet. It\'s the 17th of October, a year to the night.`));
+        if (k === 'now') { const seen = found(); body.append(h('p.l2-obj2', objective()), h('p.l2-read', `${fmt(S().cash)} in your wallet. It\'s the 17th of October, a year to the night.`), Object.keys(seen).length ? h('p.l2-read', 'Endings found: ' + Object.keys(ENDINGS).map(e => seen[e] ? `${ENDINGS[e].icon} ${ENDINGS[e].title}` : '? ???').join(' · ')) : null); }
         if (k === 'clues') { const ks = Object.keys(S().clues); body.append(ks.length ? h('div', ks.map(c => h('div.l2-clue', h('b', CLUES[c][0]), h('p', CLUES[c][1])))) : h('p.l2-read', 'Nothing yet.')); }
         if (k === 'people') { const ks = Object.keys(S().met); body.append(ks.length ? h('div', ks.map(w => h('div.l2-clue', h('b', PEOPLE[w].name), h('small', PEOPLE[w].role), h('p', `In the dream: ${PEOPLE[w].echo}`)))) : h('p.l2-read', 'Nobody yet.')); }
         if (k === 'echoes') body.append(h('div', ECHOES.map(([a, b]) => h('div.l2-clue', h('b', a), h('p', b)))));
@@ -522,17 +612,21 @@ const L2 = (() => {
     }, { wide: true });
   }
   async function menu() {
-    const c = await choose('Menu', [['back', 'Back'], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['dream', 'Go back to the dream (Level 1)'], ['title', 'Title screen']]);
+    const opts = [['back', 'Back'], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['sleep', '😴 Sleep (back to the dream)']];
+    if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
+    opts.push(['title', 'Title screen']);
+    const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }
-    if (c === 'dream') Router.go('world');
+    if (c === 'sleep') await feverDream();
+    if (c === 'roof') await replay();
     if (c === 'title') Router.go('title');
   }
 
-  // offered when the dream's story ends
+  // offered from the title screen for saves that finished the dream before Level 2 existed
   async function offerWake() {
-    const c = await UI.modal({ title: '…', body: h('div', h('p', 'For a moment the light in the Salon goes strange: too white, too flat, like a hospital corridor.'), h('p', 'Somewhere a machine is beeping. Somebody is saying your name.'), h('p.muted.small', 'Level 2 begins: a new mystery in a 3D world. Your dream save is kept, and you can come back to the town at any time.')), buttons: [{ label: 'Stay in the dream', value: false, cls: 'ghost' }, { label: 'Wake up', value: true, cls: 'primary' }] });
+    const c = await UI.modal({ title: '…', body: h('div', h('p', 'For a moment the light in the Salon goes strange: too white, too flat, like a hospital corridor.'), h('p', 'Somewhere a machine is beeping. Somebody is saying your name.'), h('p.muted.small', 'Level 2 begins: a new mystery in a 3D world. Your dream save is kept, and you can come back to the town whenever you sleep.')), buttons: [{ label: 'Stay in the dream', value: false, cls: 'ghost' }, { label: 'Wake up', value: true, cls: 'primary' }] });
     if (c) Router.go('reality');
   }
 
-  return { screen, unmount, act, has, set, offerWake, hud, toast, objective, get state() { return S(); }, PEOPLE, CLUES, _A: A };
+  return { screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
 })();

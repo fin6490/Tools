@@ -125,6 +125,7 @@ const L2World = (() => {
     A.use(.4, -1, 'Talk to Dr. Okafor', act('okafor'), { r: 2.2 });
     A.box(.9, .75, .6, A.mat('desk', { color: '#c8b89a', roughness: .7 }), 2.6, .375, 1.8, true);
     A.use(2.6, 1.8, 'Your discharge folder', act('folder'));
+    A.use(-2.6, -1.6, 'The bed you woke up in', act('clinicBed'), { r: 1.5 });
     door(A, 0, 3.92, Math.PI, 'EXIT', '#9aa3aa');
     A.use(0, 3.6, 'Leave the clinic', act('leaveClinic'), { r: 1.4 });
     return { spawn: [-2.1, -.6, 2.2], bg: '#b8c0c8', fog: .02, exposure: .82 };
@@ -302,6 +303,8 @@ const L2World = (() => {
 
   /* ---------- the 17th floor ---------- */
   function corridor(A) {
+    const horror = L2.state.ending === 'horror' && !L2.has('done');
+    if (horror) return corridorHorror(A);
     const paper = A.mat('corr', { map: A.TEX.corridor([10, 1]), roughness: .9 }), carpet = A.mat('corrcarpet', { map: A.TEX.carpet([2, 12]), roughness: 1 });
     A.plane(4, 44, carpet, 0, 0, -18); A.plane(4, 44, A.mat('corrceil', { color: '#d8d0c0' }), 0, 2.7, -18, Math.PI / 2);
     A.wall(-2, 4, -2, -40, 2.7, paper); A.wall(2, 4, 2, -40, 2.7, paper); A.wall(-2, 4, 2, 4, 2.7, paper); A.wall(-2, -40, 2, -40, 2.7, paper);
@@ -319,6 +322,54 @@ const L2World = (() => {
     A.use(0, 3.2, 'Lift down to the casino', act('toFloor', 'lift'), { r: 1.6 });
     A.add(new THREE.HemisphereLight('#ffe8c8', '#2a2018', .35));
     return { spawn: [0, 2.4, Math.PI], bg: '#0a0806', fog: .06 };
+  }
+
+  // the horror ending: the same corridor, wrong. Every door is 1717 and the light is red.
+  function corridorHorror(A) {
+    const paper = A.mat('corrH', { map: A.TEX.corridor([10, 1]), roughness: .9, color: '#a06060' }), carpet = A.mat('corrcarpetH', { map: A.TEX.carpet([2, 12]), roughness: 1, color: '#804040' });
+    A.plane(4, 44, carpet, 0, 0, -18); A.plane(4, 44, A.mat('corrceilH', { color: '#3a1a1a' }), 0, 2.7, -18, Math.PI / 2);
+    A.wall(-2, 4, -2, -40, 2.7, paper); A.wall(2, 4, 2, -40, 2.7, paper); A.wall(-2, 4, 2, 4, 2.7, paper); A.wall(-2, -40, 2, -40, 2.7, paper);
+    const lights = [];
+    for (let i = 0; i < 10; i++) {
+      const z = -2 - i * 3.6;
+      door(A, -1.93, z, Math.PI / 2, '1717', '#2a1414', 1, 2.1); door(A, 1.93, z - 1.2, -Math.PI / 2, '1717', '#2a1414', 1, 2.1);
+      A.use(-1.4, z, 'Room 1717', act('horrorDoor'), { r: 1.3 }); A.use(1.4, z - 1.2, 'Room 1717', act('horrorDoor'), { r: 1.3 });
+      if (i % 2 === 0) lights.push(A.light('#ff2a2a', .7, 7, 0, 2.4, z));
+    }
+    A.every(t => lights.forEach((l, i) => { l.intensity = (Math.sin(t * 9 + i * 3) + Math.sin(t * 23 + i)) > 1.4 ? .05 : .7; }));
+    door(A, 0, -39.92, 0, 'ROOF ACCESS', '#2a1414', 1.2); A.use(0, -39.2, 'The roof door', () => L2.act('horrorLift'), { r: 1.4 });
+    A.box(1.8, 2.3, .08, A.mat('lift', { color: '#9aa1a8', metalness: .85, roughness: .25 }), 0, 1.15, 3.9); A.use(0, 3.2, 'The lift', act('horrorLift'), { r: 1.6 });
+    A.add(new THREE.HemisphereLight('#ff6060', '#100404', .3));
+    return { spawn: [0, -38.4, 0], bg: '#0a0202', fog: .09, fogColor: '#1a0404', exposure: 1.1 };
+  }
+
+  /* ---------- the mystery ending: the Rusty Spur, real, where the roof should be ---------- */
+  function spur(A) {
+    const plank = A.mat('spurplank', { map: A.TEX.wood([6, 2]), roughness: .7, color: '#b07a4a' }), floorM = A.mat('spurfloor', { map: A.TEX.wood([8, 6]), roughness: .8, color: '#9a6a3a' });
+    A.plane(14, 10, floorM, 0, 0, 0); A.plane(14, 10, A.mat('spurceil', { map: A.TEX.wood([6, 4]), color: '#5a3a1e' }), 0, 3.2, 0, Math.PI / 2);
+    A.wall(-7, -5, 7, -5, 3.2, plank); A.wall(-7, 5, 7, 5, 3.2, plank); A.wall(-7, -5, -7, 5, 3.2, plank); A.wall(7, -5, 7, 5, 3.2, plank);
+    // the bar, the bottles, the mirror
+    const bar = A.mat('spurbar', { map: A.TEX.wood([3, 1]), roughness: .4, color: '#7a4a24' });
+    A.box(8, 1.1, .8, bar, 0, .55, -2.6, true); A.box(8.2, .08, 1, A.mat('spurtop', { color: '#3a1e0c', roughness: .3 }), 0, 1.12, -2.6);
+    A.box(8, 2.2, .3, A.mat('shelf', { color: '#120a06' }), 0, 1.9, -4.8);
+    const bc = ['#3a7a3a', '#7a4a1a', '#c8c8d0', '#5a1a2a', '#c09030'];
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 18; i++) A.cyl(.04, .05, .28, A.mat('bottle' + (i % 5), { color: bc[i % 5], emissive: bc[i % 5], emissiveIntensity: .35, transparent: true, opacity: .85 }), -3.6 + i * .42, 1.35 + r * .6, -4.6, false, 8);
+    for (const x of [-3, -1.5, 0, 1.5, 3]) { A.cyl(.2, .2, .06, A.mat('stooltop', { color: '#5a0f1a' }), x, .78, -1.7); A.cyl(.04, .04, .76, A.mat('stoolleg', { color: '#888', metalness: .8 }), x, .38, -1.7); }
+    const neon = A.sign('THE RUSTY SPUR', { color: '#ff8a3d', w: 4.4, h: .8, font: 'bold 120px Georgia' }); neon.position.set(0, 2.75, -4.62); A.add(neon);
+    // the jukebox, glowing
+    const jb = A.box(.9, 1.6, .6, A.mat('jukebox', { color: '#5a2a0a', emissive: '#ff7a1a', emissiveIntensity: .35, roughness: .4 }), 5.6, .8, -3.8, true);
+    const jt = A.cyl(.45, .45, .6, A.mat('jbtop', { color: '#ffb84d', emissive: '#ffb84d', emissiveIntensity: .9 }), 5.6, 1.6, -3.8, false, 20); jt.rotation.x = Math.PI / 2;
+    A.every(t => { jb.material.emissiveIntensity = .3 + Math.sin(t * 2.4) * .12; });
+    A.use(5.6, -2.9, 'The jukebox', act('spurJukebox'), { r: 1.6 });
+    // a window full of impossible sunshine: the dream town, outside
+    A.plane(3, 1.6, new THREE.MeshBasicMaterial({ map: A.canvasTex('dreamwin', 256, 128, (c, w, hh) => { const g = c.createLinearGradient(0, 0, 0, hh); g.addColorStop(0, '#6ab8ff'); g.addColorStop(1, '#cfe9ff'); c.fillStyle = g; c.fillRect(0, 0, w, hh); c.fillStyle = '#7ac74f'; c.fillRect(0, hh * .72, w, hh); for (let i = 0; i < 7; i++) { c.fillStyle = ['#e85d5d', '#f2c14e', '#5da9e8', '#b36ae2'][i % 4]; c.fillRect(10 + i * 36, hh * .45, 26, hh * .3); c.fillStyle = '#8a3a2a'; c.beginPath(); c.moveTo(6 + i * 36, hh * .45); c.lineTo(23 + i * 36, hh * .32); c.lineTo(40 + i * 36, hh * .45); c.fill(); } c.fillStyle = '#fff6a8'; c.beginPath(); c.arc(w * .85, hh * .2, 14, 0, 7); c.fill(); }), toneMapped: false }), -6.88, 1.7, 1, 0).rotation.y = Math.PI / 2;
+    A.light('#ffb070', 1.2, 12, 0, 2.8, -1); A.light('#ff8a3d', .8, 8, 0, 2.4, -4); A.light('#ffd9a0', .6, 9, -4, 2.6, 2);
+    A.add(new THREE.HemisphereLight('#ffd0a0', '#3a2010', .5));
+    // Dolores, and Sal behind the bar with his back to you
+    A.person({ x: -2.4, z: -3.4, face: 0, skin: '#f0c19a', hair: '#c9a070', coat: '#7a1a2a', pants: '#1a1a1a', longHair: true, skirt: true });
+    A.person({ x: .6, z: -3.5, face: Math.PI, still: true, skin: '#e0b090', hair: '#bbb', coat: '#f0ece0', pants: '#2a2a2a', shirt: '#f4f4f4', tie: '#7a0f1e' });
+    A.use(.6, -2.0, 'The man behind the bar', act('sal'), { r: 2.2 });
+    return { spawn: [0, 3.8, Math.PI], bg: '#1a0e06', fog: .03, fogColor: '#2a1a0c', exposure: 1.05 };
   }
 
   /* ---------- room 1717 ---------- */
@@ -398,5 +449,5 @@ const L2World = (() => {
     return { spawn: [0, 4, Math.PI], bg: '#e9cfae', fog: .025, fogColor: '#e8d2b8' };
   }
 
-  return { clinic, garage, floor, eye, salon, corridor, room, roof, cemetery };
+  return { clinic, garage, floor, eye, salon, corridor, room, roof, cemetery, spur };
 })();

@@ -180,3 +180,19 @@ body.reality main.screen { padding: 0; max-width: none; margin: 0; }
 .l2-btn.go { background: linear-gradient(#f0c96b, #c99631); color: #2a1a05; border-color: #f6d88d; font-weight: 700; min-width: 120px; }
 .l2-btn.go:disabled { opacity: .5; }
 @media (max-width: 560px) { .l2-game { max-height: 47vh; max-height: 47dvh; } .l2-chips { flex-basis: 100%; justify-content: space-between; } .l2-gfoot .l2-btn { flex: 1; } }
+
+/* the fever dream back to the town, and the darker endings */
+.l2-over.fever { background: radial-gradient(circle at 50% 50%, #3a1a40, #000 70%); animation: l2fever 8s ease-in forwards; }
+.l2-over.fever .l2-wake-t { color: #ffd9f0; filter: blur(.4px); text-shadow: 3px 0 #ff3b8a, -3px 0 #3bd2ff; }
+@keyframes l2fever { 0% { background-size: 100% 100%; filter: hue-rotate(0deg); } 100% { filter: hue-rotate(160deg) saturate(1.6); } }
+.l2-over.wake.horror { background: radial-gradient(circle, #2a0404, #000 75%); }
+.l2-over.wake.horror .l2-end h2 { color: #ff4a4a; text-shadow: 0 0 24px rgba(255,0,0,.4); animation: l2flick 3s infinite; }
+@keyframes l2flick { 0%, 92%, 100% { opacity: 1; } 94% { opacity: .2; } 96% { opacity: .8; } 97% { opacity: .1; } }
+.l2-over.wake.mystery { background: radial-gradient(circle, #2a1a06, #000 75%); }
+.l2-over.wake.mystery .l2-end h2 { color: #ffcf7a; }
+.l2-endings { display: flex; justify-content: center; gap: 14px; margin: 1.2rem 0 .4rem; }
+.l2-endings span { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 92px; padding: .6rem .3rem; border: 1px dashed rgba(255,255,255,.2); border-radius: 4px; font-size: 1.6rem; color: #556; }
+.l2-endings span.got { border-style: solid; border-color: rgba(201,169,106,.6); color: inherit; }
+.l2-endings small { font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--l2-dim); }
+.l2-end .l2-opts { flex-direction: column; align-items: stretch; max-width: 360px; margin-left: auto; margin-right: auto; }
+@media (prefers-reduced-motion: reduce) { .l2-over.wake.horror .l2-end h2, .l2-over.fever { animation: none; } }
