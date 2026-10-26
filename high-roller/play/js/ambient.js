@@ -20,6 +20,15 @@ const Ambient = (() => {
     shop: { bed: [['murmur', 650, .12]], fx: [] },
     grand: { bed: [['air', 900, .1], ['murmur', 420, .12]], fx: [['clink', 6000]] },
     apts: { bed: [['hum', 55, .06]], fx: [] },
+    // Level 2
+    clinic: { bed: [['hum', 60, .05], ['air', 2400, .03]], fx: [['beep', 1100]] },
+    garage: { bed: [['rain', 900, .32], ['hum', 50, .05]], fx: [['drip', 1400], ['car', 14000]] },
+    floor: { bed: [['murmur', 480, .32], ['air', 1600, .07]], fx: [['chime', 1800], ['chips', 3200], ['clink', 5200]] },
+    eye: { bed: [['hum', 55, .1], ['buzz', 120, .015]], fx: [['tick', 2600]] },
+    l2salon: { bed: [['murmur', 300, .18], ['air', 1200, .05]], fx: [['chips', 5200]] },
+    hotel: { bed: [['hum', 50, .06], ['air', 900, .04]], fx: [] },
+    roof: { bed: [['rain', 1400, .5], ['wind', 260, .3]], fx: [['thump', 16000]] },
+    cemetery: { bed: [['wind', 320, .18], ['rain', 2200, .05]], fx: [] },
     steak: { bed: [['murmur', 360, .3]], fx: [['clink', 2200]] },
   };
   const noiseBuf = () => {
@@ -35,7 +44,7 @@ const Ambient = (() => {
       return nodes;
     }
     const src = ac.createBufferSource(); src.buffer = Ambient._noise || (Ambient._noise = noiseBuf()); src.loop = true;
-    const flt = ac.createBiquadFilter(); flt.type = kind === 'air' ? 'highpass' : kind === 'murmur' ? 'bandpass' : 'lowpass'; flt.frequency.value = f; flt.Q.value = kind === 'murmur' ? .8 : .5;
+    const flt = ac.createBiquadFilter(); flt.type = kind === 'air' ? 'highpass' : kind === 'murmur' || kind === 'rain' ? 'bandpass' : 'lowpass'; flt.frequency.value = f; flt.Q.value = kind === 'murmur' ? .8 : kind === 'rain' ? .3 : .5;
     src.connect(flt); flt.connect(gain); src.start(); nodes.push(src);
     // slow swells: a crowd breathing, waves, gusts
     const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = kind === 'water' ? .25 : kind === 'wind' ? .08 : .13; lg.gain.value = g * .45; lfo.connect(lg); lg.connect(gain.gain); lfo.start(); nodes.push(lfo);
@@ -52,6 +61,8 @@ const Ambient = (() => {
     else if (kind === 'chips') { for (let i = 0; i < 3 + Math.random() * 4; i++) burst(2500, .06, .035, t + i * (.03 + Math.random() * .03)); }
     else if (kind === 'chime') { const base = [523, 659, 784, 1046]; base.forEach((f, i) => tone(f, .03, .35, 'triangle', t + i * .09)); }
     else if (kind === 'thump') { tone(55, .25, .35); }
+    else if (kind === 'beep') { tone(988, .025, .12); }
+    else if (kind === 'drip') { const f = 1400 + Math.random() * 900; tone(f, .04, .08); tone(f * .7, .02, .1, 'sine', t + .03); }
     else if (kind === 'tick') { burst(3000, .05, .02); }
     else if (kind === 'cricket') { for (let i = 0; i < 3; i++) tone(4400 + Math.random() * 300, .015, .04, 'sine', t + i * .06); }
     else if (kind === 'car') { const s = ac.createBufferSource(); s.buffer = Ambient._noise; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500; s.connect(f); const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.18, t + 1.5); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.5); f.connect(g); g.connect(out); s.start(t); s.stop(t + 3.6); }
@@ -74,6 +85,7 @@ const Ambient = (() => {
   // which soundscape fits where you are right now
   function where() {
     const st = App.state, scr = Router.screen; if (!st) return '';
+    if (scr === 'reality') { const a = R3.area; return a === 'salon' ? 'l2salon' : a === 'corridor' || a === 'room' ? 'hotel' : a || ''; }
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';
       if (w.map === 'town') return World.isNight && World.isNight() ? 'night' : 'street';

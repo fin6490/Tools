@@ -193,6 +193,9 @@ const ACHIEVEMENTS = [
   { id: 'jobber', name: 'Odd Jobs', desc: 'Finish ten side jobs', test: () => Object.values((App.state.quests || {})).filter(q => q.s === 'done').length >= 10, reward: 2500, swagger: 4 },
   { id: 'fragment1', name: 'Something Familiar', desc: 'Find a fragment that doesn\'t belong in this town', test: () => App.counter('fragments') >= 1, reward: 0, swagger: 1 },
   { id: 'fragmentAll', name: 'Remember', desc: 'Find all seventeen fragments', test: () => App.counter('fragments') >= 17, reward: 0, swagger: 5 },
+  { id: 'l2wake', name: 'Awake', desc: 'Wake up from the dream', test: () => !!(App.state.l2 && App.state.l2.flags.woke), reward: 0, swagger: 5 },
+  { id: 'l2truth', name: 'Eyes Open', desc: 'Find out what happened, and make it count', test: () => App.counter('l2_truth') > 0, reward: 0, swagger: 25 },
+  { id: 'l2other', name: 'Other Nights', desc: 'See another ending of Level 2', test: () => App.counter('l2_hollow') + App.counter('l2_dark') > 0, reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
   { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
@@ -372,7 +375,7 @@ const Career = {
 
   afterRound() {
     this.checkAchievements();
-    if (App.state.mode !== 'career') return;
+    if (App.state.mode !== 'career' || App.inReality()) return;
     this.checkChapter();
   },
 
@@ -433,7 +436,7 @@ const Career = {
 
   /* ---------- the day cycle ---------- */
   /* ---------- needs: hunger, thirst and energy (energy is state.stamina) ---------- */
-  needsOn() { return App.state && App.state.mode === 'career'; },
+  needsOn() { return App.state && App.state.mode === 'career' && !App.inReality(); },
   // tiredness 0-100 builds once you've been up longer than your bed allows; only sleep resets it
   tiredness() {
     const st = App.state; if (!this.needsOn()) return 0;
@@ -459,6 +462,7 @@ const Career = {
   },
   // drain the bars. kind = 'round' (k = rounds) or 'step'
   drain(kind, k = 1) {
+    if (App.inReality()) return;
     const was = App.state ? (App.state.clock || 540) : 0;
     const mins = (kind === 'round' ? 4 : 0.25) * k;
     if (App.state) App.state.clock = (App.state.clock || 540) + mins;

@@ -209,7 +209,7 @@ const Rivals = {
 
   /* ---------- seats at the table ---------- */
   onTableOpen(t) {
-    if (App.state.mode !== 'career') return;
+    if (App.state.mode !== 'career' || App.inReality()) return;
     t.rivals = [];
     const here = this.at(t.ctx.venueId);
     for (const id of here) if (RIVALS[id].games.includes(t.game.id) ? RNG.chance(0.6) : RNG.chance(0.15)) this.sit(t, id, true);
@@ -528,6 +528,7 @@ const Chat = {
     return `the player inherited Uncle Sal's debt to loan shark Vinnie after Sal ${knows ? 'faked his own death (the player now knows he is secretly alive)' : 'apparently drowned three years ago'}, and is working up from the Rusty Spur to win back Sal's bar from Augustus Kessler, who won it from Sal in a crooked game.`;
   },
   rules(sp) {
+    if (sp.rules) return sp.rules(); // Level 2 characters bring their own world
     return [
       `You are ${sp.name}, ${sp.role}, in "High Roller", a casino game with a story: ${this.frame()}`,
       `Your personality: ${sp.persona}`,

@@ -23,6 +23,10 @@ const Music = (() => {
     salon: { bpm: 62, div: 3, key: 62, scale: [0, 2, 3, 5, 7, 8, 10], gain: .8,
       prog: [[62, 0, 3, 7, 14], [58, 0, 4, 7, 11], [67, 0, 3, 7, 10], [57, 0, 4, 7, 10, 13]],
       bass: 'half', comp: 'pad', lead: 'vibes', keys: 'rhodes', drums: 'softride', density: .22 },
+    // Level 2: one slow piano in A minor, a soft pad, no drums, lots of silence
+    reality: { bpm: 52, div: 2, key: 57, scale: [0, 2, 3, 5, 7, 8, 10], gain: .7,
+      prog: [[57, 0, 3, 7, 14], [53, 0, 4, 7, 11], [60, 0, 4, 7, 14], [55, 0, 4, 7, 10], [57, 0, 3, 7], [62, 0, 3, 7, 10], [53, 0, 4, 7, 11], [52, 0, 4, 7, 10]],
+      bass: 'half', comp: 'pad', lead: 'piano', keys: 'rhodes', drums: 'none', density: .16 },
     diner: { bpm: 66, div: 3, key: 60, scale: [0, 2, 4, 7, 9], gain: .8,
       prog: [[60, 0, 4, 7], [57, 0, 3, 7], [65, 0, 4, 7], [67, 0, 4, 7, 10]],
       bass: 'boomchick', comp: 'triplets', lead: 'sax', keys: 'piano', drums: 'brushback', density: .4 },
@@ -131,6 +135,8 @@ const Music = (() => {
   // which band is playing where you are
   function where() {
     const st = App.state, scr = Router.screen; if (!st) return '';
+    if (scr === 'reality') return R3.area && R3.area !== 'eye' ? 'reality' : '';
+    if (App.inReality() && (scr === 'table' || scr === 'slots')) return '';
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';
       if (w.map.startsWith('v:')) return STYLES[w.map.slice(2)] ? w.map.slice(2) : '';

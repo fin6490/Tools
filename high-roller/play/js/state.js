@@ -138,6 +138,7 @@ const App = {
   news(text) { this.state.news.unshift({ day: this.state.day, text }); this.state.news.length = Math.min(this.state.news.length, 40); },
 
   /* ---------- after every settled round ---------- */
+  inReality() { return !!(this.state && this.state.l2 && this.state.l2.atTable); },
   roundDone(gameId, r) {
     const st = this.state, s = st.stats;
     s.rounds++; s.wagered = round2(s.wagered + r.wagered); s.returned = round2(s.returned + r.returned);
@@ -156,7 +157,7 @@ const App = {
     if (r.wagered > 0 || r.stamina) Career.drain('round', r.stamina != null ? r.stamina : 1);
     Mood.round(gameId, r, round2(st.bank - r.net));
     Career.afterRound(gameId, r);
-    if (r.wagered > 0) Quests.event('round', { gameId, venue: st.venue, ...r });
+    if (r.wagered > 0 && !this.inReality()) Quests.event('round', { gameId, venue: st.venue, ...r });
     this.save(); Router.hud();
   },
 };

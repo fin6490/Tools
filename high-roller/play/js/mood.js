@@ -22,7 +22,7 @@ const DEGEN_TASKS = [
 ];
 
 const Mood = {
-  on() { return App.state && App.state.mode === 'career'; },
+  on() { return App.state && App.state.mode === 'career' && !App.inReality(); },
   st() {
     const s = App.state;
     if (s.mood == null) s.mood = 60;

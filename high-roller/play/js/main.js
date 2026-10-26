@@ -30,13 +30,15 @@ const Avatar = {
 const Router = {
   screen: 'title', table: null, game: null,
   go(screen, arg) {
+    if (screen === 'world' && App.inReality()) screen = 'reality'; // leaving a table you sat down at in Level 2
+    if (this.screen === 'reality') L2.unmount();
     World.unmount();
     this.teardownTable();
     this.screen = screen; this.arg = arg;
     const app = $('#app'); app.innerHTML = '';
     document.body.dataset.screen = screen;
     if (App.state) document.body.dataset.back = App.state.equipped.back || 'red';
-    if (screen !== 'title') app.append(this.hudEl());
+    if (screen !== 'title' && screen !== 'reality') app.append(this.hudEl());
     const main = h('main.screen');
     app.append(main);
     (Screens[screen] || Screens.title)(main, arg);
@@ -78,7 +80,7 @@ const Router = {
     const ev = Career.eventAt(st.venue);
     let limits = ev && ev.limits ? { ...v.limits, max: v.limits.max * ev.limits } : v.limits, chips = v.chips;
     if (st.ending && st.venue === 'salon') { limits = { ...limits, max: Math.max(limits.max, 1000000) }; chips = [1000, 5000, 25000, 100000, 1000000]; }
-    const ctx = { venue: v, venueId: st.venue, limits, chips, rules: (v.rules && v.rules[gameId]) || {} };
+    const ctx = { venue: App.inReality() ? { ...v, name: 'The Meridian' } : v, venueId: st.venue, limits, chips, rules: (v.rules && v.rules[gameId]) || {} };
     const main = $('main.screen');
     this.table = new UI.Table(main, g, ctx);
     this.game = g;
@@ -87,6 +89,8 @@ const Router = {
   },
   hudEl() {
     const st = App.state;
+    if (App.inReality()) return h('header.hud.hud-l2', h('button.logo', { onclick: () => this.safeGo('reality'), title: 'Back to the Meridian' }, '←', h('span', 'The Meridian')),
+      h('div.hud-stats', h('div.hs.bank', h('small', 'Your money'), h('b#hud-bank'))));
     return h('header.hud',
       h('button.logo', { onclick: () => this.safeGo('world'), title: 'Back to the map' }, '🎲', h('span', 'High Roller')),
       h('div.hud-stats',
@@ -120,6 +124,7 @@ const Router = {
 const Screens = {
   table() { }, // the Table component fills this screen
   world(main) { World.mount(main); },
+  reality(main) { L2.screen(main); },
   poker(main) { Holdem.lobby(main); },
   pokertable(main) { Holdem.table(main); },
   darts(main) { Darts.screen(main); },
@@ -134,6 +139,7 @@ const Screens = {
         : h('span.muted', 'Empty')),
       h('div.slot-btns',
         s ? h('button.btn.primary.sm', { onclick: () => { App.start(s, i); Router.go('world'); } }, 'Continue') : null,
+        s && (s.l2 || s.ending) ? h('button.btn.sm.l2-go', { onclick: () => { App.start(s, i); Router.go('reality'); } }, s.l2 ? 'Level 2' : 'Wake up') : null,
         h('button.btn.sm', { onclick: () => Screens.newGame(i, 'career') }, 'New Career'),
         h('button.btn.ghost.sm', { onclick: () => Screens.newGame(i, 'free') }, 'Free Play'),
         s ? h('button.btn.ghost.sm.danger', { onclick: async () => { if (await UI.confirm('Delete save?', `Erase slot ${i} (${s.name})? This can't be undone.`, 'Delete')) { App.deleteSlot(i); Router.go('title'); } } }, 'Delete') : null));
@@ -386,6 +392,7 @@ const Screens = {
       h('div.menu-btns',
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('status'); } }, '📋 Status, story & trophies'),
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('case'); } }, '🔎 Case file: The Seventeenth Card'),
+        st.ending || st.l2 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('reality'); } }, '👁️ Level 2: The Meridian') : null,
         h('button.btn', { onclick: () => { box.close(); World.townMap(); } }, '🗺️ Town map'),
         h('button.btn', { onclick: () => { box.close(); Chat.settings(); } }, '💬 AI chat with characters'),
         h('button.btn', { onclick: () => { box.close(); Looks.edit(); } }, '🪞 Your look'),
