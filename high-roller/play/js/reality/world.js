@@ -202,6 +202,12 @@ const L2World = (() => {
     // gamblers
     const g1 = [{ x: -5.9, z: -1.7, coat: '#4a3b6b', skin: '#e8c4a8', hair: '#6b4a2a' }, { x: -4, z: -1.6, coat: '#7a5a3a', skin: '#a5714a', hair: '#111', longHair: true, skirt: true }, { x: 2.1, z: -1.7, coat: '#2e4a3a', skin: '#f0d0b0', hair: '#bbb' }, { x: -3.8, z: 3.7, coat: '#5a1a1a', skin: '#c68863', hair: '#222' }, { x: -2.2, z: 3.7, coat: '#e0d4c0', skin: '#f3d1b5', hair: '#d8c070', longHair: true, skirt: true }, { x: 5.8, z: 3.6, coat: '#202830', skin: '#e0ac69', hair: '#3a2a1e' }];
     for (const p of g1) A.person({ ...p, pants: '#1b1b20', face: Math.PI });
+    // games you can only play standing in the room: the Big Six wheel, Sic Bo, two coin pushers
+    const wu = L2Games.buildWheel(A, 14.8, -.5, -Math.PI / 2); A.use(wu.use[0], wu.use[1], 'Big Six money wheel', act('wheel'), { r: 2.2 });
+    A.person({ x: 14.2, z: 1.6, face: -Math.PI / 2, skin: '#c48a64', hair: '#111', coat: '#111', pants: '#111', shirt: '#f4f4f4', tie: '#c9a14a' });
+    const su = L2Games.buildSicbo(A, -10.6, 1.5, Math.PI / 2); A.use(su.use[0], su.use[1], 'Sic Bo', act('sicbo'), { r: 2.2 });
+    A.person({ x: -12.3, z: 1.5, face: Math.PI / 2, skin: '#f0c9a8', hair: '#2a1d14', coat: '#111', pants: '#111', shirt: '#f4f4f4', tie: '#7a0f1e', longHair: true });
+    for (const [id, px] of [['a', 7.3], ['b', 8.5]]) { const pu = L2Games.buildPusher(A, id, px, -10.6, 0); A.use(pu.use[0], pu.use[1], id === 'a' ? 'High Tide coin pusher' : 'Low Tide coin pusher', act('pusher', id), { r: 1.3 }); }
     // Tommy, the pit boss
     A.person({ x: -1, z: -5.6, face: Math.PI * .1, skin: '#e8b58f', hair: '#5a3a22', coat: '#26262c', pants: '#1a1a1e', shirt: '#dcdcdc', tie: '#203a6b', build: 'broad' });
     A.use(-1, -5.6, 'Tommy Quinn, pit boss', act('tommy'), { r: 2 });

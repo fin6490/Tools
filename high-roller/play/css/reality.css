@@ -151,3 +151,32 @@ body.reality main.screen { padding: 0; max-width: none; margin: 0; }
 
 /* the dream screens, reached from Level 2: a way home */
 .title-l2 { margin-top: .6rem; }
+
+/* floor games: the bets slide up from the bottom while the camera looks at the machine */
+.l2-over.game { align-items: flex-end; padding: 0; pointer-events: none; background: linear-gradient(transparent 50%, rgba(0,0,0,.35)); }
+.l2-game { pointer-events: auto; width: min(760px, 100%); max-height: 58vh; max-height: 58dvh; overflow-y: auto; background: rgba(10,13,18,.94); border: 1px solid var(--l2-line); border-bottom: 0;
+  border-radius: 10px 10px 0 0; padding: .7rem 1rem calc(.8rem + env(safe-area-inset-bottom)); box-shadow: 0 -20px 60px rgba(0,0,0,.5); animation: l2up .35s ease-out; }
+@keyframes l2up { from { transform: translateY(40px); opacity: 0; } }
+.l2-gh { display: flex; align-items: center; gap: 12px; }
+.l2-gh b { font-size: .78rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; flex: 1; }
+.l2-gcash { font-variant-numeric: tabular-nums; color: var(--l2-accent); }
+.l2-gmsg { margin: .3rem 0 .6rem; color: #c3cbd4; font-size: .9rem; line-height: 1.45; min-height: 1.3em; }
+.l2-gsub { margin: 0 0 .5rem; color: var(--l2-dim); font-size: .82rem; line-height: 1.45; }
+.l2-tally { font-variant-numeric: tabular-nums; font-size: .95rem; margin-bottom: .6rem; }
+.l2-board { display: grid; gap: 6px; margin-bottom: .7rem; }
+.l2-board.wheel { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+.l2-board.sicbo { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+.l2-spot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: .55rem .3rem; min-height: 54px; background: rgba(14,74,52,.55); border: 1px solid rgba(217,194,122,.35);
+  border-radius: 4px; color: #f3ead8; font: inherit; cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.l2-spot b { font-size: .88rem; } .l2-spot small { font-size: .68rem; color: #cbbf96; }
+.l2-spot em { position: absolute; top: -7px; right: -5px; font-style: normal; font-size: .7rem; font-weight: 700; color: #2a1a05; background: #e3b85a; border-radius: 10px; padding: 1px 6px; display: none; }
+.l2-spot.bet { border-color: #e3b85a; background: rgba(14,90,60,.8); } .l2-spot.bet em { display: block; }
+.l2-spot:hover { filter: brightness(1.15); }
+.l2-gfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.l2-chips { display: flex; gap: 6px; flex: 1; }
+.l2-chip { width: 44px; height: 44px; border-radius: 50%; border: 3px dashed rgba(255,255,255,.55); background: #2a3a4a; color: #fff; font-weight: 700; font-size: .75rem; cursor: pointer; }
+.l2-chip[data-v="5"] { background: #b3222b; } .l2-chip[data-v="25"] { background: #138a3e; } .l2-chip[data-v="100"] { background: #151515; } .l2-chip[data-v="500"] { background: #6a2c91; } .l2-chip[data-v="1000"] { background: #c9a14a; color: #2a1a05; }
+.l2-chip.on { outline: 2px solid #fff; outline-offset: 2px; }
+.l2-btn.go { background: linear-gradient(#f0c96b, #c99631); color: #2a1a05; border-color: #f6d88d; font-weight: 700; min-width: 120px; }
+.l2-btn.go:disabled { opacity: .5; }
+@media (max-width: 560px) { .l2-game { max-height: 47vh; max-height: 47dvh; } .l2-chips { flex-basis: 100%; justify-content: space-between; } .l2-gfoot .l2-btn { flex: 1; } }
