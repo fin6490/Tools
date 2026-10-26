@@ -213,3 +213,8 @@ body.l2-shakes .l2-card, body.l2-shakes .l2-sub p { animation: l2tremor .12s ste
 body.l2-drunk .l2-card { text-shadow: 6px 2px 0 rgba(0,0,0,.25); }
 @media (max-width: 560px) { .l2-crave { font-size: .68rem; padding: .35rem .5rem; } }
 @media (prefers-reduced-motion: reduce) { body.l2-nausea .l2-sick, body.l2-shakes .l2-card, body.l2-shakes .l2-sub p, body.l2-sweats .l2-vignette { animation: none; } }
+/* the Barman is coming */
+body.l2-hunted .l2-vignette { animation: l2hunt 1.1s ease-in-out infinite; }
+@keyframes l2hunt { 0%, 100% { background: radial-gradient(ellipse at center, transparent 45%, rgba(60,0,0,.55) 100%); } 50% { background: radial-gradient(ellipse at center, transparent 30%, rgba(120,0,0,.8) 100%); } }
+body.l2-hunted .l2-grain { opacity: .16; }
+@media (prefers-reduced-motion: reduce) { body.l2-hunted .l2-vignette { animation: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(100,0,0,.7) 100%); } }
