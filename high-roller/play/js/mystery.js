@@ -427,7 +427,7 @@ const Mystery = {
     Career.checkAchievements(); App.save();
     await Career.checkChapter();
     Router.go('case');
-    if (!st.l2) setTimeout(() => L2.offerWake(), 900);
+    if (!st.l2) setTimeout(() => L2.wakeUp(true), 1200); // the dream is over: you wake up
   },
 
   /* ---------- for Claude ---------- */

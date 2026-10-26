@@ -194,8 +194,11 @@ const ACHIEVEMENTS = [
   { id: 'fragment1', name: 'Something Familiar', desc: 'Find a fragment that doesn\'t belong in this town', test: () => App.counter('fragments') >= 1, reward: 0, swagger: 1 },
   { id: 'fragmentAll', name: 'Remember', desc: 'Find all seventeen fragments', test: () => App.counter('fragments') >= 17, reward: 0, swagger: 5 },
   { id: 'l2wake', name: 'Awake', desc: 'Wake up from the dream', test: () => !!(App.state.l2 && App.state.l2.flags.woke), reward: 0, swagger: 5 },
-  { id: 'l2truth', name: 'Eyes Open', desc: 'Find out what happened, and make it count', test: () => App.counter('l2_truth') > 0, reward: 0, swagger: 25 },
-  { id: 'l2other', name: 'Other Nights', desc: 'See another ending of Level 2', test: () => App.counter('l2_hollow') + App.counter('l2_dark') > 0, reward: 0, swagger: 5 },
+  { id: 'l2truth', name: 'Eyes Open', desc: 'Level 2: find out what happened, and make it count (the good ending)', test: () => App.counter('l2_good') + App.counter('l2_truth') > 0, reward: 0, swagger: 25 },
+  { id: 'l2horror', name: 'The House Always Wins', desc: 'Level 2: the horror ending', test: () => App.counter('l2_horror') + App.counter('l2_hollow') + App.counter('l2_dark') > 0, reward: 0, swagger: 10 },
+  { id: 'l2mystery', name: 'The Seventeenth Card', desc: 'Level 2: the mystery ending', test: () => App.counter('l2_mystery') > 0, reward: 0, swagger: 10 },
+  { id: 'l2all', name: 'Every Path', desc: 'Level 2: see all three endings', test: () => { const e = (App.state.l2 && App.state.l2.endings) || {}; return !!(e.good && e.horror && e.mystery); }, reward: 0, swagger: 25 },
+  { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
   { id: 'degenDiaries', name: 'In the Book', desc: 'Complete all four pages of Lonnie\'s Degen Diaries', test: () => App.counter('degenDiaries') >= 1, reward: 0, swagger: 4 },
@@ -523,6 +526,9 @@ const Career = {
     if (L.cost && !App.debit(L.cost)) { UI.toast(`A night here costs ${fmt(L.cost)}`, 'warn'); return; }
     let robbed = 0;
     if (L.risky && st.bank > 20 && RNG.chance(0.3)) { robbed = round2(Math.min(st.bank * 0.15, 5000)); st.bank = round2(st.bank - robbed); }
+    // once the dream's story is over, every bed is a door: stay asleep, or wake up in the Meridian
+    // (the night here finishes when the fever brings you back)
+    if (st.ending && typeof L2 !== 'undefined' && await L2.dreamChoice()) { st.pendingNight = { id: lodgingId, robbed }; App.save(); L2.wakeUp(); return; }
     await this.endDay({ ...L, id: lodgingId }, robbed);
   },
   // two hours' sleep without ending the day: takes about three hours of tiredness off, once a day
