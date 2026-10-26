@@ -109,7 +109,7 @@ const Mood = {
     await UI.dialog([{ who: 'narrator', text: 'The floor comes up to meet you. The last thing you hear is Dolores sighing, "Not again, sugar."' }]);
     this._out = false;
     App.state.flags.hangover = 2;
-    await Career.passOut();
+    await Career.passOut(true);
   },
 
   /* ---------- the night (called from Career.endDay) ---------- */

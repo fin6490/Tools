@@ -152,6 +152,7 @@ const L2World = (() => {
     car(A, 11.5, 9.6, '#1c2733', Math.PI, true);
     A.use(11.5, 7.05, 'Open the boot', act('trunk'), { r: 1.8, y: .9 });
     A.use(10.3, 9.6, 'Sit in your car', act('driverSeat'), { r: 1.4 });
+    A.use(12.6, 8.1, 'The glovebox', act('glovebox'), { r: 1.2 });
     // fluorescent tubes, one dying
     const tubeOn = A.mat('tube', { color: '#fff', emissive: '#e8f4ff', emissiveIntensity: 1.6 });
     const tubes = [];
@@ -398,6 +399,7 @@ const L2World = (() => {
     A.plane(7, 6, A.mat('roomrug', { map: A.TEX.carpet([3, 3]), roughness: 1, color: '#7a6a6a' }), 0, .005, .4);
     if (!L2.has('roomSearched')) A.use(2.6, 1.8, 'The desk', act('roomDesk'), { r: 1.6 });
     A.use(-1.8, -1.6, 'The bed hasn\'t been slept in', act('roomBed'), { r: 1.8 });
+    A.box(.5, .55, .45, A.mat('minibar', { color: '#1a1a1a', emissive: '#3a2a10', emissiveIntensity: .4 }), 3.1, .275, -1.2, true); A.use(2.6, -1.2, 'The minibar', act('minibar'), { r: 1.3 });
     A.use(0, 2.6, 'Back to the corridor', act('toCorridor'), { r: 1.4 });
     A.add(new THREE.HemisphereLight('#ffe8c8', '#1a1410', .3));
     return { spawn: [.4, 1.7, Math.PI * .82], bg: '#0a0806', fog: .04, exposure: 1.15 };

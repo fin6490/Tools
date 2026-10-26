@@ -198,6 +198,8 @@ const ACHIEVEMENTS = [
   { id: 'l2horror', name: 'The House Always Wins', desc: 'Level 2: the horror ending', test: () => App.counter('l2_horror') + App.counter('l2_hollow') + App.counter('l2_dark') > 0, reward: 0, swagger: 10 },
   { id: 'l2mystery', name: 'The Seventeenth Card', desc: 'Level 2: the mystery ending', test: () => App.counter('l2_mystery') > 0, reward: 0, swagger: 10 },
   { id: 'l2all', name: 'Every Path', desc: 'Level 2: see all three endings', test: () => { const e = (App.state.l2 && App.state.l2.endings) || {}; return !!(e.good && e.horror && e.mystery); }, reward: 0, swagger: 25 },
+  { id: 'l2sober', name: 'One Day at a Time', desc: 'Level 2: get through the night without giving in to the bottle', test: () => App.counter('l2_sober') > 0, reward: 0, swagger: 20 },
+  { id: 'l2lastcall', name: 'Last Call', desc: 'Level 2: stop fighting the bottle', test: () => App.counter('l2_gavein') > 0, reward: 0, swagger: 0 },
   { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
@@ -545,12 +547,20 @@ const Career = {
   },
   // a proper bed only makes sense once the day is winding down, or when you're truly tired
   bedtimeOk() { const t = (App.state.clock || 540) % 1440; return !this.needsOn() || t >= 1080 || t < 360 || this.tiredness() >= 40; },
-  async passOut() {
+  // drunk: you wake up somewhere outside, with no memory of getting there
+  async passOut(drunk) {
     const st = App.state;
     const robbed = st.bank > 20 ? round2(Math.min(st.bank * 0.2, 10000)) : 0;
     st.bank = round2(st.bank - robbed);
-    await UI.dialog([{ who: 'narrator', text: `You collapse on the sidewalk and sleep where you fall.${robbed ? ` When you wake up, **${fmt(robbed)}** is missing from your wallet.` : ''} Next time, find a bed before you hit empty.` }]);
-    await this.endDay({ name: 'The sidewalk', energy: 0.5, grace: 5, base: 35, hours: 7 }, 0);
+    const spot = drunk && typeof World !== 'undefined' && World.wakeSomewhere ? World.wakeSomewhere() : null;
+    if (!spot) await UI.dialog([{ who: 'narrator', text: `You collapse on the sidewalk and sleep where you fall.${robbed ? ` When you wake up, **${fmt(robbed)}** is missing from your wallet.` : ''} Next time, find a bed before you hit empty.` }]);
+    await this.endDay({ name: spot ? 'Somewhere outside' : 'The sidewalk', energy: 0.5, grace: 5, base: 35, hours: 7 }, 0);
+    if (spot) {
+      if (Router.screen === 'world') World.unmount();
+      st.world = { map: 'town', x: spot.x, y: spot.y, dir: 'down' }; App.count('wokeOutside'); App.save();
+      Router.go('world');
+      await UI.dialog([{ who: 'narrator', text: `You wake up ${spot.text}. Your head is pounding and you have no idea how you got here.${robbed ? ` Your wallet is lighter by **${fmt(robbed)}**.` : ''}` }]);
+    }
   },
   async endDay(L = LODGING.motel, robbed = 0) {
     const st = App.state, lines = [];
