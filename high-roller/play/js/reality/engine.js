@@ -8,7 +8,7 @@
      near and roughly facing. */
 const R3 = (() => {
   let renderer = null, scene = null, cam = null, root = null, raf = 0, last = 0, el = null;
-  let area = null, colliders = [], uses = [], updaters = [], focus = null, busy = false;
+  let area = null, colliders = [], uses = [], updaters = [], focus = null, busy = false, V = null;
   const P = { x: 0, z: 0, y: 1.62, yaw: 0, pitch: 0, bob: 0 };
   const keys = new Set(), stick = { x: 0, y: 0 }, look = { dx: 0, dy: 0 };
   const lowPower = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -187,6 +187,12 @@ const R3 = (() => {
     step(dt);
     cam.position.set(P.x, P.y + Math.sin(P.bob) * .035, P.z);
     cam.rotation.set(P.pitch, P.yaw + Math.PI, 0, 'YXZ');
+    if (V) { // a fixed camera for a game, eased in from wherever you were standing (and back out again)
+      V.t = Math.min(1, V.t + dt * 1.6); const k = 1 - Math.pow(1 - V.t, 3);
+      const toP = V.to ? V.to.p : cam.position.clone(), toQ = V.to ? V.to.q : cam.quaternion.clone();
+      cam.position.lerpVectors(V.from.p, toP, k); cam.quaternion.slerpQuaternions(V.from.q, toQ, k);
+      if (!V.to && V.t >= 1) V = null;
+    }
     for (const u of updaters) u(t, dt);
     const f = busy ? null : pickFocus();
     if (f !== focus) { focus = f; if (el) { el.prompt.textContent = f ? f.label : ''; el.prompt.classList.toggle('on', !!f); el.useBtn.classList.toggle('on', !!f); } }
@@ -234,7 +240,7 @@ const R3 = (() => {
   }
   function clearArea() {
     if (root && scene) { scene.remove(root); root.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
-    root = null; colliders = []; uses = []; updaters = []; focus = null; area = null;
+    root = null; colliders = []; uses = []; updaters = []; focus = null; area = null; V = null;
   }
   // build an area: fn(api) adds things and returns { spawn: [x, z, yaw], fog, bg, ... }
   async function go(name, build, at) {
@@ -247,6 +253,14 @@ const R3 = (() => {
     const sp = at || info.spawn || [0, 0, 0]; P.x = sp[0]; P.z = sp[1]; P.yaw = sp[2] || 0; P.pitch = 0;
     if (el) { el.host.classList.remove('fading'); el.prompt.textContent = ''; }
   }
+  // look at something from a fixed spot (pos and look are world [x, y, z]); view(null) hands the camera back
+  function view(pos, look) {
+    if (!cam) return;
+    const from = { p: cam.position.clone(), q: cam.quaternion.clone() };
+    if (!pos) { V = V ? { from, to: null, t: 0 } : null; return; }
+    const d = new THREE.PerspectiveCamera(); d.position.set(pos[0], pos[1], pos[2]); d.lookAt(look[0], look[1], look[2]); // a camera's lookAt faces -z, as ours does
+    V = { from, to: { p: d.position.clone(), q: d.quaternion.clone() }, t: 0 };
+  }
   const api = { THREE: null, TEX, mat, box, cyl, plane, wall, light, sign, person, rain, use, shadowBlob, canvasTex, add: o => root.add(o), every: fn => updaters.push(fn), get root() { return root; }, get player() { return P; }, collide: r => colliders.push(r) };
-  return { mount, unmount, go, api, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; } };
+  return { mount, unmount, go, api, view, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; } };
 })();

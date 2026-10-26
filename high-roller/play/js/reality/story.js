@@ -212,6 +212,9 @@ const L2 = (() => {
       const ok = await choose(`Sit down? You have ${fmt(S().cash)} of real money.`, [[true, 'Sit down'], [false, 'Not now']]);
       if (ok) toTable(() => Router.openTable(game));
     },
+    async wheel() { await L2Games.wheel(); },
+    async sicbo() { await L2Games.sicbo(); },
+    async pusher(id) { await L2Games.pusher(id); },
     async cashier() {
       if (!S().clues.cheque) return say([{ name: 'Cashier', who: 'x', text: 'Chips or cash? ...Oh. Sorry. Take your time.' }]);
       if (has('cashed')) return say([{ name: 'Cashier', who: 'x', text: 'Anything else tonight?' }, { who: 'narr', text: '*The money is just numbers. It was always going to be just numbers.*' }]);
@@ -531,5 +534,5 @@ const L2 = (() => {
     if (c) Router.go('reality');
   }
 
-  return { screen, unmount, act, has, set, offerWake, objective, get state() { return S(); }, PEOPLE, CLUES, _A: A };
+  return { screen, unmount, act, has, set, offerWake, hud, toast, objective, get state() { return S(); }, PEOPLE, CLUES, _A: A };
 })();
