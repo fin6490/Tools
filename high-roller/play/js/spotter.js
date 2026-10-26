@@ -5,8 +5,8 @@
 const Spotter = (() => {
   const TIERS = {
     rookie: { name: 'Rookie table', cards: 16, ms: 1100, per: 1, mult: 1, desc: 'One card at a time, nice and slow.' },
-    pro: { name: 'Busy table', cards: 26, ms: 750, per: 2, mult: 2.2, desc: 'Cards come in pairs, like a real deal.' },
-    big: { name: 'Big player signal', cards: 36, ms: 520, per: 3, mult: 4, desc: 'Three at a time and quick. This is the count the big player bets on.' },
+    pro: { name: 'Busy table', cards: 24, ms: 1800, per: 2, mult: 2.2, desc: 'Cards come in pairs, like a real deal, with time to add them up.' },
+    big: { name: 'Big player signal', cards: 30, ms: 2300, per: 3, mult: 4, desc: 'Three at a time. This is the count the big player bets on.' },
   };
   const BASE = [150, 500, 2500, 6000];
   const hilo = c => c.r >= 2 && c.r <= 6 ? 1 : c.r >= 10 ? -1 : 0;

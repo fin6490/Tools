@@ -627,6 +627,9 @@ ul.timeline b { font-variant-numeric: tabular-nums; color: var(--gold); margin-r
 .pk-ctl { display: flex; flex-direction: column; gap: .4rem; min-height: 2.6rem; }
 .pk-msg { font-size: .9rem; color: var(--muted); }
 .pk-sizer { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+.pk-quick { display: flex; gap: .4rem; flex-wrap: wrap; margin: .1rem 0 .4rem; }
+.pk-quick .btn { display: flex; flex-direction: column; align-items: center; line-height: 1.15; min-width: 64px; padding: .4rem .6rem; }
+.pk-quick .btn small { font-weight: 400; font-size: .68rem; opacity: .75; }
 .pk-sizer input[type=range] { flex: 1; min-width: 140px; accent-color: var(--gold); }
 .pk-log { font-size: .78rem; color: var(--muted); max-height: 7.5em; overflow: hidden; display: grid; gap: 1px; }
 .pk-log div:first-child { color: var(--ink); }

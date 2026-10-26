@@ -309,7 +309,8 @@ const L2Games = (() => {
       const f = pusherFace(P.t), [, pz] = map(0, f); pusher.position.set(0, shelfY + .05, pz - .25 * s);
       Pz.aim = Math.sin(t * 1.25) * .85; const [ax, az] = map(Pz.aim, .2); dropper.position.set(ax, shelfY + .3, az);
     });
-    Pz.drop = () => { const P = store_(); if (P.coins.length >= PUSH.max) return false; P.drops++; P.coins.push({ x: Pz.aim + (Math.random() - .5) * .02, y: pusherFace(P.t) + PUSH.r + .01, g: 0 }); if (P.drops % PUSH.goldEvery === 0) { P.coins.push({ x: (Math.random() - .5) * 1.2, y: pusherFace(P.t) + PUSH.r + .2, g: 1 }); return 'gold'; } return true; };
+    Pz.drop = () => { const P = store_(); if (P.coins.length >= PUSH.max) return false; P.drops++; const shaky = document.body.classList.contains('l2-shakes') ? .3 : .02; // trembling hands miss
+      P.coins.push({ x: Pz.aim + (Math.random() - .5) * shaky, y: pusherFace(P.t) + PUSH.r + .01, g: 0 }); if (P.drops % PUSH.goldEvery === 0) { P.coins.push({ x: (Math.random() - .5) * 1.2, y: pusherFace(P.t) + PUSH.r + .2, g: 1 }); return 'gold'; } return true; };
     const fx = Math.sin(rot), fz = Math.cos(rot), w = (lx, ly, lz) => [x + lx * Math.cos(rot) + lz * fx, ly, z - lx * Math.sin(rot) + lz * fz];
     Pz.cam = [w(0, shelfY + .62, .78), w(0, shelfY - .3, -.05)];
     props['pusher' + id] = Pz;

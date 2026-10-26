@@ -152,7 +152,7 @@ const Holdem = (() => {
     const players = T.seats.filter(inHand);
     if (players.length < 2) return;
     T.btn = nextIdx(T.btn, p => inHand(p));
-    H = { board: [], pot: 0, currentBet: 0, minRaise: bb, street: 0, shoe };
+    H = { board: [], pot: 0, currentBet: 0, minRaise: bb, street: 0, shoe, acts: [], claims: [] };
     const put = (p, amt) => { amt = Math.min(amt, p.stack); p.stack -= amt; p.bet += amt; p.total += amt; if (p.stack === 0) p.allin = true; return amt; };
     if (ante) players.forEach(p => { const a = Math.min(ante, p.stack); p.stack -= a; p.total += a; H.pot += a; if (p.stack === 0) p.allin = true; });
     const headsUp = players.length === 2;
@@ -215,7 +215,7 @@ const Holdem = (() => {
     if (act.type === 'raise' && p.acted) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'raise' && act.to <= H.currentBet) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'check' && toCall > 0) act = { type: 'fold' };
-    if (act.type === 'fold') { p.folded = true; p.last = 'Fold'; log(`${p.name} folds.`); if (p.me && App.state.settings.pkSkip !== false) T.fast = true; }
+    if (act.type === 'fold') { p.folded = true; p.foldSt = H.street; p.last = 'Fold'; log(`${p.name} folds.`); if (p.me && App.state.settings.pkSkip !== false) T.fast = true; }
     else if (act.type === 'check') { p.last = 'Check'; }
     else if (act.type === 'call') { const amt = Math.min(toCall, p.stack); p.stack -= amt; p.bet += amt; p.total += amt; if (!p.stack) p.allin = true; p.last = p.allin ? 'All-in' : 'Call'; log(`${p.name} ${p.allin ? 'calls all-in' : 'calls'} ${fmtc(p.bet)}.`); SFX.chip(); }
     else if (act.type === 'raise') {
@@ -231,6 +231,7 @@ const Holdem = (() => {
         log(`👀 ${p.name} ${(strong === truth) ? p.tellStrong : p.tellWeak}.`);
       }
     }
+    H.acts.push({ s: H.street, p, txt: act.type === 'fold' ? 'folds' : act.type === 'check' ? 'checks' : act.type === 'call' ? `calls ${fmtc(p.bet)}${p.allin ? ' (all-in)' : ''}` : `${p.allin ? 'goes all-in for' : p.last === 'Bet' ? 'bets' : 'raises to'} ${fmtc(p.bet)}` });
     p.acted = true;
   }
 
@@ -366,12 +367,95 @@ const Holdem = (() => {
     });
   }
 
+  /* ---------- table talk: showing, claiming, and remembering ---------- */
+  const STREETS = ['preflop', 'the flop', 'the turn', 'the river'];
+  const cardsTxt = cs => cs.map(cardName).join(' ');
+  // a rough description of what someone held, the way a player would say it
+  function holding(cards, board) {
+    if (!cards || cards.length < 2) return 'nothing';
+    if (board.length >= 3) return Poker.best(cards.concat(board)).name.toLowerCase();
+    const c = chen(cards[0], cards[1]);
+    return cards[0].r === cards[1].r ? `pocket ${rankLabel(cards[0].r)}s` : c >= 9 ? 'two big cards' : c >= 6 ? 'a decent hand' : 'rags';
+  }
+  const strongish = (cards, board) => board.length >= 3 ? !/high card/i.test(Poker.best(cards.concat(board)).name) : chen(cards[0], cards[1]) >= 9;
+  const SHOWY = { maniac: .5, 'loose-aggressive': .35, showman: .5, 'wild cowboy': .45, shark: .15, 'calculating shark': .12 };
+  // after a pot nobody called: the winner may show (needle or flex), and someone who folded may say what they had
+  function afterPot(w) {
+    if (T.fast && !(T.seats.find(p => p && p.me) || {}).folded) return;
+    const me = T.seats.find(p => p && p.me), board = H.board;
+    const iFolded = me && me.inHand && me.folded;
+    if (!w.me && iFolded && RNG.chance(SHOWY[w.styleName] || .18)) {
+      w.shown = true; H.flash = true; const strong = strongish(w.cards, board);
+      log(`🃏 ${w.name} shows ${cardsTxt(w.cards)}${strong ? '.' : ': the bluff, just to let you know.'}`);
+      H.claims.push({ who: w, said: `showed ${cardsTxt(w.cards)}`, truth: true });
+      return;
+    }
+    if (!w.me && iFolded && RNG.chance(.3)) { // a word instead of a show, true or not
+      const truth = RNG.chance(w.style.honest), real = holding(w.cards, board);
+      const said = truth ? real : strongish(w.cards, board) ? 'nothing, total air' : RNG.pick(['a set', 'the nuts', 'kings', 'two pair']);
+      log(`💬 ${w.name}: "${RNG.pick([`Had ${said}, if you're wondering.`, `${said[0].toUpperCase() + said.slice(1)}. Good fold.`, `I'll tell you: ${said}.`])}"`);
+      H.claims.push({ who: w, said, truth }); return;
+    }
+    // you bet them off a hand: sometimes they tell you what they gave up
+    if (w.me) {
+      const folders = T.seats.filter(p => p && !p.me && p.inHand && p.folded && p.cards.length);
+      const folder = folders.length ? RNG.pick(folders) : null;
+      if (folder && RNG.chance(.35)) {
+        const truth = RNG.chance(folder.style.honest), real = holding(folder.cards, board.slice(0, [0, 3, 4, 5][folder.foldSt || 0]));
+        const said = truth ? real : strongish(folder.cards, board) ? 'nothing' : RNG.pick(['a set', 'top pair, top kicker', 'queens', 'a flush draw and the nuts blocker']);
+        log(`💬 ${folder.name}: "${RNG.pick([`I folded ${said}. You'd better have had it.`, `Laid down ${said} there. Show me?`, `${said[0].toUpperCase() + said.slice(1)}, in the muck. Nice bet.`])}"`);
+        H.claims.push({ who: folder, said: `folded ${said}`, truth });
+      }
+    }
+  }
+  // the hand, written down for anyone you chat to afterwards
+  function remember(w, uncontested) {
+    const me = T.seats.find(p => p && p.me);
+    T.last = {
+      board: H.board.slice(), pot: H.won || 0, winner: w, uncontested,
+      acts: H.acts.slice(), claims: H.claims.slice(),
+      cards: new Map(T.seats.filter(p => p && p.cards && p.cards.length).map(p => [p, p.cards.slice()])),
+      shown: new Set(T.seats.filter(p => p && p.shown)), myFold: me && me.folded ? me.foldSt : null,
+      folds: new Map(T.seats.filter(p => p && p.folded).map(p => [p, p.foldSt || 0])),
+    };
+  }
+  // what a player at the table knows when you talk to them: the hand now, the last hand, and you
+  function brief(p) {
+    if (!T || !p) return '';
+    const me = T.seats.find(q => q && q.me), [sb, bb] = blinds(), out = [];
+    const act = (list) => list.map(a => `${a.p.me ? 'the player' : a.p === p ? `${p.name} (you)` : a.p.name} ${a.txt}`).join(', ');
+    if (H && H.board) {
+      const pot = H.pot + T.seats.reduce((x, q) => x + (q ? q.bet : 0), 0);
+      const inIt = T.seats.filter(q => q && q.inHand && !q.folded);
+      out.push(`THE HAND RIGHT NOW (blinds ${sb}/${bb}): it is ${STREETS[H.street] || 'the showdown'}; board ${H.board.length ? cardsTxt(H.board) : 'not dealt yet'}; pot ${pot.toLocaleString()} chips; current bet ${H.currentBet.toLocaleString()}.`);
+      out.push(`Still in: ${inIt.map(q => q.me ? 'the player' : q === p ? 'you' : q.name).join(', ')}. Action so far: ${act(H.acts) || 'nothing yet'}.`);
+      if (p.inHand && !p.folded && p.cards.length) out.push(`Your own hole cards are ${cardsTxt(p.cards)} (you hold ${holding(p.cards, H.board)}). This hand is live: do not reveal your cards honestly. You may tease, needle, fish for information, or lie the way real players do, in keeping with your style.`);
+      else if (p.folded) out.push(`You folded this hand (${cardsTxt(p.cards)}, ${STREETS[p.foldSt || 0]}). You can talk about it freely, truthfully or not.`);
+      if (me && me.inHand && !me.folded) out.push(`The player is still in the hand. You can't see their cards. Read them from their betting and their chat; try to get them to give something away.`);
+    }
+    const L = T.last;
+    if (L) {
+      const theirs = L.cards.get(p), mine = L.cards.get(me);
+      out.push(`LAST HAND: board ${L.board.length ? cardsTxt(L.board) : 'none (it ended preflop)'}. Action: ${act(L.acts)}. ${L.winner ? `${L.winner.me ? 'The player' : L.winner === p ? 'You' : L.winner.name} won ${L.uncontested ? 'without a showdown' : 'at showdown'}.` : ''}`);
+      const fs = L.folds.get(p);
+      if (theirs) out.push(`You held ${cardsTxt(theirs)} (${holding(theirs, fs != null ? L.board.slice(0, [0, 3, 4, 5][fs]) : L.board)})${fs != null ? `, and folded ${fs ? 'on ' : ''}${STREETS[fs]}` : ''}${L.shown.has(p) ? '; the table saw them' : '; nobody saw them'}.`);
+      if (mine && L.shown.has(me)) out.push(`The player showed ${cardsTxt(mine)}.`); else out.push('The player\'s cards were not shown; you don\'t know what they had.');
+      if (L.myFold != null && L.winner === p) out.push(`The player folded to you on ${STREETS[L.myFold]}.`);
+      L.claims.filter(c => c.who === p).forEach(c => out.push(`You told the table you ${c.said}${c.truth ? ' (true)' : ' (a lie: keep the story straight or enjoy the reveal)'}.`));
+    }
+    const t = me && me.st;
+    if (t && t.hands >= 5) out.push(`Your read on the player over ${t.hands} hands: plays ${Math.round(t.vpip / t.hands * 100)}% of hands, raises ${Math.round(t.pfr / t.hands * 100)}% preflop${t.faced >= 3 ? `, folds to ${Math.round(t.ftb / t.faced * 100)}% of bets` : ''}.`);
+    out.push(`If the player asks what you had, you tell the truth about ${Math.round(p.style.honest * 100)}% of the time; otherwise lie or make them pay to see. Table psychology is the fun of it: needle, bluff with words, give fake tells, take bad beats badly or gracefully as fits you.${p.tilt ? ' You are on tilt right now: short-tempered and reckless.' : ''}`);
+    return out.join(' ');
+  }
+
   /* ---------- showdown, side pots ---------- */
   async function showdown() {
     const cs = contenders();
     if (cs.length === 1) {
       const w = cs[0], won = H.pot; w.stack += won; w.last = 'Wins'; log(`${w.name} wins ${fmtc(won)} uncontested.`);
-      H.pot = 0; render(); await pause(700); return;
+      H.won = won; afterPot(w); remember(w, true);
+      H.pot = 0; render(); await pause(H.flash ? 2200 : 700); return;
     }
     while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(1500); }
     cs.forEach(p => { p.shown = true; p.eval = Poker.best(p.cards.concat(H.board)); });
@@ -393,7 +477,7 @@ const Holdem = (() => {
       log(`${winners.map(w => w.name).join(' & ')} win${winners.length > 1 ? '' : 's'} ${fmtc(amount)} with ${winners[0].eval.name}.`);
     }
     // folded players' extra chips beyond the last level were counted above; nothing is lost
-    H.pot = 0;
+    H.pot = 0; remember(T.seats.find(p => p && p.last === 'Wins'), false);
     // losing a big pot gets under some people's skin
     for (const q of cs) if (!q.me && q.last !== 'Wins' && q.stack > 0 && q.total >= (q.stack + q.total) * .4 && q.style.tilt >= .3) { q.tilt = 3 + Math.round(q.style.tilt * 4); log(`😤 ${q.name} is steaming.`); }
     const meSeat = T.seats.find(p => p && p.me);
@@ -510,6 +594,17 @@ const Holdem = (() => {
     amt.oninput = () => { slider.value = amt.value; };
     const preset = (label, to) => h('button.btn.sm.ghost', { onclick: () => { const v = Math.max(minTo, Math.min(maxTo, Math.round(to / 25) * 25)); amt.value = slider.value = v; } }, label);
     const done = act => { el.ctl.innerHTML = ''; resolveMe(act); };
+    // one-tap sizes, the way people actually bet: opens in big blinds, 3-bets as a multiple of the raise,
+    // bets after the flop as a share of the pot
+    const clampTo = to => Math.max(minTo, Math.min(maxTo, Math.round(to / 25) * 25));
+    const limpers = T.seats.filter(q => q && !q.me && q.inHand && !q.folded && q.bet === bb).length - (H.bbi != null && T.seats[H.bbi] && T.seats[H.bbi].bet === bb ? 1 : 0);
+    const quick = !H.board.length
+      ? (H.currentBet <= bb ? [[2, '2 BB'], [2.5, '2.5 BB'], [3, '3 BB'], [4, '4 BB']].map(([x, l]) => [l + (limpers > 0 && x === 3 ? ' +1/limper' : ''), bb * x + (x === 3 ? bb * Math.max(0, limpers) : 0)])
+        : [['3× raise', H.currentBet * 3], ['4× raise', H.currentBet * 4]])
+      : [['⅓ pot', pot / 3], ['½ pot', pot / 2], ['⅔ pot', pot * 2 / 3], ['Pot', pot]].map(([l, f]) => [l, H.currentBet + toCall + f]);
+    quick.push(['All-in', maxTo]);
+    // drop sizes that come out the same once clamped to what's legal
+    for (let i = quick.length - 1; i > 0; i--) if (clampTo(quick[i][1]) === clampTo(quick[i - 1][1]) && quick[i][0] !== 'All-in') quick.splice(i, 1);
     const odds = toCall > 0 ? ` · pot odds ${pctStr(toCall / (pot + toCall), 0)}` : '';
     el.ctl.innerHTML = '';
     el.ctl.append(
@@ -518,6 +613,7 @@ const Holdem = (() => {
         h('button.btn.ghost', { onclick: () => done({ type: 'fold' }) }, 'Fold'),
         toCall > 0 ? h('button.btn.primary', { onclick: () => done({ type: 'call' }) }, toCall >= p.stack ? `Call all-in ${fmtc(p.stack)}` : `Call ${fmtc(toCall)}`) : h('button.btn.primary', { onclick: () => done({ type: 'check' }) }, 'Check'),
         canRaise ? h('button.btn.primary', { onclick: () => done({ type: 'raise', to: Math.max(minTo, Math.min(maxTo, +amt.value || minTo)) }) }, H.currentBet > 0 ? 'Raise to' : 'Bet') : null),
+      canRaise ? h('div.pk-quick', quick.map(([label, to]) => h('button.btn.sm', { onclick: () => done({ type: 'raise', to: clampTo(to) }), title: `${H.currentBet > 0 ? 'Raise to' : 'Bet'} ${fmtc(clampTo(to))}` }, label, h('small', fmtc(clampTo(to)))))) : null,
       canRaise ? h('div.pk-sizer', slider, amt, preset('½ pot', H.currentBet + toCall + pot / 2), preset('Pot', H.currentBet + toCall + pot), preset('All-in', maxTo)) : null);
   }
 
@@ -572,5 +668,5 @@ const Holdem = (() => {
     if (m.id !== 'v:spur' || !App.state.flags.pokerRoom) return [];
     return [{ x: 11, y: 1, id: 'backroom', label: '♠ The Back Room (poker tournaments)', door: true }];
   }
-  return { lobby, table, spots, TOURNEYS, active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
+  return { lobby, table, spots, TOURNEYS, brief, active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
 })();

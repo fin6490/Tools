@@ -127,15 +127,16 @@ const L2 = (() => {
     if (st.atTable) { st.cash = App.state.bank; App.state.bank = st.dreamBank; App.state.venue = st.dreamVenue || App.state.venue; st.atTable = false; App.save(); }
     const host = h('div.r3');
     main.append(h('div.l2', host,
-      h('div.l2-hud', h('div.l2-obj'), h('div.l2-right', h('span.l2-cash'), h('button.l2-ic', { onclick: journal, title: 'Notebook', 'aria-label': 'Notebook' }, '📓'), h('button.l2-ic', { onclick: menu, title: 'Menu', 'aria-label': 'Menu' }, '☰'))),
-      h('div.l2-grain'), h('div.l2-vignette')));
+      h('div.l2-hud', h('div.l2-obj'), h('div.l2-right', h('span.l2-crave'), h('span.l2-cash'), h('button.l2-ic', { onclick: journal, title: 'Notebook', 'aria-label': 'Notebook' }, '📓'), h('button.l2-ic', { onclick: menu, title: 'Menu', 'aria-label': 'Menu' }, '☰'))),
+      h('div.l2-sick'), h('div.l2-grain'), h('div.l2-vignette')));
     if (!R3.mount(host)) return;
-    hud();
+    hud(); L2Bottle.start();
     if (!has('woke')) { wake(); return; }
     const a = st.area && L2World[st.area] ? st.area : 'clinic';
     R3.go(a, L2World[a], st.pos && st.pos.area === a ? [st.pos.x, st.pos.z, st.pos.yaw] : null);
   }
-  function unmount() { const P = R3.player; if (App.state && App.state.l2 && R3.area) { S().pos = { area: R3.area, x: P.x, z: P.z, yaw: P.yaw }; App.save(); } R3.unmount(); document.body.classList.remove('reality'); document.querySelectorAll('.l2-over, .l2-toast').forEach(n => n.remove()); }
+  function unmount() {
+    L2Bottle.stop(App.inReality()); const P = R3.player; if (App.state && App.state.l2 && R3.area) { S().pos = { area: R3.area, x: P.x, z: P.z, yaw: P.yaw }; App.save(); } R3.unmount(); document.body.classList.remove('reality'); document.querySelectorAll('.l2-over, .l2-toast').forEach(n => n.remove()); }
   async function goArea(a, at) { S().area = a; S().pos = null; App.save(); await R3.go(a, L2World[a], at); hud(); }
 
   /* ---------- waking up ---------- */
@@ -151,6 +152,7 @@ const L2 = (() => {
   /* ---------- everything you can do ---------- */
   const A = {
     async okafor() {
+      if (has('okafor') && !L2Bottle.state.steps.admit && !L2Bottle.path()) return askAboutDrink(true);
       if (has('okafor')) return say([{ who: 'okafor', text: RNG.pick(['Go gently tonight. You don\'t have to find everything. You only have to stop running from it.', 'If it gets too loud, sit down somewhere and breathe. Then keep going.', 'Call me. Any hour.']) }]);
       await say(withMeet('okafor', [
         { who: 'okafor', text: `Welcome back, ${first()}. Slowly. You've been under for a long time. Fourteen hours this time.` },
@@ -164,6 +166,7 @@ const L2 = (() => {
         { who: 'okafor', text: 'Your car is where you left it. In the casino car park, bay seventeen. It has been there all year.' },
       ]));
       set('okafor'); hud();
+      await askAboutDrink(false);
     },
     async folder() {
       await panel('Discharge folder', () => h('div.l2-doc', h('p', h('b', 'Patient: '), App.state.name), h('p', h('b', 'Presentation: '), 'Complicated grief. Recurring immersive dream (patient calls it "the town").'),
@@ -197,6 +200,21 @@ const L2 = (() => {
       await say([{ who: 'narr', text: '*Ellie\'s booster seat is still in the back. A crushed juice box. One of Sam\'s socks.*' }, { who: 'narr', text: '*You sit for a long time. The rain doesn\'t stop. Eventually, neither do you.*' }]);
       await sleepHere('The rain on the roof of the car. You could close your eyes.');
     },
+    async glovebox() {
+      const d = L2Bottle.state;
+      if (d.steps.flask) return say([{ who: 'narr', text: 'An empty glovebox. A parking ticket from last October. Ellie\'s hair bobble.' }]);
+      await say([{ who: 'narr', text: 'The glovebox. Your flask is in there, half full, exactly where you left it a year ago. You never even took it out to the hospital.' }]);
+      const c = await choose('The flask.', [['pour', 'Pour it out in the rain'], ['drink', 'Drink it'], ['leave', 'Leave it where it is']]);
+      if (c === 'pour') { await say([{ who: 'narr', text: 'You unscrew the cap and hold it out of the window. The rain takes it. It smells like every bad year you\'ve had.' }]); await L2Bottle.step('flask'); }
+      if (c === 'drink') await L2Bottle.drink('flask');
+    },
+    async water() { L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 8); await say([{ who: 'narr', text: 'A glass of water. It doesn\'t help much. It helps a little.' }]); },
+    async minibar() {
+      if (L2Bottle.path() || L2Bottle.state.refused.minibar) return say([{ who: 'narr', text: 'The minibar hums to itself.' }]);
+      await say([{ who: 'narr', text: 'The minibar. Little bottles in neat rows, lit up like a shrine. Someone stocked it for you: every one of them is your brand.' }]);
+      await L2Bottle.offer('minibar', 'Vale knew what you drink.', 0);
+    },
+    async callMori() { await L2Bottle.callMori(); },
     async rain() { await say([{ who: 'narr', text: RNG.pick(['*Rain on the city. In the dream it never rained.*', '*Out there, a year of ordinary days happened without you.*', '*You count the drops for a while, the way you used to count cards.*']) }]); },
     async exitGarage() { await say([{ who: 'narr', text: '*You could leave. Drive somewhere. Sleep again, and go back to the town where everyone is only missing.*' }, { who: 'you', text: 'No. Not tonight.' }]); },
     async toFloor(from) {
@@ -239,8 +257,10 @@ const L2 = (() => {
         ]));
         clue('delia'); hud(); return;
       }
-      const c = await choose('Delia wipes the same glass for the third time.', [['drink', `Buy a drink (${fmt(14)})`], ['talk', '💬 Talk freely'], ['bye', 'Leave her be']]);
-      if (c === 'drink') { if (S().cash < 14) return toast('Not enough money'); S().cash -= 14; hud(); await say([{ who: 'delia', text: RNG.pick(['On the house. No, I mean it. Put your money away.', 'Neat, like you used to. Some things I remember.', 'Drink slow. You look like you haven\'t slept in a year. ...Sorry. Bad choice of words.']) }]); }
+      if (!L2Bottle.path() && !L2Bottle.state.refused.delia) { await say([{ who: 'delia', text: 'The usual? Neat, like you used to. On the house, hon. Some things I remember.' }]); await L2Bottle.offer('delia', 'Delia\'s already poured it. It\'s right there.'); return; }
+      const c = await choose('Delia wipes the same glass for the third time.', [['drink', `Whisky, neat (${fmt(14)})`], ['water', 'A glass of water'], ['talk', '💬 Talk freely'], ['bye', 'Leave her be']]);
+      if (c === 'drink') { await say([{ who: 'delia', text: RNG.pick(['Drink slow, hon.', 'Neat, like you used to.', '...You sure? All right. Your call.']) }]); await L2Bottle.drink('delia', 14); }
+      if (c === 'water') await A.water();
       if (c === 'talk') chat('delia');
     },
     async tommy() {
@@ -294,6 +314,8 @@ const L2 = (() => {
       clue('ledger');
       await say([{ who: 'margaux', text: 'V. Holdings. Augustin. Every one of them. And look at the flag on the file. Your initials. "Escalate. Evidence on drive."' }, { who: 'margaux', text: 'He never found that drive. I know, because he asked me about it for months.' }, { who: 'margaux', text: 'Your detective is in the car park. I told her you\'d need her. I don\'t do this for you. I do it so I can sleep.' }]);
       set('moriGarage'); hud();
+      await say([{ who: 'margaux', text: 'Champagne? It\'s the only thing in this building that\'s honest about what it is.' }]);
+      await L2Bottle.offer('margaux', 'The glass is cold and full and right in front of you.');
     },
     async valeDoor() { await say([{ who: 'narr', text: '*Locked. A camera above the door turns, very slowly, to look at you.*' }]); },
     async moriRabbit() {
@@ -305,6 +327,10 @@ const L2 = (() => {
         { who: 'mori', text: 'Then let\'s see what he\'s been keeping.' },
       ]));
       clue('rabbit'); hud();
+      if (!L2Bottle.path()) {
+        await say([{ who: 'mori', text: 'One more thing. I know those hands. I had them for twenty years.' }, { who: 'mori', text: 'Eleven years sober this spring. Here\'s my number: not the work one. Call it when it gets loud. Any hour. I mean that.' }]);
+        L2Bottle.state.steps.sponsorOffered = 1; App.save(); toast('📞 You can call Mori from the ☰ menu');
+      }
       await say([{ who: 'mori', text: 'Laptop\'s in my car. It wants a password. You set this up, so you tell me.' }]);
       await A.password();
     },
@@ -378,6 +404,20 @@ const L2 = (() => {
     margaux: 'You know Augustin Vale launders money through the high-limit room via V. Holdings, and that a year ago the player flagged it and kept evidence on a drive Vale never found. You have told Detective Mori to help the player. You want out.',
   };
 
+  /* ---------- the bottle ---------- */
+  async function askAboutDrink(again) {
+    const sev = L2Bottle.init().sev;
+    if (!again) await say([{ who: 'okafor', text: 'One more thing. Your hands.' }, { who: 'narr', text: 'They\'re shaking. They have been since you woke up.' },
+      { who: 'okafor', text: ['', 'You told me you\'d cut down before the trip. I don\'t think you did. And in the dream, from what you tell me, you never really stopped.', 'You were drinking every day before you came in. In the dream too: you describe that bar like it\'s home.', 'I\'m not going to soften it. Your liver results came back. Before you came in here you were drinking yourself to death, and in the dream you never put the glass down.'][sev] },
+      { who: 'okafor', text: 'Without a drink you\'ll feel it tonight. Sweats, then nausea, then the shakes. And don\'t white-knuckle it alone: withdrawal can be dangerous. That\'s a medical fact, not a lecture.' }]);
+    const c = await choose(again ? 'Dr. Okafor looks at your hands, and waits.' : 'She waits.', [['admit', 'Tell her the truth: it\'s bad.'], ['deny', '"I\'m fine."']]);
+    if (c === 'admit') {
+      await say([{ who: 'you', text: 'It\'s bad. It\'s been bad since before. The dream just gave me somewhere to do it.' }, { who: 'okafor', text: 'Thank you. That\'s the hardest sentence there is, and you\'ve said it.' }, { who: 'okafor', text: 'Take these: they\'ll keep you safe tonight and take the edge off. There\'s a meeting in the hospital chapel on Thursdays. And find someone you can call when it gets loud.' }]);
+      await L2Bottle.step('admit');
+    } else await say([{ who: 'okafor', text: '...All right. My door\'s open. It doesn\'t close because you lied to me once.' }]);
+    L2Bottle.apply();
+  }
+
   /* ---------- puzzles ---------- */
   // Hi-Lo: 2-6 count +1, 7-9 count 0, tens and aces count -1
   function countTest() {
@@ -389,7 +429,7 @@ const L2 = (() => {
       const card = h('div.l2-card'), info = h('p.l2-read', 'Hi-Lo: 2 to 6 count +1, 7 to 9 count 0, tens and aces count −1. Watch. Don\'t blink.'), opts = h('div.l2-opts');
       const start = h('button.l2-btn', { onclick: async () => {
         start.remove();
-        for (const [i, c] of cards.entries()) { card.className = 'l2-card' + (c.s === '♥' || c.s === '♦' ? ' red' : ''); card.textContent = c.r + c.s; card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip'); info.textContent = `Card ${i + 1} of ${cards.length}`; await wait(900); }
+        for (const [i, c] of cards.entries()) { card.className = 'l2-card' + (c.s === '♥' || c.s === '♦' ? ' red' : ''); card.textContent = c.r + c.s; card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip'); info.textContent = `Card ${i + 1} of ${cards.length}`; await wait(document.body.classList.contains('l2-shakes') ? 650 : 900); }
         card.textContent = '?'; card.className = 'l2-card back'; info.textContent = 'What\'s the running count?';
         const answers = RNG.shuffle([count, count + 1, count - 1, count + (count >= 0 ? -2 : 2)].filter((v, i, a) => a.indexOf(v) === i));
         answers.forEach(v => opts.append(h('button.l2-btn', { onclick: () => done(v === count) }, (v > 0 ? '+' : '') + v)));
@@ -551,6 +591,9 @@ const L2 = (() => {
     const line = { good: [{ who: 'okafor', text: 'Do you still dream about the town?' }, { who: 'you', text: 'Sometimes. Dolores still pours the coffee. But I know where I am when I wake up.' }, { who: 'okafor', text: 'That\'s all waking up ever is.' }],
       horror: [{ who: 'okafor', text: 'You\'re talking in your sleep again. Something about a hotel with only one room.' }, { who: 'okafor', text: 'I\'ll be here when you\'re ready to wake up. As many times as it takes.' }],
       mystery: [{ who: 'okafor', text: 'Which was it, then? The town, or the city?' }, { who: 'you', text: 'I don\'t know anymore.' }, { who: 'okafor', text: '...Neither do I. Get some sleep. We\'ll find out together.' }] }[e];
+    const bp = L2Bottle.path();
+    if (bp === 'sober') line.unshift({ who: 'you', text: 'I haven\'t had a drink since that night. Mori calls every morning at seven. I pick up.' }, { who: 'okafor', text: 'I know. I can see it in your hands.' });
+    if (bp === 'gaveIn') line.unshift({ who: 'okafor', text: 'And the drinking?' }, { who: 'you', text: 'It helps me sleep.' }, { who: 'okafor', text: 'It helps you not wake up. That isn\'t the same thing. ...My door\'s still open.' });
     await say(line);
     Career.checkAchievements(); App.save();
     const all = Object.keys(ENDINGS).every(k => seen[k]);
@@ -579,6 +622,7 @@ const L2 = (() => {
   }
   async function sleepHere(where) {
     const c = await choose(where, [['sleep', '😴 Sleep (the fever dream takes you back to the town)'], ['no', 'Not yet']]);
+    if (c === 'mori') await L2Bottle.callMori();
     if (c === 'sleep') await feverDream();
   }
   // asked when you go to bed in the dream, once its story is over
@@ -605,14 +649,16 @@ const L2 = (() => {
         if (k === 'now') { const seen = found(); body.append(h('p.l2-obj2', objective()), h('p.l2-read', `${fmt(S().cash)} in your wallet. It\'s the 17th of October, a year to the night.`), Object.keys(seen).length ? h('p.l2-read', 'Endings found: ' + Object.keys(ENDINGS).map(e => seen[e] ? `${ENDINGS[e].icon} ${ENDINGS[e].title}` : '? ???').join(' · ')) : null); }
         if (k === 'clues') { const ks = Object.keys(S().clues); body.append(ks.length ? h('div', ks.map(c => h('div.l2-clue', h('b', CLUES[c][0]), h('p', CLUES[c][1])))) : h('p.l2-read', 'Nothing yet.')); }
         if (k === 'people') { const ks = Object.keys(S().met); body.append(ks.length ? h('div', ks.map(w => h('div.l2-clue', h('b', PEOPLE[w].name), h('small', PEOPLE[w].role), h('p', `In the dream: ${PEOPLE[w].echo}`)))) : h('p.l2-read', 'Nobody yet.')); }
+        if (k === 'bottle') body.append(L2Bottle.panel());
         if (k === 'echoes') body.append(h('div', ECHOES.map(([a, b]) => h('div.l2-clue', h('b', a), h('p', b)))));
       };
-      [['now', 'Now'], ['clues', 'Evidence'], ['people', 'People'], ['echoes', 'The dream']].forEach(([k, l]) => tab.append(h('button', { 'data-k': k, onclick: () => show(k) }, l)));
+      [['now', 'Now'], ['clues', 'Evidence'], ['people', 'People'], ['bottle', 'The bottle'], ['echoes', 'The dream']].forEach(([k, l]) => tab.append(h('button', { 'data-k': k, onclick: () => show(k) }, l)));
       setTimeout(() => show('now')); return h('div', tab, body);
     }, { wide: true });
   }
   async function menu() {
     const opts = [['back', 'Back'], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['sleep', '😴 Sleep (back to the dream)']];
+    if (L2Bottle.ready()) opts.splice(1, 0, ['mori', '📞 Call Detective Mori']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
     opts.push(['title', 'Title screen']);
     const c = await choose('Menu', opts);
@@ -628,5 +674,5 @@ const L2 = (() => {
     if (c) Router.go('reality');
   }
 
-  return { screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
+  return { ui: { say, choose }, screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
 })();

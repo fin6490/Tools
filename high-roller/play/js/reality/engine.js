@@ -8,7 +8,7 @@
      near and roughly facing. */
 const R3 = (() => {
   let renderer = null, scene = null, cam = null, root = null, raf = 0, last = 0, el = null;
-  let area = null, colliders = [], uses = [], updaters = [], focus = null, busy = false, V = null;
+  let area = null, colliders = [], uses = [], updaters = [], focus = null, busy = false, V = null, FX = null;
   const P = { x: 0, z: 0, y: 1.62, yaw: 0, pitch: 0, bob: 0 };
   const keys = new Set(), stick = { x: 0, y: 0 }, look = { dx: 0, dy: 0 };
   const lowPower = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -174,7 +174,7 @@ const R3 = (() => {
     f += -stick.y; s += stick.x;
     P.yaw -= look.dx * .0042; P.pitch = Math.max(-1.1, Math.min(1.1, P.pitch - look.dy * .0036)); look.dx = look.dy = 0;
     const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
-    const speed = (keys.has('shift') ? 3.6 : 2.1) * dt;
+    const speed = (keys.has('shift') ? 3.6 : 2.1) * dt * (FX && FX.slow || 1);
     const dx = (Math.sin(P.yaw) * f - Math.cos(P.yaw) * s) * speed, dz = (Math.cos(P.yaw) * f + Math.sin(P.yaw) * s) * speed;
     if (!blocked(P.x + dx, P.z)) P.x += dx; if (!blocked(P.x, P.z + dz)) P.z += dz;
     if (len > .05) P.bob += dt * (keys.has('shift') ? 11 : 7.5); else P.bob *= .9;
@@ -192,6 +192,10 @@ const R3 = (() => {
       const toP = V.to ? V.to.p : cam.position.clone(), toQ = V.to ? V.to.q : cam.quaternion.clone();
       cam.position.lerpVectors(V.from.p, toP, k); cam.quaternion.slerpQuaternions(V.from.q, toQ, k);
       if (!V.to && V.t >= 1) V = null;
+    }
+    if (FX) { // what your body is doing to the view: trembling hands, a slow sick sway
+      if (FX.sway) { cam.rotateZ(Math.sin(t * .63) * FX.sway); cam.rotateX(Math.sin(t * .41 + 1) * FX.sway * .6); }
+      if (FX.shake) { cam.position.x += (Math.random() - .5) * FX.shake; cam.position.y += (Math.random() - .5) * FX.shake; cam.rotateZ((Math.random() - .5) * FX.shake * .8); }
     }
     for (const u of updaters) u(t, dt);
     const f = busy ? null : pickFocus();
@@ -262,5 +266,5 @@ const R3 = (() => {
     V = { from, to: { p: d.position.clone(), q: d.quaternion.clone() }, t: 0 };
   }
   const api = { THREE: null, TEX, mat, box, cyl, plane, wall, light, sign, person, rain, use, shadowBlob, canvasTex, add: o => root.add(o), every: fn => updaters.push(fn), get root() { return root; }, get player() { return P; }, collide: r => colliders.push(r) };
-  return { mount, unmount, go, api, view, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; } };
+  return { mount, unmount, go, api, view, setFx(v) { FX = v; }, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; } };
 })();

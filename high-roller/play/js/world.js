@@ -1092,5 +1092,16 @@ const World = (() => {
   function clock() { return App.state.clock || 540; }
   function isNight() { const t = clock() % 1440; return t >= 1200 || t < 360; }
   function clockText() { const t = Math.floor(clock()) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
-  return { mount, unmount, townMap, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
+  // somewhere outside you could plausibly have ended up after a night you don't remember
+  function wakeSomewhere() {
+    const m = getMap('town'); if (!m.fragCand) keepSpots(m, []);
+    const cand = (m.fragCand || []).filter(([x, y]) => [G.WALK, G.GRASS, G.FLOWERS, G.SAND, G.PLANK].includes(m.at(x, y)));
+    if (!cand.length) return null;
+    const [x, y] = cand[Math.floor(Math.random() * cand.length)], t = m.at(x, y);
+    let near = null, nd = 1e9;
+    for (const k in m.doors) { const [dx, dy] = k.split(',').map(Number), d = Math.hypot(dx - x, dy - y); if (d < nd && m.doors[k].label) { nd = d; near = m.doors[k].label; } }
+    const where = t === G.GRASS || t === G.FLOWERS ? RNG.pick(['face-down in the grass', 'curled up in a flowerbed', 'on your back in the grass, staring at the sky']) : t === G.SAND ? 'half buried in sand on the riverbank' : t === G.PLANK ? 'on the planks of the dock, one shoe missing' : RNG.pick(['on the pavement', 'propped against a lamppost', 'in a doorway', 'flat on the sidewalk']);
+    return { x, y, text: `${where}${near ? `${nd < 6 ? ' outside' : ' not far from'} ${near}` : ''}` };
+  }
+  return { mount, unmount, townMap, wakeSomewhere, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
 })();
