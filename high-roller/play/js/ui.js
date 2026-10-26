@@ -91,7 +91,10 @@ UI.chipsFor = function (amount, limit = 10) { // greedy decomposition for stack 
 };
 UI.stack = function (amount) {
   const st = h('div.stack');
-  UI.chipsFor(amount, 9).forEach((v, i) => { const c = UI.chip(v, '.mini'); c.style.bottom = (i * 4) + 'px'; st.append(c); });
+  // each chip sits on the one below it: later chips cover earlier ones, and only the top chip
+  // shows its value (the rest show their striped edges)
+  const vals = UI.chipsFor(amount, 9);
+  vals.forEach((v, i) => { const c = UI.chip(v, '.mini' + (i < vals.length - 1 ? '.under' : '')); c.style.bottom = (i * 4) + 'px'; c.style.zIndex = i + 1; st.append(c); });
   return st;
 };
 

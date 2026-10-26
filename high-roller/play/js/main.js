@@ -189,6 +189,7 @@ const Screens = {
           h('div.net', 'Net worth ', h('b', fmt(App.netWorth()))))),
       career ? Mood.panel() : null,
       career ? Rel.panel() : null,
+      career ? Fragments.panel() : null,
       career && ch ? h('section.panel.story',
         h('div.kicker', `Chapter ${st.chapter + 1}`), h('h3', ch.title), h('p', ch.goalText),
         Screens.goalProgress()) : null,
