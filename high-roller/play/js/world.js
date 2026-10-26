@@ -34,6 +34,15 @@ const World = (() => {
     m.rect(0, 17, 47, 1, G.WALK); m.rect(0, 18, 44, 2, G.ROAD); m.rect(0, 20, 47, 1, G.WALK);
     m.rect(26, 1, 1, 40, G.WALK); m.rect(27, 1, 2, 40, G.ROAD); m.rect(29, 1, 1, 40, G.WALK);
     m.rect(0, 30, 47, 1, G.WALK); m.rect(0, 31, 47, 2, G.ROAD); m.rect(0, 33, 47, 1, G.WALK);
+    // the two junctions: open road through the middle (no pavement across it), corners stay
+    // pavement, and a zebra crossing on each arm
+    m.cross = {};
+    for (const y0 of [17, 30]) {
+      m.rect(27, y0, 2, 4, G.ROAD); m.rect(26, y0 + 1, 4, 2, G.ROAD);
+      for (const y of [y0 + 1, y0 + 2]) { m.cross[25 + ',' + y] = 'h'; m.cross[30 + ',' + y] = 'h'; }
+      for (const x of [27, 28]) { m.cross[x + ',' + (y0 - 1)] = 'v'; m.cross[x + ',' + (y0 + 4)] = 'v'; }
+      m.junction = (m.junction || []).concat([[26, y0, 4, 4]]);
+    }
     m.rect(29, 40, 12, 1, G.WALK);
     m.rect(44, 17, 4, 5, G.PLANK); m.rect(47, 18, 1, 3, G.PLANK);
     // Lucky Park
@@ -320,11 +329,24 @@ const World = (() => {
       case G.ROAD: {
         fill('#3a3b44');
         for (let i = 0; i < 3; i++) fill('#44454f', Math.floor(r(i) * 15), Math.floor(r(i + 5) * 15), 1, 1);
-        if (m.at(x, y - 1) === G.WALK && m.at(x, y + 1) === G.ROAD && x % 2 === 0) fill('#e8c547', 2, 15, 10, 1);
-        if (m.at(x - 1, y) === G.WALK && m.at(x + 1, y) === G.ROAD && y % 2 === 0) fill('#e8c547', 15, 2, 1, 10);
+        const zebra = m.cross && m.cross[x + ',' + y], inJ = (m.junction || []).some(([jx, jy, jw, jh]) => x >= jx - 1 && x < jx + jw + 1 && y >= jy - 1 && y < jy + jh + 1);
+        if (zebra === 'h') for (let k = 0; k < 4; k++) fill('#e9e6dc', 2, k * 4 + 1, 12, 2);
+        else if (zebra === 'v') for (let k = 0; k < 4; k++) fill('#e9e6dc', k * 4 + 1, 2, 2, 12);
+        else if (!inJ) {
+          if (m.at(x, y - 1) === G.WALK && m.at(x, y + 1) === G.ROAD && x % 2 === 0) fill('#e8c547', 2, 15, 10, 1);
+          if (m.at(x - 1, y) === G.WALK && m.at(x + 1, y) === G.ROAD && y % 2 === 0) fill('#e8c547', 15, 2, 1, 10);
+        }
+        // a white stop line where each road meets the junction
+        if (m.cross && m.cross[(x + 1) + ',' + y] === 'h' && !zebra) fill('#e9e6dc', 14, 0, 2, 16);
+        if (m.cross && m.cross[(x - 1) + ',' + y] === 'h' && !zebra) fill('#e9e6dc', 0, 0, 2, 16);
         break;
       }
-      case G.WALK: fill('#b9b0a0'); fill('#a39a8a', 0, 15, 16, 1); fill('#a39a8a', 15, 0, 1, 16); if (r(1) < .2) fill('#c8c0b0', 3, 4, 3, 2); break;
+      case G.WALK: if (m.junction && m.junction.some(([jx, jy, jw, jh]) => (x === jx || x === jx + jw - 1) && (y === jy || y === jy + jh - 1))) {
+        // rounded kerb on the corners of a junction
+        fill('#3a3b44'); c.fillStyle = '#b9b0a0'; c.beginPath();
+        const cxk = x === m.junction[0][0] ? 0 : 16, cyk = (m.junction.find(j => y === j[1]) ? 0 : 16);
+        c.save(); c.beginPath(); c.rect(px, py, 16, 16); c.clip(); c.beginPath(); c.arc(px + cxk, py + cyk, 16, 0, 7); c.fill(); c.restore(); break;
+      } else { fill('#b9b0a0'); fill('#a39a8a', 0, 15, 16, 1); fill('#a39a8a', 15, 0, 1, 16); if (r(1) < .2) fill('#c8c0b0', 3, 4, 3, 2); } break;
       case G.SAND: fill('#d8c28c'); for (let i = 0; i < 3; i++) fill('#c9b07a', Math.floor(r(i) * 15), Math.floor(r(i + 3) * 15), 1, 1); break;
       case G.WATER: fill('#2d6aa8'); for (let i = 0; i < 2; i++) fill('#3b7ec0', Math.floor(r(i) * 12), Math.floor(r(i + 4) * 15), 4, 1); break;
       case G.PLANK: fill('#8a6038'); for (let i = 0; i < 4; i++) fill('#6e4a2a', 0, i * 4 + 3, 16, 1); fill('#5a3a1f', (y % 2) * 8 + 3, 0, 1, 16); break;
@@ -375,7 +397,7 @@ const World = (() => {
     c.fillStyle = S.sign; c.fillRect(px + 7, py + roofH + 5, w - 14, 1);
     // windows
     const doorPx = px + b.door * T;
-    for (let wx = px + 4; wx < px + w - 10; wx += 14) {
+    if (b.style !== 'palace') for (let wx = px + 4; wx < px + w - 10; wx += 14) {
       if (wx + 10 > doorPx - 2 && wx < doorPx + T + 2) continue;
       const wy = py + roofH + 18; if (wy + 10 > py + hgt - 3) continue;
       c.fillStyle = S.trim; c.fillRect(wx - 1, wy - 1, 12, 11);
@@ -388,7 +410,41 @@ const World = (() => {
     c.fillStyle = ['palace', 'grand', 'salon'].includes(b.style) ? '#6b4a12' : '#3b2414'; c.fillRect(doorPx + 3, dy + 1, T - 6, T - 1);
     c.fillStyle = '#f6d88d'; c.fillRect(doorPx + T - 6, dy + 8, 1, 2);
     c.fillStyle = S.sign; c.fillRect(doorPx - 2, dy - 4, T + 4, 3);
-    if (b.style === 'palace') { c.fillStyle = '#fff8dc'; for (let i = 0; i < 4; i++) c.fillRect(px + 8 + i * ((w - 20) / 3), py + roofH + 16, 4, hgt - roofH - 18); }
+    if (b.style === 'palace') paintColonnade(c, b, px, py, w, hgt, roofH, doorPx, S);
+  }
+
+  // the Gilded Palace: a portico of fluted columns with bases and capitals, tall windows between
+  // them, and a pediment over the doors
+  function paintColonnade(c, b, px, py, w, hgt, roofH, doorPx, S) {
+    const top = py + roofH + 15, base = py + hgt - 3, cw = 7;
+    const slots = []; const n = 6, gap = (w - 16) / (n - 1);
+    for (let i = 0; i < n; i++) { const x = Math.round(px + 8 + i * gap - cw / 2); if (x + cw > doorPx - 3 && x < doorPx + T + 3) continue; slots.push(x); }
+    // windows between neighbouring columns
+    for (let i = 0; i < slots.length - 1; i++) {
+      const wx = slots[i] + cw + 2, ww = slots[i + 1] - wx - 2; if (ww < 6 || (wx < doorPx + T + 2 && wx + ww > doorPx - 2)) continue;
+      c.fillStyle = S.trim; c.fillRect(wx - 1, top + 3, ww + 2, base - top - 10);
+      c.fillStyle = '#9fd3f0'; c.fillRect(wx, top + 4, ww, base - top - 12);
+      c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(wx + 1, top + 5, 2, base - top - 16);
+      c.fillStyle = S.trim; c.fillRect(wx, top + 4 + Math.round((base - top - 12) / 2), ww, 1);
+    }
+    for (const x of slots) {
+      c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(x + 2, top + 2, cw, base - top);   // shadow on the wall
+      c.fillStyle = '#efe2b8'; c.fillRect(x, top + 3, cw, base - top - 4);            // shaft
+      c.fillStyle = '#fffaf0'; c.fillRect(x + 1, top + 3, 2, base - top - 4);         // lit edge
+      c.fillStyle = '#cdb67a'; c.fillRect(x + cw - 2, top + 3, 2, base - top - 4);    // shaded edge
+      c.fillStyle = 'rgba(160, 130, 60, .35)'; c.fillRect(x + 3, top + 4, 1, base - top - 6); // fluting
+      c.fillStyle = '#d9c48a'; c.fillRect(x - 2, top, cw + 4, 3); c.fillStyle = '#fff3cc'; c.fillRect(x - 2, top, cw + 4, 1); // capital
+      c.fillStyle = '#d9c48a'; c.fillRect(x - 2, base - 2, cw + 4, 3); c.fillStyle = '#b89c55'; c.fillRect(x - 2, base, cw + 4, 1);    // base
+    }
+    // entablature across the top of the columns
+    c.fillStyle = '#e8d8a8'; c.fillRect(px + 2, top - 3, w - 4, 3); c.fillStyle = '#b89c55'; c.fillRect(px + 2, top - 1, w - 4, 1);
+    // pediment over the doors
+    const mid = doorPx + T / 2, pw = T * 1.6, pt = py + hgt - T - 12;
+    c.fillStyle = '#efe2b8'; c.beginPath(); c.moveTo(mid - pw / 2, pt + 8); c.lineTo(mid, pt); c.lineTo(mid + pw / 2, pt + 8); c.closePath(); c.fill();
+    c.strokeStyle = '#b89c55'; c.lineWidth = 1; c.stroke();
+    c.fillStyle = '#d4af37'; c.fillRect(mid - 1, pt + 3, 2, 3);
+    // steps
+    c.fillStyle = '#e4d7b0'; c.fillRect(doorPx - 4, py + hgt - 2, T + 8, 2);
   }
 
   function paintBoat(c, p) {
@@ -605,7 +661,29 @@ const World = (() => {
   }
 
   // story characters and rivals move around with the story and the day, so refresh them on entry
-  function populate(m) { m.npcs = m.npcs.filter(n => !n.dyn).concat(Cast.forMap(m)); m.caseSpots = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m)); }
+  function populate(m) { m.npcs = m.npcs.filter(n => !n.dyn).concat(Cast.forMap(m)); const fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m)); m.caseSpots = fixed.concat(keepSpots(m, fixed)); }
+  // a fragment hides on a fixed, out-of-the-way floor tile: the same one every visit
+  function keepSpots(m, fixed) {
+    if (typeof Fragments === 'undefined' || App.state.mode !== 'career') return [];
+    if (!m.fragCand) { // worked out once per map: floor you can actually walk to from the way in
+      const floor = [G.WALK, G.GRASS, G.FLOWERS, G.PLANK, G.WOOD, G.CARPET, G.TILE, G.SAND];
+      const used = new Set(Object.keys(m.doors).concat(Object.keys(m.acts), m.npcs.filter(n => !n.dyn).map(n => n.x + ',' + n.y)));
+      const seen = new Set(), q = [m.start]; seen.add(m.start.join());
+      while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = (x + dx) + ',' + (y + dy); if (!seen.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < m.w && y + dy < m.h && !m.solid(x + dx, y + dy)) { seen.add(k); q.push([x + dx, y + dy]); } } }
+      m.fragCand = []; for (let y = 1; y < m.h - 1; y++) for (let x = 1; x < m.w - 1; x++) if (seen.has(x + ',' + y) && floor.includes(m.at(x, y)) && !used.has(x + ',' + y) && !(m.cross && m.cross[x + ',' + y])) m.fragCand.push([x, y]);
+    }
+    const busy = new Set(fixed.map(c => c.x + ',' + c.y)), cand = m.fragCand.filter(([x, y]) => !busy.has(x + ',' + y));
+    // spread them out: each one goes to the candidate farthest from the ones already placed, from a
+    // fixed starting point per map, so they never bunch up and never move between visits
+    const placed = [], all = FRAGMENTS.map((k, i) => ({ ...k, i })).filter(k => k.map === m.id);
+    let seed = cand[Math.floor(hash(m.w, m.h, 17) * cand.length)];
+    for (const k of all) {
+      let best = seed, bd = -1;
+      if (placed.length) for (let j = 0; j < cand.length; j += 3) { const c0 = cand[j], d = Math.min(...placed.map(([x, y]) => Math.abs(x - c0[0]) + Math.abs(y - c0[1]))) + hash(c0[0], c0[1], k.i) * 2; if (d > bd) { bd = d; best = c0; } }
+      placed.push(best || [1, 1]); if (!Fragments.has(k.i)) placed[placed.length - 1].k = k.i;
+    }
+    return placed.filter(p => p.k != null).map(([x, y, k]) => ({ x, y, id: 'keep', keep: placed.find(q => q[0] === x && q[1] === y).k, label: 'Something glints', hidden: true }));
+  }
   function npcAt(m, x, y) { return m.npcs.find(n => n.x === x && n.y === y); }
   function passable(m, x, y) { return !m.solid(x, y) && !npcAt(m, x, y); }
 
@@ -727,6 +805,7 @@ const World = (() => {
       if (f.kind === 'door') { await useDoor(f.door); return; }
       if (f.kind === 'clue' && f.spot.id === 'backroom') { savePos(); App.save(); Router.go('poker'); return; }
       if (f.kind === 'clue' && f.spot.id === 'dartboard') { savePos(); App.save(); await Darts.lobby(); return; }
+      if (f.kind === 'clue' && f.spot.keep != null) { await Fragments.take(f.spot.keep); populate(S.m); return; }
       if (f.kind === 'clue') { await Mystery.examine(f.spot); populate(S.m); return; }
       if (f.kind === 'npc') {
         const n = f.npc;
@@ -933,6 +1012,12 @@ const World = (() => {
         continue;
       }
       if (c0.door) { c.fillStyle = '#2a170a'; c.fillRect(sx(c0.x) + 2 * u, sy(c0.y) - 6 * u, 12 * u, 22 * u); c.fillStyle = '#c9a14a'; c.fillRect(sx(c0.x) + 11 * u, sy(c0.y) + 6 * u, 2 * u, 2 * u); c.fillStyle = '#ffe9a8'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('♠', sx(c0.x + .5), sy(c0.y) + 2 * u); continue; }
+      if (c0.hidden) { // a fragment: only the faintest glint, once every few seconds
+        const ph = ((now + c0.x * 997 + c0.y * 331) % 5200) / 5200; if (ph > .12) continue;
+        const a = Math.sin(ph / .12 * Math.PI), cx0 = sx(c0.x + .5), cy0 = sy(c0.y + .55), r = (1 + a * 2.5) * u;
+        c.fillStyle = `rgba(255, 255, 255, ${a * .85})`; c.fillRect(cx0 - r, cy0 - u / 3, r * 2, u * .7); c.fillRect(cx0 - u / 3, cy0 - r, u * .7, r * 2);
+        continue;
+      }
       const tw = Math.sin(now / 180 + c0.x) * .5 + .5;
       c.fillStyle = `rgba(255, 236, 140, ${.45 + tw * .5})`;
       const cx0 = sx(c0.x + .5), cy0 = sy(c0.y + .5), r = (2 + tw * 2) * u;
