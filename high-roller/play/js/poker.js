@@ -78,7 +78,42 @@
     return { cat, score, name: miniRoyal ? 'Mini Royal' : TCP_NAMES[cat], miniRoyal, high: r[0], ranks: r };
   }
 
-  const api = { eval5, best, eval3, HAND_NAMES, TCP_NAMES, CAT };
+  // Crazy 4 Poker: the best four cards out of five. Four of a kind beats a straight flush, then
+  // trips, flush, straight, two pair, pair. A-2-3-4 is the lowest straight.
+  const C4_NAMES = ['High Card', 'Pair', 'Two Pair', 'Straight', 'Flush', 'Three of a Kind', 'Straight Flush', 'Four of a Kind'];
+  const C4_KEYS = ['high', 'pair', 'twopair', 'straight', 'flush', 'trips', 'sf', 'quads'];
+  function eval4(c) {
+    const r = c.map(x => x.r).sort((a, b) => b - a), flush = c.every(x => x.s === c[0].s);
+    const counts = {}; r.forEach(x => counts[x] = (counts[x] || 0) + 1);
+    const groups = Object.entries(counts).map(([k, n]) => [n, +k]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+    const uniq = groups.length === 4;
+    let sHigh = 0;
+    if (uniq && r[0] - r[3] === 3) sHigh = r[0];
+    else if (uniq && r[0] === 14 && r[1] === 4 && r[3] === 2) sHigh = 4;
+    let cat;
+    if (groups[0][0] === 4) cat = 7;
+    else if (sHigh && flush) cat = 6;
+    else if (groups[0][0] === 3) cat = 5;
+    else if (flush) cat = 4;
+    else if (sHigh) cat = 3;
+    else if (groups[0][0] === 2 && groups[1][0] === 2) cat = 2;
+    else if (groups[0][0] === 2) cat = 1;
+    else cat = 0;
+    const tb = sHigh ? [sHigh] : groups.map(g => g[1]);
+    let score = cat; for (let i = 0; i < 4; i++) score = score * 16 + (tb[i] || 0);
+    const key = cat === 7 && groups[0][1] === 14 ? 'aces4' : C4_KEYS[cat];
+    return { cat, score, name: C4_NAMES[cat], key, groups: tb, high: r[0] };
+  }
+  function best4(cards) {
+    let bestE = null;
+    for (let skip = 0; skip < cards.length; skip++) {
+      const h = cards.filter((_, i) => i !== skip), e = eval4(h);
+      if (!bestE || e.score > bestE.score) { bestE = e; bestE.cards = h; }
+    }
+    return bestE;
+  }
+
+  const api = { eval5, best, eval3, eval4, best4, C4_NAMES, HAND_NAMES, TCP_NAMES, CAT };
   root.Poker = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

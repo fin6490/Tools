@@ -169,6 +169,26 @@
         ],
       },
     },
+    c4: {
+      // Super Bonus: paid on a straight or better whatever the dealer has; otherwise it pushes if you
+      // beat or tie the dealer and loses if you don't (or fold)
+      superBonus: [
+        { key: 'aces4', name: 'Four Aces', pays: 200 },
+        { key: 'sf', name: 'Straight Flush', pays: 50 },
+        { key: 'quads', name: 'Four of a Kind', pays: 40 },
+        { key: 'flush', name: 'Flush', pays: 2 },
+        { key: 'straight', name: 'Straight', pays: 1 },
+      ],
+      queensUp: [
+        { key: 'quads', name: 'Four of a Kind', pays: 50 },
+        { key: 'sf', name: 'Straight Flush', pays: 40 },
+        { key: 'trips', name: 'Three of a Kind', pays: 8 },
+        { key: 'flush', name: 'Flush', pays: 5 },
+        { key: 'straight', name: 'Straight', pays: 3 },
+        { key: 'twopair', name: 'Two Pair', pays: 2 },
+        { key: 'qup', name: 'Pair of Queens or better', pays: 1 },
+      ],
+    },
     lir: {
       main: [
         { key: 'royal', name: 'Royal Flush', pays: 1000 },

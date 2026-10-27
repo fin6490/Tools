@@ -201,6 +201,11 @@ const L2World = (() => {
     A.person({ ...dealer, x: -5, z: -3.55, face: 0 }); A.person({ ...dealer, x: 3, z: -3.55, face: 0, skin: '#8d5a3b', longHair: true }); A.person({ ...dealer, x: -.9, z: 5.2, face: -Math.PI / 2, skin: '#f0c9a8' }); A.person({ ...dealer, x: 5, z: 5.55, face: Math.PI, skin: '#c48a64' });
     A.use(-5, -1.6, 'Sit down at blackjack', act('table', 'bj'), { r: 1.8 }); A.use(3, -1.6, 'Sit down at blackjack', act('table', 'bj'), { r: 1.8 });
     A.use(-3, 3.6, 'Play roulette', act('table', 'roulette'), { r: 2 }); A.use(5, 3.6, 'Play baccarat', act('table', 'bac'), { r: 1.8 });
+    // Crazy 4 Poker: the newest table in the room
+    bjTable(A, 9.5, 3.5);
+    A.person({ skin: '#e0b090', hair: '#1a1210', coat: '#111', pants: '#111', shirt: '#f4f4f4', tie: '#c9a14a', longHair: true, x: 9.5, z: 2.95, face: 0 });
+    const c4s = A.sign('CRAZY 4 POKER', { color: '#7dd3ff', w: 2.6, h: .45, font: '600 100px Georgia' }); c4s.position.set(9.5, 2.9, 2.6); A.add(c4s);
+    A.use(9.5, 5.1, 'Play Crazy 4 Poker', act('table', 'c4'), { r: 1.8 });
     // gamblers
     const g1 = [{ x: -5.9, z: -1.7, coat: '#4a3b6b', skin: '#e8c4a8', hair: '#6b4a2a' }, { x: -4, z: -1.6, coat: '#7a5a3a', skin: '#a5714a', hair: '#111', longHair: true, skirt: true }, { x: 2.1, z: -1.7, coat: '#2e4a3a', skin: '#f0d0b0', hair: '#bbb' }, { x: -3.8, z: 3.7, coat: '#5a1a1a', skin: '#c68863', hair: '#222' }, { x: -2.2, z: 3.7, coat: '#e0d4c0', skin: '#f3d1b5', hair: '#d8c070', longHair: true, skirt: true }, { x: 5.8, z: 3.6, coat: '#202830', skin: '#e0ac69', hair: '#3a2a1e' }];
     for (const p of g1) A.person({ ...p, pants: '#1b1b20', face: Math.PI });

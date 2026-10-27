@@ -755,7 +755,7 @@ const DEALER_NAMES = {
   spur: { bj: 'Earl', tcp: 'Bonnie', war: 'Hank', roulette: 'Lupe', craps: 'Big Sam' },
   riverboat: { bj: 'Gus', uth: 'Delia', ms: 'Cyrus', tcp: 'Junebug', lir: 'Ambrose', bac: 'Mae', craps: 'Captain Ray', roulette: 'Odette', war: 'Pip' },
   palace: { bj: 'Oscar', uth: 'Celeste', ms: 'Laurent', tcp: 'Ines', lir: 'Bastien', bac: 'Yvette', craps: 'Marcel', roulette: 'Anouk', war: 'Theo' },
-  salon: { bj: 'Sterling', uth: 'Ivory', ms: 'Graves', tcp: 'Lark', lir: 'Wren', bac: 'Mirelle', craps: 'Hollis', roulette: 'Severin' },
+  salon: { bj: 'Sterling', uth: 'Ivory', ms: 'Graves', tcp: 'Lark', lir: 'Wren', bac: 'Mirelle', craps: 'Hollis', roulette: 'Severin', c4: 'Vesper' },
 };
 const DEALER_STYLE = {
   spur: { persona: 'Folksy small-town dealer who has worked the Rusty Spur for decades. Chatty, gossips about the regulars, remembers Sal fondly.', color: '#7a2131', lines: ['Cards are fresh, coffee isn\'t.', 'Place your bets, friend.', 'Sal used to sit right about where you are.'] },
