@@ -51,7 +51,7 @@ const VENUES = {
   salon: {
     name: 'Monte Royale Salon Privé', icon: '💎', tag: 'No windows, no clocks, no limits worth mentioning.',
     limits: { min: 100, max: 100000 }, chips: [100, 500, 1000, 5000, 25000],
-    games: ['bj', 'uth', 'ms', 'tcp', 'lir', 'bac', 'craps', 'roulette'],
+    games: ['bj', 'uth', 'ms', 'tcp', 'lir', 'bac', 'craps', 'roulette', 'c4'], // Crazy 4 only plays in the Salon
     rules: {
       bj: { bjPays: 1.5, h17: false, das: true, surrender: true, maxHands: 4, rsa: true },
       craps: { odds: 100, field2: 3, field12: 3 },

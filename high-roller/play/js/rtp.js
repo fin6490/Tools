@@ -9,6 +9,7 @@ window.RTP = {
  "tcp.six": 1.00569,
  "lir.bonus3": 0.98769,
  "war.tie": 0.99357,
+ "c4.queensUp": 0.9989,
  "bac.player": 0.98765,
  "bac.banker": 0.98942,
  "bac.bankerEZ": 0.98982,
