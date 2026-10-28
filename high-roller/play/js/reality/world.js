@@ -6,21 +6,39 @@ const L2World = (() => {
   const not = k => () => !L2.has(k);
 
   // shared pieces
+  // a saloon: the side profile drawn as one curve and extruded with rounded edges, glass set into it,
+  // wheels with rims in arches, lights, mirrors and a number plate
+  const carGeo = {};
+  function carShapes() {
+    if (carGeo.body) return carGeo;
+    const T = THREE, body = new T.Shape(); // in (z, y), the front of the car at +z
+    body.moveTo(-2.18, .32); body.lineTo(-2.2, .62); body.quadraticCurveTo(-2.18, .86, -1.9, .9); body.lineTo(-1.25, .94);
+    body.quadraticCurveTo(-.95, 1.36, -.55, 1.4); body.lineTo(.45, 1.4); body.quadraticCurveTo(.85, 1.36, 1.15, .96);
+    body.lineTo(1.95, .86); body.quadraticCurveTo(2.2, .8, 2.22, .6); body.lineTo(2.2, .32); body.quadraticCurveTo(2.1, .22, 1.9, .22);
+    // wheel arches
+    body.lineTo(1.72, .22); body.absarc(1.35, .34, .4, 0, Math.PI, false); body.lineTo(-1.0, .22); body.absarc(-1.38, .34, .4, 0, Math.PI, false);
+    body.lineTo(-1.95, .22); body.quadraticCurveTo(-2.14, .22, -2.18, .32);
+    const glass = new T.Shape(); glass.moveTo(-1.15, .97); glass.quadraticCurveTo(-.9, 1.32, -.55, 1.34); glass.lineTo(.45, 1.34); glass.quadraticCurveTo(.8, 1.31, 1.07, .98); glass.lineTo(-1.15, .97);
+    const ex = (shape, depth, bevel) => { const g = new T.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 3, steps: 1, curveSegments: 10 }); g.translate(0, 0, -depth / 2); g.rotateY(Math.PI / 2); return g; };
+    carGeo.body = ex(body, 1.62, .1); carGeo.glass = ex(glass, 1.5, .04);
+    carGeo.tyre = new T.CylinderGeometry(.33, .33, .24, 20); carGeo.tyre.rotateZ(Math.PI / 2);
+    carGeo.rim = new T.CylinderGeometry(.2, .2, .25, 10); carGeo.rim.rotateZ(Math.PI / 2);
+    return carGeo;
+  }
   function car(A, x, z, color, rot = 0, mine) {
-    const g = new THREE.Group();
-    const paint = A.mat('car' + color, { color, metalness: .55, roughness: .35 });
-    const glass = A.mat('glass', { color: '#0b0f14', metalness: .8, roughness: .1 });
-    const tyre = A.mat('tyre', { color: '#111', roughness: .9 });
+    const g = new THREE.Group(), G = carShapes();
+    const paint = A.mat('car' + color, { color, metalness: .6, roughness: .28 });
+    const glass = A.mat('carglass', { color: '#0a0e13', metalness: .9, roughness: .06 });
+    const tyre = A.mat('tyre', { color: '#121212', roughness: .85 }), rim = A.mat('rim', { color: '#b8bcc2', metalness: .9, roughness: .25 });
     const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); g.add(o); return o; };
-    add(new THREE.BoxGeometry(1.86, .62, 4.4), paint, 0, .62, 0);
-    add(new THREE.BoxGeometry(1.62, .5, 2.3), glass, 0, 1.15, -.2);
-    add(new THREE.BoxGeometry(1.64, .06, 2.32), paint, 0, 1.42, -.2);
-    for (const [wx, wz] of [[-.9, 1.35], [.9, 1.35], [-.9, -1.4], [.9, -1.4]]) { const w = add(new THREE.CylinderGeometry(.34, .34, .24, 16), tyre, wx, .34, wz); w.rotation.z = Math.PI / 2; }
-    const hl = A.mat('headlight', { color: '#fff7e0', emissive: '#fff2c0', emissiveIntensity: mine ? .2 : .05 });
-    add(new THREE.BoxGeometry(.38, .12, .05), hl, -.6, .72, 2.2); add(new THREE.BoxGeometry(.38, .12, .05), hl, .6, .72, 2.2);
-    const tl = A.mat('taillight', { color: '#5a0a0a', emissive: '#ff1a1a', emissiveIntensity: .25 });
-    add(new THREE.BoxGeometry(.4, .1, .05), tl, -.6, .74, -2.2); add(new THREE.BoxGeometry(.4, .1, .05), tl, .6, .74, -2.2);
-    g.position.set(x, 0, z); g.rotation.y = rot; A.add(g); A.shadowBlob(x, z, 2.4, .55);
+    add(G.body, paint, 0, 0, 0); add(G.glass, glass, 0, 0, 0);
+    for (const [wx, wz] of [[-.86, 1.35], [.86, 1.35], [-.86, -1.38], [.86, -1.38]]) { add(G.tyre, tyre, wx, .33, wz); add(G.rim, rim, wx, .33, wz); }
+    const hl = A.mat('headlight', { color: '#fff7e0', emissive: '#fff2c0', emissiveIntensity: mine ? .5 : .15, roughness: .1 });
+    const tl = A.mat('taillight', { color: '#5a0a0a', emissive: '#ff1a1a', emissiveIntensity: .35, roughness: .2 });
+    for (const sx of [-1, 1]) { add(A.rbox(.42, .13, .08, .03), hl, sx * .58, .72, 2.26); add(A.rbox(.44, .12, .08, .03), tl, sx * .58, .76, -2.26); add(A.rbox(.06, .1, .16, .02), paint, sx * .98, 1.0, 1.0); }
+    const grille = A.mat('grille', { color: '#0c0c0c', metalness: .5, roughness: .4 }); add(A.rbox(.9, .12, .06, .02), grille, 0, .6, 2.27);
+    const plate = A.mat('plate', { color: '#efe9c8', roughness: .5 }); add(A.rbox(.5, .12, .03, .01), plate, 0, .42, 2.3); add(A.rbox(.5, .12, .03, .01), plate, 0, .48, -2.3);
+    g.position.set(x, 0, z); g.rotation.y = rot; A.add(g); A.contact(x, z, Math.abs(Math.sin(rot)) > .5 ? 4.4 : 1.8, Math.abs(Math.sin(rot)) > .5 ? 1.8 : 4.4, .6);
     const horiz = Math.abs(Math.sin(rot)) > .5; A.collide(horiz ? [x - 2.25, z - 1, x + 2.25, z + 1] : [x - 1, z - 2.25, x + 1, z + 2.25]);
     return g;
   }
@@ -30,7 +48,7 @@ const L2World = (() => {
     A.cyl(.02, .02, 1.2, gold, x, y + .6, z, false, 6);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(.6, .03, 8, 32), gold); ring.rotation.x = Math.PI / 2; ring.position.set(x, y, z); A.add(ring);
     for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2, c = new THREE.Mesh(new THREE.OctahedronGeometry(.06), crystal); c.position.set(x + Math.cos(a) * .6, y - .12 - (i % 2) * .08, z + Math.sin(a) * .6); A.add(c); }
-    A.light('#ffd9a0', 1.1, 13, x, y - .3, z);
+    A.light('#ffd9a0', 1.1, 13, x, y - .3, z); A.glow(x, y - .1, z, '#ffd9a0', 2.4, .45);
   }
   function slotBank(A, x, z, n, rot = 0, tag = 'a') {
     const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128; const g = cv.getContext('2d');
@@ -121,14 +139,21 @@ const L2World = (() => {
     const cal = A.plane(.5, .62, new THREE.MeshBasicMaterial({ map: A.canvasTex('calendar', 160, 200, (g, w, h) => { g.fillStyle = '#f6f4ee'; g.fillRect(0, 0, w, h); g.fillStyle = '#b3222b'; g.fillRect(0, 0, w, 46); g.fillStyle = '#fff'; g.font = 'bold 30px Arial'; g.textAlign = 'center'; g.fillText('OCTOBER', w / 2, 34); g.fillStyle = '#222'; g.font = 'bold 96px Georgia'; g.fillText('17', w / 2, 150); g.strokeStyle = '#b3222b'; g.lineWidth = 4; g.beginPath(); g.ellipse(w / 2, 118, 58, 50, 0, 0, 7); g.stroke(); }) }), -3.88, 1.7, 1, 0); cal.rotation.y = Math.PI / 2;
     A.cyl(.18, .14, .3, A.mat('pot', { color: '#d8d2c8' }), 3.4, .15, -3.3); const leaf = A.mat('plant', { color: '#3f6a3a', roughness: .8 }); for (let i = 0; i < 7; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(.16, 8, 6), leaf); l.position.set(3.4 + Math.cos(i) * .12, .45 + (i % 3) * .14, -3.3 + Math.sin(i) * .12); l.scale.set(.6, 1.4, .3); l.rotation.z = Math.cos(i) * .6; A.add(l); }
     // Dr Okafor
-    A.person({ x: .4, z: -1, face: -2.4, skin: '#6b4430', hair: '#1a1210', coat: '#e9edf0', pants: '#2c3440', glasses: true, shirt: '#4a6b8a' });
+    A.person({ x: .4, z: -1, face: -2.4, skin: '#6b4430', hair: '#1a1210', coat: '#eef1f3', pants: '#2c3440', glasses: true, shirt: '#4a6b8a', labCoat: true, bun: true });
     A.use(.4, -1, 'Talk to Dr. Okafor', act('okafor'), { r: 2.2 });
     A.box(.9, .75, .6, A.mat('desk', { color: '#c8b89a', roughness: .7 }), 2.6, .375, 1.8, true);
     A.use(2.6, 1.8, 'Your discharge folder', act('folder'));
+    // a water cooler, and somebody's coffee on a hotplate
+    const cool = A.mat('cooler', { color: '#e8ecef', roughness: .4 });
+    A.box(.36, 1, .36, cool, 3.55, .5, -1.2, true); A.cyl(.15, .15, .42, A.mat('coolerjug', { color: '#9cc8ee', transparent: true, opacity: .55, roughness: .05, metalness: .1 }), 3.55, 1.22, -1.2);
+    A.use(3.3, -1.2, 'Water cooler', act('cooler'), { r: 1.3 });
+    A.cyl(.07, .06, .16, A.mat('coffeepot', { color: '#2a1a10', roughness: .2, metalness: .2, transparent: true, opacity: .85 }), 2.35, .84, 1.95);
+    A.use(2.35, 1.6, 'A pot of coffee', act('coffee'), { r: 1.1 });
     A.use(-2.6, -1.6, 'The bed you woke up in', act('clinicBed'), { r: 1.5 });
     door(A, 0, 3.92, Math.PI, 'EXIT', '#9aa3aa');
     A.use(0, 3.6, 'Leave the clinic', act('leaveClinic'), { r: 1.4 });
-    return { spawn: [-2.1, .2, 2.2], bg: '#b8c0c8', fog: .02, exposure: .82 };
+    A.glow(0, 2.82, 0, '#f4f8ff', 2.2, .35); A.glow(2, 1.6, -3.7, '#cfe0ee', 3, .25);
+    return { spawn: [-2.1, .2, 2.2], bg: '#b8c0c8', fog: .02, exposure: .7, envLight: '#eef4ff', envTop: .2, envPanels: 1.5, envI: .35, shadow: { at: [0, 2.8, .2], to: [-.6, 0, -.8], color: '#f4f8ff', i: 1.1, angle: 1.15, dist: 12 } };
   }
 
   /* ---------- the car park under the Meridian ---------- */
@@ -137,6 +162,7 @@ const L2World = (() => {
     A.plane(32, 26, floor, 0, 0, 0); A.plane(32, 26, A.mat('gceil', { map: A.TEX.concrete([6, 5]), roughness: 1 }), 0, 3.2, 0, Math.PI / 2);
     A.wall(-16, 13, 16, 13, 3.2, conc); A.wall(-16, -13, -16, 13, 3.2, conc); A.wall(16, -13, 16, 13, 3.2, conc);
     A.wall(-16, -13, -6, -13, 3.2, conc); A.wall(6, -13, 16, -13, 3.2, conc); A.box(12, .9, .3, conc, 0, 2.75, -13);
+    A.box(12, 1.05, .3, conc, 0, .52, -13, true); // a waist-high parapet along the open side: you can look out at the rain, not walk into it
     // concrete pillars with hazard stripes
     const hazard = A.mat('hazard', { map: A.canvasTex('hazard', 128, 32, (g) => { g.fillStyle = '#f2c200'; g.fillRect(0, 0, 128, 32); g.fillStyle = '#111'; for (let i = -1; i < 9; i++) { g.beginPath(); g.moveTo(i * 16, 32); g.lineTo(i * 16 + 8, 32); g.lineTo(i * 16 + 24, 0); g.lineTo(i * 16 + 16, 0); g.fill(); } }) });
     for (const x of [-9, 0, 9]) for (const z of [-5, 5]) { A.box(.7, 3.2, .7, conc, x, 1.6, z, true); A.box(.72, .45, .72, hazard, x, .23, z); A.shadowBlob(x, z, .8); }
@@ -156,7 +182,13 @@ const L2World = (() => {
     // fluorescent tubes, one dying
     const tubeOn = A.mat('tube', { color: '#fff', emissive: '#e8f4ff', emissiveIntensity: 1.6 });
     const tubes = [];
-    for (const x of [-9, 0, 9]) for (const z of [-8, 0, 8]) { tubes.push(A.box(1.6, .05, .14, tubeOn, x, 3.15, z)); }
+    for (const x of [-9, 0, 9]) for (const z of [-8, 0, 8]) { tubes.push(A.box(1.6, .05, .14, tubeOn, x, 3.15, z)); A.glow(x, 3.08, z, '#dff0ff', 1.6, .35); }
+    // pipes and a cable tray along the ceiling, and rain water standing in the dips of the floor
+    const pipe = A.mat('pipe', { color: '#6d7378', metalness: .6, roughness: .45 }), pipe2 = A.mat('pipered', { color: '#7a2a22', metalness: .4, roughness: .5 });
+    for (const [pz, py, r, m] of [[-3.2, 2.95, .09, pipe], [-3.5, 2.98, .05, pipe2], [3.6, 2.95, .12, pipe]]) { const c = A.cyl(r, r, 32, m, 0, py, pz, false, 14); c.rotation.z = Math.PI / 2; }
+    A.box(32, .04, .4, pipe, 0, 2.86, 6.2);
+    const puddle = A.mat('puddle', { color: '#0b0d10', roughness: .04, metalness: .2, transparent: true, opacity: .85, alphaMap: A.canvasTex('puddlealpha', 128, 128, (g, w, h) => { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.beginPath(); for (let i = 0; i <= 24; i++) { const a = i / 24 * Math.PI * 2, r = 42 + Math.sin(a * 3) * 9 + Math.cos(a * 5) * 6; g.lineTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r * .8); } g.fill(); }) });
+    for (const [px, pz, sx, sz] of [[2, 1.5, 3, 2], [-6, -2, 2.4, 1.6], [7, -6.5, 2, 1.4], [-11, 4, 2.6, 1.8], [5, -11.5, 4, 1.6], [-3, -11.8, 3, 1.4]]) A.plane(sx, sz, puddle, px, .006, pz);
     const flick = A.light('#d8ecff', 1.4, 13, 9, 2.9, 0), steady = [A.light('#d8ecff', 1.4, 15, -9, 2.9, 0), A.light('#d8ecff', 1.4, 15, 0, 2.9, 8), A.light('#d8ecff', 1.2, 15, 0, 2.9, -8), A.light('#d8ecff', 1.2, 13, 9, 2.9, 8), A.light('#d8ecff', 1, 13, -9, 2.9, 8)];
     const bad = A.mat('tubebad', { color: '#fff', emissive: '#e8f4ff', emissiveIntensity: 1.6 }); tubes[4].material = bad;
     A.every(t => { const on = Math.sin(t * 13) + Math.sin(t * 7.3) > -.6 || (t % 5) < 3.5; flick.intensity = on ? 1.4 : .05; bad.emissiveIntensity = on ? 1.6 : .1; });
@@ -170,6 +202,14 @@ const L2World = (() => {
     A.box(.08, 2.4, 1.8, lift, 15.9, 1.2, 0); A.box(.06, .3, .3, A.mat('liftbtn', { color: '#222', emissive: '#ffb84d', emissiveIntensity: .8 }), 15.85, 1.2, 1.3);
     const ls = A.sign('MERIDIAN · CASINO', { color: '#e8d7a8', w: 2.4, h: .4, font: '600 80px Georgia' }); ls.position.set(15.85, 2.75, 0); ls.rotation.y = -Math.PI / 2; A.add(ls);
     A.use(15.3, 0, 'Take the lift up to the casino', act('toFloor'), { r: 1.8 });
+    // a vending machine by the lift, the only lit thing that isn't a tube
+    const vm = new THREE.Group(); vm.position.set(15.45, 0, 3.2); vm.rotation.y = -Math.PI / 2; A.add(vm);
+    const vbody = new THREE.Mesh(A.rbox(.95, 1.9, .8, .04), A.mat('vmbody', { color: '#8a1420', roughness: .35, metalness: .3 })); vbody.position.y = .95; vm.add(vbody);
+    const vfront = new THREE.Mesh(new THREE.PlaneGeometry(.6, 1.3), new THREE.MeshBasicMaterial({ map: A.canvasTex('vmfront', 128, 256, (g, w, h) => { g.fillStyle = '#0d1820'; g.fillRect(0, 0, w, h); const cols = ['#3fa9f5', '#f5c83f', '#e04040', '#5fd36a']; for (let r = 0; r < 6; r++) for (let c = 0; c < 4; c++) { g.fillStyle = cols[(r + c) % 4]; g.fillRect(8 + c * 30, 10 + r * 40, 20, 28); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(8 + c * 30, 10 + r * 40, 20, 4); } g.fillStyle = 'rgba(200,230,255,.12)'; g.fillRect(0, 0, w, h); }), toneMapped: false }));
+    vfront.position.set(-.1, 1.15, .405); vm.add(vfront);
+    const vglow = new THREE.PointLight('#9fd3ff', .6, 4, 2); vglow.position.set(0, 1.2, .9); vm.add(vglow);
+    A.collide([15, 2.7, 15.9, 3.7]); A.shadowBlob(15.45, 3.2, .8);
+    A.use(14.7, 3.2, 'A vending machine', act('vending'), { r: 1.4 });
     const ex = A.sign('EXIT', { color: '#3dff6a', w: .8, h: .28, font: 'bold 110px Arial' }); ex.position.set(-15.85, 2.7, 0); ex.rotation.y = Math.PI / 2; A.add(ex);
     A.use(-15.3, 0, 'The way out', act('exitGarage'), { r: 1.8 });
     A.use(0, -12, 'Look at the rain', act('rain'), { r: 2.2 });
@@ -177,7 +217,7 @@ const L2World = (() => {
       A.person({ x: 2.5, z: 3.6, face: Math.PI * .3, skin: '#e8c4a8', hair: '#111', coat: '#2b2f36', pants: '#1c1f24', longHair: true, skirt: false });
       A.use(2.5, 3.6, 'Detective Mori', () => L2.act(L2.state.clues.rabbit ? 'password' : 'moriRabbit'), { r: 2 });
     }
-    return { spawn: [4.5, 6.8, 1.19], bg: '#06080b', fog: .032, exposure: 1.25 };
+    return { spawn: [4.5, 6.8, 1.19], bg: '#06080b', fog: .032, exposure: 1.25, envLight: '#d8ecff', envTop: .25, envI: .9, shadow: { at: [1, 3.05, 2], to: [3, 0, 4], color: '#dff0ff', i: 1.3, angle: 1.2, dist: 16 } };
   }
 
   /* ---------- the casino floor and the Low Tide bar ---------- */
@@ -256,7 +296,7 @@ const L2World = (() => {
     // Vale's portrait over the floor
     const pt = A.plane(2.2, 2.8, A.mat('valeportrait', { map: A.canvasTex('valeport', 256, 320, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#2a1c10'); gr.addColorStop(1, '#0a0604'); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = '#c9a26b'; g.beginPath(); g.ellipse(128, 120, 46, 58, 0, 0, 7); g.fill(); g.fillStyle = '#bbb'; g.beginPath(); g.ellipse(128, 78, 50, 26, 0, Math.PI, 0); g.fill(); g.fillStyle = '#111'; g.fillRect(70, 190, 116, 130); g.fillStyle = '#eee'; g.fillRect(118, 190, 20, 60); g.fillStyle = '#7a0f1e'; g.fillRect(124, 196, 8, 50); g.strokeStyle = '#c9a14a'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10); }), roughness: .5 }), 0, 3.2, 16.85, 0); pt.rotation.y = Math.PI;
     A.use(0, 15.6, 'A portrait of Augustin Vale', act('portrait'), { r: 3 });
-    return { spawn: [-12, 15.6, Math.PI * 1.08], bg: '#0a0604', fog: .026, exposure: 1.1 };
+    return { spawn: [-12, 15.6, Math.PI * 1.08], bg: '#0a0604', fog: .026, exposure: 1.1, shadow: { at: [-6, 5, 6], to: [-6, 0, 6], color: '#ffd9a0', i: 1.1, angle: 1.25, dist: 22 } };
   }
 
   /* ---------- The Eye: surveillance ---------- */
@@ -282,7 +322,7 @@ const L2World = (() => {
     door(A, 4.92, 2, -Math.PI / 2, 'CASINO FLOOR', '#2a2a30');
     A.use(4.3, 2, 'Back to the casino floor', act('toFloor', 'eye'), { r: 1.6 });
     A.add(new THREE.HemisphereLight('#4a6a5a', '#0a100c', .55)); A.light('#9fd3ff', .6, 9, 2, 2.6, 2);
-    return { spawn: [3.4, 2.2, -2.63], bg: '#020304', fog: .045, exposure: 1.3 };
+    return { spawn: [3.4, 2.2, -2.63], bg: '#020304', fog: .045, exposure: 1.3, shadow: { at: [2, 2.6, -1], to: [2.5, 0, -2], color: '#9fc4ff', i: .8, angle: 1.2, dist: 10 } };
   }
 
   /* ---------- the Salon: high limit ---------- */
@@ -304,7 +344,7 @@ const L2World = (() => {
     door(A, 0, 5.92, Math.PI, 'CASINO FLOOR', '#1a0c06', 1.4);
     A.use(0, 5.3, 'Back to the floor', act('toFloor', 'salon'), { r: 1.6 });
     A.add(new THREE.HemisphereLight('#ffd9a0', '#0a0604', .3));
-    return { spawn: [0, 4.4, Math.PI], bg: '#060403', fog: .05 };
+    return { spawn: [0, 4.4, Math.PI], bg: '#060403', fog: .05, shadow: { at: [0, 3.6, 1], to: [0, 0, -.5], color: '#ffd9a0', i: 1, angle: 1.1, dist: 12 } };
   }
 
   /* ---------- the 17th floor ---------- */
@@ -407,7 +447,7 @@ const L2World = (() => {
     A.box(.5, .55, .45, A.mat('minibar', { color: '#1a1a1a', emissive: '#3a2a10', emissiveIntensity: .4 }), 3.1, .275, -1.2, true); A.use(2.6, -1.2, 'The minibar', act('minibar'), { r: 1.3 });
     A.use(0, 2.6, 'Back to the corridor', act('toCorridor'), { r: 1.4 });
     A.add(new THREE.HemisphereLight('#ffe8c8', '#1a1410', .3));
-    return { spawn: [.4, 1.7, Math.PI * .82], bg: '#0a0806', fog: .04, exposure: 1.15 };
+    return { spawn: [.4, 1.7, Math.PI * .82], bg: '#0a0806', fog: .04, exposure: 1.15, shadow: { at: [.3, 2.6, .5], to: [-.5, 0, -1], color: '#ffe0b0', i: .9, angle: 1.2, dist: 10 } };
   }
 
   /* ---------- the roof, in the rain ---------- */
@@ -434,7 +474,7 @@ const L2World = (() => {
       A.use(0, -7, 'Vale and Rourke', act('finale'), { r: 3.4 });
     }
     A.use(0, 7.2, 'Stairs down', act('toCorridor', 'roof'), { r: 1.6, when: () => !L2.has('finaleStarted') || L2.has('finale') });
-    return { spawn: [0, 6.2, Math.PI], bg: '#05070c', fog: .03, fogColor: '#0a0e16' };
+    return { spawn: [0, 6.2, Math.PI], bg: '#05070c', fog: .03, fogColor: '#0a0e16', shadow: { at: [7, 14, 9], to: [0, 0, 0], color: '#b8c8ff', i: .7, angle: .75, dist: 40 } };
   }
 
   /* ---------- after: the cemetery at first light ---------- */
@@ -453,7 +493,14 @@ const L2World = (() => {
     const sun = new THREE.DirectionalLight('#ffd9b0', 1.4); sun.position.set(-8, 7, 14); A.add(sun);
     A.add(new THREE.HemisphereLight('#ffe6c8', '#4a5a3a', .8));
     A.use(0, -2.2, 'Kneel by the stones', act('graves'), { r: 2.6 });
-    return { spawn: [0, 4, Math.PI], bg: '#e9cfae', fog: .025, fogColor: '#e8d2b8' };
+    // second row from the gate, under a tree: the man they blamed
+    if (L2.state.clues.call) {
+      A.box(.7, .8, .16, stone, 5.6, .4, -6.2, true);
+      for (const [t, y, f] of [['EDWARD MARSH', .62, 'bold 64px Georgia'], ['He called for help', .42, 'italic 60px Georgia']]) { const tx = A.sign(t, { color: '#2a2a2a', w: .62, h: .14, font: f }); tx.material = new THREE.MeshBasicMaterial({ map: tx.material.map, transparent: true }); tx.position.set(5.6, y, -6.11); A.add(tx); }
+      A.cyl(.15, .2, 3, A.mat('trunk', { color: '#3a2a1e' }), 6.8, 1.5, -7.2); const crown = new THREE.Mesh(new THREE.SphereGeometry(1.6, 12, 10), A.mat('leaves', { color: '#2e4a2a', roughness: 1 })); crown.position.set(6.8, 3.6, -7.2); A.add(crown);
+      const pansy = A.mat('pansy', { color: '#7a4ab0', roughness: .8 }); for (let i = 0; i < 7; i++) A.box(.07, .05, .07, pansy, 5.35 + i * .08, .03, -5.95 + (i % 2) * .06);
+    }
+    return { spawn: [0, 4, Math.PI], bg: '#e9cfae', fog: .025, fogColor: '#e8d2b8', shadow: { at: [-9, 15, 14], to: [0, 0, -3], color: '#ffe2bc', i: .9, angle: .6, dist: 45 } };
   }
 
   return { clinic, garage, floor, eye, salon, corridor, room, roof, cemetery, spur };

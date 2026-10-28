@@ -26,14 +26,40 @@ const L2Bottle = (() => {
   const stepsDone = () => { const d = st(); return ['admit', 'flask', 'sponsor'].filter(k => d.steps[k]).length; };
   const refusals = () => Object.keys(st().refused).length;
   // craving per second: severe ~3½ minutes to the shakes, mild ~10; every recovery step eases it
-  const rate = () => { const d = st(); return [0, 100 / 600, 100 / 360, 100 / 210][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks); };
+  const rate = () => { const d = st(); return [0, 100 / 600, 100 / 360, 100 / 210][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1); };
+
+  /* ---------- food, water and sleep: the same bars as in the dream, carried over ---------- */
+  // Level 2 uses the dream's own hunger, thirst and energy, so you wake up as hungry as you went to
+  // sleep, and they come back with you when you dream again. Awake, they drain in real time
+  // (hunger in about half an hour, thirst a bit faster, energy in forty minutes), and a little
+  // more for each round at a table. Thirst makes the craving louder; hunger and tiredness slow you
+  // down, and with no energy left you can't run.
+  function needs() { const s = App.state; return { hunger: s.hunger == null ? 80 : s.hunger, thirst: s.thirst == null ? 80 : s.thirst, energy: s.stamina == null ? 100 : 100 * s.stamina / Math.max(1, s.staminaMax || 100) }; }
+  function feed({ hunger = 0, thirst = 0, energy = 0 }) {
+    const s = App.state;
+    s.hunger = clamp((s.hunger == null ? 80 : s.hunger) + hunger, 0, 100); s.thirst = clamp((s.thirst == null ? 80 : s.thirst) + thirst, 0, 100);
+    s.stamina = clamp((s.stamina == null ? 100 : s.stamina) + energy * (s.staminaMax || 100) / 100, 0, s.staminaMax || 100);
+    warned = {}; apply(); L2.hud(); App.save();
+  }
+  let warned = {};
+  function drainNeeds(sec) {
+    const s = App.state, mx = s.staminaMax || 100;
+    s.hunger = Math.max(0, (s.hunger == null ? 80 : s.hunger) - sec * 100 / 1800);
+    s.thirst = Math.max(0, (s.thirst == null ? 80 : s.thirst) - sec * 100 / 1350);
+    s.stamina = Math.max(0, (s.stamina == null ? mx : s.stamina) - sec * mx / 2400);
+    const n = needs(), say = { hunger: ['🍔 Your stomach turns over. You can\'t remember the last thing you ate.', '🍔 Light-headed with hunger. The floor keeps tilting.'], thirst: ['💧 Your mouth is dry. A dry mouth makes the craving louder.', '💧 Parched. Your head is pounding.'], energy: ['⚡ You\'re running on empty. A coffee would help.', '⚡ Exhausted. Your legs won\'t run any more.'] };
+    for (const k in say) { const lvl = n[k] <= 0 ? 2 : n[k] < 20 ? 1 : 0; if (lvl > (warned[k] || 0) && !R3.busy) L2.toast(say[k][lvl - 1]); warned[k] = lvl; }
+  }
+  // a round at one of the tables
+  function roundNeeds(kind, k = 1) { if (kind === 'round') drainNeeds(25 * k); }
 
   function start() {
     stop(); init(); apply();
     timer = setInterval(() => {
       if (Router.screen !== 'reality' || document.hidden || !App.state || !App.state.l2) return;
       const d = st(); tick++;
-      if (sober()) { d.crave = 0; d.buzz = 0; apply(); return; }
+      if (sober()) { drainNeeds(R3.busy ? .35 : 1); d.crave = 0; d.buzz = 0; apply(); L2.hud(); return; }
+      drainNeeds(R3.busy ? .35 : 1);
       if (d.buzz > 0) d.buzz = Math.max(0, d.buzz - 100 / 180);
       else d.crave = Math.min(100, d.crave + rate() * (R3.busy ? .35 : 1));
       // getting worse: say so once per stage
@@ -41,7 +67,7 @@ const L2Bottle = (() => {
       if (stage > d.stage && !R3.busy) { d.stage = stage; L2.toast(STAGES[stage - 1][2]); }
       if (stage < d.stage) d.stage = stage;
       if (d.crave >= 60 && !R3.busy && tick - lastThought > 45) { lastThought = tick; L2.toast(`🥃 ${pick(THOUGHTS)}`); }
-      apply(); if (tick % 10 === 0) App.save();
+      apply(); L2.hud(); if (tick % 10 === 0) App.save();
       demons(d);
     }, 1000);
   }
@@ -51,7 +77,10 @@ const L2Bottle = (() => {
   // what you feel, on screen and in your legs
   function apply() {
     const d = st(), c = sober() ? 0 : d.crave, b = d.buzz, root = document.querySelector('.l2');
-    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .006 + (c - 80) / 20 * .014 : 0, sway: (c >= 60 ? .01 + (c - 60) / 40 * .012 : 0) + b / 100 * .03, slow: c >= 80 ? .72 : b > 50 ? .85 : 1 });
+    const n = needs(), weak = n.hunger <= 0 || n.thirst <= 0 || n.energy <= 0;
+    const body = (n.hunger < 20 ? .88 : 1) * (n.energy < 20 ? .85 : 1) * (weak ? .85 : 1);
+    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .006 + (c - 80) / 20 * .014 : 0, sway: (c >= 60 ? .01 + (c - 60) / 40 * .012 : 0) + b / 100 * .03 + (n.hunger <= 0 ? .012 : 0), slow: (c >= 80 ? .72 : b > 50 ? .85 : 1) * body, noRun: n.energy <= 0 });
+    document.body.classList.toggle('l2-weak', weak && (Router.screen === 'reality'));
     const cls = { 'l2-sweats': c >= 35, 'l2-nausea': c >= 60, 'l2-shakes': c >= 80, 'l2-drunk': b > 30 };
     const on = Router.screen === 'reality' || App.inReality(); // the shakes follow you to the tables
     for (const k in cls) document.body.classList.toggle(k, on && !!cls[k]);
@@ -73,20 +102,7 @@ const L2Bottle = (() => {
     maxedFor = d.crave >= 95 ? maxedFor + 1 : 0;
     if (maxedFor >= 25 && !huntCool) { maxedFor = 0; startHunt(); }
   }
-  function makeBarman() {
-    const g = new THREE.Group(), black = new THREE.MeshBasicMaterial({ color: '#040202' }), apron = new THREE.MeshBasicMaterial({ color: '#3a3430' });
-    const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); g.add(o); return o; };
-    add(new THREE.CylinderGeometry(.13, .2, 1.55, 12), black, 0, 1.06, 0);
-    for (const x of [-.1, .1]) add(new THREE.CylinderGeometry(.07, .06, .5, 8), black, x, .25, 0);
-    for (const x of [-.29, .29]) { const a = add(new THREE.CylinderGeometry(.04, .03, 1.25, 8), black, x, 1.02, .04); a.rotation.z = x > 0 ? -.07 : .07; }
-    add(new THREE.SphereGeometry(.13, 14, 12), black, 0, 2, 0).scale.set(.8, 1.45, .95);
-    add(new THREE.BoxGeometry(.28, .7, .02), apron, 0, .9, .17);
-    const eye = new THREE.MeshBasicMaterial({ color: '#ff2a2a', toneMapped: false });
-    for (const x of [-.04, .04]) add(new THREE.SphereGeometry(.018, 8, 8), eye, x, 2.03, .11);
-    const l = new THREE.PointLight('#ff2020', 2.2, 7, 2); l.position.set(0, 1.6, -.9); g.add(l); // lit from behind: a shape cut out of red light
-    const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.6), new THREE.MeshBasicMaterial({ map: R3.api.canvasTex('barmanhalo', 64, 128, (c, w, hh) => { const gr = c.createRadialGradient(w / 2, hh * .45, 2, w / 2, hh * .45, w * .9); gr.addColorStop(0, 'rgba(255,40,30,.35)'); gr.addColorStop(1, 'rgba(255,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, hh); }), transparent: true, depthWrite: false, toneMapped: false })); halo.position.set(0, 1.15, -.3); halo.scale.set(1.4, 1.2, 1); g.add(halo);
-    g.scale.setScalar(1.15); R3.api.add(g); return g;
-  }
+  const makeBarman = () => L2Demon.make();
   let actx = null;
   function thump(v) { // a heartbeat, louder as he gets closer
     if (App.state.settings.sound === false) return;
@@ -98,8 +114,9 @@ const L2Bottle = (() => {
   function glimpse() {
     const P = R3.player, g = makeBarman(), id = {};
     g.position.set(P.x + Math.sin(P.yaw + .5) * 9, 0, P.z + Math.cos(P.yaw + .5) * 9); g.rotation.y = Math.atan2(P.x - g.position.x, P.z - g.position.z);
-    let life = 0; R3.api.every((t, dt) => { if (!id) return; life += dt; g.visible = life < 2.4 && Math.random() > .05; if (life > 2.4 && g.parent) g.parent.remove(g); });
-    L2.toast('🍸 A man in a white bar apron, at the edge of the light. When you look again, he\'s gone.');
+    let life = 0; R3.api.every((t, dt) => { if (!id) return; life += dt; if (g.parent) g.userData.animate(t, dt, 9, 0); g.visible = life < 2.4 && Math.random() > .05; if (life > 2.4 && g.parent) g.parent.remove(g); });
+    L2Demon.sting();
+    L2.toast('🍸 Something tall at the edge of the light, in a rotten barman\'s apron. Too many eyes. When you look again, it\'s gone.');
   }
   function startHunt() {
     if (hunt || typeof THREE === 'undefined' || !R3.api.root) return;
@@ -107,7 +124,7 @@ const L2Bottle = (() => {
     g.position.set(P.x - Math.sin(P.yaw) * 11, 0, P.z - Math.cos(P.yaw) * 11);
     const H = hunt = { g, area: R3.area, t: 0, beat: 0 };
     document.body.classList.add('l2-hunted'); App.count('l2_hunted');
-    L2.toast(d.hunts ? '🍸 He\'s back. Run.' : '🍸 Something is behind you. Footsteps that don\'t echo. Don\'t look. Run. (Hold Shift. Get out of the room, or call Mori.)');
+    L2.toast(d.hunts ? '🍸 He\'s back. Run.' : `🍸 Something is behind you. Footsteps that don't echo. Don't look. Run. (${R3.touch ? 'Push the stick all the way out, or tap 🏃' : 'Hold Shift'}. Get out of the room, or call Mori.)`);
     d.hunts = (d.hunts || 0) + 1;
     R3.api.every((t, dt) => {
       if (hunt !== H || R3.busy) return;
@@ -115,6 +132,7 @@ const L2Bottle = (() => {
       const dx = R3.player.x - g.position.x, dz = R3.player.z - g.position.z, dist = Math.hypot(dx, dz);
       const speed = 2 + Math.min(.9, H.t * .035); // walk 2.1, run 3.6 (less with the shakes)
       g.position.x += dx / dist * speed * dt; g.position.z += dz / dist * speed * dt; g.rotation.y = Math.atan2(dx, dz);
+      g.userData.animate(t, dt, dist, speed); L2Demon.tick(dt, Math.max(0, 1 - dist / 14));
       g.visible = Math.random() > .03;
       H.beat -= dt; if (H.beat <= 0) { H.beat = .35 + Math.min(.7, dist / 14); thump(Math.max(.2, 1 - dist / 14)); }
       if (dist < .75) caught();
@@ -122,7 +140,7 @@ const L2Bottle = (() => {
     });
   }
   function endHunt(how) {
-    const H = hunt; if (!H) return; hunt = null; huntCool = 90;
+    const H = hunt; if (!H) return; hunt = null; huntCool = 90; L2Demon.quiet();
     if (H.g.parent) H.g.parent.remove(H.g);
     document.body.classList.remove('l2-hunted');
     if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); }
@@ -132,10 +150,11 @@ const L2Bottle = (() => {
   }
   async function caught() {
     const d = st(); endHunt('caught'); huntCool = 120; d.strikes = (d.strikes || 0) + 1; App.save();
+    await L2Demon.scare(); apply();
     if (d.strikes >= 3) { await L2.death(); return; }
     await L2.ui.say(d.strikes === 1
-      ? [{ who: 'narr', text: 'A hand on your shoulder, cold as ice from a bucket. He leans in close and you smell it on his breath: your brand. Your knees go.' }, { who: 'narr', text: 'When you open your eyes you\'re on the floor and somebody is asking if you\'re all right. He\'s gone. The taste isn\'t.' }]
-      : [{ who: 'narr', text: 'He catches you by the collar. Something in your chest stutters and catches, like a song skipping on a jukebox.' }, { name: 'A security guard', who: 'x', text: 'Hey. Hey! Stay with me. Look at me.' }, { who: 'narr', text: 'You come back. Barely. Next time, you might not.' }]);
+      ? [{ who: 'narr', text: 'Fingers like cold nails close on your shoulder. Its face splits open an inch from yours, and the breath that comes out of it is your brand. Your knees go.' }, { who: 'narr', text: 'When you open your eyes you\'re on the floor and somebody is asking if you\'re all right. It\'s gone. The taste isn\'t.' }]
+      : [{ who: 'narr', text: 'It catches you by the collar and lifts you off your feet. Something in your chest stutters and catches, like a song skipping on a jukebox.' }, { name: 'A security guard', who: 'x', text: 'Hey. Hey! Stay with me. Look at me.' }, { who: 'narr', text: 'You come back. Barely. Next time, you might not.' }]);
     d.crave = Math.max(d.crave, 85); apply();
   }
 
@@ -196,5 +215,5 @@ const L2Bottle = (() => {
   const path = () => st().path;
   const ready = () => !!st().steps.sponsorOffered && !sober();
 
-  return { _startHunt: startHunt, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, get state() { return st(); }, SEV };
+  return { needs, feed, roundNeeds, _startHunt: startHunt, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, get state() { return st(); }, SEV };
 })();
