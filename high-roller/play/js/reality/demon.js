@@ -1,98 +1,118 @@
-/* The Barman, up close. What the bottle sends after you in Level 2 isn't a man in an apron: it's the
-   shape your craving takes when it has been screaming long enough. A starved, hunched thing taller
-   than a door, with a barman's apron rotted to strips, arms that reach the floor, too many eyes and
-   a jaw that opens further than a jaw should. It twitches, it lurches, it breathes.
+/* The Barman, what the bottle sends after you in Level 2. You never get a good look at it. It's a
+   shape the size of a person, black as a hole in the air, with a red glow round its edges like
+   heat off a stove. It hides: you catch it at the corner of your eye, standing very still at the
+   far end of a room, and when you turn to look there's nothing there. When it hunts you it comes
+   flat through the air, head first, arms out, like something swimming, straight through walls.
+   It doesn't like the light: under a streetlamp or a lit window it slows to a crawl.
+   When it catches you, you see its face for the first time. It's yours: your skin, your hair, your
+   glasses, a few years and a lot of bottles from now. Grey, gaunt, eyes sunk into the skull,
+   lips cracked. Dead.
    Everything it sounds like is made here with Web Audio (no files): a low drone that swells as it
-   closes in, wet ragged breathing, scraping whispers, and a scream when it gets you. When it does
-   get you there is a jump scare (its face, right in yours, a flash and that scream) before the words. */
+   closes in, wet ragged breathing, scraping whispers, and a scream when it gets you. */
 const L2Demon = (() => {
-  /* ---------- the body ---------- */
-  function make() {
-    const T = THREE, g = new T.Group(), parts = {};
-    const skin = new T.MeshStandardMaterial({ color: '#0d0b0b', roughness: .5, metalness: .25, emissive: '#0a0101', emissiveIntensity: .5 });
-    const bone = new T.MeshStandardMaterial({ color: '#8d8270', roughness: .5, emissive: '#160c08', emissiveIntensity: .5 });
-    const rag = new T.MeshStandardMaterial({ color: '#4c443c', roughness: .95, side: T.DoubleSide, emissive: '#120808', emissiveIntensity: .4 });
-    const glow = new T.MeshBasicMaterial({ color: '#ff2a1a', toneMapped: false }), gum = new T.MeshBasicMaterial({ color: '#3a0606' });
-    const mesh = (geo, m, x = 0, y = 0, z = 0, p = g) => { const o = new T.Mesh(geo, m); o.position.set(x, y, z); p.add(o); return o; };
-    const grp = (x, y, z, p) => { const o = new T.Group(); o.position.set(x, y, z); p.add(o); return o; };
-    const limb = (r, len, m = skin) => new T.CapsuleGeometry(r, len, 3, 8);
+  const mix = (a, b, k) => { const p = h => [1, 3, 5].map(i => parseInt(h.replace('#', '').padEnd(6, '0').slice(i - 1, i + 1), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+  const looks = () => (typeof Looks !== 'undefined' ? Looks.get() : { skin: '#f0c19a', hair: '#3a2a1e', style: 'short', beard: '', glasses: false, shirt: '#4a7a46' });
 
-    // legs bend the wrong way, like a dog's, and end in long toes
-    parts.legs = [-1, 1].map(sx => {
-      const hip = grp(sx * .13, 1.12, 0, g); hip.rotation.x = -.45;
-      mesh(limb(.07, .48), skin, 0, -.28, 0, hip);
-      const knee = grp(0, -.56, 0, hip); knee.rotation.x = 1.15;
-      mesh(limb(.05, .5), skin, 0, -.27, 0, knee);
-      const ankle = grp(0, -.56, 0, knee); ankle.rotation.x = -.7;
-      for (const tx of [-.04, 0, .04]) { const toe = mesh(new T.ConeGeometry(.018, .2, 5), bone, tx, -.03, .09, ankle); toe.rotation.x = Math.PI / 2 + .2; }
-      return { hip, knee, sx };
-    });
-    // the body hangs forward from the hips
-    const body = parts.body = grp(0, 1.12, 0, g); body.rotation.x = .42;
-    mesh(new T.SphereGeometry(.15, 12, 10), skin, 0, .02, 0, body).scale.set(1.2, .7, .9); // pelvis
-    mesh(limb(.06, .7), skin, 0, .42, -.05, body); // spine
-    for (let i = 0; i < 6; i++) { // ribs you can count
-      const r = .19 - Math.abs(i - 2) * .018, rib = mesh(new T.TorusGeometry(r, .014, 5, 18, Math.PI * 1.25), bone, 0, .28 + i * .085, -.03, body);
-      rib.rotation.set(Math.PI / 2 + .25, 0, -Math.PI * .125 + Math.PI / 2); rib.scale.set(1, .78, 1);
-    }
-    mesh(new T.CylinderGeometry(.11, .17, .55, 10, 1, true), skin, 0, .5, -.06, body).scale.z = .7; // skin stretched over the back of the ribs
-    const shoulders = grp(0, .84, -.02, body);
-    for (const sx of [-1, 1]) { const hump = mesh(new T.SphereGeometry(.12, 12, 10), skin, sx * .17, .07, -.04, shoulders); hump.scale.set(1, 1.25, .9); const bar = mesh(limb(.055, .14), skin, sx * .2, .02, 0, shoulders); bar.rotation.z = Math.PI / 2 - sx * .5; }
-    mesh(new T.SphereGeometry(.14, 12, 10), skin, 0, .1, -.08, shoulders).scale.set(1.3, .9, 1); // the hump of its back
-    // the apron, rotted to strips, still tied at the waist
-    parts.rags = [];
-    for (let i = 0; i < 5; i++) { const s = mesh(new T.PlaneGeometry(.075, .55 + (i % 2) * .22), rag, -.15 + i * .075, -.32 - (i % 2) * .1, .14, body); s.rotation.x = -.42; parts.rags.push(s); }
-    mesh(new T.TorusGeometry(.16, .012, 4, 16), rag, 0, .04, 0, body).rotation.x = Math.PI / 2;
-    // arms long enough to drag, hands with fingers like a fistful of nails
-    parts.arms = [-1, 1].map(sx => {
-      const sh = grp(sx * .27, .02, 0, shoulders); sh.rotation.set(-.2, 0, sx * .12);
-      mesh(limb(.045, .62), skin, 0, -.36, 0, sh);
-      const el = grp(0, -.72, 0, sh); el.rotation.x = -.25;
-      mesh(limb(.036, .66), skin, 0, -.37, 0, el);
-      const hand = grp(0, -.76, 0, el);
-      mesh(new T.BoxGeometry(.09, .1, .04), skin, 0, -.02, 0, hand);
-      for (let f = 0; f < 5; f++) { const fi = mesh(new T.ConeGeometry(.012, .3, 5), bone, -.045 + f * .022, -.2, .02, hand); fi.rotation.x = .25 + Math.random() * .2; fi.rotation.z = (f - 2) * .06; }
-      return { sh, el, sx };
-    });
-    // a neck that juts forward, and the head
-    const neck = grp(0, .88, .06, body); neck.rotation.x = 1.0;
-    mesh(limb(.045, .3), skin, 0, .18, 0, neck);
-    const head = parts.head = grp(0, .4, .02, neck); head.rotation.x = -1.3;
-    const skull = mesh(new T.SphereGeometry(.16, 18, 14), skin, 0, .02, 0, head); skull.scale.set(.82, 1.28, 1.08);
-    mesh(new T.BoxGeometry(.25, .035, .08), skin, 0, .09, .11, head).rotation.x = -.3; // brow ridge
-    for (const [ex, ey, r] of [[-.055, .055, .015], [.055, .055, .015], [-.032, .128, .008], [.038, .138, .007]]) { // two eyes, and two more that shouldn't be there
-      mesh(new T.SphereGeometry(r * 2.4, 8, 6), new T.MeshBasicMaterial({ color: '#050000' }), ex, ey, .13, head).scale.z = .45; // deep sockets
-      mesh(new T.SphereGeometry(r, 8, 6), glow, ex, ey, .147, head);
-    }
-    const upper = grp(0, -.04, .1, head); // the upper teeth
-    for (let i = 0; i < 11; i++) { const a = (i - 5) / 5, t = mesh(new T.ConeGeometry(.011, .06 + (1 - Math.abs(a)) * .06, 4), bone, a * .085, -.04, Math.cos(a) * .045 - .02, upper); t.rotation.x = Math.PI; }
-    mesh(new T.SphereGeometry(.09, 12, 10), new T.MeshBasicMaterial({ color: '#070000' }), 0, -.08, .06, head).scale.set(.95, .9, .55); // the maw
-    const jaw = parts.jaw = grp(0, -.06, -.04, head);
-    mesh(new T.SphereGeometry(.12, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), skin, 0, -.02, .06, jaw).scale.set(.85, 1.3, 1.15);
-    mesh(new T.CircleGeometry(.09, 14), gum, 0, -.02, .07, jaw).rotation.x = -Math.PI / 2;
-    for (let i = 0; i < 9; i++) { const a = (i - 4) / 4; mesh(new T.ConeGeometry(.012, .08, 4), bone, a * .08, .02, .14 + Math.cos(a) * .02 - .02, jaw); }
-    // lit from behind, a shape cut out of red light
-    const l = new T.PointLight('#ff1a10', 2.6, 8, 2); l.position.set(0, 1.7, -1); g.add(l);
-    const eyeL = parts.eyeLight = new T.PointLight('#ff2a1a', .9, 2.2, 2); eyeL.position.set(0, 0, .35); head.add(eyeL);
-    const halo = new T.Mesh(new T.PlaneGeometry(1.8, 3), new T.MeshBasicMaterial({ map: R3.api.canvasTex('demonhalo', 64, 128, (c, w, hh) => { const gr = c.createRadialGradient(w / 2, hh * .45, 2, w / 2, hh * .45, w * .9); gr.addColorStop(0, 'rgba(255,30,20,.4)'); gr.addColorStop(1, 'rgba(255,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, hh); }), transparent: true, depthWrite: false, toneMapped: false }));
-    halo.position.set(0, 1.4, -.45); g.add(halo);
-    g.scale.setScalar(1.22);
-    let twitchAt = 0, tw = { x: 0, y: 0, z: 0 }, phase = 0;
-    // walk, twitch, breathe; reach for you when you're close
-    g.userData.animate = (t, dt, dist = 9, speed = 2) => {
-      phase += dt * (2.2 + speed * 1.4);
-      const s = Math.sin(phase), reach = Math.max(0, Math.min(1, (4.5 - dist) / 3));
-      for (const L of parts.legs) { L.hip.rotation.x = -.45 + s * .45 * L.sx; L.knee.rotation.x = 1.15 + Math.max(0, -s * L.sx) * .6; }
-      body.position.y = 1.12 + Math.abs(Math.cos(phase)) * .05; body.rotation.z = Math.sin(phase * .5) * .06;
-      for (const A of parts.arms) { A.sh.rotation.x = -.2 - reach * 1.35 + Math.sin(phase + A.sx) * .25 * (1 - reach); A.el.rotation.x = -.25 - reach * .25 + Math.sin(t * 9 + A.sx) * .05 * reach; }
-      if (t > twitchAt) { twitchAt = t + .25 + Math.random() * 1.2; tw = { x: (Math.random() - .5) * .5, y: (Math.random() - .5) * .9, z: (Math.random() - .5) * .9 }; }
-      head.rotation.set(-1.3 + tw.x, tw.y, tw.z);
-      jaw.rotation.x = .25 + (Math.sin(t * 1.7) * .5 + .5) * .45 + reach * .55 + Math.sin(t * 31) * .03;
-      parts.rags.forEach((r, i) => { r.rotation.z = Math.sin(t * 6 + i * 1.7) * .25; });
-      eyeL.intensity = .7 + Math.random() * .5;
+  /* ---------- the shape ---------- */
+  // a thing in the world (engine.js draws it in depth order with everything else)
+  function make() {
+    const d = { kind: 'demon', x: 0, y: 0, mode: 'stand', fade: 0, want: 1, pace: 1, trail: [], phase: Math.random() * 9 };
+    d.inLight = () => (R3.map ? R3.map.lights : []).some(l => Math.hypot(l.x - d.x, l.y - d.y) < l.r * .55);
+    d.update = (t, dt, dist) => {
+      d.phase += dt;
+      const lit = d.inLight();
+      d.want = d.mode === 'fly' ? (lit && dist > 2.5 ? .45 : 1) : (dist < 5 || lit ? 0 : 1);
+      d.fade += (d.want - d.fade) * Math.min(1, dt * (d.want < d.fade ? 5 : 2));
+      d.pace = d.mode === 'fly' ? (lit && dist > 2.5 ? .45 : 1.2) : 1;
+      if (d.mode === 'fly') { d.trailT = (d.trailT || 0) - dt; if (d.trailT <= 0) { d.trailT = .1; d.trail.push({ x: d.x, y: d.y, life: 1 }); if (d.trail.length > 10) d.trail.shift(); } }
+      for (const p of d.trail) p.life -= dt * 1.5;
     };
-    parts.root = g; g.userData.parts = parts;
-    R3.api.add(g); return g;
+    d.draw = (c, sx, sy, z, t) => {
+      if (d.fade < .02) return;
+      c.save();
+      for (const p of d.trail) { if (p.life <= 0) continue; const [tx, ty] = R3.toScreen(p.x, p.y, 1.1); const g = c.createRadialGradient(tx, ty, 0, tx, ty, 26 * z); g.addColorStop(0, `rgba(120,0,0,${.35 * p.life * d.fade})`); g.addColorStop(1, 'rgba(60,0,0,0)'); c.fillStyle = g; c.fillRect(tx - 26 * z, ty - 26 * z, 52 * z, 52 * z); }
+      const fly = d.mode === 'fly', hover = fly ? (40 + Math.sin(d.phase * 2.1) * 5) * z : 0, cy = sy - hover - 36 * z;
+      // the red glow round it, like heat off a stove
+      const g = c.createRadialGradient(sx, cy, 4 * z, sx, cy, 60 * z); g.addColorStop(0, `rgba(255,40,20,${.55 * d.fade})`); g.addColorStop(.5, `rgba(150,0,0,${.25 * d.fade})`); g.addColorStop(1, 'rgba(60,0,0,0)');
+      c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx - 60 * z, cy - 60 * z, 120 * z, 120 * z); c.globalCompositeOperation = 'source-over';
+      if (!fly) { c.fillStyle = `rgba(0,0,0,${.4 * d.fade})`; c.beginPath(); c.ellipse(sx, sy, 14 * z, 6 * z, 0, 0, 7); c.fill(); }
+      // the shape: black as a hole in the air, edged in red
+      c.translate(sx, sy - hover); c.scale(z * 1.3, z * 1.3);
+      if (fly) { const dir = d.vx - d.vy >= 0 ? 1 : -1; c.scale(dir, 1); c.translate(0, -34); c.rotate(Math.PI / 2 - .15 + Math.sin(d.phase * 1.3) * .08); c.translate(0, 34); }
+      c.globalAlpha = d.fade;
+      const body = new Path2D();
+      body.ellipse(0, -66, 8.5, 10, 0, 0, 7); // head
+      body.moveTo(-12, -56); body.quadraticCurveTo(0, -60, 12, -56); body.lineTo(9, -26); body.lineTo(-9, -26); body.closePath(); // body
+      const armUp = fly ? -1 : 0, sway = Math.sin(d.phase * 3) * 2;
+      for (const k of [-1, 1]) { body.moveTo(k * 12, -55); body.lineTo(k * (fly ? 9 : 16), fly ? -95 + sway * k : -22 + sway); body.lineTo(k * (fly ? 5 : 12), fly ? -95 + sway * k : -22 + sway); body.lineTo(k * 8, -52); body.closePath(); } // arms: hanging, or out ahead of it
+      for (const k of [-1, 1]) { body.moveTo(k * 3, -27); body.lineTo(k * (fly ? 4 + Math.sin(d.phase * 5 + k) * 3 : 6), fly ? 4 : 0); body.lineTo(k * (fly ? 9 + Math.sin(d.phase * 5 + k) * 3 : 10), fly ? 4 : 0); body.lineTo(k * 8, -27); body.closePath(); }
+      c.shadowColor = 'rgba(255,30,10,.9)'; c.shadowBlur = 14; c.fillStyle = '#030000'; c.fill(body);
+      c.shadowBlur = 0; c.strokeStyle = 'rgba(255,40,20,.55)'; c.lineWidth = 1.4; c.stroke(body);
+      if (!fly) { c.fillStyle = 'rgba(255,60,40,.9)'; c.fillRect(-4, -68, 2, 1.4); c.fillRect(2, -68, 2, 1.4); } // two points of light where eyes would be
+      c.restore();
+    };
+    d.vx = d.vy = 0; d.top = () => d.mode === 'fly';
+    R3.api.add(d); return d;
+  }
+  function remove(d) { const M = R3.map; if (M) { const i = M.things.indexOf(d); if (i >= 0) M.things.splice(i, 1); } }
+
+  /* ---------- its face, which is yours ---------- */
+  // painted, not modelled: a close-up portrait of you, dead. Your skin drained grey-green, your hair
+  // thinned and greyed, your beard and glasses if you have them, eyes sunk into black sockets,
+  // cheeks fallen in, lips shrunk back off the teeth. Painted on a gently curved surface in two
+  // halves, so the jaw can drop away from the face onto black.
+  const W = 512, H = 704, MOUTH = .655; // the split between face and jaw, as a fraction of the height
+  const faceCache = {};
+  function paintFace(L) {
+    const key = [L.skin, L.hair, L.style, L.beard, L.glasses].join(); if (faceCache[key]) return faceCache[key];
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    const cx = W / 2, sk = mix(mix(L.skin, '#7d8a76', .55), '#4b5048', .1), rgb = [1, 3, 5].map(i => parseInt(sk.slice(i, i + 2), 16));
+    const tone = (k, a = 1) => `rgba(${Math.min(255, rgb[0] * k) | 0},${Math.min(255, rgb[1] * k) | 0},${Math.min(255, rgb[2] * k) | 0},${a})`;
+    const blob = (x, y, rx, ry, col, col2 = 'rgba(0,0,0,0)') => { g.save(); g.translate(x, y); g.scale(1, ry / rx); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, col); gr.addColorStop(1, col2); g.fillStyle = gr; g.fillRect(-rx, -rx, rx * 2, rx * 2); g.restore(); };
+    // the head: long and narrow, pinched at the temples and under the cheekbones
+    const head = new Path2D(); head.moveTo(cx, 40); head.bezierCurveTo(cx + 175, 40, cx + 200, 200, cx + 168, 270); head.bezierCurveTo(cx + 150, 330, cx + 175, 400, cx + 150, 470);
+    head.bezierCurveTo(cx + 125, 590, cx + 70, 690, cx, 700); head.bezierCurveTo(cx - 70, 690, cx - 125, 590, cx - 150, 470); head.bezierCurveTo(cx - 175, 400, cx - 150, 330, cx - 168, 270); head.bezierCurveTo(cx - 200, 200, cx - 175, 40, cx, 40);
+    g.save(); g.clip(head);
+    const base = g.createRadialGradient(cx, 330, 40, cx, 330, 330); base.addColorStop(0, tone(1.05)); base.addColorStop(.6, tone(.8)); base.addColorStop(1, tone(.25)); g.fillStyle = base; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 260; i++) blob(Math.random() * W, Math.random() * H, 8 + Math.random() * 40, 8 + Math.random() * 40, `rgba(${50 + Math.random() * 50},${30 + Math.random() * 30},${40 + Math.random() * 30},.16)`); // mottled
+    // hollow temples and cheeks, a jaw you can see the bone of
+    for (const sx of [-1, 1]) { blob(cx + sx * 150, 250, 70, 110, 'rgba(10,6,10,.75)'); blob(cx + sx * 105, 470, 70, 95, 'rgba(12,6,12,.8)'); blob(cx + sx * 110, 395, 60, 22, tone(1.35, .8)); blob(cx + sx * 85, 600, 60, 40, 'rgba(10,5,10,.5)'); }
+    // the forehead, lined
+    g.strokeStyle = 'rgba(20,10,15,.45)'; g.lineWidth = 2; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(cx - 110, 150 + i * 22); g.quadraticCurveTo(cx, 138 + i * 22 + (i % 2) * 6, cx + 110, 150 + i * 22); g.stroke(); }
+    // the sockets: deep and black, the bone of the brow catching the light above them
+    for (const sx of [-1, 1]) {
+      blob(cx + sx * 72, 292, 88, 70, 'rgba(0,0,0,.98)', 'rgba(20,5,15,0)'); blob(cx + sx * 72, 296, 50, 36, 'rgba(0,0,0,1)', 'rgba(0,0,0,.6)');
+      blob(cx + sx * 70, 232, 85, 18, tone(1.4, .7)); blob(cx + sx * 75, 350, 70, 26, 'rgba(70,20,50,.65)'); // brow, and the bruised bags under the eyes
+    }
+    // the nose: a thin bridge, a sharp tip, black nostrils
+    blob(cx, 360, 16, 90, tone(1.35, .55)); blob(cx - 22, 435, 12, 7, 'rgba(0,0,0,.95)'); blob(cx + 22, 435, 12, 7, 'rgba(0,0,0,.95)'); blob(cx, 418, 24, 16, tone(1.2, .6));
+    // broken veins across the cheeks and nose
+    g.lineWidth = 1.3; for (let i = 0; i < 160; i++) { const sx = Math.random() < .5 ? -1 : 1; let x = cx + sx * (20 + Math.random() * 110), y = 340 + Math.random() * 140; g.strokeStyle = `rgba(${130 + Math.random() * 70},15,${40 + Math.random() * 40},.5)`; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 5; k++) { x += (Math.random() - .5) * 16; y += (Math.random() - .5) * 12; g.lineTo(x, y); } g.stroke(); }
+    // the mouth: lips shrunk back off long, yellow teeth, some gone
+    const my = H * MOUTH;
+    g.fillStyle = 'rgba(25,8,12,1)'; g.beginPath(); g.ellipse(cx, my, 78, 26, 0, 0, 7); g.fill();
+    for (let i = 0; i < 9; i++) { if (i === 2 || i === 6) continue; const x = cx - 64 + i * 16, up = my - 2; g.fillStyle = `rgb(${150 + Math.random() * 30},${130 + Math.random() * 20},${70 + Math.random() * 20})`; g.fillRect(x, up - 20, 13, 20); g.fillRect(x + 1, my + 2, 12, 16 + Math.random() * 4); g.fillStyle = 'rgba(60,30,10,.6)'; g.fillRect(x, up - 20, 13, 3); }
+    g.strokeStyle = '#3a1c22'; g.lineWidth = 7; g.beginPath(); g.ellipse(cx, my, 80, 28, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke(); g.beginPath(); g.ellipse(cx, my, 76, 26, 0, Math.PI * .1, Math.PI * .9); g.stroke(); // what's left of the lips
+    g.strokeStyle = 'rgba(10,0,4,.9)'; g.lineWidth = 1; for (let i = 0; i < 16; i++) { const x = cx - 70 + i * 9; g.beginPath(); g.moveTo(x, my - 30); g.lineTo(x + 2, my - 20); g.stroke(); } // cracks
+    blob(cx + 76, my + 6, 12, 10, 'rgba(140,20,30,.95)'); // a sore at the corner
+    // stubble, or what the beard has become
+    if (L.beard) { g.fillStyle = mix(L.hair, '#8c8c8c', .55); g.globalAlpha = .55; for (let i = 0; i < (L.beard === 'stubble' ? 4000 : 8000); i++) { const a = Math.random() * Math.PI, r = 90 + Math.random() * 90; const x = cx + Math.cos(a) * r * 1.05, y = 470 + Math.sin(a) * r * 1.15; if (y > 440) g.fillRect(x, y, 1.6, 3.4); } g.globalAlpha = 1; }
+    g.restore();
+    // hair: thin, greasy, greyed, in strands
+    if (L.style !== 'bald') { const hc = mix(L.hair, '#8a8a8a', .45); g.strokeStyle = hc; g.globalAlpha = .7; for (let i = 0; i < 220; i++) { const a = -Math.PI * .95 + Math.random() * Math.PI * .9, x0 = cx + Math.cos(a) * 160, y0 = 175 + Math.sin(a) * 140; g.lineWidth = .8 + Math.random() * 1.4; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + (Math.random() - .5) * 40, y0 + 60, x0 + (x0 < cx ? -10 : 10) + (Math.random() - .5) * 30, y0 + 90 + Math.random() * (L.style === 'long' || L.style === 'bob' ? 260 : 80)); g.stroke(); } g.globalAlpha = 1; }
+    // the glasses, one lens cracked
+    if (L.glasses) { g.strokeStyle = '#111'; g.lineWidth = 6; for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(cx + sx * 72, 296, 62, 46, 0, 0, 7); g.stroke(); } g.beginPath(); g.moveTo(cx - 12, 290); g.quadraticCurveTo(cx, 280, cx + 12, 290); g.stroke(); g.strokeStyle = 'rgba(230,230,230,.7)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(cx + 40, 265); g.lineTo(cx + 70, 300); g.lineTo(cx + 62, 330); g.moveTo(cx + 70, 300); g.lineTo(cx + 108, 290); g.stroke(); }
+    return (faceCache[key] = c);
+  }
+  // the eyes are separate so the lids can open over them: yellowed, bloodshot, the pupils pinned
+  let eyeCanvas = null;
+  function paintEye() {
+    if (eyeCanvas) return eyeCanvas;
+    const c = document.createElement('canvas'); c.width = 128; c.height = 96; const g = c.getContext('2d'), w = 128, h = 96;
+    const gr = g.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, w * .45); gr.addColorStop(0, '#e6dc9a'); gr.addColorStop(.7, '#b8a24a'); gr.addColorStop(1, '#5a1a10'); g.fillStyle = gr; g.beginPath(); g.ellipse(w / 2, h / 2, w * .42, h * .34, 0, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(170,10,10,.8)'; g.lineWidth = 1; for (let i = 0; i < 30; i++) { const a = Math.random() * 7; let x = w / 2 + Math.cos(a) * w * .4, y = h / 2 + Math.sin(a) * h * .3; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (w / 2 - x) * .2 + (Math.random() - .5) * 6; y += (h / 2 - y) * .2 + (Math.random() - .5) * 6; g.lineTo(x, y); } g.stroke(); }
+    g.fillStyle = '#4a3a10'; g.beginPath(); g.arc(w / 2, h / 2, 13, 0, 7); g.fill(); g.fillStyle = '#000'; g.beginPath(); g.arc(w / 2, h / 2, 4, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(w / 2 + 7, h / 2 - 6, 3, 0, 7); g.fill();
+    return (eyeCanvas = c);
   }
 
   /* ---------- the sound of it ---------- */
@@ -183,29 +203,46 @@ const L2Demon = (() => {
   function quiet() { near = 0; stopDrone(); }
 
   /* ---------- when it gets you ---------- */
-  // its face right in yours, a flash, the scream, the screen shaking, then black. Then the words.
+  // the dark goes out of it and there's a face an arm's length from yours: your own, dead. Its eyes
+  // open. Its mouth opens too far. A flash, the scream, the screen shaking, then black. Then the words.
   async function scare() {
-    const P = R3.player, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, L = looks();
     R3.freeze(true); quiet();
-    const g = make(), fx = Math.sin(P.yaw), fz = Math.cos(P.yaw);
-    g.scale.setScalar(1.05); g.position.set(P.x + fx * 1.05, -.56, P.z + fz * 1.05); g.rotation.y = Math.atan2(-fx, -fz);
-    const parts = g.userData.parts; P.pitch = 0;
-    parts.body.rotation.x = .05; parts.head.rotation.set(-1.05, 0, 0); // face to face
-    for (const A of parts.arms) { A.sh.rotation.set(-1.25, 0, A.sx * .75); A.el.rotation.x = -.5; } // reaching round you
+    const face = paintFace(L), eye = paintEye(), lidCol = mix(mix(L.skin, '#7d8a76', .55), '#141414', .55), sc = mix(mix(L.skin, '#7d8a76', .55), '#1e1e1e', .45);
+    const cv = document.createElement('canvas'); cv.className = 'l2-scareface'; document.body.append(cv);
+    const dpr = Math.min(2, devicePixelRatio || 1), vw = innerWidth, vh = innerHeight; cv.width = vw * dpr; cv.height = vh * dpr; const g = cv.getContext('2d'); g.scale(dpr, dpr);
     const flash = h('div.l2-scare'); document.body.append(flash);
     scream(); if (navigator.vibrate) try { navigator.vibrate([90, 40, 220]); } catch (e) { }
-    R3.setFx({ shake: reduce ? 0 : .05, sway: 0, slow: 1 });
-    let t0 = performance.now();
-    const anim = () => { const k = (performance.now() - t0) / 1000; parts.jaw.rotation.x = Math.min(1.45, .2 + k * 4); parts.head.rotation.z = Math.sin(k * 40) * .06; if (k < 1.3) requestAnimationFrame(anim); };
-    anim();
-    await new Promise(r => setTimeout(r, 1150));
-    flash.classList.add('black');
+    const t0 = performance.now();
+    await new Promise(done => {
+      const draw = () => {
+        const k = (performance.now() - t0) / 1000;
+        const fh = Math.min(vh * .92, vw * 1.25) * (1 + Math.min(.18, k * .35)), fw = fh * W / H, x0 = vw / 2 - fw / 2 + (reduce ? 0 : (Math.random() - .5) * 8), y0 = vh / 2 - fh / 2 + (reduce ? 0 : (Math.random() - .5) * 8);
+        const open = Math.min(1, Math.max(0, k - .22) * 3) * fh * .17, my = y0 + fh * MOUTH;
+        g.fillStyle = '#000'; g.fillRect(0, 0, vw, vh);
+        const vg = g.createRadialGradient(vw / 2, vh / 2, fh * .2, vw / 2, vh / 2, fh * .8); vg.addColorStop(0, 'rgba(90,0,0,.5)'); vg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = vg; g.fillRect(0, 0, vw, vh);
+        // the inside of the mouth, the skin stretched over it, then the jaw dropped below
+        const sg = g.createLinearGradient(x0 + fw * .17, 0, x0 + fw * .83, 0); sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(.12, sc); sg.addColorStop(.88, sc); sg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sg; g.fillRect(x0 + fw * .17, my - 6, fw * .66, open + 12);
+        g.fillStyle = '#000'; g.beginPath(); g.ellipse(vw / 2, my + open / 2, fw * .3, open / 2 + fh * .04, 0, 0, 7); g.fill();
+        g.drawImage(face, 0, H * MOUTH, W, H * (1 - MOUTH), x0, my + open, fw, fh * (1 - MOUTH));
+        g.drawImage(face, 0, 0, W, H * MOUTH, x0, y0, fw, fh * MOUTH);
+        // the eyes, and the lids snapping open over them
+        const lid = Math.min(1, Math.max(0, k - .12) * 12);
+        for (const sx of [-1, 1]) {
+          const ex = vw / 2 + sx * 72 / W * fw, ey = y0 + 296 / H * fh, ew = fw * .17, eh = fw * .12;
+          g.drawImage(eye, ex - ew / 2, ey - eh / 2, ew, eh);
+          if (lid < 1) { g.globalAlpha = 1 - lid; g.fillStyle = lidCol; g.beginPath(); g.ellipse(ex, ey - lid * eh * .4, ew * .55, eh * .55 * (1 - lid * .8), 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+        }
+        if (Math.random() < .25) { g.fillStyle = 'rgba(255,40,20,.12)'; g.fillRect(0, 0, vw, vh); }
+        if (k < 1.25) requestAnimationFrame(draw); else done();
+      };
+      draw();
+    });
+    flash.classList.add('black'); cv.remove();
     await new Promise(r => setTimeout(r, 700));
-    if (g.parent) g.parent.remove(g);
-    R3.setFx(null);
     flash.classList.add('out'); setTimeout(() => flash.remove(), 600);
     R3.freeze(false);
   }
 
-  return { make, tick, quiet, scream, sting, scare };
+  return { make, remove, paintFace, tick, quiet, scream, sting, scare };
 })();
