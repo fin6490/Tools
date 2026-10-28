@@ -172,16 +172,17 @@ const L2Bottle = (() => {
       const dx = R3.player.x - g.x, dy = R3.player.y - g.y, dist = Math.hypot(dx, dy) || .01;
       g.update(t, dt, dist);
       if (H.phase === 'hidden' && H.timer <= 0) {
-        const at = hiddenSpot(Math.max(3.2, 7 - H.shows * .7), Math.max(5, 9.5 - H.shows * .6));
+        const still = Math.hypot(R3.player.vx || 0, R3.player.vy || 0) < .3; // standing still makes it bolder
+        const at = hiddenSpot(Math.max(still ? 2.2 : 3.2, (still ? 5.5 : 7) - H.shows * (still ? 1 : .7)), Math.max(still ? 3.5 : 5, 9.5 - H.shows * .6));
         if (at) { g.x = at[0]; g.y = at[1]; g.mode = 'appear'; g.fade = 0; H.phase = 'appear'; H.timer = .7; H.shows++; L2Demon.sting(); } else H.timer = .8;
       } else if (H.phase === 'appear' && H.timer <= 0) { g.mode = 'stalk'; H.phase = 'stalk'; H.timer = 3.2 + Math.random() * 2; }
       else if (H.phase === 'stalk') {
         const lit = g.inLight(), torch = L2Money.torchOn() && dist < 5;
-        const burst = Math.sin(H.t * 5.5) > -.2 ? 1.5 : .25; // lurches, then stops dead
+        const burst = dist < 2.4 ? 1.9 : Math.sin(H.t * 5.5) > -.2 ? 1.5 : .25; // lurches, then stops dead; close in, it lunges
         const speed = Math.min(2.15, 1.55 + H.shows * .07) * burst * (torch ? .65 : 1) * (lit ? .45 : 1);
         g.vx = dx / dist * speed; g.vy = dy / dist * speed; g.x += g.vx * dt; g.y += g.vy * dt; g.dir = dx - dy >= 0 ? 1 : -1;
         if (dist < .75) { caught(); return; }
-        if (H.timer <= 0 || (lit && dist > 2 && Math.random() < dt * 1.5)) { g.mode = 'vanish'; H.phase = 'vanish'; H.timer = .8; }
+        if ((H.timer <= 0 && dist > 2.4) || (lit && dist > 2 && Math.random() < dt * 1.5)) { g.mode = 'vanish'; H.phase = 'vanish'; H.timer = .8; }
       } else if (H.phase === 'vanish' && H.timer <= 0) { H.phase = 'hidden'; H.timer = 1 + Math.random() * 1.8; }
       const near = H.phase === 'stalk' || H.phase === 'appear' ? Math.max(0, 1 - dist / 10) : .08;
       L2Demon.tick(dt, near);

@@ -139,6 +139,7 @@ const Music = (() => {
     if (App.inReality() && (scr === 'table' || scr === 'slots')) return '';
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';
+      if (w.map === 'v:spur' && st.flags && st.flags.spurJuke && STYLES[st.flags.spurJuke]) return st.flags.spurJuke; // the jukebox
       if (w.map.startsWith('v:')) return STYLES[w.map.slice(2)] ? w.map.slice(2) : '';
       if (w.map === 'r:diner') return 'diner';
       return '';

@@ -967,3 +967,11 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .frag { display: flex; flex-direction: column; align-items: center; gap: .1rem; text-align: center; padding: .35rem; border: 1px solid var(--line); border-radius: 8px; }
 .frag span { font-size: 1.4rem; } .frag small { font-size: .65rem; color: var(--muted); }
 .frag.unk { opacity: .35; } .frag.unk span { font-size: 1rem; }
+
+/* Hold & Spin: you spin each respin; a reel that might drop a coin holds on, glowing */
+.sl-hsbar { display: flex; gap: .5rem; justify-content: center; align-items: center; margin: .45rem 0 .1rem; }
+.sl-hsbar .sl-respin { min-width: 9rem; font-size: 1.1rem; letter-spacing: .1em; }
+.sl-hsbar .btn.on { background: #6a4a10; color: #ffe9a8; }
+.sl-cell.tease { box-shadow: inset 0 0 0 2px #ffd34d, 0 0 16px rgba(255,211,77,.8); animation: steaser .25s ease-in-out infinite alternate; }
+@keyframes steaser { to { box-shadow: inset 0 0 0 2px #fff3c4, 0 0 26px rgba(255,211,77,1); } }
+@media (prefers-reduced-motion: reduce) { .sl-cell.tease { animation: none; } }
