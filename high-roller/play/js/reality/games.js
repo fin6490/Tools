@@ -226,7 +226,7 @@ const L2Games = (() => {
   }
   const shelf = id => { const G = store(); if (!G['push' + id]) G['push' + id] = pusherNew(); return G['push' + id]; };
   function drop(id) {
-    const P = shelf(id); if (P.coins.length >= PUSH.max) return false; P.drops++; const shaky = document.body.classList.contains('l2-shakes') ? .3 : .02; // trembling hands miss
+    const P = shelf(id); if (P.coins.length >= PUSH.max) return false; P.drops++; const shaky = document.body.classList.contains('l2-shakes') ? .15 : .02; // trembling hands miss
     P.coins.push({ x: aim.x + (Math.random() - .5) * shaky, y: pusherFace(P.t) + PUSH.r + .01, g: 0 });
     if (P.drops % PUSH.goldEvery === 0) { P.coins.push({ x: (Math.random() - .5) * 1.2, y: pusherFace(P.t) + PUSH.r + .2, g: 1 }); return 'gold'; }
     return true;

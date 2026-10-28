@@ -11,7 +11,17 @@
    Nothing here is shown, only told, and gently. Your real life (the owner's personal layer) is never
    mixed into this story. */
 const L2 = (() => {
-  const S = () => { const s = App.state; if (!s.l2) s.l2 = { area: 'wake', flags: {}, clues: {}, met: {}, cash: 2400, pos: null }; return s.l2; };
+  const VERSION = 3; // bump when Level 2 is rebuilt enough that old saves should start it again
+  const fresh = () => ({ v: VERSION, area: 'wake', flags: {}, clues: {}, met: {}, cash: 2400, pos: null, base: l2Counters() });
+  const l2Counters = () => { const c = (App.state.stats && App.state.stats.counters) || {}, o = {}; for (const k in c) if (k.startsWith('l2_')) o[k] = c[k]; return o; };
+  const S = () => { const s = App.state; if (!s.l2) s.l2 = fresh(); return s.l2; };
+  // start Level 2 again from waking up: the dream, its money and the endings you've found are kept
+  function restart() {
+    const st = App.state, old = st.l2 || {};
+    st.l2 = { ...fresh(), endings: old.endings || {}, games: old.games };
+    if (st.whispers) for (const w of WHISPERS.filter(w => w.l2)) { delete st.whispers[w.id]; if (st.wprog) delete st.wprog[w.id]; }
+    App.save(); Router.go('reality');
+  }
   const has = k => !!S().flags[k];
   const set = (k, v = true) => { S().flags[k] = v; App.save(); };
   const first = () => (App.state.name || 'you').split(' ')[0];
@@ -147,6 +157,10 @@ const L2 = (() => {
     R3.lamp = L2Money.lamp;
     hud(); L2Bottle.start();
     if (!has('woke')) { wake(); return; }
+    if (st.v !== VERSION) setTimeout(async () => { // a save from before the rebuild
+      const c = await choose('Level 2 has been rebuilt since you last played: a new city full of people, new things to do, a new Barman. Start Level 2 again from waking up? (Your dream and the endings you\'ve found are kept.)', [['restart', '↺ Start again from the beginning (recommended)'], ['keep', 'Carry on where I was']]);
+      if (c === 'restart') restart(); else { st.v = VERSION; App.save(); }
+    }, 900);
     const a = st.area && L2World[st.area] ? st.area : 'clinic';
     R3.go(a, L2World[a], st.pos && st.pos.area === a ? [st.pos.x, st.pos.z, st.pos.yaw] : null);
   }
@@ -258,14 +272,24 @@ const L2 = (() => {
       S().cash -= cost; L2Bottle.feed({ water: { thirst: 40 }, bar: { hunger: 22, energy: 5 }, energy: { energy: 35, thirst: 10 } }[c]); SFX.chip && SFX.chip(); hud();
       await say([{ who: 'narr', text: { water: 'Clunk. Cold, and it tastes of the plastic. You drink half of it standing there.', bar: 'Clunk. It\'s been in there so long the chocolate has gone grey at the edges. You eat it anyway.', energy: 'Clunk. It tastes like a battery and a boiled sweet. Your heart picks up a step.' }[c] }]);
     },
+    // the Low Tide's bar: drinks (alcohol counts as a drink you chose), soft drinks, and food till two
     async barFood() {
-      const c = await choose('Delia slides a menu across. "Kitchen\'s open till two."', [['burger', `🍔 A burger and fries (${fmt(16)})`], ['coffee', `☕ Coffee (${fmt(5)})`], ['water', '💧 Water (free)'], ['no', 'Nothing']]);
+      const M = [['beer', '🍺 A pint of lager', 6, null, true], ['whisky', '🥃 Whisky, neat', 14, null, true], ['wine', '🍷 A glass of red', 9, null, true], ['cola', '🥤 Cola', 3, { thirst: 30, energy: 6 }], ['lime', '🍋 Lime and soda', 3, { thirst: 35 }], ['coffee', '☕ Coffee', 3, { energy: 22, thirst: 5 }], ['tea', '🫖 A pot of tea', 2, { thirst: 25, energy: 8 }], ['burger', '🍔 Burger and fries', 16, { hunger: 60, energy: 8 }], ['chips', '🍟 A bowl of chips', 5, { hunger: 25 }], ['toastie', '🥪 Cheese toastie', 7, { hunger: 35 }], ['water', '💧 Water (free)', 0, { thirst: 35 }]];
+      const c = await choose(`Delia slides a menu across. "Kitchen's open till two." (${fmt(S().cash)})`, [...M.filter(m => !(m[4] && L2Bottle.path() === 'sober')).map(([k, l, p]) => [k, p ? `${l} (${fmt(p)})` : l]), ['no', 'Nothing']]);
+      const it = M.find(m => m[0] === c); if (!it) return;
       if (c === 'water') return A.water();
-      const cost = { burger: 16, coffee: 5 }[c]; if (!cost) return;
-      if (S().cash < cost) return toast('Not enough money.');
-      S().cash -= cost; L2Bottle.feed(c === 'burger' ? { hunger: 60, energy: 8 } : { energy: 25, thirst: 5 }); hud();
-      await say([{ who: 'delia', text: c === 'burger' ? 'Eat, hon. All of it. You look like a coat on a hanger.' : 'Black, no sugar. Some things I remember.' }]);
+      if (it[4]) { await say([{ who: 'delia', text: RNG.pick(['Drink slow, hon.', 'There you go.', '...You sure? All right. Your call.']) }]); return L2Bottle.drink('delia', it[2]); }
+      if (S().cash < it[2]) return toast('Not enough money.');
+      S().cash -= it[2]; L2Bottle.feed(it[3]); hud(); if (it[3].hunger) App.count('l2_meals');
+      await say([{ who: 'delia', text: c === 'burger' ? 'Eat, hon. All of it. You look like a coat on a hanger.' : c === 'coffee' ? 'Black, no sugar. Some things I remember.' : RNG.pick(['Coming right up.', 'There you go, hon.', 'On its way.']) }]);
     },
+    async jukebox() {
+      const c = await choose(`The jukebox glows like a church window. A dollar a song. (${fmt(S().cash)})`, [['diner', '🎵 "Only You" (doo-wop)'], ['palace', '🎷 Something slow and jazzy'], ['spur', '🎹 Honky-tonk piano'], ['off', 'Let it play itself out'], ['no', 'Leave it']]);
+      if (c === 'no' || !c) return; if (c === 'off') { S().jukebox = null; Music.refresh && Music.refresh(); return; }
+      if (!L2Money.pay(1)) return; S().jukebox = c; App.count('l2_jukebox'); Music.refresh && Music.refresh();
+      toast(RNG.pick(['🎵 The needle drops. Somebody at the bar starts humming.', '🎵 Delia turns it up a notch without being asked.', '🎵 Old Walt taps one finger on the table, in time.']));
+    },
+    async cat() { L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 4); L2Bottle.apply(); App.count('l2_cat'); await say([{ who: 'narr', text: RNG.pick(['*The cat lets you scratch behind its ears, then remembers it has somewhere to be.*', '*It winds round your ankles once, as if it\'s been waiting for you specifically. Cats lie.*', '*The cat looks at you the way Ellie used to look at broccoli. Then it purrs anyway.*']) }]); },
     async minibar() {
       const snack = await choose('The minibar.', [['water', `💧 A bottle of water (${fmt(6)})`], ['food', `🥜 Nuts and a chocolate bar (${fmt(9)})`], ['look', 'Look at the rest of it'], ['no', 'Close it']]);
       if (snack === 'no') return;
@@ -309,20 +333,25 @@ const L2 = (() => {
     async river() { L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 6); await say([{ who: 'narr', text: RNG.pick(['*The river, black and fast and full of the city\'s lights. Ellie wanted a boat. Next summer, you said.*', '*You lean on the railing and watch the rain hit the water, and breathe, and breathe.*']) }]); },
     // Rosie's: food, like the diner in the dream, only real
     async diner() {
-      const M = [['burger', '🍔 Cheeseburger and fries', 14, { hunger: 60, energy: 6 }], ['soup', '🥣 Soup of the day', 7, { hunger: 35, thirst: 10 }], ['pie', '🥧 A slice of cherry pie', 6, { hunger: 25 }], ['coffee', '☕ Coffee (refills free)', 3, { energy: 25, thirst: 5 }], ['water', '💧 A glass of water', 0, { thirst: 35 }]];
-      const c = await choose(`Rosie pulls a pencil from her hair. "What'll it be, love?" (${fmt(S().cash)})`, [...M.map(([k, l, p]) => [k, p ? `${l} (${fmt(p)})` : l]), ...(S().cash < 100 ? [['work', '🧽 Ask if there\'s any work going']] : []), ['no', 'Nothing, thanks']]);
+      const M = [['burger', '🍔 Cheeseburger and fries', 14, { hunger: 60, energy: 6 }], ['pancakes', '🥞 A stack of pancakes', 8, { hunger: 45, energy: 10 }], ['blt', '🥪 A BLT', 9, { hunger: 40 }], ['soup', '🥣 Soup of the day', 7, { hunger: 35, thirst: 10 }], ['pie', '🥧 A slice of cherry pie', 6, { hunger: 25 }], ['shake', '🥤 A chocolate milkshake', 5, { hunger: 15, thirst: 25, energy: 8 }], ['oj', '🍊 Orange juice', 3, { thirst: 35, energy: 4 }], ['coffee', '☕ Coffee (refills free)', 3, { energy: 25, thirst: 5 }], ['tea', '🫖 Tea', 2, { thirst: 25, energy: 8 }], ['water', '💧 A glass of water', 0, { thirst: 35 }]];
+      const c = await choose(`Rosie pulls a pencil from her hair. "What'll it be, love?" (${fmt(S().cash)})`, [...M.map(([k, l, p]) => [k, p ? `${l} (${fmt(p)})` : l]), ...(S().cash < 100 ? [['work', '🧽 Ask if there\'s any work going']] : []), ['talk', '💬 Talk to Rosie'], ['no', 'Nothing, thanks']]);
       if (c === 'work') return L2Money.washUp();
+      if (c === 'talk') return L2People.talk('rosie');
       const it = M.find(m => m[0] === c); if (!it) return;
       if (S().cash < it[2]) return toast('Not enough money.');
       S().cash -= it[2]; L2Bottle.feed(it[3]); hud(); App.count('l2_meals');
-      await say([{ name: 'Rosie', who: 'x', text: RNG.pick(['There you go. Eat it while it\'s hot.', 'You look like you need it, love.', 'On the house if you finish it. ...I\'m joking. Mostly.']) }]);
+      await say([{ name: 'Rosie', who: 'x', text: c === 'pancakes' ? 'Pancakes. Extra vanilla in the batter, that\'s the secret. Don\'t tell anyone.' : RNG.pick(['There you go. Eat it while it\'s hot.', 'You look like you need it, love.', 'On the house if you finish it. ...I\'m joking. Mostly.']) }]);
+      if (c === 'pancakes' && !has('pancakes')) { set('pancakes'); await say([{ who: 'narr', text: '*Extra vanilla. Nora always doubled it. For a second the diner is a kitchen on a Sunday and somebody small is asking for syrup.*' }]); }
     },
     async shop(k) {
-      const W = { fridge: [['water', '💧 Bottle of water', 2, { thirst: 40 }], ['energy', '⚡ Energy drink', 4, { energy: 35, thirst: 10 }], ['cola', '🥤 Cola', 2, { thirst: 30, energy: 8 }]], food: [['sandwich', '🥪 Sandwich', 5, { hunger: 35 }], ['choc', '🍫 Chocolate bar', 2, { hunger: 18, energy: 5 }], ['crisps', 'Crisps', 2, { hunger: 12, thirst: -5 }]] }[k];
+      const W = { fridge: [['water', '💧 Bottle of water', 2, { thirst: 40 }], ['juice', '🧃 Orange juice', 3, { thirst: 35, energy: 5 }], ['milk', '🥛 Pint of milk', 2, { thirst: 25, hunger: 8 }], ['icedcoffee', '🧋 Iced coffee', 4, { energy: 25, thirst: 15 }], ['energy', '⚡ Energy drink', 4, { energy: 35, thirst: 10 }], ['cola', '🥤 Cola', 2, { thirst: 30, energy: 8 }]], food: [['sandwich', '🥪 Sandwich', 5, { hunger: 35 }], ['roll', '🥐 Sausage roll', 3, { hunger: 25 }], ['noodles', '🍜 Pot noodle (they\'ll add hot water)', 3, { hunger: 30, thirst: 5 }], ['apple', '🍎 An apple', 1, { hunger: 10, thirst: 5 }], ['choc', '🍫 Chocolate bar', 2, { hunger: 18, energy: 5 }], ['crisps', 'Crisps', 2, { hunger: 12, thirst: -5 }]] }[k];
       if (k === 'booze') { if (L2Bottle.path() === 'sober') return say([{ who: 'narr', text: '*The booze aisle. You walk past it. It\'s getting easier. A bit.*' }]); return L2Bottle.offer('kwikmart', 'Your brand, on the bottom shelf, where it always is. Twelve dollars.', 12); }
       if (k === 'till') {
-        if (L2Money.owns('torch')) { const b = await choose('"Anything else?" A rack of batteries by the till.', [['yes', '🔋 Batteries for the torch ($18)'], ['no', 'No, thanks']]); if (b === 'yes' && L2Money.pay(18)) { L2Money.state.battery = 100; toast('🔋 Fresh batteries.'); } return; }
-        return say([{ name: 'The cashier', who: 'x', text: RNG.pick(['Quiet night. Every night\'s a quiet night.', 'Rain\'s not stopping. Radio says all week.', 'You need a bag?']) }]);
+        const b = await choose('Omar turns the cricket down a notch. "Anything else?"', [...(L2Money.owns('torch') ? [['bat', '🔋 Batteries for the torch ($18)']] : []), ['gum', '🍬 Mints ($1)'], ['talk', '💬 Talk to Omar'], ['no', 'No, thanks']]);
+        if (b === 'bat' && L2Money.pay(18)) { L2Money.state.battery = 100; toast('🔋 Fresh batteries.'); }
+        if (b === 'gum' && L2Money.pay(1)) { L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 2); toast('🍬 Mints. Something to do with your mouth that isn\'t a drink.'); }
+        if (b === 'talk') return L2People.talk('omar');
+        return;
       }
       const c = await choose(`${fmt(S().cash)} in your wallet.`, [...W.map(([key, l, p]) => [key, `${l} (${fmt(p)})`]), ['no', 'Nothing']]);
       const it = W.find(m => m[0] === c); if (!it) return;
@@ -375,9 +404,8 @@ const L2 = (() => {
         clue('delia'); hud(); return;
       }
       if (!L2Bottle.path() && !L2Bottle.state.refused.delia) { await say([{ who: 'delia', text: 'The usual? Neat, like you used to. On the house, hon. Some things I remember.' }]); await L2Bottle.offer('delia', 'Delia\'s already poured it. It\'s right there.'); return; }
-      const c = await choose('Delia wipes the same glass for the third time.', [['drink', `Whisky, neat (${fmt(14)})`], ['water', 'A glass of water'], ['food', '🍔 Something to eat, or a coffee'], ['talk', '💬 Talk freely'], ['bye', 'Leave her be']]);
+      const c = await choose('Delia wipes the same glass for the third time.', [['food', '🍺 Order something (drinks, food)'], ['water', 'A glass of water'], ['talk', '💬 Talk freely'], ['bye', 'Leave her be']]);
       if (c === 'food') return A.barFood();
-      if (c === 'drink') { await say([{ who: 'delia', text: RNG.pick(['Drink slow, hon.', 'Neat, like you used to.', '...You sure? All right. Your call.']) }]); await L2Bottle.drink('delia', 14); }
       if (c === 'water') await A.water();
       if (c === 'talk') chat('delia');
     },
@@ -828,7 +856,7 @@ const L2 = (() => {
     if (S().clues.rabbit || has('okafor')) opts.splice(1, 0, ['phone', '💬 Phone someone to talk']);
     if (R3.area === 'city') opts.splice(1, 0, ['taxi', '🚕 Hail a cab']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
-    opts.push(['title', 'Title screen']);
+    opts.push(['restart', '↺ Start Level 2 again'], ['title', 'Title screen']);
     const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }
     if (c === 'gfx') { App.state.settings.gfx = App.state.settings.gfx === 'low' ? 'high' : 'low'; App.save(); const P = R3.player; await R3.go(R3.area, L2World[R3.area], [P.x, P.z, P.yaw]); toast(App.state.settings.gfx === 'low' ? 'Graphics: low. Simpler lighting and lighter rain, so it runs faster.' : 'Graphics: high. Full lighting and rain.'); }
@@ -837,6 +865,7 @@ const L2 = (() => {
     if (c === 'phone') { const who = await choose('Who do you call?', [...(has('okafor') ? [['okafor', 'Dr. Okafor']] : []), ...(S().clues.rabbit ? [['mori', 'Detective Mori']] : []), ['back', 'Nobody']]); if (who !== 'back') chat(who); }
     if (c === 'sleep') await feverDream();
     if (c === 'roof') await replay();
+    if (c === 'restart') { const ok = await choose('Start Level 2 again from waking up in the clinic? Everything you\'ve found tonight is forgotten; the dream and the endings you\'ve seen are kept.', [['no', 'Not now'], ['yes', '↺ Start again']]); if (ok === 'yes') restart(); }
     if (c === 'title') Router.go('title');
   }
 
@@ -846,5 +875,5 @@ const L2 = (() => {
     if (c) Router.go('reality');
   }
 
-  return { clue, go: goArea, ui: { say, choose, panel }, death, retry, screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
+  return { clue, go: goArea, restart, VERSION, ui: { say, choose, panel }, death, retry, screen, unmount, act, has, set, offerWake, wakeUp, dreamChoice, feverDream, replay, hud, toast, objective, ENDINGS, get state() { return S(); }, PEOPLE, CLUES, _A: A };
 })();

@@ -221,10 +221,10 @@ body.l2-sweats .l2-vignette { animation: l2sweat 5s ease-in-out infinite; }
 @keyframes l2sweat { 50% { background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.75) 100%); } }
 /* (a tinted layer over the view rather than a filter on the 3D canvas, which would cost every frame) */
 .l2-sick { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 2s; mix-blend-mode: multiply; }
-body.l2-nausea .l2-sick { background: radial-gradient(ellipse at center, rgba(190,210,120,.15), rgba(90,120,40,.45)); animation: l2sick 7s ease-in-out infinite; }
+body.l2-nausea .l2-sick { background: radial-gradient(ellipse at center, rgba(190,210,120,.08), rgba(90,120,40,.28)); animation: l2sick 7s ease-in-out infinite; }
 @keyframes l2sick { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 body.l2-drunk .l2-sick { background: radial-gradient(ellipse at center, rgba(255,200,120,.12), rgba(120,60,10,.4)); opacity: .9; animation: none; }
-body.l2-shakes .l2-card, body.l2-shakes .l2-sub p { animation: l2tremor .12s steps(2) infinite; }
+body.l2-shakes .l2-card { animation: l2tremor .16s steps(2) infinite; }
 @keyframes l2tremor { 0% { transform: translate(.6px, -.4px); } 50% { transform: translate(-.7px, .5px); } 100% { transform: translate(.3px, .6px); } }
 body.l2-drunk .l2-card { text-shadow: 6px 2px 0 rgba(0,0,0,.25); }
 @media (max-width: 560px) { .l2-crave { font-size: .68rem; padding: .35rem .5rem; } }

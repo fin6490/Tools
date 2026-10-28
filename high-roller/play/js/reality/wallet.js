@@ -13,6 +13,7 @@
    - Losing hurts more awake: walk away from a table down hard and the craving comes up like a wave.
      Broke? Rosie needs someone to wash up, and the cage will advance $5,000 against your cheque. */
 const L2Money = (() => {
+  const cnt = k => App.counter(k) - ((L2.state.base || {})[k] || 0); // counted since this run of Level 2 began
   const S = () => { const s = L2.state; if (!s.money) s.money = { kit: {}, battery: 0, promos: {}, washed: 0 }; return s.money; };
   const cash = () => L2.state.cash;
   const owns = k => !!S().kit[k];
@@ -134,11 +135,11 @@ const L2Money = (() => {
 
   /* ---------- Meridian Rewards: tonight's promotions ---------- */
   const PROMOS = [
-    { id: 'six', name: 'Spin to Win', desc: 'Land the Joker or the Meridian logo on the Big Six wheel', prize: 1500, done: () => App.counter('l2_bigsix_top') > 0 },
-    { id: 'gold', name: 'Golden Tide', desc: 'Push a gold token off a coin pusher', prize: 500, done: () => App.counter('l2_gold') > 0 },
-    { id: 'triple', name: 'Three of a Kind', desc: 'Be at the Sic Bo table, with a bet down, when the dice roll a triple', prize: 2500, done: () => App.counter('l2_triple') > 0 },
-    { id: 'walk', name: 'Walk Away a Winner', desc: 'Leave a table or the slots with more than you sat down with, three times', prize: 1000, done: () => App.counter('l2_walkup') >= 3, n: () => `${Math.min(3, App.counter('l2_walkup'))} of 3` },
-    { id: 'big', name: 'High Roller', desc: 'Win $5,000 or more in one sitting at a table or the slots', prize: 2000, done: () => App.counter('l2_bigwin') > 0 },
+    { id: 'six', name: 'Spin to Win', desc: 'Land the Joker or the Meridian logo on the Big Six wheel', prize: 1500, done: () => cnt('l2_bigsix_top') > 0 },
+    { id: 'gold', name: 'Golden Tide', desc: 'Push a gold token off a coin pusher', prize: 500, done: () => cnt('l2_gold') > 0 },
+    { id: 'triple', name: 'Three of a Kind', desc: 'Be at the Sic Bo table, with a bet down, when the dice roll a triple', prize: 2500, done: () => cnt('l2_triple') > 0 },
+    { id: 'walk', name: 'Walk Away a Winner', desc: 'Leave a table or the slots with more than you sat down with, three times', prize: 1000, done: () => cnt('l2_walkup') >= 3, n: () => `${Math.min(3, cnt('l2_walkup'))} of 3` },
+    { id: 'big', name: 'High Roller', desc: 'Win $5,000 or more in one sitting at a table or the slots', prize: 2000, done: () => cnt('l2_bigwin') > 0 },
   ];
   const ready = () => PROMOS.filter(p => p.done() && !S().promos[p.id]);
   let told = {};

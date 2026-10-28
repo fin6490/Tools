@@ -135,7 +135,7 @@ const Music = (() => {
   // which band is playing where you are
   function where() {
     const st = App.state, scr = Router.screen; if (!st) return '';
-    if (scr === 'reality') return R3.area === 'spur' ? 'spur' : R3.area && R3.area !== 'eye' ? 'reality' : '';
+    if (scr === 'reality') return R3.area === 'spur' ? 'spur' : R3.area === 'lowtide' && st.l2 && st.l2.jukebox && STYLES[st.l2.jukebox] ? st.l2.jukebox : R3.area && R3.area !== 'eye' ? 'reality' : '';
     if (App.inReality() && (scr === 'table' || scr === 'slots')) return '';
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';
