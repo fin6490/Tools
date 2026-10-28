@@ -63,11 +63,11 @@ const R3 = (() => {
     },
     // a thin wall along the north or west edge of a room, drawn with its face towards you
     wall(x, y, len, side, o = {}) { const t = { kind: 'wall', x, y, len, side, h: o.height || 2.8, style: o.style || 'plaster', o }; M.things.push(t); return t; },
-    prop(kind, x, y, o = {}) { const t = { kind, x, y, o, foot: o.solid === false ? null : (o.foot || null) }; M.things.push(t); if (o.solid !== false && !o.foot && ISOART.solidProp(kind)) t.foot = ISOART.foot(kind, x, y, o); return t; },
+    prop(kind, x, y, o = {}) { const t = { kind, x, y, o, foot: o.solid === false ? null : (o.foot || null) }; M.things.push(t); if (ISOART.solidProp(kind)) { const f = ISOART.foot(kind, x, y, o); t.box = f; if (o.solid !== false && !o.foot) t.foot = f; } return t; },
     person(o) { const t = { kind: 'person', x: o.x, y: o.y, o, face: o.face != null ? o.face : 1, phase: Math.random() * 9 }; t.foot = [o.x - .25, o.y - .25, o.x + .25, o.y + .25]; M.things.push(t); return t; },
     light(x, y, o = {}) { const l = { x, y, z: o.z != null ? o.z : 2.5, r: o.r || 5, color: o.color || '#ffcf8a', i: o.i != null ? o.i : 1, flicker: o.flicker || 0, base: o.i != null ? o.i : 1 }; M.lights.push(l); return l; },
     use(x, y, label, fn, o = {}) { const u = { x, y, label, fn, r: o.r || 1.3, when: o.when }; uses.push(u); return u; },
-    sign(x, y, text, o = {}) { return api.add({ kind: 'sign', x, y, o: { text, ...o } }); },
+    sign(x, y, text, o = {}) { if (o.glow !== false) api.light(x + .5, y + .6, { r: Math.min(4, 1.5 + text.length * .12), color: o.color || '#ff3b6b', i: .55, z: o.z || 2.6 }); return api.add({ kind: 'sign', x, y, o: { text, ...o } }); },
   };
 
   /* ---------- drawing ---------- */
@@ -91,22 +91,42 @@ const R3 = (() => {
     }
     for (const d of M.decals) { const [sx, sy] = toScreen(d.x, d.y); if (sx > -200 && sx < W + 200 && sy > -200 && sy < H + 200) { ctx.save(); ctx.translate(sx, sy); ctx.scale(zoom, zoom); d.draw(ctx, t); ctx.restore(); } }
   }
-  // everything that stands up, back to front
+  // everything that stands up, back to front. Buildings and furniture are boxes on the floor; people
+  // are points. Boxes are sorted by depth; each person is then slotted in after every nearby box
+  // they're in front of and before every one they're behind, so you stand behind a bar, not on it.
   function drawStanding(t) {
-    const list = [];
+    const boxes = [], points = [];
     const [px, py] = toScreen(P.x, P.y, 0);
-    for (const c of M.cubes.values()) { const [sx, sy] = toScreen(c.x + .5, c.y + .5); if (sx < -TW * 2 * zoom || sx > W + TW * 2 * zoom || sy < -40 * zoom || sy > H + (c.h * V + TH * 2) * zoom) continue; list.push({ d: c.x + c.y + 1.5, c }); }
-    for (const th of M.things) { const d = th.kind === 'wall' ? (th.side === 'n' ? th.x + th.y - .2 : th.x + th.y - .2) : th.kind === 'person' || th.kind === 'demon' ? th.x + th.y : (th.o && th.o.depth != null ? th.o.depth : th.x + th.y + .5); list.push({ d, th }); }
-    list.push({ d: P.x + P.y, me: true });
-    for (const it of list) if (it.th && it.th.top && it.th.top()) it.d += 1e4; // something that shows through walls (the demon, hunting)
-    list.sort((a, b) => a.d - b.d);
+    for (const c of M.cubes.values()) { const [sx, sy] = toScreen(c.x + .5, c.y + .5); if (sx < -TW * 2 * zoom || sx > W + TW * 2 * zoom || sy < -40 * zoom || sy > H + (c.h * V + TH * 2) * zoom) continue; boxes.push({ d: c.x + c.y + 1.5, c, b: [c.x, c.y, c.x + 1, c.y + 1] }); }
+    for (const th of M.things) {
+      if (th.hidden) continue;
+      if (th.kind === 'person' || th.kind === 'demon') { points.push({ d: th.x + th.y, th, x: th.x, y: th.y }); continue; }
+      const d = th.kind === 'wall' ? th.x + th.y - .2 : (th.o && th.o.depth != null ? th.o.depth : th.box ? th.box[2] + th.box[3] - .5 : th.x + th.y + .5);
+      boxes.push({ d, th, b: th.kind === 'wall' ? null : th.box || th.foot });
+    }
+    points.push({ d: P.x + P.y, me: true, x: P.x, y: P.y });
+    boxes.sort((a, b) => a.d - b.d);
+    const list = boxes.slice();
+    points.sort((a, b) => a.d - b.d);
+    for (const p of points) {
+      if (p.th && p.th.top && p.th.top()) { list.push(p); continue; } // something that shows through walls
+      let lo = 0, hi = list.length, at = list.findIndex(it => it.d > p.d); if (at < 0) at = list.length;
+      for (let i = 0; i < list.length; i++) {
+        const b = list[i].b; if (!b || p.x < b[0] - 3 || p.x > b[2] + 3 || p.y < b[1] - 3 || p.y > b[3] + 3) continue;
+        const front = p.x >= b[2] - .05 || p.y >= b[3] - .05, behind = p.x <= b[0] + .05 || p.y <= b[1] + .05;
+        if (front && !(behind && (b[0] - p.x) + (b[1] - p.y) > (p.x - b[2]) + (p.y - b[3]))) lo = Math.max(lo, i + 1);
+        else if (behind) hi = Math.min(hi, i);
+      }
+      const idx = lo <= hi ? Math.max(lo, Math.min(hi, at)) : lo;
+      list.splice(idx, 0, p);
+    }
     for (const it of list) {
       if (it.me) { drawMe(t); continue; }
       ctx.save();
       if (it.c) {
         const c = it.c, [sx, sy] = toScreen(c.x, c.y);
         // see-through if it stands between you and the camera
-        if (it.d > P.x + P.y + .3 && Math.abs(sx - px) < TW * .9 * zoom && py - 30 * zoom < sy + TH * zoom && py > sy - c.h * V * zoom) ctx.globalAlpha = .3;
+        if (it.d > P.x + P.y + .3) { const ddx = Math.abs(sx - px) / (TW * 2.4 * zoom); if (ddx < 1 && py - 40 * zoom < sy + TH * zoom && py + 20 * zoom > sy - c.h * V * zoom) ctx.globalAlpha = .18 + .5 * ddx * ddx; } // a cutaway round you
         ISOART.cube(ctx, c, M, sx, sy, zoom, TW, TH, V, t);
       } else {
         const th = it.th, [sx, sy] = toScreen(th.x, th.y);
@@ -216,7 +236,7 @@ const R3 = (() => {
       const b = ax.createBuffer(1, Math.floor(ax.sampleRate * .1), ax.sampleRate), d = b.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
       const n = ax.createBufferSource(), f = ax.createBiquadFilter(), g = ax.createGain(), soft = M.info.soft;
-      f.type = 'lowpass'; f.frequency.value = (soft ? 500 : M.info.rain ? 2200 : 1300) * (.85 + Math.random() * .3); g.gain.value = (soft ? .04 : .07) * Math.min(1.4, speed / 2.2);
+      f.type = 'lowpass'; f.frequency.value = (soft ? 420 : M.info.rain ? 1500 : 900) * (.85 + Math.random() * .3); g.gain.value = (soft ? .012 : .022) * Math.min(1.3, speed / 2.2);
       n.buffer = b; n.connect(f); f.connect(g); g.connect(ax.destination); n.start();
     } catch (e) { }
   }
@@ -259,7 +279,7 @@ const R3 = (() => {
     if (!camTarget && spanX < W * 1.05) tx = iso(M.w / 2, M.h / 2)[0] * .75 + px * .25;
     if (!camTarget && spanY < H * .9) ty = iso(M.w / 2, M.h / 2, 1.4)[1] * .75 + py * .25;
     cam.x += (tx - cam.x) * Math.min(1, dt * 5); cam.y += (ty - cam.y) * Math.min(1, dt * 5);
-    let shx = 0, shy = 0; if (FX && FX.shake) { shx = (Math.random() - .5) * FX.shake * 900; shy = (Math.random() - .5) * FX.shake * 900; }
+    let shx = 0, shy = 0; if (FX && FX.shake) { const a = Math.min(4, FX.shake * 220); shx = (Math.sin(t * 31) + Math.sin(t * 17.3) * .6) * a * .6; shy = (Math.sin(t * 27.1) + Math.sin(t * 13.7) * .5) * a * .4; } // a fine tremor, not an earthquake
     ctx.setTransform(dpr, 0, 0, dpr, shx * dpr, shy * dpr);
     if (FX && FX.sway) { ctx.translate(W / 2, H / 2); ctx.rotate(Math.sin(t * .63) * FX.sway * 1.6); ctx.translate(-W / 2, -H / 2); }
     ctx.fillStyle = M.info.bg || '#05070c'; ctx.fillRect(-50, -50, W + 100, H + 100);
@@ -279,7 +299,7 @@ const R3 = (() => {
     el = { prompt: h('div.r3-prompt'), useBtn: h('button.r3-use', { 'aria-label': 'Use', onclick: () => activate() }, '✋'), runBtn: h('button.r3-run', { 'aria-label': 'Run', 'aria-pressed': 'false', onclick: e => { runLock = !runLock; e.currentTarget.classList.toggle('on', runLock); e.currentTarget.setAttribute('aria-pressed', runLock); if (runLock && FX && FX.noRun && typeof L2 !== 'undefined') L2.toast('⚡ Too exhausted to run. Eat something, or find a coffee.'); } }, '🏃'), joy: h('div.r3-joy', h('i')), hint: h('div.r3-hint', lowPower ? 'Tap where you want to go, or tap something to use it. Drag to steer; tap 🏃 to run.' : 'Click where you want to go, or click something to use it. WASD or arrows to walk, Shift to run, E to use.') };
     host.append(cv, el.prompt, el.useBtn, el.runBtn, el.joy, el.hint);
     setTimeout(() => el && el.hint.classList.add('fade'), 7000);
-    const resize = () => { dpr = Math.min(devicePixelRatio || 1, lowPower ? 2 : 2); W = host.clientWidth; H = host.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; dark.width = W; dark.height = H; zoom = Math.max(.75, Math.min(1.3, Math.min(W, H) / 470)); };
+    const resize = () => { dpr = Math.min(devicePixelRatio || 1, lowPower ? 2 : 2); W = host.clientWidth; H = host.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; dark.width = W; dark.height = H; zoom = Math.max(.9, Math.min(1.45, Math.min(W, H) / 360)); };
     el.resize = resize; window.addEventListener('resize', resize); resize();
     const KEYS = ['w', 'a', 's', 'd', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
     el.kd = e => { if (document.querySelector('.modal-bg, .l2-over')) return; const k = e.key.toLowerCase(); if (k === 'e' || k === ' ' || k === 'enter') { e.preventDefault(); activate(); return; } if (KEYS.includes(k)) { e.preventDefault(); keys.add(k); } };

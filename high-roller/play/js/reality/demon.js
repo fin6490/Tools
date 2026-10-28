@@ -1,9 +1,11 @@
-/* The Barman, what the bottle sends after you in Level 2. You never get a good look at it. It's a
-   shape the size of a person, black as a hole in the air, with a red glow round its edges like
-   heat off a stove. It hides: you catch it at the corner of your eye, standing very still at the
-   far end of a room, and when you turn to look there's nothing there. When it hunts you it comes
-   flat through the air, head first, arms out, like something swimming, straight through walls.
-   It doesn't like the light: under a streetlamp or a lit window it slows to a crawl.
+/* The Barman, what the bottle sends after you in Level 2. You never get a good look at it. It's too
+   tall and starved thin, hunched forward on legs that bend wrong, arms hanging past its knees, in a
+   barman's white jacket gone grey and stained, a towel over one arm. Where its face should be there's
+   only black, two red points, and a split that might be a grin. Smoke comes off it, and a low red
+   heat. It hides: you catch it standing very still at the far end of a room, and when you look again
+   there's nothing there. When it hunts you it does it for a while: it steps out from round a corner,
+   comes at you in jerky stop-motion bursts, goes up in smoke, and steps out again somewhere closer.
+   It doesn't like the light.
    When it catches you, you see its face for the first time. It's yours: your skin, your hair, your
    glasses, a few years and a lot of bottles from now. Grey, gaunt, eyes sunk into the skull,
    lips cracked. Dead.
@@ -15,43 +17,61 @@ const L2Demon = (() => {
 
   /* ---------- the shape ---------- */
   // a thing in the world (engine.js draws it in depth order with everything else)
+  // modes: 'stand' (watching from the dark), 'appear', 'stalk' (coming for you in jerky bursts),
+  // 'vanish' (gone into smoke). It draws itself; engine.js sorts it in among everything else.
   function make() {
-    const d = { kind: 'demon', x: 0, y: 0, mode: 'stand', fade: 0, want: 1, pace: 1, trail: [], phase: Math.random() * 9 };
-    d.inLight = () => (R3.map ? R3.map.lights : []).some(l => Math.hypot(l.x - d.x, l.y - d.y) < l.r * .55);
+    const d = { kind: 'demon', x: 0, y: 0, mode: 'stand', fade: 0, want: 1, pace: 1, phase: Math.random() * 9, smoke: [], dir: 1, pose: 0 };
+    d.inLight = () => (R3.map ? R3.map.lights : []).some(l => Math.hypot(l.x - d.x, l.y - d.y) < l.r * .5 && (l.i || 1) > .4);
     d.update = (t, dt, dist) => {
       d.phase += dt;
       const lit = d.inLight();
-      d.want = d.mode === 'fly' ? (lit && dist > 2.5 ? .45 : 1) : (dist < 5 || lit ? 0 : 1);
-      d.fade += (d.want - d.fade) * Math.min(1, dt * (d.want < d.fade ? 5 : 2));
-      d.pace = d.mode === 'fly' ? (lit && dist > 2.5 ? .45 : 1.2) : 1;
-      if (d.mode === 'fly') { d.trailT = (d.trailT || 0) - dt; if (d.trailT <= 0) { d.trailT = .1; d.trail.push({ x: d.x, y: d.y, life: 1 }); if (d.trail.length > 10) d.trail.shift(); } }
-      for (const p of d.trail) p.life -= dt * 1.5;
+      if (d.mode === 'stand') d.want = dist < 5 || lit ? 0 : 1;
+      else if (d.mode === 'vanish') d.want = 0;
+      else d.want = 1;
+      d.fade += (d.want - d.fade) * Math.min(1, dt * (d.want < d.fade ? (d.mode === 'vanish' ? 3 : 5) : 2.5));
+      d.pose = Math.floor(d.phase / .16) % 4; // stop-motion: it doesn't move smoothly, it jumps between poses
+      if (d.want < d.fade || d.mode === 'appear' || Math.random() < dt * 4) d.smoke.push({ x: (Math.random() - .5) * 26, y: -Math.random() * 20, r: 6 + Math.random() * 10, life: 1, vy: -10 - Math.random() * 20 });
+      for (const p of d.smoke) { p.life -= dt * 1.2; p.y += p.vy * dt; p.r += dt * 8; } d.smoke = d.smoke.filter(p => p.life > 0).slice(-30);
     };
     d.draw = (c, sx, sy, z, t) => {
-      if (d.fade < .02) return;
-      c.save();
-      for (const p of d.trail) { if (p.life <= 0) continue; const [tx, ty] = R3.toScreen(p.x, p.y, 1.1); const g = c.createRadialGradient(tx, ty, 0, tx, ty, 26 * z); g.addColorStop(0, `rgba(120,0,0,${.35 * p.life * d.fade})`); g.addColorStop(1, 'rgba(60,0,0,0)'); c.fillStyle = g; c.fillRect(tx - 26 * z, ty - 26 * z, 52 * z, 52 * z); }
-      const fly = d.mode === 'fly', hover = fly ? (40 + Math.sin(d.phase * 2.1) * 5) * z : 0, cy = sy - hover - 36 * z;
-      // the red glow round it, like heat off a stove
-      const g = c.createRadialGradient(sx, cy, 4 * z, sx, cy, 60 * z); g.addColorStop(0, `rgba(255,40,20,${.55 * d.fade})`); g.addColorStop(.5, `rgba(150,0,0,${.25 * d.fade})`); g.addColorStop(1, 'rgba(60,0,0,0)');
-      c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx - 60 * z, cy - 60 * z, 120 * z, 120 * z); c.globalCompositeOperation = 'source-over';
-      if (!fly) { c.fillStyle = `rgba(0,0,0,${.4 * d.fade})`; c.beginPath(); c.ellipse(sx, sy, 14 * z, 6 * z, 0, 0, 7); c.fill(); }
-      // the shape: black as a hole in the air, edged in red
-      c.translate(sx, sy - hover); c.scale(z * 1.3, z * 1.3);
-      if (fly) { const dir = d.vx - d.vy >= 0 ? 1 : -1; c.scale(dir, 1); c.translate(0, -34); c.rotate(Math.PI / 2 - .15 + Math.sin(d.phase * 1.3) * .08); c.translate(0, 34); }
+      if (d.fade < .02 && !d.smoke.length) return;
+      c.save(); c.translate(sx, sy); c.scale(z * 1.45, z * 1.45);
+      // smoke at its feet, and a low red heat
+      const g = c.createRadialGradient(0, -6, 2, 0, -6, 40); g.addColorStop(0, `rgba(200,20,10,${.45 * d.fade})`); g.addColorStop(1, 'rgba(60,0,0,0)');
+      c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(-40, -46, 80, 80); c.globalCompositeOperation = 'source-over';
+      for (const p of d.smoke) { c.fillStyle = `rgba(10,4,6,${.5 * p.life * Math.max(.3, d.fade)})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); }
       c.globalAlpha = d.fade;
-      const body = new Path2D();
-      body.ellipse(0, -66, 8.5, 10, 0, 0, 7); // head
-      body.moveTo(-12, -56); body.quadraticCurveTo(0, -60, 12, -56); body.lineTo(9, -26); body.lineTo(-9, -26); body.closePath(); // body
-      const armUp = fly ? -1 : 0, sway = Math.sin(d.phase * 3) * 2;
-      for (const k of [-1, 1]) { body.moveTo(k * 12, -55); body.lineTo(k * (fly ? 9 : 16), fly ? -95 + sway * k : -22 + sway); body.lineTo(k * (fly ? 5 : 12), fly ? -95 + sway * k : -22 + sway); body.lineTo(k * 8, -52); body.closePath(); } // arms: hanging, or out ahead of it
-      for (const k of [-1, 1]) { body.moveTo(k * 3, -27); body.lineTo(k * (fly ? 4 + Math.sin(d.phase * 5 + k) * 3 : 6), fly ? 4 : 0); body.lineTo(k * (fly ? 9 + Math.sin(d.phase * 5 + k) * 3 : 10), fly ? 4 : 0); body.lineTo(k * 8, -27); body.closePath(); }
-      c.shadowColor = 'rgba(255,30,10,.9)'; c.shadowBlur = 14; c.fillStyle = '#030000'; c.fill(body);
-      c.shadowBlur = 0; c.strokeStyle = 'rgba(255,40,20,.55)'; c.lineWidth = 1.4; c.stroke(body);
-      if (!fly) { c.fillStyle = 'rgba(255,60,40,.9)'; c.fillRect(-4, -68, 2, 1.4); c.fillRect(2, -68, 2, 1.4); } // two points of light where eyes would be
-      c.restore();
+      // flickers like a bad signal when it's coming or going
+      if ((d.mode === 'vanish' || d.mode === 'appear') && Math.random() < .3) { c.restore(); return; }
+      c.scale(d.dir, 1);
+      const stalk = d.mode === 'stalk', P = d.pose, lean = stalk ? .22 : .12, step = stalk ? [-5, 3, 5, -3][P] : 0, twitch = [0, 1.5, -1, .5][P];
+      c.fillStyle = 'rgba(0,0,0,.5)'; c.beginPath(); c.ellipse(0, 0, 13, 5, 0, 0, 7); c.fill();
+      // legs: too long, bent the wrong way
+      const leg = (k) => { c.beginPath(); c.moveTo(k * 4, -40); c.lineTo(k * 6 + step * k, -20); c.lineTo(k * 3 + step * k * 1.4, 0); c.lineWidth = 5; c.strokeStyle = '#050304'; c.lineCap = 'round'; c.stroke(); };
+      leg(-1); leg(1);
+      c.save(); c.translate(0, -40); c.rotate(lean);
+      // the jacket: a barman's white, gone grey and stained, hanging off a body like a coat hanger
+      const jacket = new Path2D(); jacket.moveTo(-11, -44); jacket.quadraticCurveTo(0, -50, 12, -44); jacket.lineTo(10, 2); jacket.lineTo(-10, 2); jacket.closePath();
+      c.fillStyle = '#4e493d'; c.fill(jacket); c.fillStyle = 'rgba(60,10,10,.55)'; c.beginPath(); c.ellipse(4, -18, 5, 9, .3, 0, 7); c.ellipse(-5, -6, 4, 6, 0, 0, 7); c.fill();
+      c.fillStyle = '#0a0606'; c.beginPath(); c.moveTo(-3, -46); c.lineTo(3, -46); c.lineTo(1, 0); c.lineTo(-1, 0); c.fill(); // black under the jacket
+      c.strokeStyle = 'rgba(170,20,10,.55)'; c.lineWidth = 1.4; c.shadowColor = '#ff1a0a'; c.shadowBlur = 6; c.stroke(jacket); c.shadowBlur = 0;
+      // arms: down past its knees, fingers like wet twigs; reaching when it comes for you
+      for (const k of [-1, 1]) {
+        const reach = stalk && k === 1, ax = reach ? 30 : k * 13 + twitch, ay = reach ? -24 + twitch * 2 : 34;
+        c.beginPath(); c.moveTo(k * 11, -42); c.quadraticCurveTo(k * 16, -10, ax, ay); c.lineWidth = 4.5; c.strokeStyle = k === -1 ? '#36322a' : '#45403a'; c.stroke();
+        c.lineWidth = 1.4; c.strokeStyle = '#140c0c'; for (let f = -1; f <= 1; f++) { c.beginPath(); c.moveTo(ax, ay); c.lineTo(ax + (reach ? 9 : f * 3), ay + (reach ? f * 4 : 9)); c.stroke(); }
+      }
+      if (!stalk) { c.fillStyle = '#6e6858'; c.fillRect(-15, -26, 5, 12); } // a bar towel over one arm
+      // the head: hanging forward on a long neck, no face at all, just two red points and a long split
+      c.translate(0, -48); c.rotate(.25 + twitch * .04);
+      c.fillStyle = '#060304'; c.beginPath(); c.ellipse(3, -8, 8, 10.5, .2, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(120,0,0,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(3, -8, 8, 10.5, .2, 0, 7); c.stroke();
+      const eye = .7 + Math.sin(t * 9) * .3; c.fillStyle = `rgba(255,${40 * eye | 0},20,${eye})`; c.shadowColor = '#ff2010'; c.shadowBlur = 8; c.beginPath(); c.arc(5, -10, 1.3, 0, 7); c.arc(9.5, -9.5, 1.1, 0, 7); c.fill(); c.shadowBlur = 0;
+      c.strokeStyle = `rgba(160,10,10,${.6 * d.fade})`; c.lineWidth = 1; c.beginPath(); c.moveTo(1, -3); c.quadraticCurveTo(6, 1, 11, -4); c.stroke(); // a grin that goes too far
+      c.fillStyle = 'rgba(10,4,6,.8)'; for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(1 + i * 4, 3 + ((t * 20 + i * 7) % 14), .8, 1.8, 0, 0, 7); c.fill(); } // it drips
+      c.restore(); c.restore();
     };
-    d.vx = d.vy = 0; d.top = () => d.mode === 'fly';
+    d.vx = d.vy = 0; d.top = () => false;
     R3.api.add(d); return d;
   }
   function remove(d) { const M = R3.map; if (M) { const i = M.things.indexOf(d); if (i >= 0) M.things.splice(i, 1); } }

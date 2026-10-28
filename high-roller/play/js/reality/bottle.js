@@ -25,8 +25,8 @@ const L2Bottle = (() => {
   const sober = () => st().path === 'sober';
   const stepsDone = () => { const d = st(); return ['admit', 'flask', 'sponsor'].filter(k => d.steps[k]).length; };
   const refusals = () => Object.keys(st().refused).length;
-  // craving per second: severe ~3½ minutes to the shakes, mild ~10; every recovery step eases it
-  const rate = () => { const d = st(); return [0, 100 / 600, 100 / 360, 100 / 210][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul(); };
+  // craving per second: severe ~6½ minutes to the shakes, mild ~14; every recovery step eases it
+  const rate = () => { const d = st(); return [0, 100 / 840, 100 / 560, 100 / 400][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul(); };
 
   /* ---------- food, water and sleep: the same bars as in the dream, carried over ---------- */
   // Level 2 uses the dream's own hunger, thirst and energy, so you wake up as hungry as you went to
@@ -79,7 +79,7 @@ const L2Bottle = (() => {
     const d = st(), c = sober() ? 0 : d.crave, b = d.buzz, root = document.querySelector('.l2');
     const n = needs(), weak = n.hunger <= 0 || n.thirst <= 0 || n.energy <= 0;
     const body = (n.hunger < 20 ? .88 : 1) * (n.energy < 20 ? .85 : 1) * (weak ? .85 : 1);
-    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .006 + (c - 80) / 20 * .014 : 0, sway: (c >= 60 ? .01 + (c - 60) / 40 * .012 : 0) + b / 100 * .03 + (n.hunger <= 0 ? .012 : 0), slow: (c >= 80 ? .72 : b > 50 ? .85 : 1) * body, noRun: n.energy <= 0, run: L2Money.runBoost() });
+    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .004 + (c - 80) / 20 * .008 : 0, sway: (c >= 60 ? .005 + (c - 60) / 40 * .007 : 0) + b / 100 * .02 + (n.hunger <= 0 ? .008 : 0), slow: (c >= 80 ? .88 : b > 50 ? .9 : 1) * body, noRun: n.energy <= 0, run: L2Money.runBoost() });
     document.body.classList.toggle('l2-weak', weak && (Router.screen === 'reality'));
     const cls = { 'l2-sweats': c >= 35, 'l2-nausea': c >= 60, 'l2-shakes': c >= 80, 'l2-drunk': b > 30 };
     const on = Router.screen === 'reality' || App.inReality(); // the shakes follow you to the tables
@@ -89,12 +89,13 @@ const L2Bottle = (() => {
   }
 
   /* ---------- the Barman: what comes for you if you don't stop ---------- */
-  // A hallucination: a black shape with a red glow, the size of a person. While the craving is bad you
-  // catch it standing still in the dark spots of a place, and it's gone when you get near or the
-  // light finds it. When the craving has been screaming for a while (or every few minutes once you've
-  // given in) it hunts you, flat through the air and straight through walls. Light slows it: get
-  // under a streetlamp, or carry a torch (wallet.js). Outrun it for half a minute, get out of the place, or call Mori. If it
-  // catches you, you see its face; the third time, you don't get up.
+  // A hallucination: a starved figure in a barman's jacket with a black hole for a face. While the
+  // craving is bad you catch it standing still in the dark spots of a place, and it's gone when you
+  // get near or the light finds it. When the craving has been screaming for a while (or every few
+  // minutes once you've given in) it hunts you for most of a minute: out from round a corner, at you
+  // in bursts, gone, back again closer. Light drives it off and a torch slows it (wallet.js). Keep
+  // moving, get out of the place, take a cab, or call Mori. If it catches you, you see its face; the
+  // third time, you don't get up.
   const NO_HUNT = ['cemetery', 'spur', 'clinic'];
   let stalkCool = 40, stalking = null;
   function demons(d) {
@@ -141,26 +142,51 @@ const L2Bottle = (() => {
     });
     if (first) L2.toast('🍸 Over there, in the dark: someone standing very still, black against a red glow. You walk towards it. Nobody.');
   }
+  // a hunt lasts a while: it steps out from somewhere you can't see (round a corner, out of the
+  // dark), comes at you in bursts, goes up in smoke, and steps out again closer. Light drives it off;
+  // a torch slows it. Last it out and it's gone, for now.
+  function hiddenSpot(near, far) {
+    const P = R3.player, M = R3.map; if (!M) return null;
+    const seen = (x, y) => { const n = Math.ceil(Math.hypot(x - P.x, y - P.y) * 3); for (let i = 1; i < n; i++) { const u = i / n; if (M.blocked(Math.floor(P.x + (x - P.x) * u), Math.floor(P.y + (y - P.y) * u))) return false; } return true; };
+    let fallback = null;
+    for (let i = 0; i < 80; i++) {
+      const a = Math.random() * Math.PI * 2, r = near + Math.random() * (far - near), x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r;
+      if (!M.inside(Math.floor(x), Math.floor(y)) || M.blocked(Math.floor(x), Math.floor(y)) || !R3.free(x, y)) continue;
+      if (M.lights.some(l => Math.hypot(l.x - x, l.y - y) < l.r * .5 && (l.i || 1) > .4)) continue;
+      if (!seen(x, y)) return [x, y]; // round a corner
+      if (!fallback) fallback = [x, y];
+    }
+    return fallback || darkSpot(near, far + 2);
+  }
   function startHunt() {
     if (hunt || !R3.map) return;
     if (stalking) { L2Demon.remove(stalking.g); stalking = null; }
-    const P = R3.player, g = L2Demon.make(), d = st();
-    const at = darkSpot(9, 12) || [P.x - 10, P.y - 10]; g.x = at[0]; g.y = at[1]; g.mode = 'fly';
-    const H = hunt = { g, area: R3.area, t: 0, beat: 0 };
+    const g = L2Demon.make(), d = st(); g.mode = 'vanish'; g.fade = 0; g.x = -99; g.y = -99;
+    const H = hunt = { g, area: R3.area, t: 0, beat: 0, dur: 38 + Math.random() * 14, phase: 'hidden', timer: 1.2, shows: 0 };
     document.body.classList.add('l2-hunted'); App.count('l2_hunted');
-    L2.toast(d.hunts ? '🍸 It\'s back. Run. Find the light.' : `🍸 Something is coming for you through the air, through the walls. Light slows it. Run. (${R3.touch ? 'Tap 🏃, or drag far' : 'Hold Shift'}. Get out of here, or call Mori.)`);
+    L2.toast(d.hunts ? '🍸 It\'s back. Keep moving. Stay in the light.' : `🍸 Something is hunting you. It comes out of the dark, round corners. Keep moving and stay in the light. (${R3.touch ? 'Tap 🏃 to run' : 'Hold Shift to run'}. Leaving this place, a cab or calling Mori ends it.)`);
     d.hunts = (d.hunts || 0) + 1;
     R3.api.every((t, dt) => {
       if (hunt !== H || R3.busy) return;
-      H.t += dt;
+      H.t += dt; H.timer -= dt;
       const dx = R3.player.x - g.x, dy = R3.player.y - g.y, dist = Math.hypot(dx, dy) || .01;
       g.update(t, dt, dist);
-      const speed = (2.6 + Math.min(1, H.t * .04)) * g.pace * (L2Money.torchOn() ? .8 : 1); // faster than a walk, slower than a run (less with the shakes, or a torch in its face)
-      g.vx = dx / dist * speed; g.vy = dy / dist * speed; g.x += g.vx * dt; g.y += g.vy * dt;
-      L2Demon.tick(dt, Math.max(0, 1 - dist / 12));
-      H.beat -= dt; if (H.beat <= 0) { H.beat = .35 + Math.min(.7, dist / 12); thump(Math.max(.2, 1 - dist / 12)); }
-      if (dist < .7) caught();
-      else if (H.t > (L2Money.torchOn() ? 20 : 28)) endHunt('outran');
+      if (H.phase === 'hidden' && H.timer <= 0) {
+        const at = hiddenSpot(Math.max(3.2, 7 - H.shows * .7), Math.max(5, 9.5 - H.shows * .6));
+        if (at) { g.x = at[0]; g.y = at[1]; g.mode = 'appear'; g.fade = 0; H.phase = 'appear'; H.timer = .7; H.shows++; L2Demon.sting(); } else H.timer = .8;
+      } else if (H.phase === 'appear' && H.timer <= 0) { g.mode = 'stalk'; H.phase = 'stalk'; H.timer = 3.2 + Math.random() * 2; }
+      else if (H.phase === 'stalk') {
+        const lit = g.inLight(), torch = L2Money.torchOn() && dist < 5;
+        const burst = Math.sin(H.t * 5.5) > -.2 ? 1.5 : .25; // lurches, then stops dead
+        const speed = Math.min(2.15, 1.55 + H.shows * .07) * burst * (torch ? .65 : 1) * (lit ? .45 : 1);
+        g.vx = dx / dist * speed; g.vy = dy / dist * speed; g.x += g.vx * dt; g.y += g.vy * dt; g.dir = dx - dy >= 0 ? 1 : -1;
+        if (dist < .75) { caught(); return; }
+        if (H.timer <= 0 || (lit && dist > 2 && Math.random() < dt * 1.5)) { g.mode = 'vanish'; H.phase = 'vanish'; H.timer = .8; }
+      } else if (H.phase === 'vanish' && H.timer <= 0) { H.phase = 'hidden'; H.timer = 1 + Math.random() * 1.8; }
+      const near = H.phase === 'stalk' || H.phase === 'appear' ? Math.max(0, 1 - dist / 10) : .08;
+      L2Demon.tick(dt, near);
+      H.beat -= dt; if (H.beat <= 0) { H.beat = .3 + (1 - near) * .6; thump(Math.max(.15, near)); }
+      if (H.t > H.dur * (L2Money.torchOn() ? .75 : 1) && H.phase !== 'stalk' && H.phase !== 'appear') endHunt('outran');
     });
   }
   function endHunt(how) {
@@ -168,7 +194,7 @@ const L2Bottle = (() => {
     L2Demon.remove(H.g);
     document.body.classList.remove('l2-hunted');
     if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); }
-    if (how === 'outran') L2.toast('🍸 You look back. Nothing. Just a coat on a hook. Your heart doesn\'t believe it.');
+    if (how === 'outran') L2.toast('🍸 The smoke thins, and doesn\'t come back. It\'s gone. For now. Your heart doesn\'t believe it.');
     if (how === 'door') L2.toast('🍸 The door closes behind you. It doesn\'t follow. Not yet.');
     if (how === 'mori') L2.toast('🍸 Mori\'s voice in your ear, steady, and the red goes out of the dark like it was never there.');
   }

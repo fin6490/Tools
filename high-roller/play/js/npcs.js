@@ -345,10 +345,10 @@ const Quests = {
   state() { const st = App.state; if (!st.quests) st.quests = {}; return st.quests; },
   status(id) { return (this.state()[id] || {}).s || null; },
   offerFor(who) {
-    return Object.keys(QUESTS).find(id => QUESTS[id].giver === who && App.state.chapter >= QUESTS[id].chapter && !this.status(id) && (!QUESTS[id].after || this.status(QUESTS[id].after) === 'done') && (!QUESTS[id].rel || Rel.points(who) >= QUESTS[id].rel));
+    return Object.keys(QUESTS).find(id => QUESTS[id].giver === who && App.state.chapter >= (QUESTS[id].chapter || 0) && (!QUESTS[id].post || !!App.state.ending) && !this.status(id) && (!QUESTS[id].after || this.status(QUESTS[id].after) === 'done') && (!QUESTS[id].rel || Rel.points(who) >= QUESTS[id].rel));
   },
   // a personal job that friendship would unlock
-  lockedFor(who) { return Object.keys(QUESTS).find(id => QUESTS[id].giver === who && QUESTS[id].rel && !this.status(id) && App.state.chapter >= QUESTS[id].chapter && (!QUESTS[id].after || this.status(QUESTS[id].after) === 'done') && Rel.points(who) < QUESTS[id].rel); },
+  lockedFor(who) { return Object.keys(QUESTS).find(id => QUESTS[id].giver === who && QUESTS[id].rel && !this.status(id) && (!QUESTS[id].post || !!App.state.ending) && App.state.chapter >= (QUESTS[id].chapter || 0) && (!QUESTS[id].after || this.status(QUESTS[id].after) === 'done') && Rel.points(who) < QUESTS[id].rel); },
   event(type, d = {}) {
     for (const id in QUESTS) {
       const q = QUESTS[id];
@@ -364,7 +364,7 @@ const Quests = {
     }
   },
   activeFor(who) { return Object.keys(QUESTS).find(id => QUESTS[id].giver === who && this.status(id) === 'active'); },
-  accept(id) { this.state()[id] = { s: 'active', n: 0 }; App.news(`📝 Side job: ${QUESTS[id].title}`); App.save(); },
+  accept(id) { this.state()[id] = { s: 'active', n: 0 }; if (QUESTS[id].start) QUESTS[id].start(this.state()[id]); App.news(`📝 Side job: ${QUESTS[id].title}`); App.save(); },
   complete(id) {
     const q = QUESTS[id], st = App.state;
     this.state()[id] = { s: 'done' };
@@ -387,6 +387,8 @@ const Quests = {
   // checked when you talk to a giver
   handIn(who) {
     const id = this.activeFor(who);
+    // jobs about what you own or have done since you took them (after the story: afterstory.js)
+    if (id && QUESTS[id].check) { const q = QUESTS[id]; if (!q.check(this.state()[id])) return null; if (q.pay) App.state.bank -= q.pay; this.complete(id); return q.done || 'That\'s it. That\'s the job. Thank you.'; }
     if (id === 'pokerRoom' && App.has('backroom')) { App.state.flags.pokerRoom = App.state.day; this.complete(id); return 'New felt, a jukebox that plays something besides Patsy Cline... Sal would cry. The Back Room is OPEN. Tournaments every night, sugar: the door\'s behind the jukebox.'; }
     if (id === 'slots3' && App.has('meterReader')) { this.complete(id); return 'Gimme. *pops the back off, solders something, blows on it* There. Point it at any machine and it reads the trigger heat. Green means the spin is worth more than it costs. Don\'t let Kessler see it.'; }
     if (id === 'darts3' && App.has('salDarts')) { App.state.flags.goldenArrow = App.state.day; this.complete(id); return 'Ah... look at that. The grip\'s worn right where he held them. They\'re yours now, friend: they\'ll steady you. And that means you\'re ready. The Golden Arrow.'; }
