@@ -12,6 +12,7 @@
    - Sparky: lost property (find all seventeen fragments)
    - Dolores: everybody's here (become good friends with five people in town), then Sal's wake, for
      real this time (put $20,000 behind the bar)
+   - Sal: his last secret (salquest.js), the only job that opens a room you've never seen
    Jobs that count something from now on keep where the counter was when you took them (start),
    and jobs about what you own or know are checked when you talk to the giver (check). */
 (() => {
@@ -56,5 +57,14 @@
     dolWake: { giver: 'dolores', post: true, after: 'dolFriends', title: 'Sal\'s Wake (For Real)', desc: 'Put $20,000 behind the Spur\'s bar for the party, then talk to Dolores on the night.', reward: { cash: 0, swagger: 8 },
       offer: 'We never had a proper wake for Sal, on account of him not being dead. Turns out a party\'s a party. Put twenty thousand behind the bar and we\'ll do it right: the band, the whole town, the good bottles.',
       check: () => App.state.bank >= 20000, pay: 20000, done: '*She rings the old brass bell behind the bar* Ladies and gentlemen: to Sal, who never could stay dead, and to the kid who came looking. Everybody drinks! ...You can have a soda, sugar. Nobody\'s counting but me.' },
+    // Sal, back from the dead, has one last secret (salquest.js runs the steps)
+    salKey: { giver: 'sal', post: true, title: 'Sal\'s Last Secret', desc: 'Sal left you something in Room 7 at the Starlite. Darlene won\'t open it for anybody... except whoever brings her a slice of Mel\'s cherry pie, the way Sal did every Sunday.', reward: { cash: 0, swagger: 3 },
+      offer: 'Kid. Sit. *He lowers his voice.* When I was dead, I stayed in Room 7 at the Starlite for a month. I left something there for you, in case I stayed dead. Darlene won\'t open Seven for anybody. But she\'s got a weakness, and it\'s cherry, and it comes from Mel\'s.' },
+    salDials: { giver: 'sal', post: true, after: 'salKey', title: 'The Combination', desc: 'Behind the longhorns on the Spur\'s back wall: a lock with three dials. "The year I won it all. The room I hid in. The number I never stopped betting." The answers are around town.', reward: { cash: 0, swagger: 4 },
+      offer: 'You found the card. Good. No, I won\'t tell you the numbers, where\'s the fun in that? Everything you need is in this town. You know me better than you think, kid.' },
+    salClub: { giver: 'sal', post: true, after: 'salDials', title: 'The Seventeen Club', desc: 'Go down the stairs behind the longhorns, find Sal at the bottom, and let him show you round.', reward: { cash: 0, swagger: 5 },
+      offer: 'You opened it! Then what are you doing up here? Go on down. I\'ll put the coffee on.',
+      check: () => (World.where() || {}).map === 'r:club',
+      done: 'Welcome to the Seventeen Club, kid. Opened 1926, the year the town went dry. My granddad dealt faro at that table. Forty years I kept it to myself. Not even Dolores. *He spins the old safe\'s dial back to zero.* Seventeen, seventeen, seventeen. What\'s in there is yours.' },
   });
 })();

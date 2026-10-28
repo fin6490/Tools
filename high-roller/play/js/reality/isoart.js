@@ -161,7 +161,7 @@ const ISOART = (() => {
     ctx.strokeStyle = INK; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(a[0], a[1] - hpx); ctx.lineTo(b[0], b[1] - hpx); ctx.stroke();
     // things hung on it: windows, pictures, doors
     for (const it of w.o.hang || []) {
-      const [u0, u1, v0, v1] = [it.at / w.len, (it.at + it.w) / w.len, it.y || 1, (it.y || 1) + it.h];
+      const y0 = it.y ?? 1, [u0, u1, v0, v1] = [it.at / w.len, (it.at + it.w) / w.len, y0, y0 + it.h]; // y: 0 is the floor (doors), not 'unset'
       const q = [lerp(u0, v0), lerp(u1, v0), lerp(u1, v1), lerp(u0, v1)];
       ctx.beginPath(); ctx.moveTo(...q[0]); for (const p of q.slice(1)) ctx.lineTo(...p); ctx.closePath();
       if (it.kind === 'neon' || it.kind === 'dartboard' || it.kind === 'guitar' || it.kind === 'clock') ctx.fillStyle = 'rgba(0,0,0,0)'; else ctx.fillStyle = it.color || (it.kind === 'window' ? '#16243a' : it.kind === 'door' ? '#2a1a12' : it.kind === 'tv' ? '#0a0a0a' : it.kind === 'menu' ? '#1a1a1a' : it.kind === 'board' ? '#8a6a40' : '#3a3020'); ctx.fill();
@@ -173,6 +173,14 @@ const ISOART = (() => {
       if (it.kind === 'guitar') { const m = lerp((u0 + u1) / 2, v0 + .2); ctx.save(); ctx.translate(m[0], m[1]); ctx.fillStyle = it.body || '#a0522d'; ctx.beginPath(); ctx.ellipse(0, 0, 6 * z, 8 * z, 0, 0, 7); ctx.fill(); ctx.fillRect(-1.2 * z, -28 * z, 2.4 * z, 22 * z); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(0, -1 * z, 2 * z, 0, 7); ctx.fill(); ctx.restore(); }
       if (it.kind === 'poster') { ctx.save(); ctx.clip(); const m = lerp((u0 + u1) / 2, (v0 + v1) / 2); ctx.fillStyle = it.ink || 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.arc(m[0], m[1] - 4 * z, 6 * z, 0, 7); ctx.fill(); ctx.restore(); }
       if (it.kind === 'clock') { const m = lerp((u0 + u1) / 2, (v0 + v1) / 2); ctx.fillStyle = '#f4f0e6'; ctx.beginPath(); ctx.ellipse(m[0], m[1], 7 * z, 7 * z, 0, 0, 7); ctx.fill(); ctx.strokeStyle = '#111'; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(m[0], m[1]); ctx.lineTo(m[0], m[1] - 5 * z); ctx.moveTo(m[0], m[1]); ctx.lineTo(m[0] + 3 * z, m[1] + 1 * z); ctx.stroke(); }
+      if (it.kind === 'door') { // two raised panels, a handle, and a lit sill where it meets the floor
+        const P = (a, b, c2, d) => { ctx.beginPath(); ctx.moveTo(...lerp(a, c2)); ctx.lineTo(...lerp(b, c2)); ctx.lineTo(...lerp(b, d)); ctx.lineTo(...lerp(a, d)); ctx.closePath(); };
+        const du = u1 - u0, ia = u0 + du * .16, ib = u1 - du * .16; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.5 * z;
+        if (it.color !== '#9aa1a8') { P(ia, ib, v0 + it.h * .08, v0 + it.h * .44); ctx.stroke(); P(ia, ib, v0 + it.h * .52, v0 + it.h * .9); ctx.stroke(); }
+        else { P(u0 + du / 2 - .002, u0 + du / 2 + .002, v0, v1); ctx.stroke(); } // a lift: the seam between its two doors
+        const kn = lerp(u0 + du * .84, v0 + it.h * .45); ctx.fillStyle = '#d8b25a'; ctx.beginPath(); ctx.arc(kn[0], kn[1], 2 * z, 0, 7); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,230,170,.25)'; ctx.lineWidth = 2 * z; ctx.beginPath(); ctx.moveTo(...lerp(u0, v0)); ctx.lineTo(...lerp(u1, v0)); ctx.stroke();
+      }
       if (it.draw) it.draw(ctx, q, z, t);
       if (!(it.kind === 'neon' || it.kind === 'dartboard' || it.kind === 'guitar' || it.kind === 'clock')) { ctx.strokeStyle = it.frame || '#1a1410'; ctx.lineWidth = 3 * z; ctx.stroke(); }
       if (it.label) { ctx.save(); const m = lerp((u0 + u1) / 2, v1 + .25); ctx.translate(m[0], m[1]); ctx.transform(1, w.side === 'n' ? .5 : -.5, 0, 1, 0, 0); ctx.font = `bold ${11 * z}px Georgia`; ctx.textAlign = 'center'; ctx.fillStyle = it.labelColor || '#e8d7a8'; ctx.shadowColor = it.labelColor || '#e8d7a8'; ctx.shadowBlur = 8; ctx.fillText(it.label, 0, 0); ctx.restore(); }

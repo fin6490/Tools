@@ -142,6 +142,7 @@ const Music = (() => {
       if (w.map === 'v:spur' && st.flags && st.flags.spurJuke && STYLES[st.flags.spurJuke]) return st.flags.spurJuke; // the jukebox
       if (w.map.startsWith('v:')) return STYLES[w.map.slice(2)] ? w.map.slice(2) : '';
       if (w.map === 'r:diner') return 'diner';
+      if (w.map === 'r:club') return st.flags && STYLES[st.flags.clubTune] ? st.flags.clubTune : 'riverboat'; // the player piano
       return '';
     }
     if (scr === 'table' && Router.table && Router.table.ctx) return Router.table.ctx.venueId || 'spur';

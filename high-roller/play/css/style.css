@@ -975,3 +975,21 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .sl-cell.tease { box-shadow: inset 0 0 0 2px #ffd34d, 0 0 16px rgba(255,211,77,.8); animation: steaser .25s ease-in-out infinite alternate; }
 @keyframes steaser { to { box-shadow: inset 0 0 0 2px #fff3c4, 0 0 26px rgba(255,211,77,1); } }
 @media (prefers-reduced-motion: reduce) { .sl-cell.tease { animation: none; } }
+
+/* Sal's lock and the faro bank at the Seventeen Club (salquest.js) */
+.sq-dials { display: flex; justify-content: center; gap: 1rem; margin: .8rem 0; }
+.sq-dial { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .5rem; border: 1px solid var(--gold2); border-radius: 10px; background: radial-gradient(circle at 50% 35%, #4a3a1c, #1c150a); }
+.sq-num { font: 700 1.9rem/1 var(--serif); color: var(--gold); font-variant-numeric: tabular-nums; min-width: 2.2ch; text-align: center; text-shadow: 0 1px 0 #000; }
+.sq-quick { display: flex; gap: .2rem; }
+.faro { display: flex; flex-direction: column; gap: .6rem; }
+.faro-layout { display: grid; grid-template-columns: repeat(7, 1fr); gap: .35rem; padding: .6rem; border-radius: 12px; background: radial-gradient(ellipse at center, #22704a, #12402a); border: 3px solid #5a3418; }
+.faro-card { min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; border-radius: 6px; border: 1px solid #c9bfa6; background: #f5f0e0; color: #111; cursor: pointer; font-family: var(--serif); padding: .2rem; }
+.faro-card b { font-size: 1.05rem; }
+.faro-card small { font: 700 .7rem/1 sans-serif; color: #fff; background: #8a1d1d; border-radius: 99px; padding: .1rem .35rem; }
+.faro-card.bet { box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(227, 184, 90, .6); }
+.faro-card.dead { opacity: .35; cursor: default; }
+.faro-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.faro-beads { font-size: .55rem; letter-spacing: .05em; color: #8a1d1d; }
+.faro-row { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-end; }
+.faro-log p { margin: .1rem 0; }
+@media (max-width: 520px) { .faro-layout { grid-template-columns: repeat(5, 1fr); } .faro-card { min-height: 54px; } }
