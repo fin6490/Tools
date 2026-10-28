@@ -202,6 +202,8 @@ const ACHIEVEMENTS = [
   { id: 'l2death', name: 'Closing Time', desc: 'Level 2: let the Barman catch you one time too many', test: () => App.counter('l2_dead') > 0, reward: 0, swagger: 0 },
   { id: 'l2outran', name: 'Not Tonight', desc: 'Level 2: outrun the Barman', test: () => App.counter('l2_outran') > 0, reward: 0, swagger: 5 },
   { id: 'l2lastcall', name: 'Last Call', desc: 'Level 2: stop fighting the bottle', test: () => App.counter('l2_gavein') > 0, reward: 0, swagger: 0 },
+  { id: 'l2eddie', name: 'The Man on Calder Street', desc: 'Level 2: find out who the man they blamed really was, and prove it', test: () => !!(App.state.whispers && App.state.whispers.call), reward: 0, swagger: 25 },
+  { id: 'l2photo', name: 'Seventeen Pieces', desc: 'Level 2: put Nora\'s last photograph back together, every piece of it, front and back', test: () => !!(App.state.l2 && App.state.l2.flags && App.state.l2.flags.photoWhole), reward: 0, swagger: 15 },
   { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },
@@ -469,7 +471,7 @@ const Career = {
   },
   // drain the bars. kind = 'round' (k = rounds) or 'step'
   drain(kind, k = 1) {
-    if (App.inReality()) return;
+    if (App.inReality()) { if (typeof L2Bottle !== 'undefined') L2Bottle.roundNeeds(kind, k); return; } // the waking world keeps its own time
     const was = App.state ? (App.state.clock || 540) : 0;
     const mins = (kind === 'round' ? 4 : 0.25) * k;
     if (App.state) App.state.clock = (App.state.clock || 540) + mins;

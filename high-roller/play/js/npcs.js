@@ -643,6 +643,7 @@ const Chat = {
       input.value = ''; bubble('me', text); hist.push({ role: 'user', content: text });
       const out = bubble('them', '…'); out.classList.add('typing');
       ctl = new AbortController(); send.disabled = true;
+      Whispers.pre(sp.id, text); // did they raise something, or answer what they were asked?
       try {
         const raw = await this.reply(sp, t => { out.textContent = Whispers.clean(t); out.classList.remove('typing'); log.scrollTop = log.scrollHeight; }, ctl.signal);
         const reply = Whispers.clean(raw) || '…';

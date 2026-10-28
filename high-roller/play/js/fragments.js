@@ -1,7 +1,8 @@
 /* Fragments: seventeen small things hidden around town that don't belong in this world. A child's
    drawing, half a theatre ticket, a tiny hospital bracelet. Each one glints faintly now and then;
    walk up to it and press A. They are pieces of a life the dream is keeping from you, and they
-   matter when you wake up (Level 2). */
+   matter when you wake up (Level 2): each has a torn piece of a photograph taped to its back, and
+   put together in Level 2 they show what Nora saw out of the window that night. */
 const FRAGMENTS = [
   { map: 'town', icon: '🖍️', name: 'A crayon drawing', text: 'Four stick figures and a dog, under a purple sun. Across the top, in careful capitals: MY FAMLY.' },
   { map: 'town', icon: '🎟️', name: 'Half a theatre ticket', text: 'Row F, seat 17. The other half is gone. You can almost hear someone laughing in the seat beside you.' },
@@ -33,6 +34,7 @@ const Fragments = {
     SFX.flip();
     await UI.dialog([
       { who: 'narrator', text: `${k.icon} **${k.name}**. ${k.text}` },
+      { who: 'narrator', text: '*Taped to the back, flat and careful: a torn square of a photograph. Night. Rain. Part of a window.*' },
       { who: 'narrator', text: n === FRAGMENTS.length ? '*All seventeen. You lay them out on the floor and look at them for a long time. You know these things. You know these people. The town goes very quiet, as if it is holding its breath.*' : RNG.pick(['*You don\'t know why your hands are shaking.*', '*It doesn\'t belong here. Neither, maybe, do you.*', '*For a second the street sounds very far away.*', '*You put it in your pocket. It feels heavier than it should.*', '*Somewhere, a long way off, someone is saying your name.*']) },
     ]);
     UI.toast(`Fragment ${n} of ${FRAGMENTS.length}`, 'award', n === FRAGMENTS.length ? 'You remember now. Some of it.' : 'Seventeen are hidden around town and in its buildings.');
@@ -44,6 +46,6 @@ const Fragments = {
     if (!n) return null;
     return h('section.panel', h('h3', `Fragments · ${n}/${FRAGMENTS.length}`),
       h('div.frag-list', FRAGMENTS.map((k, i) => this.has(i) ? h('div.frag', { title: k.text }, h('span', k.icon), h('small', k.name)) : h('div.frag.unk', h('span', '?')))),
-      h('p.muted.small', n < FRAGMENTS.length ? 'Things that don\'t belong in this town. Some glint in the street, some hide inside its buildings.' : 'All of them. You remember.'));
+      h('p.muted.small', n < FRAGMENTS.length ? 'Things that don\'t belong in this town, each with a torn square of a photograph taped to the back. Some glint in the street, some hide inside its buildings.' : 'All of them. You remember.'));
   },
 };
