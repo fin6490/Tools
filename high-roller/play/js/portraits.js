@@ -202,6 +202,14 @@ const Portrait = (() => {
     // an element: <span class="pt"> holding the drawing, labelled for screen readers
     el(x, cls = '') {
       const s = resolve(x), e = document.createElement('span');
+      if (s.iso && typeof ISOART !== 'undefined') { // Level 2: drawn in the world's own style, from the same look
+        e.className = 'pt iso' + (cls ? ' ' + cls : ''); e.setAttribute('role', 'img'); e.setAttribute('aria-label', s.name || 'Portrait');
+        const c = document.createElement('canvas'), g = c.getContext('2d'); c.width = c.height = 160;
+        const bg = g.createRadialGradient(80, 60, 8, 80, 80, 110); bg.addColorStop(0, '#3a4250'); bg.addColorStop(1, '#0c0f14'); g.fillStyle = bg; g.fillRect(0, 0, 160, 160);
+        const o = { ...s.iso, sit: false, back: false, walking: false, hold: null };
+        ISOART.person(g, 76, 72 + 70 * 2.9 * (o.height || 1), 2.9, o, 1, 0, 0, 40);
+        e.append(c); return e;
+      }
       e.className = 'pt' + (cls ? ' ' + cls : ''); e.setAttribute('role', 'img'); e.setAttribute('aria-label', s.key === 'me' ? 'You' : (s.name || 'Portrait'));
       e.innerHTML = s.key === 'me' && typeof Looks !== 'undefined' ? Looks.svg() : svg(s);
       return e;

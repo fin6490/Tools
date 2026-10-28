@@ -168,34 +168,55 @@ body.l2-weak .l2-vignette { box-shadow: inset 0 0 160px 60px rgba(0,0,0,.75); }
 /* the dream screens, reached from Level 2: a way home */
 .title-l2 { margin-top: .6rem; }
 
-/* floor games: the bets slide up from the bottom while the camera looks at the machine */
-.l2-over.game { align-items: flex-end; padding: 0; pointer-events: none; background: linear-gradient(transparent 50%, rgba(0,0,0,.35)); }
-.l2-game { pointer-events: auto; width: min(760px, 100%); max-height: 58vh; max-height: 58dvh; overflow-y: auto; background: rgba(10,13,18,.94); border: 1px solid var(--l2-line); border-bottom: 0;
-  border-radius: 10px 10px 0 0; padding: .7rem 1rem calc(.8rem + env(safe-area-inset-bottom)); box-shadow: 0 -20px 60px rgba(0,0,0,.5); animation: l2up .35s ease-out; }
-@keyframes l2up { from { transform: translateY(40px); opacity: 0; } }
-.l2-gh { display: flex; align-items: center; gap: 12px; }
+/* floor games: full screen, like the tables in the dream: the machine on top, the bets underneath */
+.l2-over.game { flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0; background: radial-gradient(circle at 50% 30%, #1a1420, #050407 75%); animation: l2fade .25s ease-out; }
+@keyframes l2fade { from { opacity: 0; } }
+.l2-over.game > * { flex: none; }
+.l2-gh { display: flex; align-items: center; gap: 12px; padding: max(.55rem, env(safe-area-inset-top)) 1rem .5rem; background: rgba(10,13,18,.92); border-bottom: 1px solid var(--l2-line); }
 .l2-gh b { font-size: .78rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; flex: 1; }
 .l2-gcash { font-variant-numeric: tabular-nums; color: var(--l2-accent); }
-.l2-gmsg { margin: .3rem 0 .6rem; color: #c3cbd4; font-size: .9rem; line-height: 1.45; min-height: 1.3em; }
+.l2-gstage { flex: 1 1 auto !important; min-height: 190px; display: flex; flex-direction: column; }
+.l2-stage { display: block; flex: 1 1 auto; min-height: 0; width: 100%; background: #000; pointer-events: none; }
+.l2-game { pointer-events: auto; width: min(860px, 100%); align-self: center; max-height: 46vh; max-height: 46dvh; overflow-y: auto; background: rgba(10,13,18,.97); border: 1px solid var(--l2-line); border-bottom: 0;
+  border-radius: 10px 10px 0 0; padding: .55rem 1rem 0; box-shadow: 0 -12px 40px rgba(0,0,0,.5); animation: l2up .3s ease-out; }
+@keyframes l2up { from { transform: translateY(30px); opacity: 0; } }
+.l2-gmsg { margin: .1rem 0 .55rem; color: #c3cbd4; font-size: .88rem; line-height: 1.45; min-height: 1.3em; }
 .l2-gsub { margin: 0 0 .5rem; color: var(--l2-dim); font-size: .82rem; line-height: 1.45; }
-.l2-tally { font-variant-numeric: tabular-nums; font-size: .95rem; margin-bottom: .6rem; }
-.l2-board { display: grid; gap: 6px; margin-bottom: .7rem; grid-auto-rows: min-content; align-items: start; }
+.l2-tally { font-variant-numeric: tabular-nums; font-size: .95rem; margin-bottom: .5rem; }
+.l2-board { display: grid; gap: 6px; margin-bottom: .6rem; grid-auto-rows: min-content; align-items: start; }
 .l2-board.bigsix { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
 .l2-board.sicbo { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
-.l2-spot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: .55rem .3rem; min-height: 54px; background: rgba(14,74,52,.55); border: 1px solid rgba(217,194,122,.35);
+.l2-spot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: .5rem .3rem; min-height: 52px; background: rgba(14,74,52,.55); border: 1px solid rgba(217,194,122,.35);
   border-radius: 4px; color: #f3ead8; font: inherit; cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
 .l2-spot b { font-size: .88rem; } .l2-spot small { font-size: .68rem; color: #cbbf96; }
 .l2-spot em { position: absolute; top: -7px; right: -5px; font-style: normal; font-size: .7rem; font-weight: 700; color: #2a1a05; background: #e3b85a; border-radius: 10px; padding: 1px 6px; display: none; }
 .l2-spot.bet { border-color: #e3b85a; background: rgba(14,90,60,.8); } .l2-spot.bet em { display: block; }
 .l2-spot:hover { filter: brightness(1.15); }
-.l2-gfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.l2-gfoot { position: sticky; bottom: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: .5rem 0 calc(.6rem + env(safe-area-inset-bottom)); background: rgba(10,13,18,.98); }
 .l2-chips { display: flex; gap: 6px; flex: 1; }
 .l2-chip { width: 44px; height: 44px; border-radius: 50%; border: 3px dashed rgba(255,255,255,.55); background: #2a3a4a; color: #fff; font-weight: 700; font-size: .75rem; cursor: pointer; }
 .l2-chip[data-v="5"] { background: #b3222b; } .l2-chip[data-v="25"] { background: #138a3e; } .l2-chip[data-v="100"] { background: #151515; } .l2-chip[data-v="500"] { background: #6a2c91; } .l2-chip[data-v="1000"] { background: #c9a14a; color: #2a1a05; }
 .l2-chip.on { outline: 2px solid #fff; outline-offset: 2px; }
 .l2-btn.go { background: linear-gradient(#f0c96b, #c99631); color: #2a1a05; border-color: #f6d88d; font-weight: 700; min-width: 120px; }
 .l2-btn.go:disabled { opacity: .5; }
-@media (max-width: 560px) { .l2-game { max-height: 47vh; max-height: 47dvh; } .l2-chips { flex-basis: 100%; justify-content: space-between; } .l2-gfoot .l2-btn { flex: 1; } }
+.l2-btn.jpbet { border: 1px dashed #c9a14a; color: #e8d7a8; background: rgba(201,161,74,.08); font-size: .8rem; }
+.l2-btn.jpbet.on { border-style: solid; background: linear-gradient(#7a1a2a, #4a0e18); color: #ffe9a8; box-shadow: 0 0 12px rgba(255,200,90,.35); }
+/* the Meridian Jackpots: three meters on every machine */
+.l2-jp { display: flex; justify-content: center; gap: 8px; padding: .45rem .6rem; background: linear-gradient(#1c1006, #0a0604); border-bottom: 1px solid rgba(201,161,74,.4); }
+.l2-jpm { flex: 0 1 170px; min-width: 0; text-align: center; border: 1px solid rgba(201,161,74,.7); border-radius: 6px; padding: .2rem .3rem; background: #120a04; }
+.l2-jpm small { display: block; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: #cbbf96; }
+.l2-jpm b { display: block; font: 700 1rem/1.2 Georgia, serif; font-variant-numeric: tabular-nums; color: #ffe9a8; white-space: nowrap; }
+.l2-jpm.mini b { color: #9cc4ff; } .l2-jpm.major b { color: #ff8a8a; } .l2-jpm.grand { border-color: #ffd34d; box-shadow: 0 0 14px rgba(255,211,77,.25); } .l2-jpm.grand b { color: #ffd34d; font-size: 1.15rem; }
+.l2-jpw { position: fixed; inset: 0; z-index: 75; display: flex; align-items: center; justify-content: center; padding: 16px; background: radial-gradient(circle, rgba(40,20,4,.92), rgba(0,0,0,.95) 70%); animation: l2fade .3s; }
+.l2-jpw.out { opacity: 0; transition: opacity .3s; }
+.l2-jpw-box { width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; gap: .5rem; text-align: center; color: #f3ead8; }
+.l2-jpw-box h2 { margin: 0; font: 700 1.35rem Georgia, serif; color: #ffd34d; text-shadow: 0 0 18px rgba(255,200,80,.5); }
+.l2-jpw-box p { margin: 0; color: #cbbf96; font-size: .9rem; }
+.l2-jpw-box .l2-jp { width: 100%; border-radius: 6px; }
+.l2-jpw-c { width: min(86vw, 50vh, 480px); aspect-ratio: 1; }
+.l2-jpw.won h2 { animation: l2pulse .8s ease-in-out infinite alternate; }
+@keyframes l2pulse { to { transform: scale(1.08); } }
+@media (max-width: 560px) { .l2-game { max-height: 50vh; max-height: 50dvh; } .l2-chips { flex-basis: 100%; justify-content: space-between; } .l2-gfoot .l2-btn { flex: 1; } .l2-jpm b { font-size: .88rem; } .l2-jpm.grand b { font-size: 1rem; } }
 
 /* the fever dream back to the town, and the darker endings */
 .l2-over.fever { background: radial-gradient(circle at 50% 50%, #3a1a40, #000 70%); animation: l2fever 8s ease-in forwards; }
@@ -259,12 +280,6 @@ body.l2-hunted .l2-grain { opacity: .16; }
 .ph-piece.sel { outline: 2px solid var(--l2-accent); outline-offset: 2px; clip-path: none; }
 .ph-img { display: block; width: 100%; height: 100%; transition: transform .2s; }
 
-/* the floor games draw their machine at the top of the bet sheet */
-.l2-over.game { flex-direction: column; justify-content: flex-end; align-items: center; }
-.l2-over.game > * { flex: none; }
-.l2-stage { display: block; width: min(760px, 100%); border-radius: 8px 8px 0 0; background: #000; pointer-events: none; box-shadow: 0 -8px 30px rgba(0,0,0,.6); }
-@media (max-height: 760px) { .l2-over.game .l2-game { max-height: 46vh; max-height: 46dvh; } }
-
 /* the scare: the face fills the screen, under the flash */
 .l2-scareface { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 89; pointer-events: none; }
 /* in the isometric world the prompt sits low, out of the way of your character */
@@ -283,3 +298,11 @@ b.l2-sub2 { display: block; margin-top: 1rem; color: #e8d7a8; font-size: .9rem; 
 .l2-plate:active { transform: scale(.93); } .l2-plate.clean { box-shadow: 0 0 14px rgba(200,240,255,.7); cursor: default; }
 /* on a phone the right-hand chips wrap under each other, so the objective keeps a readable width */
 @media (max-width: 560px) { .l2-left { flex: 1 1 46%; min-width: 46%; } .l2-right { flex-wrap: wrap; justify-content: flex-end; row-gap: 6px; } .l2-torch { padding: .35rem .5rem; border-radius: 20px; background: var(--l2-glass); border: 1px solid var(--l2-line); } }
+
+/* pool at the Low Tide */
+.l2-pscore { display: flex; justify-content: space-between; gap: 8px; padding: .4rem 1rem; background: rgba(10,13,18,.9); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.l2-pscore span { opacity: .6; } .l2-pscore span.on { opacity: 1; color: var(--l2-accent); font-weight: 700; } .l2-pscore .mid { opacity: .8; }
+.l2-stage.l2-pool { pointer-events: auto; touch-action: none; background: #0b0705; }
+.l2-pmeter { flex: 1; min-width: 120px; height: 14px; border-radius: 7px; background: #1a1f26; border: 1px solid var(--l2-line); overflow: hidden; }
+.l2-pmeter i { display: block; height: 100%; width: 0; background: #3c3; }
+.l2-over.game.pool .l2-btn.go { touch-action: none; -webkit-user-select: none; user-select: none; }

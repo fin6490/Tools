@@ -425,9 +425,9 @@ const L2World = (() => {
   }
   function chapel(A, mk) {
     room(A, mk, 12, 12, { floor: 'wood', wall: '#6a665e', height: 4, hangN: [{ kind: 'window', at: 4, w: 4, y: 1.2, h: 2.4, color: '#2a3a6a', draw: (c, q) => { const g = c.createLinearGradient(q[0][0], q[0][1], q[2][0], q[2][1]); g.addColorStop(0, '#b83a3a'); g.addColorStop(.5, '#3a6ab8'); g.addColorStop(1, '#e8c860'); c.fillStyle = g; c.globalAlpha = .7; c.beginPath(); c.moveTo(...q[0]); for (const p of q.slice(1)) c.lineTo(...p); c.fill(); c.globalAlpha = 1; } }] });
-    A.prop('altar', 6, 1.6); for (let i = 0; i < 4; i++) { A.prop('pew', 1.5, 4 + i * 1.6); A.prop('pew', 7, 4 + i * 1.6); }
-    for (let i = 0; i < 6; i++) A.prop('chair', 3 + Math.cos(i) * 1.6, 10 + Math.sin(i) * .9, { color: '#5a4a3a' });
-    A.use(4.5, 10, 'A circle of chairs. A sign: "Thursdays, 8pm. All welcome."', act('chapel', 'circle'), { r: 1.8 });
+    A.prop('altar', 6, 1.6); for (let i = 0; i < 3; i++) { A.prop('pew', 1.5, 4 + i * 1.6); A.prop('pew', 7, 4 + i * 1.6); }
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); A.prop('chair', 3.2 + c * 1.35, 9.6 + s * 1.05, { color: '#5a4a3a', back: Math.abs(c) > Math.abs(s) ? (c > 0 ? 'e' : 'w') : (s > 0 ? 's' : 'n') }); } // facing in
+    A.use(4.5, 9.6, 'A circle of chairs. A sign: "Thursdays, 8pm. All welcome."', act('chapel', 'circle'), { r: 1.8 });
     A.prop('candles', 9, 2.4, { lit: 3 + (L2.has('candle') ? 4 : 0) }); A.use(9, 3.4, 'Light a candle', act('chapel', 'candle'), { r: 1.6 });
     place(A, 'tom', 4, 2.6, { face: 1 }); place(A, 'ruth', 6.4, 9.6, { face: -1 });
     exit(A, 6, 11, 'Out to the park', act('toStreet', 'chapel'));

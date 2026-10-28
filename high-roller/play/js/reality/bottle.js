@@ -145,12 +145,12 @@ const L2Bottle = (() => {
   // a hunt lasts a while: it steps out from somewhere you can't see (round a corner, out of the
   // dark), comes at you in bursts, goes up in smoke, and steps out again closer. Light drives it off;
   // a torch slows it. Last it out and it's gone, for now.
-  function hiddenSpot(near, far) {
+  function hiddenSpot(near, far, ahead) {
     const P = R3.player, M = R3.map; if (!M) return null;
     const seen = (x, y) => { const n = Math.ceil(Math.hypot(x - P.x, y - P.y) * 3); for (let i = 1; i < n; i++) { const u = i / n; if (M.blocked(Math.floor(P.x + (x - P.x) * u), Math.floor(P.y + (y - P.y) * u))) return false; } return true; };
     let fallback = null;
     for (let i = 0; i < 80; i++) {
-      const a = Math.random() * Math.PI * 2, r = near + Math.random() * (far - near), x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r;
+      const a = ahead != null && i < 50 ? ahead + (Math.random() - .5) * 1.6 : Math.random() * Math.PI * 2, r = near + Math.random() * (far - near), x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r; // running? it steps out ahead of you
       if (!M.inside(Math.floor(x), Math.floor(y)) || M.blocked(Math.floor(x), Math.floor(y)) || !R3.free(x, y)) continue;
       if (M.lights.some(l => Math.hypot(l.x - x, l.y - y) < l.r * .5 && (l.i || 1) > .4)) continue;
       if (!seen(x, y)) return [x, y]; // round a corner
@@ -173,17 +173,18 @@ const L2Bottle = (() => {
       g.update(t, dt, dist);
       if (H.phase === 'hidden' && H.timer <= 0) {
         const still = Math.hypot(R3.player.vx || 0, R3.player.vy || 0) < .3; // standing still makes it bolder
-        const at = hiddenSpot(Math.max(still ? 2.2 : 3.2, (still ? 5.5 : 7) - H.shows * (still ? 1 : .7)), Math.max(still ? 3.5 : 5, 9.5 - H.shows * .6));
+        const pv = Math.hypot(R3.player.vx || 0, R3.player.vy || 0), ahead = pv > 1 ? Math.atan2(R3.player.vy, R3.player.vx) : null;
+        const at = hiddenSpot(Math.max(still ? 2.2 : 3, (still ? 5.5 : 6.5) - H.shows * (still ? 1 : .7)), Math.max(still ? 3.5 : 5, 9 - H.shows * .6), ahead);
         if (at) { g.x = at[0]; g.y = at[1]; g.mode = 'appear'; g.fade = 0; H.phase = 'appear'; H.timer = .7; H.shows++; L2Demon.sting(); } else H.timer = .8;
       } else if (H.phase === 'appear' && H.timer <= 0) { g.mode = 'stalk'; H.phase = 'stalk'; H.timer = 3.2 + Math.random() * 2; }
       else if (H.phase === 'stalk') {
         const lit = g.inLight(), torch = L2Money.torchOn() && dist < 5;
-        const burst = dist < 2.4 ? 1.9 : Math.sin(H.t * 5.5) > -.2 ? 1.5 : .25; // lurches, then stops dead; close in, it lunges
-        const speed = Math.min(2.15, 1.55 + H.shows * .07) * burst * (torch ? .65 : 1) * (lit ? .45 : 1);
+        const burst = dist < 3 ? 1.45 : Math.sin(H.t * 5.5) > -.2 ? 1.25 : .3; // lurches, then stops dead; close in, it lunges
+        const speed = Math.min(3.6, 2.5 + H.shows * .12) * burst * (torch ? .65 : 1) * (lit ? .45 : 1); // a lunge can match you at a run
         g.vx = dx / dist * speed; g.vy = dy / dist * speed; g.x += g.vx * dt; g.y += g.vy * dt; g.dir = dx - dy >= 0 ? 1 : -1;
         if (dist < .75) { caught(); return; }
         if ((H.timer <= 0 && dist > 2.4) || (lit && dist > 2 && Math.random() < dt * 1.5)) { g.mode = 'vanish'; H.phase = 'vanish'; H.timer = .8; }
-      } else if (H.phase === 'vanish' && H.timer <= 0) { H.phase = 'hidden'; H.timer = 1 + Math.random() * 1.8; }
+      } else if (H.phase === 'vanish' && H.timer <= 0) { H.phase = 'hidden'; H.timer = .5 + Math.random() * 1.1; }
       const near = H.phase === 'stalk' || H.phase === 'appear' ? Math.max(0, 1 - dist / 10) : .08;
       L2Demon.tick(dt, near);
       H.beat -= dt; if (H.beat <= 0) { H.beat = .3 + (1 - near) * .6; thump(Math.max(.15, near)); }
