@@ -176,7 +176,9 @@ const R3 = (() => {
     const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
     const speed = (keys.has('shift') ? 3.6 : 2.1) * dt * (FX && FX.slow || 1);
     const dx = (Math.sin(P.yaw) * f - Math.cos(P.yaw) * s) * speed, dz = (Math.cos(P.yaw) * f + Math.sin(P.yaw) * s) * speed;
-    if (!blocked(P.x + dx, P.z)) P.x += dx; if (!blocked(P.x, P.z + dz)) P.z += dz;
+    // if you're already inside something (a spawn or a wake-up spot too close to furniture), you can always walk out
+    const stuck = blocked(P.x, P.z);
+    if (stuck || !blocked(P.x + dx, P.z)) P.x += dx; if (stuck || !blocked(P.x, P.z + dz)) P.z += dz;
     if (len > .05) P.bob += dt * (keys.has('shift') ? 11 : 7.5); else P.bob *= .9;
   }
 
@@ -266,5 +268,5 @@ const R3 = (() => {
     V = { from, to: { p: d.position.clone(), q: d.quaternion.clone() }, t: 0 };
   }
   const api = { THREE: null, TEX, mat, box, cyl, plane, wall, light, sign, person, rain, use, shadowBlob, canvasTex, add: o => root.add(o), every: fn => updaters.push(fn), get root() { return root; }, get player() { return P; }, collide: r => colliders.push(r) };
-  return { mount, unmount, go, api, view, setFx(v) { FX = v; }, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; } };
+  return { mount, unmount, go, api, view, setFx(v) { FX = v; }, get area() { return area; }, get busy() { return busy; }, set busy(v) { busy = v; }, player: P, freeze(v) { busy = v; if (v) { keys.clear(); stick.x = stick.y = 0; if (document.pointerLockElement) document.exitPointerLock(); } }, activate, get focus() { return focus; }, get stuck() { return blocked(P.x, P.z); } };
 })();

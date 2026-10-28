@@ -128,7 +128,7 @@ const L2World = (() => {
     A.use(-2.6, -1.6, 'The bed you woke up in', act('clinicBed'), { r: 1.5 });
     door(A, 0, 3.92, Math.PI, 'EXIT', '#9aa3aa');
     A.use(0, 3.6, 'Leave the clinic', act('leaveClinic'), { r: 1.4 });
-    return { spawn: [-2.1, -.6, 2.2], bg: '#b8c0c8', fog: .02, exposure: .82 };
+    return { spawn: [-2.1, .2, 2.2], bg: '#b8c0c8', fog: .02, exposure: .82 };
   }
 
   /* ---------- the car park under the Meridian ---------- */
