@@ -174,7 +174,7 @@ const World = (() => {
         ['machine', 11, 6, 1, 1, { fn: 'scratch', label: 'Scratch-card machine ($5)' }], ['shelf', 5, 7, 5, 1, { talk: 'Aisle 3: chips, jerky, aspirin, playing cards. Somebody has stacked the decks of cards in perfect suit order. Raj swears it wasn\'t him.', label: 'Shelves' }]],
       folk: [[10, 8, 2]] },
     motel: { name: 'Starlite Motel', W: 14, H: 10, floor: 'carpet', theme: { wall: '#6c3483', trim: '#2e1338', carpet: '#5b4a3a' }, staff: ['darlene', 3, 3],
-      f: [['hcounter', 1, 4, 5, 1, { sleep: ['motel'], label: 'Front desk: a room for the night (Darlene)' }], ['door', 8, 1, 1, 1, { talk: 'Room 7. Sal\'s room, Darlene says. She still won\'t rent it to anyone else.', label: 'Room 7' }],
+      f: [['hcounter', 1, 4, 5, 1, { sleep: ['motel'], label: 'Front desk: a room for the night (Darlene)' }], ['door', 8, 1, 1, 1, { fn: 'room7', label: 'Room 7' }],
         ['door', 10, 1, 1, 1, { talk: 'Room 8. A Do Not Disturb sign and a lot of snoring.', label: 'Room 8' }], ['door', 6, 1, 1, 1, { fn: 'laptop', label: 'Room 12: your room' }], ['machine', 12, 3, 1, 1, { fn: 'ice', label: 'Ice machine' }], ['machine', 12, 6, 1, 1, { place: 'vending', label: 'Vending machine' }],
         ['plant', 1, 7, 1, 1], ['tv', 6, 7, 2, 1, { talk: 'The lobby TV is showing the late news: "Gaming Commission denies probe into Monte Royale." Darlene snorts.', label: 'Lobby TV' }]],
       folk: [] },
@@ -199,6 +199,12 @@ const World = (() => {
       f: [['desk', 2, 8, 3, 1, { place: 'steak', label: 'Maître d\': a table for one (Philippe)' }], ['table', 6, 3, 2, 2], ['table', 10, 3, 2, 2], ['table', 10, 7, 2, 2], ['tank', 13, 2, 2, 1, { talk: 'A lobster tank. One of them is wearing a tiny rubber band and an expression of deep resignation.', label: 'Lobster tank' }],
         ['door', 2, 1, 1, 1, { fn: 'cellar', label: 'Wine cellar' }], ['plant', 14, 8, 1, 1]],
       folk: [[8, 3, 4], [12, 7, 5]] },
+    // behind the longhorns at the Spur, down a flight of stairs: Sal's secret, after the story (salquest.js)
+    club: { name: 'The Seventeen Club', W: 16, H: 11, floor: 'carpet', theme: { wall: '#1e3a2f', trim: '#c9a14a', carpet: '#3a1414' }, staff: null,
+      f: [['rug', 5, 3, 6, 4], ['shelf', 1, 2, 4, 1], ['bar2', 1, 3, 4, 1, { fn: 'clubBar', label: 'The bar (mahogany, and Sal\'s rye)' }], ['photowall', 6, 1, 3, 1, { fn: 'salPhotos', label: 'A wall of old photographs' }],
+        ['faro', 6, 4, 4, 2, { fn: 'faro', label: '🂡 Faro: Sal\'s bank' }], ['pianola', 12, 2, 3, 1, { fn: 'pianola', label: '🎹 The player piano' }], ['safe', 14, 5, 1, 1, { fn: 'salSafe', label: 'Sal\'s old safe' }],
+        ['table', 2, 6, 2, 2], ['table', 11, 7, 2, 2], ['plant', 1, 9, 1, 1], ['plant', 14, 9, 1, 1]],
+      folk: [] },
   };
   function buildRoom(key) {
     const R = ROOMS[key], W = R.W, H = R.H;
@@ -210,7 +216,7 @@ const World = (() => {
     m.doors[doorX + ',' + (H - 1)] = { exit: key, label: 'Back to the street' };
     for (const [kind, x, y, w, hh, act] of R.f) {
       m.props.push({ type: 'furn', kind, x, y, w, h: hh });
-      if (kind !== 'rug' && kind !== 'photo') m.blockRect(x, y, w, hh);
+      if (kind !== 'rug' && kind !== 'photo' && kind !== 'photowall') m.blockRect(x, y, w, hh);
       if (act) for (let j = 0; j < hh; j++) for (let i = 0; i < w; i++) m.act(x + i, y + j, act);
     }
     if (R.staff && STAFF[R.staff[0]]) {
@@ -249,6 +255,10 @@ const World = (() => {
       case 'rug': c.fillStyle = 'rgba(201, 161, 74, .35)'; c.fillRect(px, py, w, hh); c.strokeStyle = 'rgba(201, 161, 74, .8)'; c.lineWidth = 2; c.strokeRect(px + 3, py + 3, w - 6, hh - 6); break;
       case 'table': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break;
       case 'tank': R(0, 2, w, hh - 2, '#263238'); R(2, 3, w - 4, hh - 6, 'rgba(79, 195, 247, .7)'); R(8, 8, 5, 3, '#e53935'); R(18, 6, 5, 3, '#e53935'); break;
+      case 'bar2': R(0, 2, w, hh - 2, '#4a1f10'); R(0, 0, w, 5, '#7a3a1c'); R(0, 4, w, 1, '#c9a14a'); R(0, hh - 2, w, 2, '#c9a14a'); for (let i = 0; i < p.w; i++) R(i * T + 6, 7, 4, 6, '#2a0f06'); break;
+      case 'faro': c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(px + 3, py + 4, w - 2, hh - 2); R(0, 0, w, hh - 2, '#4a2a14'); R(2, 2, w - 4, hh - 6, '#1d5a3a'); for (let i = 0; i < 13; i++) { const cx = 5 + (i % 7) * 7, cy = i < 7 ? 5 : 16; R(cx, cy, 5, 8, '#f5f0e0'); R(cx + 2, cy + 3, 1, 2, '#111'); } R(w - 10, 5, 6, 18, '#c9a14a'); R(w - 9, 6, 4, 16, '#8a1d1d'); break;
+      case 'pianola': R(0, -8, w, hh + 8, '#3a1d0e'); R(2, -6, w - 4, 8, '#5a3018'); R(8, -5, w - 16, 6, '#f2e6c8'); for (let i = 0; i < 9; i++) R(10 + i * 3, -4, 1, 4, '#8a6a24'); R(0, hh - 7, w, 4, '#fafafa'); for (let i = 0; i < 14; i++) if (i % 7 !== 2 && i % 7 !== 6) R(2 + i * 3.3, hh - 7, 2, 2, '#111'); break;
+      case 'photowall': for (let i = 0; i < 6; i++) { const fx = 3 + (i % 3) * 15 + (i > 2 ? 4 : 0), fy = i > 2 ? 9 : 1, fw = i % 2 ? 9 : 11; R(fx, fy, fw, 7, '#c9a14a'); R(fx + 1, fy + 1, fw - 2, 5, ['#d7ccc8', '#bcaaa4', '#a1887f', '#efebe9', '#cdb79e', '#d7ccc8'][i]); R(fx + 3, fy + 2, 2, 3, '#5d4037'); } break;
       case 'mailbox': for (let i = 0; i < p.w * 3; i++) R(1 + i * 5, 2, 4, 5, '#b0bec5'), R(1 + i * 5, 8, 4, 5, '#b0bec5'); break;
       default: R(0, 0, w, hh, '#666');
     }
@@ -282,6 +292,12 @@ const World = (() => {
       return UI.toast(v === 'spur' ? '🎹 Back to the house band.' : RNG.pick(['🎵 The needle drops. Somebody at the bar starts humming.', '🎵 Dolores turns it up a notch without being asked.', '🎵 Mick taps his darts in time against the bar.']), 'good');
     }
     if (fn === 'piano') return Postcards.piano();
+    if (fn === 'room7') return SalQuest.room7();
+    if (fn === 'faro') { const why = Career.canPlay(); if (why) return UI.toast(why, 'warn'); return SalQuest.faro(); }
+    if (fn === 'pianola') return SalQuest.pianola();
+    if (fn === 'salPhotos') return SalQuest.photos();
+    if (fn === 'salSafe') return SalQuest.safe();
+    if (fn === 'clubBar') return SalQuest.bar();
     if (fn === 'watchcase') return Postcards.watchcase();
     if (fn === 'cellar') return Postcards.cellar();
     if (fn === 'ice') {
@@ -568,7 +584,7 @@ const World = (() => {
     if (v === 'spur') {
       frame(5 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 7, y + 4, 8, 5, '#6b4a2a'); });
       frame(9 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 6, y + 4, 10, 5, '#8a5a33'); });
-      R(16 * T, 6, 30, 3, '#d8c8a8'); R(16 * T + 2, 3, 3, 6, '#d8c8a8'); R(16 * T + 25, 3, 3, 6, '#d8c8a8'); R(16 * T + 12, 8, 6, 8, '#6b4423'); // longhorns
+      const lx = 15 * T - 7; R(lx, 6, 30, 3, '#d8c8a8'); R(lx + 2, 3, 3, 6, '#d8c8a8'); R(lx + 25, 3, 3, 6, '#d8c8a8'); R(lx + 12, 8, 6, 8, '#6b4423'); // longhorns (Sal's lock is behind them)
       c.font = 'bold 9px Georgia'; c.fillStyle = '#ff6b4d'; c.fillText('COLD BEER', 20 * T + 16, 14);
     }
     if (v === 'riverboat') for (let i = 0; i < 6; i++) { const x = (4 + i * 3.6) * T; c.fillStyle = '#c9a14a'; c.beginPath(); c.arc(x, 13, 7, 0, 7); c.fill(); c.fillStyle = '#1f4a6a'; c.beginPath(); c.arc(x, 13, 5, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x - 3, 10, 2, 2); }
@@ -708,7 +724,7 @@ const World = (() => {
   }
 
   // story characters and rivals move around with the story and the day, so refresh them on entry
-  function populate(m) { m.npcs = m.npcs.filter(n => !n.dyn).concat(Cast.forMap(m)); const fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m)); m.caseSpots = fixed.concat(keepSpots(m, fixed)); }
+  function populate(m) { m.npcs = m.npcs.filter(n => !n.dyn).concat(Cast.forMap(m)); const fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m), SalQuest.spots(m)); m.caseSpots = fixed.concat(keepSpots(m, fixed)); }
   // a fragment hides on a fixed, out-of-the-way floor tile: the same one every visit
   function keepSpots(m, fixed) {
     if (typeof Fragments === 'undefined' || App.state.mode !== 'career') return [];
@@ -800,6 +816,7 @@ const World = (() => {
         if (!openNow(door.room)) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The lights are off and the sign on the door says CLOSED. ${(ROOMS[door.room] || {}).name || 'It'} is open ${hoursText(door.room)}. It's ${clockText()}.` }]); return; }
         App.state.world.returnTo = door.out; await go('r:' + door.room); return;
       }
+      if (door.exit === 'club') { await go('v:spur', 15, 2, 'down'); return; } // back up the stairs, out from behind the longhorns
       if (door.exit) {
         const town = getMap('town');
         const back = App.state.world.returnTo || Object.values(town.doors).find(d => d.venue === door.exit || d.room === door.exit).out;
@@ -852,6 +869,8 @@ const World = (() => {
       if (f.kind === 'door') { await useDoor(f.door); return; }
       if (f.kind === 'clue' && f.spot.id === 'backroom') { savePos(); App.save(); Router.go('poker'); return; }
       if (f.kind === 'clue' && f.spot.id === 'dartboard') { savePos(); App.save(); await Darts.lobby(); return; }
+      if (f.kind === 'clue' && f.spot.id === 'salLock') { await SalQuest.lock(); populate(S.m); return; }
+      if (f.kind === 'clue' && f.spot.id === 'club') { await go('r:club'); return; }
       if (f.kind === 'clue' && f.spot.keep != null) { await Fragments.take(f.spot.keep); populate(S.m); return; }
       if (f.kind === 'clue') { await Mystery.examine(f.spot); populate(S.m); return; }
       if (f.kind === 'npc') {
@@ -1061,7 +1080,7 @@ const World = (() => {
         c.fillStyle = 'rgba(240, 210, 120, .7)'; c.fillRect(sx(c0.x) - 4 * u, sy(c0.y + 2) - u, 24 * u, 1.2 * u);
         continue;
       }
-      if (c0.door) { c.fillStyle = '#2a170a'; c.fillRect(sx(c0.x) + 2 * u, sy(c0.y) - 6 * u, 12 * u, 22 * u); c.fillStyle = '#c9a14a'; c.fillRect(sx(c0.x) + 11 * u, sy(c0.y) + 6 * u, 2 * u, 2 * u); c.fillStyle = '#ffe9a8'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('♠', sx(c0.x + .5), sy(c0.y) + 2 * u); continue; }
+      if (c0.door) { c.fillStyle = '#2a170a'; c.fillRect(sx(c0.x) + 2 * u, sy(c0.y) - 6 * u, 12 * u, 22 * u); c.fillStyle = '#c9a14a'; c.fillRect(sx(c0.x) + 11 * u, sy(c0.y) + 6 * u, 2 * u, 2 * u); c.fillStyle = '#ffe9a8'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText(c0.glyph || '♠', sx(c0.x + .5), sy(c0.y) + 2 * u); continue; }
       if (c0.hidden) { // a fragment: only the faintest glint, once every few seconds
         const ph = ((now + c0.x * 997 + c0.y * 331) % 5200) / 5200; if (ph > .12) continue;
         const a = Math.sin(ph / .12 * Math.PI), cx0 = sx(c0.x + .5), cy0 = sy(c0.y + .55), r = (1 + a * 2.5) * u;

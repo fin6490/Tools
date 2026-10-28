@@ -196,22 +196,32 @@ const L2World = (() => {
 
   /* ======================= the Meridian car park ======================= */
   function garage(A, mk) {
-    room(A, mk, 20, 14, { floor: 'concrete', wall: 'concrete', height: 3, hangN: [{ kind: 'door', at: 16, w: 1.6, y: 0, h: 2.3, color: '#9aa1a8', label: 'LIFT · CASINO', labelColor: '#e8d7a8' }] });
+    room(A, mk, 20, 14, { floor: 'concrete', wall: 'concrete', height: 3, hangN: [{ kind: 'door', at: 1.7, w: 1.6, y: 0, h: 2.3, color: '#9aa1a8', label: 'LIFT · CASINO', labelColor: '#e8d7a8' }] });
     for (const x of [4.5, 10.5, 16.5]) for (const y of [5.5, 9.5]) A.prop('pillar', x, y, { h: 3, color: '#6a6e74' });
-    for (let i = 0; i < 6; i++) { A.decal(1.5 + i * 3, 1, c => { c.fillStyle = 'rgba(220,210,190,.6)'; c.font = 'bold 12px Arial'; c.textAlign = 'center'; c.fillText(String(12 + i), 0, 22); }); }
-    const cars = [['#2b3a55', 2], ['#6b6b6b', 5], ['#7a1e1e', 8], ['#e0e0e0', 11], ['#3f5a3a', 14]];
+    // a row of bays along the back wall, 3 m wide; the first one, by the ramp, is kept clear for the lift
+    const iso = c => c.transform(32, 16, -32, 16, 0, 0); // draw on the floor in metres
+    A.decal(1, .2, c => { iso(c); c.lineWidth = .06; c.strokeStyle = 'rgba(232,232,225,.55)'; for (let i = 0; i <= 6; i++) { c.beginPath(); c.moveTo(i * 3, 0); c.lineTo(i * 3, 4.4); c.stroke(); } });
+    for (let i = 1; i < 6; i++) { A.decal(1.5 + i * 3, 1, c => { c.fillStyle = 'rgba(220,210,190,.6)'; c.font = 'bold 12px Arial'; c.textAlign = 'center'; c.fillText(String(12 + i), 0, 22); }); }
+    A.decal(1.15, .25, c => { // the lift bay: yellow box, hatching, and a no-parking roundel painted on the floor
+      iso(c); c.save(); c.beginPath(); c.rect(0, 0, 2.7, 4.3); c.clip();
+      c.strokeStyle = 'rgba(226,182,40,.55)'; c.lineWidth = .14; for (let k = -5; k < 8; k += .7) { c.beginPath(); c.moveTo(k, 0); c.lineTo(k + 4.3, 4.3); c.stroke(); }
+      c.restore(); c.strokeStyle = 'rgba(232,190,50,.8)'; c.lineWidth = .1; c.strokeRect(0, 0, 2.7, 4.3);
+      c.fillStyle = '#1b3f8a'; c.beginPath(); c.arc(1.35, 2.9, .62, 0, 7); c.fill(); c.strokeStyle = '#c62828'; c.lineWidth = .16; c.stroke();
+      c.beginPath(); c.moveTo(1.35 - .42, 2.9 - .42); c.lineTo(1.35 + .42, 2.9 + .42); c.stroke();
+    });
+    const cars = [['#6b6b6b', 5], ['#7a1e1e', 8], ['#e0e0e0', 11], ['#3f5a3a', 14]];
     cars.forEach(([c, x]) => A.prop('car', x + .5, 2.6, { color: c }));
     // yours, bay 17, under a year of dust
     A.prop('car', 17.5, 2.6, { color: '#1c2733', plate: 'MRD 17', lights: true });
     A.use(17.5, 5, 'Open the boot', act('trunk'), { r: 1.5 }); A.use(16.3, 3, 'Sit in your car', act('driverSeat'), { r: 1.3 }); A.use(18.6, 3, 'The glovebox', act('glovebox'), { r: 1.2 });
     for (let i = 0; i < 5; i++) A.prop('car', 2.5 + i * 3.4, 12, { color: ['#1d1d1d', '#3a4252', '#5a4a2a', '#2b3a55', '#6a1e1e'][i] });
     A.prop('vending', 19, 7.5); A.use(18.2, 7.5, 'A vending machine', act('vending'), { r: 1.4 });
-    A.use(16.8, .8, 'Take the lift up to the casino', act('toFloor', 'garage'), { r: 1.6 });
+    A.use(2.5, .8, 'Take the lift up to the casino', act('toFloor', 'garage'), { r: 1.6 });
     A.prop('counter', 1.4, 9.4, { w: 1.2, d: .9, color: '#3a4250', top: '#5a6270' }); place(A, 'stan', 2, 9, { sit: true, face: 1, r: 1.4 });
     exit(A, 0, 7, 'The ramp up to the street', act('exitGarage'), 'e');
     if (L2.has('moriGarage') && !S().clues.drive) { A.person({ x: 13, y: 7, face: 1, skin: '#e8c4a8', hair: '#111', coat: '#2b2f36', pants: '#1c1f24', longHair: true }); A.use(13, 7, 'Detective Mori', () => L2.act(S().clues.rabbit ? 'password' : 'moriRabbit'), { r: 1.8 }); }
     for (const [x, y] of [[4, 4], [10, 4], [16, 4], [4, 10], [10, 10], [16, 10]]) A.light(x, y, { r: 5, color: '#d8ecff', i: .9, flicker: x === 10 && y === 4 ? .9 : 0 });
-    return { spawn: [1.2, 7, 0], entries: { street: [1.2, 7, 0], lift: [16.8, 1.6, 0] }, dark: .6, bg: '#060709', name: 'the car park' };
+    return { spawn: [1.2, 7, 0], entries: { street: [1.2, 7, 0], lift: [2.5, 1.8, 0] }, dark: .6, bg: '#060709', name: 'the car park' };
   }
 
   /* ======================= the casino floor ======================= */

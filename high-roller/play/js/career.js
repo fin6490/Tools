@@ -103,6 +103,7 @@ const ITEMS = {
   feltBlack: { cat: 'Table Style', name: 'Black & Gold Felt', icon: '⬛', price: 5000, felt: 'black', desc: 'High-limit room energy.' },
   backBlue: { cat: 'Table Style', name: 'Blue Card Backs', icon: '🂠', price: 150, back: 'blue', desc: 'Classic blue diamond backs.' },
   backSal: { cat: 'Table Style', name: "Sal's Seventeen Backs", icon: '📼', price: 0, back: 'sal', award: 'tape', desc: 'Midnight blue with a gold 17. Only for the one who heard the tape.' },
+  salWatch: { cat: 'Charms', name: "Sal's Pocket Watch", icon: '⌚', price: 0, swagger: 17, award: 'sal', desc: 'Gold, engraved: "Time is the only bank you can\'t beat. Spend it on people." From the safe in the Seventeen Club.' },
   backGold: { cat: 'Table Style', name: 'Gilded Card Backs', icon: '🌟', price: 4000, back: 'gold', desc: 'Gold leaf. Probably not real gold.' },
   // Deeds (story)
   spurDeed: { cat: 'Deeds', name: 'Deed to The Rusty Spur', icon: '📜', price: 1000000, swagger: 40, income: 8000, requiresChapter: 3, desc: 'Buy back the bar Sal lost. Pays $8,000 a day.' },
@@ -209,6 +210,8 @@ const ACHIEVEMENTS = [
   { id: 'l2comped', name: 'Comped', desc: 'Level 2: claim every one of tonight\'s Meridian Rewards promotions', test: () => !!(App.state.l2 && App.state.l2.money && Object.keys(App.state.l2.money.promos).length >= 5), reward: 0, swagger: 10 },
   { id: 'l2kit', name: 'Ready for the Dark', desc: 'Level 2: own a torch, running shoes and a raincoat', test: () => !!(App.state.l2 && App.state.l2.money && ['torch', 'shoes', 'coat'].every(k => App.state.l2.money.kit[k])), reward: 0, swagger: 5 },
   { id: 'l2shift', name: 'Honest Work', desc: 'Level 2: wash up at Rosie\'s when you\'re broke', test: () => App.counter('l2_shift') > 0, reward: 0, swagger: 5 },
+  { id: 'salClub', name: 'The Seventeen Club', desc: 'Find what Sal hid behind the longhorns', test: () => App.counter('salClub') > 0, reward: 0, swagger: 10 },
+  { id: 'faroCall', name: 'Calling the Turn', desc: 'Call the last three cards at faro, in order', test: () => App.counter('faroCalls') > 0, reward: 0, swagger: 5 },
   { id: 'l2poker', name: 'The Thursday Game', desc: 'Level 2: win the card game in the back of Sully\'s', test: () => App.counter('l2_poker_harbour_win') > 0, reward: 0, swagger: 10 },
   { id: 'l2chen', name: 'Private Table', desc: 'Level 2: win Mr. Chen\'s private game in the Salon', test: () => App.counter('l2_poker_chen_win') > 0, reward: 0, swagger: 15 },
   { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
@@ -503,9 +506,9 @@ const Career = {
   consume(id, placeId) {
     const m = MENU[id], st = App.state, place = PLACES[placeId];
     // a slice of pie for Doc's side job gets boxed up instead of eaten
-    if (id === 'pie' && Quests.status('docPie') === 'active' && !st.flags.hasPie) {
+    if (id === 'pie' && (Quests.status('docPie') === 'active' || Quests.status('salKey') === 'active') && !st.flags.hasPie) {
       if (!App.debit(m.price)) { UI.toast('Not enough cash', 'warn'); return false; }
-      st.flags.hasPie = true; SFX.cash(); UI.toast('🥧 Boxed up a slice for Doc', 'good'); App.save(); return true;
+      st.flags.hasPie = true; SFX.cash(); UI.toast(Quests.status('docPie') === 'active' ? '🥧 Boxed up a slice for Doc' : '🥧 Boxed up a slice of cherry for Darlene', 'good'); App.save(); return true;
     }
     const free = this.isComped(place, m) || (id === 'pie' && st.flags.freePie);
     if (!free && !App.debit(m.price)) { UI.toast('Not enough cash', 'warn'); return false; }
@@ -715,7 +718,7 @@ const Career = {
   },
   itemAvailable(id) {
     const it = ITEMS[id], st = App.state;
-    if (it.award) return st.items[id] ? null : it.award === 'tape' ? 'Somewhere in town, a tape is waiting for you' : 'Earned in the Justice ending, not for sale';
+    if (it.award) return st.items[id] ? null : it.award === 'tape' ? 'Somewhere in town, a tape is waiting for you' : it.award === 'sal' ? 'Sal keeps it somewhere safe. Ask him, once the story is over' : 'Earned in the Justice ending, not for sale';
     if (it.requires && !st.items[it.requires]) return `Requires ${ITEMS[it.requires].name}`;
     if (it.requiresFlag && !st.flags[it.requiresFlag] && st.mode === 'career') return 'Meet Doc on the Riverboat first';
     if (it.requiresChapter && st.chapter < it.requiresChapter && st.mode === 'career') return 'Not for sale yet (story)';
