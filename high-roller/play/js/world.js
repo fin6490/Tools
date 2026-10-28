@@ -145,6 +145,14 @@ const World = (() => {
       const ri = hash(i, 7, venueId.length) < 0.45 ? reg++ : -1;
       if (ri >= 0) m.npcs.push({ x: x + (hash(i, 9) < 0.5 ? 0 : 3), y: y + 2, dir: 'up', look: { shirt: ['#2980b9', '#8e44ad', '#c0392b', '#16a085'][i % 4], pants: '#2d3436', skin: '#e0ac69', hair: '#3a2a1e' }, line: RNG.pick(['Shh. I\'m counting.', 'Dealer\'s been hot all night.', 'One more hand. Then dinner. Probably.', 'You want my seat? Tough.']), name: (REGULARS[venueId] || REGULARS.spur)[ri % 4].name, crowd() { return Crowd.regular(venueId, ri, this.line); } });
     });
+    // whoever keeps the bar stands behind it (Dolores does at the Spur; she's a story character)
+    const bk = STAFF_AT[I.bar];
+    if (bk && STAFF[bk]) { const s2 = STAFF[bk]; m.npcs.push({ x: 2, y: 6, dir: 'right', name: s2.name, look: { shirt: '#f4f4f4', vest: s2.color, pants: '#1d1d1d', bow: true, skin: ['#f0c19a', '#c68863', '#8d5524', '#e0ac69'][bk.length % 4], hair: ['#3a2a1e', '#111', '#a0522d', '#ccc'][bk.length % 4] }, crowd: () => Crowd.staff(bk) }); }
+    // a rug under every table, a plant by the door, and at the Spur a jukebox in the corner
+    m.tables.forEach(tb => m.props.unshift({ type: 'furn', kind: 'rug', x: tb.x - 1, y: tb.y - 1, w: tb.w + 2, h: tb.h + 2 }));
+    for (const [px2, py2] of [[1, H - 2]]) { m.props.push({ type: 'furn', kind: 'plant', x: px2, y: py2, w: 1, h: 1 }); m.blockRect(px2, py2, 1, 1); }
+    if (venueId === 'spur') { m.props.push({ type: 'furn', kind: 'jukebox', x: 1, y: 12, w: 1, h: 1 }); m.blockRect(1, 12, 1, 1); m.act(1, 12, { fn: 'spurJukebox', label: '🎵 Jukebox' }); }
+    m.decor = venueId;
     const n = I.npc, ch = CHARACTERS[n.who];
     m.npcs.push({ x: n.x, y: n.y, dir: n.bartender ? 'right' : 'down', look: { shirt: ch.color, pants: '#222', skin: n.who === 'kessler' ? '#e8c4a0' : '#f0c19a', hair: { dolores: '#a0522d', doc: '#ddd', margot: '#111', kessler: '#999' }[n.who], hat: n.who === 'kessler' }, who: n.who, name: ch.name, story: true });
     m.labels.push({ x: W / 2, y: 0.9, text: v.name.toUpperCase(), neon: true });
@@ -266,6 +274,13 @@ const World = (() => {
       return UI.dialog(lines);
     }
     if (fn === 'jukebox') return Postcards.jukebox();
+    if (fn === 'spurJukebox') { // a dollar a song: it changes what the Spur's band plays
+      const songs = [['spur', '🎹 Honky-tonk (the house band)'], ['diner', '🎵 Doo-wop, like Mel\'s'], ['palace', '🎷 Lounge jazz'], ['salon', '🌙 Slow and noir'], ['riverboat', '🪕 Ragtime stride']];
+      const v = await UI.modal({ title: '🎵 The Spur\'s jukebox', body: h('p', 'Chrome and bubbling coloured light, and a dollar a song. Dolores pretends she isn\'t watching what you pick.'), buttons: songs.map(([k, l]) => ({ label: l, value: k })).concat([{ label: 'Leave it', value: null, cls: 'ghost' }]) });
+      if (!v) return; if (!App.debit(1)) return UI.toast('A song costs $1', 'warn');
+      st.flags.spurJuke = v; App.count('spurJukebox'); App.save(); Router.hud(); if (typeof Music !== 'undefined' && Music.refresh) Music.refresh();
+      return UI.toast(v === 'spur' ? '🎹 Back to the house band.' : RNG.pick(['🎵 The needle drops. Somebody at the bar starts humming.', '🎵 Dolores turns it up a notch without being asked.', '🎵 Mick taps his darts in time against the bar.']), 'good');
+    }
     if (fn === 'piano') return Postcards.piano();
     if (fn === 'watchcase') return Postcards.watchcase();
     if (fn === 'cellar') return Postcards.cellar();
@@ -400,6 +415,7 @@ const World = (() => {
     if (b.style !== 'palace') for (let wx = px + 4; wx < px + w - 10; wx += 14) {
       if (wx + 10 > doorPx - 2 && wx < doorPx + T + 2) continue;
       const wy = py + roofH + 18; if (wy + 10 > py + hgt - 3) continue;
+      (b.wins = b.wins || []).push([wx, wy]);
       c.fillStyle = S.trim; c.fillRect(wx - 1, wy - 1, 12, 11);
       c.fillStyle = b.style === 'salon' ? '#3a2f10' : '#9fd3f0'; c.fillRect(wx, wy, 10, 9);
       c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(wx + 1, wy + 1, 3, 2);
@@ -524,18 +540,49 @@ const World = (() => {
     m.buildings.forEach(b => paintBuilding(c, b));
     m.props.forEach(p => p.type === 'boat' ? paintBoat(c, p) : p.type === 'furn' ? paintFurn(c, p) : paintProp(c, p));
     m.tables.forEach(tb => paintTable(c, tb));
+    paintDecor(c, m);
     // street names are painted on the road itself so people walk over them
     c.font = `bold ${T * .55}px "Trebuchet MS", sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = 'rgba(255, 255, 255, .4)';
     m.labels.filter(L => L.street).forEach(L => c.fillText(L.text, L.x * T, L.y * T));
     m.canvas = cv;
   }
 
+  // around a room smaller than the screen: its wallpaper above and its floor's shadow below
+  function backdrop(c, cv, m, u, ox, oy, TS) {
+    const th = m.theme || {}, wall = th.wall || '#3a2a20', trim = th.trim || '#1d140c';
+    c.fillStyle = wall; c.fillRect(0, 0, cv.width, cv.height);
+    if (![ox, oy, TS, u].every(Number.isFinite) || !TS) return; // not laid out yet
+    c.fillStyle = trim; c.globalAlpha = .3; for (let x = ox % (12 * u); x < cv.width; x += 12 * u) c.fillRect(x, 0, 2 * u, cv.height); c.globalAlpha = 1;
+    // the back wall carries on up, lit near the room and fading into shadow; the floor's edge drops away below
+    const top = Math.max(0, oy - 4 * TS), g = c.createLinearGradient(0, top, 0, oy);
+    g.addColorStop(0, 'rgba(0,0,0,.7)'); g.addColorStop(1, 'rgba(0,0,0,.05)'); c.fillStyle = g; c.fillRect(0, top, cv.width, oy - top);
+    c.fillStyle = 'rgba(0,0,0,.7)'; c.fillRect(0, 0, cv.width, top);
+    if (oy > 6 * u) { c.fillStyle = trim; c.fillRect(0, oy - 3 * u, cv.width, 3 * u); for (let x = ox + 2 * TS; x < ox + m.w * TS; x += 4 * TS) { const gl = c.createRadialGradient(x, oy - TS * .9, 0, x, oy - TS * .9, TS * 1.4); gl.addColorStop(0, 'rgba(255,214,140,.35)'); gl.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = gl; c.fillRect(x - TS * 1.5, oy - TS * 2.4, TS * 3, TS * 3); c.fillStyle = '#ffe2a8'; c.fillRect(x - 2 * u, oy - TS - 2 * u, 4 * u, 3 * u); c.fillStyle = trim; c.fillRect(x - 3 * u, oy - TS + u, 6 * u, 2 * u); } } // wall lights
+    const bot = oy + m.h * TS; if (bot < cv.height) { c.fillStyle = 'rgba(0,0,0,.75)'; c.fillRect(0, bot, cv.width, cv.height - bot); }
+  }
+  // what hangs on a casino's back wall
+  function paintDecor(c, m) {
+    const v = m.decor, W = m.w; if (!v) return;
+    const R = (x, y, w, h2, col) => { c.fillStyle = col; c.fillRect(x, y, w, h2); };
+    const frame = (x, w, art) => { R(x, 6, w, 14, '#c9a14a'); R(x + 1, 7, w - 2, 12, '#2a1a10'); art(x + 2, 8, w - 4, 10); };
+    if (v === 'spur') {
+      frame(5 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 7, y + 4, 8, 5, '#6b4a2a'); });
+      frame(9 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 6, y + 4, 10, 5, '#8a5a33'); });
+      R(16 * T, 6, 30, 3, '#d8c8a8'); R(16 * T + 2, 3, 3, 6, '#d8c8a8'); R(16 * T + 25, 3, 3, 6, '#d8c8a8'); R(16 * T + 12, 8, 6, 8, '#6b4423'); // longhorns
+      c.font = 'bold 9px Georgia'; c.fillStyle = '#ff6b4d'; c.fillText('COLD BEER', 20 * T + 16, 14);
+    }
+    if (v === 'riverboat') for (let i = 0; i < 6; i++) { const x = (4 + i * 3.6) * T; c.fillStyle = '#c9a14a'; c.beginPath(); c.arc(x, 13, 7, 0, 7); c.fill(); c.fillStyle = '#1f4a6a'; c.beginPath(); c.arc(x, 13, 5, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x - 3, 10, 2, 2); }
+    if (v === 'riverboat') { c.strokeStyle = '#8a5a33'; c.lineWidth = 2; c.beginPath(); c.arc(W * T - 3 * T, 14, 8, 0, 7); c.stroke(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; c.beginPath(); c.moveTo(W * T - 3 * T, 14); c.lineTo(W * T - 3 * T + Math.cos(a) * 11, 14 + Math.sin(a) * 11); c.stroke(); } }
+    if (v === 'palace') for (let i = 0; i < 4; i++) { const x = (4 + i * 5) * T; frame(x, 20, (x2, y, w, h2) => { R(x2, y, w, h2, ['#6a3a2a', '#2a4a6a', '#4a6a3a', '#6a2a4a'][i]); c.fillStyle = 'rgba(255,240,200,.5)'; c.beginPath(); c.arc(x2 + w / 2, y + h2 / 2, 3, 0, 7); c.fill(); }); R(x + 26, 2, 6, 26, '#7a1d2a'); R(x + 27, 2, 1, 26, '#a33a4a'); }
+    if (v === 'salon') for (let i = 0; i < W; i += 2) { R(i * T, 4, T * 2 - 2, 22, '#2a2018'); R(i * T + 2, 6, T * 2 - 6, 18, '#1d1a14'); if (i % 6 === 2) { c.fillStyle = '#ffd98a'; c.beginPath(); c.arc(i * T + T, 12, 3, 0, 7); c.fill(); } }
+  }
+
   /* ======================= sprites ======================= */
   function playerLook() { return Looks.sprite(); }
   // 16x16 pixel person; u = screen pixels per art pixel
-  function drawPerson(c, sx, sy, u, dir, frame, L) {
-    const p = (x, y, w, hh, col) => { c.fillStyle = col; c.fillRect(Math.round(sx + x * u), Math.round(sy + y * u), Math.ceil(w * u), Math.ceil(hh * u)); };
-    c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(sx + 8 * u, sy + 15 * u, 5 * u, 1.6 * u, 0, 0, 7); c.fill();
+  function drawPerson(c, sx, sy, u, dir, frame, L, sil) {
+    const p = (x, y, w, hh, col) => { c.fillStyle = sil || col; c.fillRect(Math.round(sx + x * u), Math.round(sy + y * u), Math.ceil(w * u), Math.ceil(hh * u)); };
+    if (!sil) { c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(sx + 8 * u, sy + 15 * u, 5 * u, 1.6 * u, 0, 0, 7); c.fill(); }
     const step = frame % 2 ? 1 : 0, side = dir === 'left' || dir === 'right';
     // legs
     if (side) { p(6, 11, 2, 4 - step, L.pants); p(9, 11, 2, 3 + step, L.pants); p(6, 15 - step, 2, 1, '#222'); p(9, 14 + step, 2, 1, '#222'); }
@@ -561,7 +608,7 @@ const World = (() => {
       if (L.beard === 'full') { p(4, 5.4, 8, 2.6, H); p(6.5, 6, 3, .8, L.skin); }
       else if (L.beard === 'goatee') p(side ? fx + 2 : 7, 6.4, 2, 1.4, H);
       else if (L.beard === 'stache') p(side ? fx + 1 : 6, 5.6, side ? 3 : 4, .8, H);
-      else if (L.beard === 'stubble') { c.globalAlpha = .3; p(4, 5.2, 8, 2.8, H); c.globalAlpha = 1; }
+      else if (L.beard === 'stubble' && !sil) { c.globalAlpha = .3; p(4, 5.2, 8, 2.8, H); c.globalAlpha = 1; }
       if (L.glasses && !L.shades) { if (side) p(dir === 'left' ? 4 : 9, 3.6, 3, .5, '#222'); else { p(5, 3.4, 2.6, .5, '#222'); p(8.4, 3.4, 2.6, .5, '#222'); p(5, 3.4, .5, 1.8, '#222'); p(10.5, 3.4, .5, 1.8, '#222'); } }
       if (L.shades && !side) { p(5, 3.6, 2.5, 1.4, '#111'); p(8.5, 3.6, 2.5, 1.4, '#111'); p(7.5, 4, 1, .5, '#111'); }
       if (L.shades && side) p(dir === 'left' ? 4 : 9, 3.6, 3, 1.4, '#111');
@@ -592,7 +639,7 @@ const World = (() => {
     const cv = root.querySelector('canvas');
     const m = getMap(w.map);
     populate(m);
-    if (m.solid(w.x, w.y) && !m.doors[w.x + ',' + w.y]) [w.x, w.y] = m.start;
+    if (!Number.isFinite(w.x) || !Number.isFinite(w.y) || (m.solid(w.x, w.y) && !m.doors[w.x + ',' + w.y])) [w.x, w.y] = m.start;
     S = { root, cv, c: cv.getContext('2d'), m, p: { x: w.x, y: w.y, dir: w.dir || 'down', fx: w.x, fy: w.y, moving: null, frame: 0 }, keys: new Set(), run: false, area: null, lastStep: 0, steps: 0, raf: 0, busy: false };
     resize();
     bindInput();
@@ -975,6 +1022,7 @@ const World = (() => {
     cx = m.w <= vw ? (m.w - vw) / 2 : clamp(cx, 0, m.w - vw);
     cy = m.h <= vh ? (m.h - vh) / 2 : clamp(cy, 0, m.h - vh);
     const ox = -cx * TS, oy = -cy * TS;
+    if (m.id !== 'town') backdrop(c, cv, m, u, ox, oy, TS); // the room's own wallpaper round it, not a black void
     c.drawImage(m.canvas, Math.round(ox), Math.round(oy), m.w * TS, m.h * TS);
     const sx = x => ox + x * TS, sy = y => oy + y * TS;
     // animated bits
@@ -997,6 +1045,8 @@ const World = (() => {
     people.push({ fx: p.fx, fy: p.fy, dir: p.dir, fr: p.moving ? p.frame : 0, look: playerLook(), me: true });
     people.sort((a, b) => a.fy - b.fy);
     for (const q of people) {
+      // an inked outline first, so people read clearly against busy floors
+      for (const [ox2, oy2] of [[-.6, 0], [.6, 0], [0, -.6], [0, .6]]) drawPerson(c, sx(q.fx) + ox2 * u, sy(q.fy) - 3 * u + oy2 * u, u, q.dir, q.fr, q.look, 'rgba(14,10,8,.75)');
       drawPerson(c, sx(q.fx), sy(q.fy) - 3 * u, u, q.dir, q.fr, q.look);
       if (q.rival) { c.fillStyle = '#ff6b6b'; c.font = `bold ${6 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('♦', sx(q.fx + .5), sy(q.fy) - 4 * u + Math.sin(now / 260) * u); }
       if (q.story) { c.fillStyle = '#ffe066'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('!', sx(q.fx + .5), sy(q.fy) - 4 * u + Math.sin(now / 200) * u); }
@@ -1023,6 +1073,16 @@ const World = (() => {
       const cx0 = sx(c0.x + .5), cy0 = sy(c0.y + .5), r = (2 + tw * 2) * u;
       c.fillRect(cx0 - r, cy0 - u / 2, r * 2, u); c.fillRect(cx0 - u / 2, cy0 - r, u, r * 2);
     }
+    if (m.venue || m.room) { // inside: warm light pooled over the tables and the counters, and the corners in shadow
+      c.save(); c.globalCompositeOperation = 'lighter';
+      const pool = (x, y, r, a, col = '255,200,120') => { const g = c.createRadialGradient(sx(x), sy(y), 0, sx(x), sy(y), r * TS); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(sx(x - r), sy(y - r), 2 * r * TS, 2 * r * TS); };
+      for (const tb of m.tables) pool(tb.x + tb.w / 2, tb.y + tb.h / 2, 3.2, .1 + .02 * Math.sin(now / 900 + tb.x));
+      if (m.venue) pool(3, 7, 3.5, .1, '255,170,90');
+      for (const pr of m.props) if (pr.type === 'furn' && (pr.kind === 'jukebox' || pr.kind === 'tv')) pool(pr.x + .5, pr.y + .5, 2, .14, pr.kind === 'tv' ? '120,190,255' : '255,120,200');
+      c.restore();
+      const vg = c.createRadialGradient(cv.width / 2, cv.height / 2, Math.min(cv.width, cv.height) * .35, cv.width / 2, cv.height / 2, Math.max(cv.width, cv.height) * .75);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.4)'); c.fillStyle = vg; c.fillRect(0, 0, cv.width, cv.height);
+    }
     if (m.id === 'town') { // the sky follows the in-game clock
       const t = (App.state.clock || 540) % 1440, dark = t >= 1260 || t < 300 ? .42 : t >= 1140 ? (t - 1140) / 120 * .42 : t < 420 ? (420 - t) / 120 * .42 : 0;
       if (dark > 0) {
@@ -1033,6 +1093,8 @@ const World = (() => {
           const [x, y] = k.split(',').map(Number), g = c.createRadialGradient(sx(x + .5), sy(y + .5), 0, sx(x + .5), sy(y + .5), 1.6 * TS);
           g.addColorStop(0, `rgba(255, 200, 110, ${dark * 1.1})`); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(sx(x - 1.5), sy(y - 1.5), 4 * TS, 4 * TS);
         }
+        // lit windows: warm at night, most of them, and a few that stay dark
+        for (const b of m.buildings) for (const [wx, wy] of b.wins || []) { if (hash(wx, wy, 5) < .25) continue; c.fillStyle = `rgba(255, 214, 130, ${Math.min(.85, dark * 1.9)})`; c.fillRect(ox + wx * u, oy + wy * u, 10 * u, 9 * u); const g = c.createRadialGradient(ox + (wx + 5) * u, oy + (wy + 5) * u, 0, ox + (wx + 5) * u, oy + (wy + 5) * u, 14 * u); g.addColorStop(0, `rgba(255,200,110,${dark * .5})`); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(ox + (wx - 9) * u, oy + (wy - 9) * u, 28 * u, 28 * u); }
         for (const pr of m.props) if (pr.type === 'lamp') { const g = c.createRadialGradient(sx(pr.x + .5), sy(pr.y + .2), 0, sx(pr.x + .5), sy(pr.y + .2), 2.5 * TS); g.addColorStop(0, `rgba(255, 220, 120, ${dark * .9})`); g.addColorStop(1, 'rgba(255,220,120,0)'); c.fillStyle = g; c.fillRect(sx(pr.x - 2), sy(pr.y - 2), 5 * TS, 5 * TS); }
       }
     }
