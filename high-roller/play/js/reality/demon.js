@@ -1,7 +1,9 @@
 /* The Barman, what the bottle sends after you in Level 2. You never get a good look at it. It's too
-   tall and starved thin, hunched forward on legs that bend wrong, arms hanging past its knees, in a
-   barman's white jacket gone grey and stained, a towel over one arm. Where its face should be there's
-   only black, two red points, and a split that might be a grin. Smoke comes off it, and a low red
+   tall and starved thin, hunched right over, its spine and ribs showing through a barman's white
+   jacket gone grey and hanging off it in strips, a towel over one arm. Its legs bend backwards like a
+   dog's and its arms have a joint too many and hang past its knees. Its head hangs lower than its
+   shoulders on a long neck: a skull with skin on, two hollow sockets with a pinprick of red in each,
+   and a jaw that hangs open far too wide. Smoke comes off it, and a low red
    heat. It hides: you catch it standing very still at the far end of a room, and when you look again
    there's nothing there. When it hunts you it does it for a while: it steps out from round a corner,
    comes at you in jerky stop-motion bursts, goes up in smoke, and steps out again somewhere closer.
@@ -44,32 +46,64 @@ const L2Demon = (() => {
       // flickers like a bad signal when it's coming or going
       if ((d.mode === 'vanish' || d.mode === 'appear') && Math.random() < .3) { c.restore(); return; }
       c.scale(d.dir, 1);
-      const stalk = d.mode === 'stalk', P = d.pose, lean = stalk ? .22 : .12, step = stalk ? [-5, 3, 5, -3][P] : 0, twitch = [0, 1.5, -1, .5][P];
-      c.fillStyle = 'rgba(0,0,0,.5)'; c.beginPath(); c.ellipse(0, 0, 13, 5, 0, 0, 7); c.fill();
-      // legs: too long, bent the wrong way
-      const leg = (k) => { c.beginPath(); c.moveTo(k * 4, -40); c.lineTo(k * 6 + step * k, -20); c.lineTo(k * 3 + step * k * 1.4, 0); c.lineWidth = 5; c.strokeStyle = '#050304'; c.lineCap = 'round'; c.stroke(); };
-      leg(-1); leg(1);
-      c.save(); c.translate(0, -40); c.rotate(lean);
-      // the jacket: a barman's white, gone grey and stained, hanging off a body like a coat hanger
-      const jacket = new Path2D(); jacket.moveTo(-11, -44); jacket.quadraticCurveTo(0, -50, 12, -44); jacket.lineTo(10, 2); jacket.lineTo(-10, 2); jacket.closePath();
-      c.fillStyle = '#4e493d'; c.fill(jacket); c.fillStyle = 'rgba(60,10,10,.55)'; c.beginPath(); c.ellipse(4, -18, 5, 9, .3, 0, 7); c.ellipse(-5, -6, 4, 6, 0, 0, 7); c.fill();
-      c.fillStyle = '#0a0606'; c.beginPath(); c.moveTo(-3, -46); c.lineTo(3, -46); c.lineTo(1, 0); c.lineTo(-1, 0); c.fill(); // black under the jacket
-      c.strokeStyle = 'rgba(170,20,10,.55)'; c.lineWidth = 1.4; c.shadowColor = '#ff1a0a'; c.shadowBlur = 6; c.stroke(jacket); c.shadowBlur = 0;
-      // arms: down past its knees, fingers like wet twigs; reaching when it comes for you
-      for (const k of [-1, 1]) {
-        const reach = stalk && k === 1, ax = reach ? 30 : k * 13 + twitch, ay = reach ? -24 + twitch * 2 : 34;
-        c.beginPath(); c.moveTo(k * 11, -42); c.quadraticCurveTo(k * 16, -10, ax, ay); c.lineWidth = 4.5; c.strokeStyle = k === -1 ? '#36322a' : '#45403a'; c.stroke();
-        c.lineWidth = 1.4; c.strokeStyle = '#140c0c'; for (let f = -1; f <= 1; f++) { c.beginPath(); c.moveTo(ax, ay); c.lineTo(ax + (reach ? 9 : f * 3), ay + (reach ? f * 4 : 9)); c.stroke(); }
-      }
-      if (!stalk) { c.fillStyle = '#6e6858'; c.fillRect(-15, -26, 5, 12); } // a bar towel over one arm
-      // the head: hanging forward on a long neck, no face at all, just two red points and a long split
-      c.translate(0, -48); c.rotate(.25 + twitch * .04);
-      c.fillStyle = '#060304'; c.beginPath(); c.ellipse(3, -8, 8, 10.5, .2, 0, 7); c.fill();
-      c.strokeStyle = 'rgba(120,0,0,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(3, -8, 8, 10.5, .2, 0, 7); c.stroke();
-      const eye = .7 + Math.sin(t * 9) * .3; c.fillStyle = `rgba(255,${40 * eye | 0},20,${eye})`; c.shadowColor = '#ff2010'; c.shadowBlur = 8; c.beginPath(); c.arc(5, -10, 1.3, 0, 7); c.arc(9.5, -9.5, 1.1, 0, 7); c.fill(); c.shadowBlur = 0;
-      c.strokeStyle = `rgba(160,10,10,${.6 * d.fade})`; c.lineWidth = 1; c.beginPath(); c.moveTo(1, -3); c.quadraticCurveTo(6, 1, 11, -4); c.stroke(); // a grin that goes too far
-      c.fillStyle = 'rgba(10,4,6,.8)'; for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(1 + i * 4, 3 + ((t * 20 + i * 7) % 14), .8, 1.8, 0, 0, 7); c.fill(); } // it drips
-      c.restore(); c.restore();
+      const stalk = d.mode === 'stalk', P = d.pose, step = stalk ? [-6, 2, 6, -2][P] : 0, twitch = [0, 1.5, -1, .5][P], heave = Math.sin(t * 2.2) * 1.2;
+      // its shadow, too long, reaching away from you
+      c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(-16, 1, 30, 6, 0, 0, 7); c.fill();
+      // a tapered limb along a few joints: thick at the root, thin as a twig at the end
+      const limb = (pts, w0, w1, col) => {
+        const L = pts.length, left = [], right = [];
+        for (let i = 0; i < L; i++) { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(L - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1, w = (w0 + (w1 - w0) * i / (L - 1)) / 2; left.push([pts[i][0] - dy / n * w, pts[i][1] + dx / n * w]); right.push([pts[i][0] + dy / n * w, pts[i][1] - dx / n * w]); }
+        c.beginPath(); c.moveTo(...left[0]); for (const p of left.slice(1)) c.lineTo(...p); for (const p of right.reverse()) c.lineTo(...p); c.closePath(); c.fillStyle = col; c.fill();
+        for (const p of pts.slice(1, -1)) { c.beginPath(); c.arc(p[0], p[1], w0 * .42, 0, 7); c.fill(); } // knuckled joints
+      };
+      const body = (mono) => {
+        const C = x => mono || x;
+        // legs: long and bent the wrong way, like a dog's hind legs
+        for (const k of [-1, 1]) { const s = step * k; limb([[k * 3, -54], [k * 2 - 12 + s * .4, -34], [k * 2 - 2 + s, -10], [k * 2 + 7 + s, -1]], 6.5, 2.4, C(k < 0 ? '#0b0809' : '#120d0e')); }
+        // the body: starved, hunched over, the spine standing out along its back
+        const hx = 12 + twitch * .5, hy = -96 + heave;
+        const torso = new Path2D(); torso.moveTo(-6, -54); torso.bezierCurveTo(-14, -70, -8, -92, hx - 6, hy - 6); torso.lineTo(hx + 6, hy + 2); torso.bezierCurveTo(10, -80, 6, -64, 5, -54); torso.closePath();
+        c.fillStyle = C('#100c0d'); c.fill(torso);
+        if (!mono) {
+          c.fillStyle = '#d8d0c0'; for (let i = 0; i < 6; i++) { const u = i / 5, x = -10 + u * (hx - 4) - Math.sin(u * 3) * 3, y = -60 - u * 34; c.globalAlpha = .35 * d.fade; c.beginPath(); c.ellipse(x, y, 1.6, 1.2, 0, 0, 7); c.fill(); } c.globalAlpha = d.fade; // vertebrae
+          c.strokeStyle = 'rgba(210,190,170,.28)'; c.lineWidth = 1; for (let i = 0; i < 5; i++) { const y = -84 + i * 5; c.beginPath(); c.moveTo(-2 + i * .4, y); c.quadraticCurveTo(4, y + 3, 7 - i * .3, y - 1); c.stroke(); } // ribs, through the gap in the jacket
+          // the jacket: a barman's white, grey now, torn and hanging off it in strips
+          c.fillStyle = '#5a554a'; c.beginPath(); c.moveTo(hx - 8, hy - 4); c.lineTo(-11, -70); c.lineTo(-13, -58); for (let i = 0; i < 5; i++) c.lineTo(-12 + i * 2.2, -52 + (i % 2 ? -5 : 2)); c.lineTo(-3, -66); c.lineTo(hx - 2, hy + 4); c.closePath(); c.fill();
+          c.fillStyle = 'rgba(90,10,10,.6)'; c.beginPath(); c.ellipse(-7, -62, 3, 5, .4, 0, 7); c.fill();
+          c.strokeStyle = 'rgba(200,30,20,.5)'; c.lineWidth = 1.2; c.shadowColor = '#ff1a0a'; c.shadowBlur = 8; c.stroke(torso); c.shadowBlur = 0; // a red rim, as if it stood over a fire
+        }
+        // arms: too many joints, hanging past its knees, or reaching for you
+        for (const k of [-1, 1]) {
+          const reach = stalk && k === 1, sx0 = hx - 4 + k * 3, sy0 = hy + 4;
+          const pts = reach ? [[sx0, sy0], [sx0 + 14, sy0 + 6 + twitch], [sx0 + 30, sy0 + 2 - twitch], [sx0 + 42, sy0 + 6]] : [[sx0, sy0], [sx0 - 4 + k * 3, sy0 + 26], [sx0 + 2 + k * 2 + twitch, sy0 + 52], [sx0 + 4 + k * 2, sy0 + 76]];
+          limb(pts, 4.6, 2, C(k < 0 ? '#0e0a0b' : '#171213'));
+          const [fx, fy] = pts[3]; c.strokeStyle = C('#1a1214'); c.lineWidth = 1.3; c.lineCap = 'round';
+          for (let f = -1.5; f <= 1.5; f++) { c.beginPath(); c.moveTo(fx, fy); if (reach) c.quadraticCurveTo(fx + 8, fy + f * 3, fx + 13, fy + f * 5 + 3); else c.quadraticCurveTo(fx + f * 2, fy + 8, fx + f * 3.5 + 2, fy + 14); c.stroke(); } // fingers like wet twigs
+        }
+        // the neck, craning forward, and the head hanging lower than its shoulders
+        limb([[hx, hy], [hx + 8, hy - 2], [hx + 14, hy + 4]], 4, 3, C('#0e0a0b'));
+        c.save(); c.translate(hx + 17, hy + 8); c.rotate(.35 + twitch * .05);
+        const skull = new Path2D(); skull.moveTo(-6, -9); skull.bezierCurveTo(-8, -18, 8, -20, 8, -8); skull.bezierCurveTo(9, 0, 6, 6, 3, 9); skull.lineTo(-3, 9); skull.bezierCurveTo(-6, 4, -7, -2, -6, -9); skull.closePath();
+        c.fillStyle = C('#2a2224'); c.fill(skull);
+        if (!mono) {
+          const sh = c.createLinearGradient(-6, -12, 8, 8); sh.addColorStop(0, 'rgba(255,255,255,.08)'); sh.addColorStop(1, 'rgba(0,0,0,.6)'); c.fillStyle = sh; c.fill(skull);
+          c.strokeStyle = 'rgba(30,26,24,.9)'; c.lineWidth = .6; for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(-4 + i * 2, -15); c.quadraticCurveTo(-6 + i * 2.4, -4, -8 + i * 3, 4 + i); c.stroke(); } // a few thin strands of hair
+          // hollow sockets with a pinprick of red light deep in each
+          c.fillStyle = '#000'; c.beginPath(); c.ellipse(-1.5, -6, 2.6, 3.2, -.2, 0, 7); c.ellipse(5, -5.5, 2.3, 3, .2, 0, 7); c.fill();
+          const eye = .75 + Math.sin(t * 11) * .25; c.fillStyle = `rgba(255,${50 * eye | 0},20,${eye})`; c.shadowColor = '#ff2010'; c.shadowBlur = 10; c.beginPath(); c.arc(-1, -5.5, .8, 0, 7); c.arc(5.3, -5, .7, 0, 7); c.fill(); c.shadowBlur = 0;
+          // the jaw hangs open far too wide, the teeth all wrong
+          const open = 7 + (stalk ? 5 + Math.sin(t * 14) * 2 : 2);
+          c.fillStyle = '#050203'; c.beginPath(); c.moveTo(-3, 2); c.quadraticCurveTo(2, 3, 6, 1); c.lineTo(4, 2 + open); c.quadraticCurveTo(1, 4 + open, -2, 2 + open); c.closePath(); c.fill();
+          const glow = c.createRadialGradient(1, 4 + open / 2, 0, 1, 4 + open / 2, open); glow.addColorStop(0, 'rgba(160,10,0,.55)'); glow.addColorStop(1, 'rgba(160,10,0,0)'); c.fillStyle = glow; c.fill();
+          c.fillStyle = '#cfc4ae'; for (let i = 0; i < 5; i++) { const x = -2.4 + i * 1.8; c.beginPath(); c.moveTo(x, 2.2); c.lineTo(x + 1.2, 2.2); c.lineTo(x + .5, 3.6 + (i % 2) * 1.2); c.fill(); c.beginPath(); c.moveTo(x + .3, 2 + open); c.lineTo(x + 1.4, 2 + open); c.lineTo(x + .8, open - (i % 3) * .6); c.fill(); }
+          c.fillStyle = 'rgba(10,4,6,.85)'; for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(-1 + i * 2.5, 4 + open + ((t * 18 + i * 7) % 16), .7, 1.8, 0, 0, 7); c.fill(); } // it drips
+        }
+        c.restore();
+      };
+      if (stalk) { c.save(); c.globalAlpha = .28 * d.fade; c.translate(-4 - Math.random() * 3, 0); body('#7a0606'); c.restore(); } // a red after-image, lagging behind it
+      body(null);
+      if (!stalk) { c.fillStyle = '#6e6858'; c.beginPath(); c.moveTo(4, -86); c.lineTo(9, -86); c.lineTo(8, -70); c.lineTo(5, -73); c.closePath(); c.fill(); } // a bar towel over one arm
+      c.restore();
     };
     d.vx = d.vy = 0; d.top = () => false;
     R3.api.add(d); return d;

@@ -993,3 +993,5 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .faro-row { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-end; }
 .faro-log p { margin: .1rem 0; }
 @media (max-width: 520px) { .faro-layout { grid-template-columns: repeat(5, 1fr); } .faro-card { min-height: 54px; } }
+
+.pt.iso canvas { display: block; width: 100%; height: 100%; }

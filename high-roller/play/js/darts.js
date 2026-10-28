@@ -101,6 +101,7 @@ const Darts = (() => {
     if (App.has('salDarts')) a *= .78;
     if (App.has('flights')) a *= .9;
     if (s.mode === 'career') { const e = s.stamina / (s.staminaMax || 100); if (e < .5) a *= 1 + (.5 - e) * 1.2; }
+    if (M && M.l2 && typeof L2Bottle !== 'undefined') { const d = L2Bottle.state; a *= 1 + (d.path === 'sober' ? 0 : d.crave >= 80 ? .7 : d.crave >= 60 ? .3 : 0) + (d.buzz > 30 ? .35 : 0); } // the waking world: your hands, tonight
     return a * Mood.wobbleMult();
   }
   const armLabel = a => a < 15 ? 'Tour pro' : a < 18 ? 'County player' : a < 22 ? 'League regular' : a < 27 ? 'Pub thrower' : 'Wobbly';
@@ -278,13 +279,14 @@ const Darts = (() => {
       if (won) { App.credit(M.stake * 2); money = `You collect ${fmt(M.stake * 2)}.`; }
       else money = `${op.name} pockets your ${fmt(M.stake)}.`;
       if (op.rival) { const r = s.rivals[op.rival]; if (won) r.net -= M.stake; else { r.bank += M.stake * 2; r.net += M.stake; } }
-      if (won && !M.tournament) Quests.bump('darts2');
-      if (!M.tournament) Quests.event('darts', { won });
+      if (won && !M.tournament && !M.l2) Quests.bump('darts2');
+      if (!M.tournament && !M.l2) Quests.event('darts', { won });
       if (won && M.oppKey === 'mick') App.count('dartBeatMick');
       App.count('dartWagered', M.stake);
     }
-    if (won) { App.count('dartWins'); if (M.quest) Quests.bump(M.quest); }
-    if (!M.tournament) App.news(`🎯 Darts: ${won ? 'beat' : 'lost to'} ${op.name}${M.stake ? ` for ${fmt(M.stake)}` : ''}.`);
+    if (won) { App.count(M.l2 ? 'l2_dartswin' : 'dartWins'); if (M.quest) Quests.bump(M.quest); }
+    if (M.l2) App.count('l2_darts');
+    if (!M.tournament && !M.l2) App.news(`🎯 Darts: ${won ? 'beat' : 'lost to'} ${op.name}${M.stake ? ` for ${fmt(M.stake)}` : ''}.`);
     Career.checkAchievements(); App.save(); Router.hud();
     const lines = [h('p', M.conceded ? `You conceded to ${op.name}.` : won ? `You beat ${op.name} ${me.legs}–${op.legs}.` : `${op.name} beats you ${op.legs}–${me.legs}.`)];
     if (money) lines.push(h('p' + (won ? '.good' : '.muted'), money));
@@ -294,7 +296,7 @@ const Darts = (() => {
     if (!M.tournament) lines.push(h('p.muted.small', `Your arm: ${armLabel(wobble())}. Every dart you throw steadies it a little.`));
     if (won && M.quest === 'darts1') lines.push(h('p', '"Ha! Left hand or not, you earned that. Now: real games, real money. The regulars play for stakes; find me at the board."'));
     const tour = M.tournament;
-    await UI.modal({ title: won ? '🎯 Game shot, and the match!' : '🎯 Beaten', body: h('div', ...lines), buttons: [{ label: tour ? 'Continue' : 'Back to the Spur', cls: 'primary' }] });
+    await UI.modal({ title: won ? '🎯 Game shot, and the match!' : '🎯 Beaten', body: h('div', ...lines), buttons: [{ label: tour ? 'Continue' : M.l2 ? 'Back to the Low Tide' : 'Back to the Spur', cls: 'primary' }] });
     const res = M.resolve; M = null; res({ won });
     if (!tour) Router.go('world');
   }

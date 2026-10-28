@@ -130,6 +130,7 @@ const R3 = (() => {
         ISOART.cube(ctx, c, M, sx, sy, zoom, TW, TH, V, t);
       } else {
         const th = it.th, [sx, sy] = toScreen(th.x, th.y);
+        if (th.kind === 'person' && th.o.sit && th.o._seat == null) th.o._seat = !M.things.some(q => ['stool', 'chair', 'sofa', 'booth', 'pew', 'bench', 'benchy'].includes(q.kind) && (([a, b, c, d]) => th.x > a - .35 && th.x < c + .35 && th.y > b - .35 && th.y < d + .35)(q.box || [q.x - .3, q.y - .3, q.x + .3, q.y + .3])); // seated on nothing? bring a stool
         if (th.kind === 'person') { ISOART.person(ctx, sx, sy, zoom, th.o, th.face, t + th.phase, th.o.walking ? t * 9 : 0, V); }
         else if (th.kind === 'wall') ISOART.wall(ctx, th, toScreen, zoom, TW, TH, V, t);
         else if (th.draw) th.draw(ctx, sx, sy, zoom, t);

@@ -205,6 +205,10 @@ const ISOART = (() => {
     const fillInk = (fill, lw = 1.3) => { ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = ink; ctx.lineWidth = lw; ctx.stroke(); };
     const lit = (col, x0, x1) => { const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, shade(col, 1.18)); g.addColorStop(.55, col); g.addColorStop(1, shade(col, .7)); return g; };
     const top = -60 + sit + breathe; // shoulders
+    if (o.sit && o._seat !== false) { // something to sit on, unless the room already has a chair there
+      ctx.fillStyle = '#26262c'; ctx.beginPath(); ctx.ellipse(-1, -1, 7, 2.4, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#1a1a1e'; ctx.fillRect(-2.5, -19, 3, 18);
+      ctx.fillStyle = '#7a1a2a'; ctx.beginPath(); ctx.ellipse(-1, -20, 11, 4, 0, 0, 7); ctx.fill(); ctx.strokeStyle = ink; ctx.lineWidth = 1.2; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.ellipse(-3, -21, 6, 1.6, 0, 0, 7); ctx.fill();
+    }
     // legs and shoes (seated: knees forward)
     if (o.sit) { for (const k of [-1, 1]) { path([[k * 4 - 4, -26], [k * 4 + 4, -26], [k * 4 + 13, -20], [k * 4 + 13, -2], [k * 4 + 7, -2], [k * 4 + 7, -16], [k * 4 - 4, -18]]); fillInk(lit(pants, -8, 14)); path([[k * 4 + 6, -3], [k * 4 + 16, -3], [k * 4 + 16, 0], [k * 4 + 6, 0]]); fillInk('#141418', 1); } }
     else for (const k of [-1, 1]) {
@@ -342,7 +346,7 @@ const ISOART = (() => {
       case 'bar': box(0, 0, 0, o.w || 1, o.d || 1, 1.05, '#3a2214', '#6a4426'); break;
       case 'counter': box(0, 0, 0, o.w || 1, o.d || 1, .95, col || '#4a4f58', o.top || '#8a8f98'); break;
       case 'stool': cyl(0, 0, 0, .08, .7, '#222'); cyl(0, 0, .7, .2, .08, '#7a1a2a'); break;
-      case 'chair': box(-.22, -.22, 0, .44, .44, .45, col || '#3a4a5a'); box(-.22, -.22, .45, .44, .08, .5, col || '#3a4a5a'); break;
+      case 'chair': { const cc = col || '#3a4a5a', bk = o.back || 'n'; if (bk === 'n' || bk === 'w') box(bk === 'w' ? -.22 : -.22, -.22, .45, bk === 'w' ? .08 : .44, bk === 'w' ? .44 : .08, .5, cc); box(-.22, -.22, 0, .44, .44, .45, cc); if (bk === 's' || bk === 'e') box(bk === 'e' ? .14 : -.22, bk === 's' ? .14 : -.22, .45, bk === 'e' ? .08 : .44, bk === 's' ? .08 : .44, .5, cc); break; } // its back on the side it says
       case 'bed': box(0, 0, 0, 1.4, 2.1, .45, '#7a8188', '#e8ecef'); box(.2, .1, .45, 1, .45, .12, '#fff', '#fff'); box(0, 1, .46, 1.4, 1.05, .06, o.sheet || '#9fb2c4'); break;
       case 'desk': box(0, 0, 0, o.w || 1.4, o.d || .7, .75, col || '#5a3a22', o.top || '#6e4a2c'); if (o.lamp) { cyl(.25, .2, .75, .08, .35, '#c9a14a'); glowAt(.25, .2, 1.15, '#ffd9a0', 30); } if (o.screen) { box(.6, .1, .75, .5, .06, .35, '#111', '#222'); poly([pj(.62, .17, .8), pj(1.08, .17, .8), pj(1.08, .17, 1.07), pj(.62, .17, 1.07)], '#3d7a8a', false); } break;
       case 'sofa': box(0, 0, 0, 2, .8, .45, col || '#5a1a2a'); box(0, 0, .45, 2, .25, .4, col || '#5a1a2a'); break;
@@ -356,13 +360,47 @@ const ISOART = (() => {
       case 'cooler': box(-.2, -.2, 0, .4, .4, 1, '#e8ecef'); cyl(0, 0, 1, .15, .42, '#9cc8ee'); break;
       case 'shelf': box(0, 0, 0, o.w || 2, .6, 1.8, '#3a3f48'); for (let r = 0; r < 4; r++) for (let i = 0; i < 8; i++) { const [x, y] = pj(.1 + i * ((o.w || 2) - .2) / 8, .62, .25 + r * .42); ctx.fillStyle = o.booze ? ['#5a2a10', '#2a5a2a', '#8a6a20', '#c8c0a0'][(i + r) % 4] : ['#e04040', '#3fa9f5', '#f5c83f', '#5fd36a', '#e8e8e8'][(i * 3 + r) % 5]; ctx.fillRect(x, y - 12 * z, 5 * z, 12 * z); } break;
       case 'fridge': box(0, 0, 0, o.w || 1, .7, 2, '#d8dde2'); poly([pj(.05, .71, .2), pj((o.w || 1) - .05, .71, .2), pj((o.w || 1) - .05, .71, 1.9), pj(.05, .71, 1.9)], 'rgba(170,220,255,.35)'); glowAt((o.w || 1) / 2, .75, 1.1, '#bfe6ff', 26); break;
-      case 'cage': box(0, 0, 0, o.w || 1, o.d || 1, 1.1, '#4a3a1a', '#8a6d2e'); for (let i = 0; i <= 6; i++) { const a = pj(i * (o.w || 1) / 6, o.d || 1, 1.1), b = pj(i * (o.w || 1) / 6, o.d || 1, 2.3); ctx.strokeStyle = '#c9a14a'; ctx.lineWidth = 1.2 * z; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } text((o.w || 1) / 2, o.d || 1, 2.5, 'CASHIER', '#e8d7a8', 8, 's'); break;
+      case 'cage': { // the cashier's cage: a wood counter with a marble top, a brass grille, a lit sign
+        const w = o.w || 1, d = o.d || 1;
+        box(0, 0, 0, w, d, 1.05, '#3a2214', '#e2dccf');
+        for (let i = 0; i < 3; i++) { const x0 = .12 + i * (w - .24) / 3, x1 = x0 + (w - .24) / 3 - .1; poly([pj(x0, d, .15), pj(x1, d, .15), pj(x1, d, .88), pj(x0, d, .88)], '#4a2c16'); }
+        poly([pj(0, d - .04, 1.05), pj(w, d - .04, 1.05), pj(w, d - .04, 2.35), pj(0, d - .04, 2.35)], 'rgba(170,200,230,.14)', false);
+        ctx.strokeStyle = '#c9a14a'; ctx.lineWidth = 1 * z; for (let i = 0; i <= 18; i++) { const x = i * w / 18; if (i % 6 > 1 && i % 6 < 5 && i > 0 && i < 18) continue; const a = pj(x, d - .04, 1.05), b = pj(x, d - .04, 2.35); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } // bars, with three windows
+        for (const hgt of [1.05, 1.7, 2.35]) { const a = pj(0, d - .04, hgt), b = pj(w, d - .04, hgt); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); }
+        for (let k = 0; k < 3; k++) { const x = (k + .5) * w / 3; box(x - .22, d - .3, 1.05, .44, .26, .04, '#c9a14a'); }
+        box(0, d - .24, 2.35, w, .24, .4, '#2a170c', '#3a2214'); text(w / 2, d + .01, 2.55, 'CASHIER', '#ffd98a', 9, 's'); glowAt(w / 2, d, 2.55, '#ffd98a', 34); glowAt(w / 2, d - .4, 1.6, '#fff0c0', 30);
+        break;
+      }
       case 'grave': box(-.4, -.12, 0, .8, .24, o.h || 1.1, '#8a877e', '#9a978e'); if (o.name) text(0, .13, (o.h || 1.1) * .65, o.name, '#2a2a2a', 6, 's', 'bold'); break;
       case 'pillar': cyl(0, 0, 0, .36, .2, shade(col || '#c9b48a', .8)); cyl(0, 0, .2, .3, (o.h || 4) - .45, col || '#c9b48a'); box(-.38, -.38, (o.h || 4) - .25, .76, .76, .25, shade(col || '#c9b48a', .9)); break;
       case 'screens': { box(0, 0, 0, o.w || 3, .4, .8, '#1a1e24'); for (let r = 0; r < 3; r++) for (let i = 0; i < (o.w || 3) * 2; i++) { const q = [pj(.05 + i * .5, .1, 1 + r * .55), pj(.45 + i * .5, .1, 1 + r * .55), pj(.45 + i * .5, .1, 1.45 + r * .55), pj(.05 + i * .5, .1, 1.45 + r * .55)]; poly(q, `hsl(${190 + ((i + r) * 13) % 40},40%,${18 + ((t * 2 + i + r) | 0) % 3 * 4}%)`); } glowAt((o.w || 3) / 2, .2, 1.8, '#6fc3e8', 60); break; }
       case 'rug': poly([pj(0, 0, .01), pj(o.w || 2, 0, .01), pj(o.w || 2, o.d || 1.4, .01), pj(0, o.d || 1.4, .01)], col || '#5a1a2a'); break;
-      case 'wheel': { box(-.15, -.15, 0, .3, .3, 1.2, '#2a1a10'); const [cx, cy] = pj(0, 0, 2.4); ctx.save(); ctx.translate(cx, cy); ctx.transform(1, .5, 0, 1, 0, 0); ctx.rotate(o.spin || 0); const segs = 27; for (let i = 0; i < segs; i++) { ctx.fillStyle = ['#e8d9a8', '#3a7ad9', '#7b3fb8', '#2f9d55', '#c0392b'][i % 5]; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 34 * z, i / segs * 6.283, (i + 1) / segs * 6.283); ctx.fill(); } ctx.fillStyle = '#c9a14a'; ctx.beginPath(); ctx.arc(0, 0, 10 * z, 0, 7); ctx.fill(); ctx.restore(); text(0, .1, 3.5, 'BIG SIX', '#f0d78c', 8, 's'); break; }
-      case 'pusher': box(-.6, -.5, 0, 1.2, 1, 1.2, '#2a1a3a'); poly([pj(-.5, .51, .5), pj(.5, .51, .5), pj(.5, .51, 1.1), pj(-.5, .51, 1.1)], 'rgba(200,230,255,.25)'); for (let i = 0; i < 12; i++) { const [x, y] = pj(-.4 + (i % 6) * .16, .5, .6 + (i / 6 | 0) * .12); ctx.fillStyle = '#e8c860'; ctx.beginPath(); ctx.ellipse(x, y, 4 * z, 2 * z, 0, 0, 7); ctx.fill(); } text(0, .5, 1.45, o.label || 'COIN PUSHER', '#ffd34d', 6, 's'); glowAt(0, .55, 1, '#ffd34d', 26); break;
+      case 'wheel': { // a Big Six money wheel, upright on its cabinet and facing into the room, its bulbs chasing
+        box(-.5, -.25, 0, 1, .5, 1.05, '#2a170c', '#4a2a14'); poly([pj(-.42, .26, .15), pj(.42, .26, .15), pj(.42, .26, .9), pj(-.42, .26, .9)], '#3a2010'); text(0, .27, .55, 'BIG SIX', '#f0d78c', 5.5, 's');
+        const cz = 2.05, R = .8, yy = .02, N = 24, ang = t * .12, P = (a, r) => pj(Math.cos(a) * r, yy, cz + Math.sin(a) * r);
+        box(-.07, -.05, 1.05, .14, .1, .3, '#2a170c');
+        const ring = (r, fill, stroke) => { ctx.beginPath(); for (let i = 0; i <= 40; i++) { const p = P(i / 40 * 6.283, r); i ? ctx.lineTo(...p) : ctx.moveTo(...p); } ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.6 * z; ctx.stroke(); } };
+        ring(R * 1.17, '#3a1e0c', INK); ring(R * 1.03, '#d9b45a');
+        const cols = ['#d9c27a', '#3f74c9', '#d9c27a', '#7d45c0', '#d9c27a', '#3f74c9', '#2a8e52', '#d9c27a', '#c22f3a', '#3f74c9', '#d9c27a', '#7d45c0'];
+        for (let i = 0; i < N; i++) { const a0 = ang + i / N * 6.283, a1 = a0 + 6.283 / N, pts = [pj(0, yy, cz)]; for (let k = 0; k <= 3; k++) pts.push(P(a0 + (a1 - a0) * k / 3, R)); poly(pts, i === 0 ? '#c9a14a' : i === 12 ? '#141414' : cols[i % cols.length], false); }
+        for (let i = 0; i < N; i++) { const [px, py] = P(ang + i / N * 6.283, R); ctx.fillStyle = '#f0e0a0'; ctx.beginPath(); ctx.arc(px, py, 1.1 * z, 0, 7); ctx.fill(); }
+        for (let i = 0; i < 18; i++) { const [px, py] = P(i / 18 * 6.283, R * 1.1), on = (i + Math.floor(t * 3)) % 2 === 0; ctx.fillStyle = on ? '#ffe9a8' : '#7a6020'; ctx.beginPath(); ctx.arc(px, py, 1.7 * z, 0, 7); ctx.fill(); }
+        ring(R * .2, '#c9a14a', INK); text(0, yy + .01, cz, '★', '#3a2410', 5, 's');
+        { const a = P(Math.PI / 2, R * 1.24), b = P(Math.PI / 2, R * .93), l = P(Math.PI / 2 + .07, R * 1.2), r = P(Math.PI / 2 - .07, R * 1.2); poly([l, r, b], '#8a1a12'); ctx.fillStyle = '#d9b45a'; ctx.beginPath(); ctx.arc(a[0], a[1], 1.6 * z, 0, 7); ctx.fill(); }
+        box(-.55, -.12, 3.05, 1.1, .2, .32, '#2a170c', '#4a2a14'); text(0, .09, 3.21, 'BIG SIX', '#ffd98a', 7, 's'); glowAt(0, .1, 2.05, '#ffd76a', 46);
+        break;
+      }
+      case 'pusher': { // a coin pusher cabinet: base, a glass playfield full of coins, a lit backboard
+        box(-.6, -.5, 0, 1.2, 1, .85, '#2a1640', '#3a2050'); glowAt(0, .52, .45, '#ffd34d', 16); poly([pj(-.3, .51, .3), pj(.3, .51, .3), pj(.3, .51, .55), pj(-.3, .51, .55)], '#c9a14a');
+        poly([pj(-.6, -.5, .86), pj(.6, -.5, .86), pj(.6, .5, .86), pj(-.6, .5, .86)], '#2f6d8e');
+        for (let i = 0; i < 22; i++) { const [x, y] = pj(-.5 + (i % 6) * .2 + (i / 6 | 0) % 2 * .1, -.25 + (i / 6 | 0) * .2, .88); ctx.fillStyle = i === 9 ? '#d23a3a' : i % 7 === 3 ? '#ffd84a' : '#e6c164'; ctx.beginPath(); ctx.ellipse(x, y, 4 * z, 2 * z, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(80,50,0,.6)'; ctx.lineWidth = .6 * z; ctx.stroke(); }
+        box(-.6, -.5, .86, 1.2, .18, .3, '#9aa3ad', '#d8dee4');
+        poly([pj(-.6, .5, .86), pj(.6, .5, .86), pj(.6, .5, 1.55), pj(-.6, .5, 1.55)], 'rgba(170,200,240,.16)', false); poly([pj(.6, -.5, .86), pj(.6, .5, .86), pj(.6, .5, 1.55), pj(.6, -.5, 1.55)], 'rgba(170,200,240,.1)', false);
+        box(-.6, -.5, 1.55, 1.2, .3, .85, '#2a1640', '#3a2050');
+        for (let i = 0; i < 10; i++) { const [x, y] = pj(-.55 + i * .122, -.19, 2.36); ctx.fillStyle = (i + Math.floor(t * 4)) % 2 ? '#ffe9a8' : '#5a4a20'; ctx.beginPath(); ctx.arc(x, y, 1.4 * z, 0, 7); ctx.fill(); }
+        text(0, -.19, 2.1, o.label || 'COIN PUSHER', '#ffd34d', 6, 's'); text(0, -.19, 1.78, 'JACKPOTS', '#ff6a6a', 4.5, 's'); glowAt(0, -.1, 2, '#ffd34d', 26);
+        break;
+      }
       case 'sicbo': box(-1, -.6, 0, 2, 1.2, .8, '#3a2214', '#5a3a22'); poly([pj(-.85, -.45, .81), pj(.85, -.45, .81), pj(.85, .45, .81), pj(-.85, .45, .81)], '#123a5a'); for (let i = 0; i < 3; i++) box(-.2 + i * .15, -.05, .82, .1, .1, .1, '#f4f0e6'); break;
       case 'bin': cyl(0, 0, 0, .22, .8, '#2a3038'); break;
       case 'crate': box(-.4, -.4, 0, .8, .8, .8, '#5a4428'); break;
