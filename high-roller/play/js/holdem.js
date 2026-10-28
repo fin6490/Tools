@@ -10,6 +10,9 @@ const Holdem = (() => {
     daily: { name: 'The Spur Daily', field: 27, seats: 9, buyin: 5000, fee: 500, perLevel: 7, stack: 10000, desc: 'Three tables down to a final table. Top six paid.' },
     major: { name: 'The Tenth-Day Major', field: 45, seats: 9, buyin: 50000, fee: 5000, perLevel: 7, stack: 15000, desc: 'Five tables, deep stacks, the biggest regular field in town. Runs every tenth day (day 10, 20, 30...).', when: () => App.state.day % 10 === 0, req: () => App.state.chapter >= 2 ? null : 'Reach chapter 3 (the Gilded Palace)' },
     hr: { name: 'High Roller', field: 18, seats: 9, buyin: 500000, fee: 25000, perLevel: 6, stack: 20000, desc: 'Two tables of serious money.', req: () => App.state.chapter >= 3 ? null : 'Reach the Salon Privé (chapter 4)' },
+    // Level 2: the games in the waking city, played with real money (L2People knows the players)
+    harbour: { l2: true, name: 'The Thursday Game', field: 6, seats: 6, buyin: 500, fee: 0, perLevel: 5, stack: 5000, desc: 'The back room at Sully\'s. Six players, cash on the table, top two paid.', players: ['lou', 'mags', 'sean', 'dale', 'sully'] },
+    chen: { l2: true, name: 'Mr. Chen\'s Private Game', field: 6, seats: 6, buyin: 5000, fee: 0, perLevel: 6, stack: 10000, desc: 'A private table in the Salon. Five thousand to sit.', players: ['chen', 'hk1', 'hk2', 'hk3', 'hk4'] },
     shr: { name: 'Super High Roller', field: 9, seats: 9, buyin: 5000000, fee: 100000, perLevel: 6, stack: 20000, desc: 'Nine players, five million each. Legends only.', req: () => App.state.ending ? null : 'Finish the story first' },
   };
   const PAYOUTS = n => n <= 6 ? [.65, .35] : n <= 10 ? [.5, .3, .2] : n <= 20 ? [.4, .26, .18, .1, .06] : n <= 30 ? [.36, .22, .15, .11, .09, .07] : [.3, .2, .14, .1, .08, .07, .06, .05];
@@ -83,12 +86,14 @@ const Holdem = (() => {
     const style = RNG.pick(Object.keys(STYLES));
     return withTells({ id: 'p' + i, name: NAMES[i % NAMES.length], face: FACES[i % FACES.length], color: COLORS[i % COLORS.length], style: STYLES[style], styleName: STYLES[style].label, stack: def.stack });
   }
+  const L2STYLE = { lou: 'shark', mags: 'station', sean: 'lag', dale: 'rock', sully: 'trapper', chen: 'shark', hk1: 'tag', hk2: 'maniac', hk3: 'nit', hk4: 'lag' };
   function create(key) {
     const def = TOURNEYS[key], st = App.state;
     const names = RNG.shuffle(NAMES.slice());
     const players = [];
+    if (def.l2) for (const id of def.players) { const P = typeof L2People !== 'undefined' && L2People.pokerSeat(id); players.push(withTells({ id: 'l2' + id, l2: id, name: P ? P.name : id, face: '🂠', color: '#334', style: STYLES[L2STYLE[id] || 'tag'], styleName: STYLES[L2STYLE[id] || 'tag'].label, stack: def.stack })); }
     // rivals who can afford it buy in
-    for (const id of Object.keys(RIVALS)) {
+    if (!def.l2) for (const id of Object.keys(RIVALS)) {
       const r = st.rivals[id];
       if (players.length < def.field - 1 && r.where !== 'jail' && r.bank >= def.buyin * 2 && RNG.chance(.7)) {
         r.bank -= def.buyin + def.fee;
@@ -148,7 +153,7 @@ const Holdem = (() => {
   async function playHand() {
     const [sb, bb, ante] = blinds();
     const shoe = new Shoe(1, 1);
-    T.seats.forEach(p => { if (p) { p.inHand = p.stack > 0; p.cards = []; p.bet = 0; p.total = 0; p.folded = false; p.allin = false; p.acted = false; p.last = ''; p.shown = false; p._vp = p._pr = false; if (p.inHand && p.st) p.st.hands++; if (p.tilt) p.tilt--; } });
+    T.seats.forEach(p => { if (p) { p.inHand = p.stack > 0; p.cards = []; p.bet = 0; p.total = 0; p.folded = false; p.allin = false; p.acted = false; p.last = ''; p.shown = false; p.mucked = false; p.tell = null; p._vp = p._pr = false; if (p.inHand && p.st) p.st.hands++; if (p.tilt) p.tilt--; } });
     const players = T.seats.filter(inHand);
     if (players.length < 2) return;
     T.btn = nextIdx(T.btn, p => inHand(p));
@@ -224,7 +229,13 @@ const Holdem = (() => {
     if (act.type === 'raise' && p.acted) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'raise' && act.to <= H.currentBet) act = { type: toCall > 0 ? 'call' : 'check' };
     if (act.type === 'check' && toCall > 0) act = { type: 'fold' };
-    if (act.type === 'fold') { p.folded = true; p.foldSt = H.street; p.last = 'Fold'; log(`${p.name} folds.`); if (p.me && App.state.settings.pkSkip !== false) T.fast = true; }
+    if (act.type === 'fold') {
+      p.folded = true; p.foldSt = H.street; p.last = 'Fold';
+      // now and then someone lays down a hand face up: to show you it was good, or to needle you
+      if (!p.me && toCall > 0 && H.street > 0 && p.cards.length && RNG.chance((SHOWY[p.styleName] || .15) * .75)) { p.shown = true; log(`🃏 ${p.name} folds and shows ${cardsTxt(p.cards)}${strongish(p.cards, H.board) ? '. A real laydown.' : '. Nothing there.'}`); H.claims.push({ who: p, said: `folded face up: ${cardsTxt(p.cards)}`, truth: true }); }
+      else log(`${p.name} folds.`);
+      if (p.me && App.state.settings.pkSkip !== false) T.fast = true;
+    }
     else if (act.type === 'check') { p.last = 'Check'; }
     else if (act.type === 'call') { const amt = Math.min(toCall, p.stack); p.stack -= amt; p.bet += amt; p.total += amt; if (!p.stack) p.allin = true; p.last = p.allin ? 'All-in' : 'Call'; log(`${p.name} ${p.allin ? 'calls all-in' : 'calls'} ${fmtc(p.bet)}.`); SFX.chip(); }
     else if (act.type === 'raise') {
@@ -464,6 +475,7 @@ const Holdem = (() => {
     }
     const t = me && me.st;
     if (t && t.hands >= 5) out.push(`Your read on the player over ${t.hands} hands: plays ${Math.round(t.vpip / t.hands * 100)}% of hands, raises ${Math.round(t.pfr / t.hands * 100)}% preflop${t.faced >= 3 ? `, folds to ${Math.round(t.ftb / t.faced * 100)}% of bets` : ''}.`);
+    if (p.tell && H && p.inHand && !p.folded) out.push(`Right now your body is giving off signs of ${p.tell} (the player noticed). Show it in your one action in asterisks, and keep your words in character.`);
     out.push(`If the player asks what you had, you tell the truth about ${Math.round(p.style.honest * 100)}% of the time; otherwise lie or make them pay to see. Table psychology is the fun of it: needle, bluff with words, give fake tells, take bad beats badly or gracefully as fits you.${p.tilt ? ' You are on tilt right now: short-tempered and reckless.' : ''}`);
     return out.join(' ');
   }
@@ -477,7 +489,11 @@ const Holdem = (() => {
       H.pot = 0; render(); await pause(H.flash ? 2200 : 700); return;
     }
     while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(1500); }
-    cs.forEach(p => { p.shown = true; p.eval = Poker.best(p.cards.concat(H.board)); });
+    cs.forEach(p => { p.eval = Poker.best(p.cards.concat(H.board)); });
+    // the best hand is turned over; a beaten hand can go into the muck unseen, unless it was all in
+    // (all-in hands are tabled) or its owner likes to show
+    cs.forEach(p => { const beaten = cs.some(q => q !== p && q.eval.score > p.eval.score && q.total >= p.total); // someone who covers them has them beat: no pot left to win
+      p.shown = p.me || !beaten || p.stack === 0 || RNG.chance(SHOWY[p.styleName] || .3); p.mucked = !p.shown; if (p.mucked) { p.last = 'Mucks'; log(`🂠 ${p.name} mucks.`); } });
     render(); await pause(T.fast ? 200 : 1800);
     // side pots by contribution level
     const all = T.seats.filter(p => p && p.inHand);
@@ -566,8 +582,9 @@ const Holdem = (() => {
     await UI.modal({ title: place === 1 ? '🏆 Champion!' : prize ? '💰 In the money' : '♠️ Knocked out',
       body: h('div', h('p', `You finished ${ordinal(place)} of ${T.entrants} in ${/^the /i.test(T.def.name) ? '' : 'the '}${T.def.name}.`), prize ? h('p.good', `Prize: ${fmt(prize)}`) : h('p.muted', 'No prize this time.'),
         h('table.paytable', PAYOUTS(T.entrants).map((pc, i) => h('tr' + (i + 1 === place ? '.me-row' : ''), h('td', ordinal(i + 1)), h('td.num', fmt(Math.round(T.pool * pc))))))),
-      buttons: [{ label: 'Back to the lobby', cls: 'primary' }] });
-    T = null; Router.go('poker');
+      buttons: [{ label: T.def.l2 ? 'Back to the city' : 'Back to the lobby', cls: 'primary' }] });
+    const l2 = T.def.l2; if (l2) App.count(`l2_poker_${T.key}${place === 1 ? '_win' : ''}`);
+    T = null; Router.go(l2 ? 'world' : 'poker');
   }
 
   /* ---------- rendering ---------- */
@@ -589,7 +606,7 @@ const Holdem = (() => {
       const pos = seatPos(i, n);
       if (!p || p.stack <= 0 && !(p.inHand && H)) { el.seats.append(h('div.pk-seat.empty', { style: { left: pos.left + '%', top: pos.top + '%' } }, p && p.place ? `${p.name} · ${ordinal(p.place)}` : 'Empty')); return; }
       const cards = h('div.pk-cards');
-      if (p.cards && p.cards.length && p.inHand && !p.folded) p.cards.forEach(c => { const ce = UI.card(c, !(p.me || p.shown)); ce.classList.add('pk-card'); cards.append(ce); });
+      if (p.cards && p.cards.length && p.inHand && (!p.folded || p.shown) && !p.mucked) p.cards.forEach(c => { const ce = UI.card(c, !(p.me || p.shown)); ce.classList.add('pk-card'); cards.append(ce); });
       const turn = H && resolveMe && p.me;
       el.seats.append(h('div.pk-seat' + (p.me ? '.me' : '') + (p.folded ? '.folded' : '') + (p.last === 'Wins' ? '.wins' : '') + (turn ? '.turn' : ''), { style: { left: pos.left + '%', top: pos.top + '%' } },
         cards,
@@ -639,7 +656,7 @@ const Holdem = (() => {
   /* ---------- screens ---------- */
   function lobby(main) {
     const st = App.state, P = (st.stats.poker || {});
-    const rows = Object.keys(TOURNEYS).map(k => {
+    const rows = Object.keys(TOURNEYS).filter(k => !TOURNEYS[k].l2).map(k => {
       const d = TOURNEYS[k], why = d.req && d.req(), today = !d.when || d.when();
       const blocked = why || (!today && 'Not running today') || (st.bank < d.buyin + d.fee && `Needs ${fmt(d.buyin + d.fee)}`);
       return h('div.item' + (blocked ? '.dim' : ''), h('div.item-i', '♠️'), h('b', d.name), h('p', d.desc),
@@ -680,12 +697,25 @@ const Holdem = (() => {
       h('button.btn.sm', { onclick: () => { pick = p; dlg.close(); } }, '💬 Talk'))));
     const dlg = UI.modal({ title: '💬 Who do you want to talk to?', body });
     await dlg;
-    if (pick && T) Chat.open(Crowd.pokerOpp(pick, T));
+    if (!pick || !T) return;
+    // talking to someone who's still in the hand: watch them while they answer
+    const me = T.seats.find(p => p && p.me);
+    if (H && pick.inHand && !pick.folded && pick.cards.length && me && me.inHand && !me.folded && !(H.readOn || (H.readOn = new Set())).has(pick) && RNG.chance(.65)) {
+      H.readOn.add(pick);
+      const strong = strongish(pick.cards, H.board), honest = RNG.chance(pick.style.honest), looks = honest ? strong : !strong;
+      pick.tell = looks ? 'strength' : 'weakness';
+      const said = looks ? RNG.pick(['goes very still when you mention the pot', 'answers slowly, eyes on the board, chips untouched', 'stops shuffling their chips', 'can\'t quite stop a small smile']) : RNG.pick(['talks a little too fast', 'keeps glancing at their stack', 'laughs too loud at nothing', 'reaches for their chips, then stops']);
+      log(`👀 Read: ${pick.name} ${said}. It feels like ${looks ? 'strength' : 'weakness'}${pick.style.honest < .6 ? ', but this one acts' : ''}.`);
+      UI.toast(`👀 ${pick.name} ${said}: it feels like ${looks ? 'strength' : 'weakness'}.`, 'award', pick.style.honest < .6 ? 'Some players fake their tells.' : 'Most of their tells are honest.');
+    }
+    Chat.open(Crowd.pokerOpp(pick, T));
   }
   // the Back Room door at the Spur
   function spots(m) {
     if (m.id !== 'v:spur' || !App.state.flags.pokerRoom) return [];
     return [{ x: 11, y: 1, id: 'backroom', label: '♠ The Back Room (poker tournaments)', door: true }];
   }
-  return { lobby, table, spots, TOURNEYS, brief, _owed: p => owed(p), _think: p => thinkAI(p), active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
+  // Level 2 sits you straight down at one of its games
+  function startL2(key) { create(key); Router.go('pokertable'); }
+  return { lobby, table, spots, TOURNEYS, brief, startL2, _owed: p => owed(p), _think: p => thinkAI(p), active: () => !!T, _T: () => T, _H: () => H, _equity: equity, _chen: chen };
 })();
