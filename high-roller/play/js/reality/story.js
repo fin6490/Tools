@@ -622,7 +622,7 @@ const L2 = (() => {
     const st = S(), d = st.drink || {};
     st.drink = { sev: d.sev || 2, crave: 40, buzz: 0, drinks: 0, refused: {}, steps: {}, path: null, stage: 0, called: 0, strikes: 0, glimpsed: 1, hunts: d.hunts || 0 };
     st.ending = null; st.flags.done = false; App.save();
-    await goArea('clinic', [-1.8, -.4, 2.2]);
+    await goArea('clinic', [-2.1, .2, 2.2]);
     await say([{ who: 'narr', text: 'beep. beep. beep.' }, { who: 'okafor', text: `${first()}? You're back. Your heart stopped for two minutes. Two minutes.` }, { who: 'okafor', text: 'Whatever you saw, you don\'t have to see it again. But you can\'t do this alone. Let me help this time.' }]);
     L2Bottle.start();
   }
