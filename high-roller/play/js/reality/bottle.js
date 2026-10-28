@@ -26,7 +26,7 @@ const L2Bottle = (() => {
   const stepsDone = () => { const d = st(); return ['admit', 'flask', 'sponsor'].filter(k => d.steps[k]).length; };
   const refusals = () => Object.keys(st().refused).length;
   // craving per second: severe ~3½ minutes to the shakes, mild ~10; every recovery step eases it
-  const rate = () => { const d = st(); return [0, 100 / 600, 100 / 360, 100 / 210][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1); };
+  const rate = () => { const d = st(); return [0, 100 / 600, 100 / 360, 100 / 210][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul(); };
 
   /* ---------- food, water and sleep: the same bars as in the dream, carried over ---------- */
   // Level 2 uses the dream's own hunger, thirst and energy, so you wake up as hungry as you went to
@@ -46,7 +46,7 @@ const L2Bottle = (() => {
     const s = App.state, mx = s.staminaMax || 100;
     s.hunger = Math.max(0, (s.hunger == null ? 80 : s.hunger) - sec * 100 / 1800);
     s.thirst = Math.max(0, (s.thirst == null ? 80 : s.thirst) - sec * 100 / 1350);
-    s.stamina = Math.max(0, (s.stamina == null ? mx : s.stamina) - sec * mx / 2400);
+    s.stamina = Math.max(0, (s.stamina == null ? mx : s.stamina) - sec * mx / 2400 * L2Money.soak());
     const n = needs(), say = { hunger: ['🍔 Your stomach turns over. You can\'t remember the last thing you ate.', '🍔 Light-headed with hunger. The floor keeps tilting.'], thirst: ['💧 Your mouth is dry. A dry mouth makes the craving louder.', '💧 Parched. Your head is pounding.'], energy: ['⚡ You\'re running on empty. A coffee would help.', '⚡ Exhausted. Your legs won\'t run any more.'] };
     for (const k in say) { const lvl = n[k] <= 0 ? 2 : n[k] < 20 ? 1 : 0; if (lvl > (warned[k] || 0) && !R3.busy) L2.toast(say[k][lvl - 1]); warned[k] = lvl; }
   }
@@ -57,7 +57,7 @@ const L2Bottle = (() => {
     stop(); init(); apply();
     timer = setInterval(() => {
       if (Router.screen !== 'reality' || document.hidden || !App.state || !App.state.l2) return;
-      const d = st(); tick++;
+      const d = st(); tick++; L2Money.tick(!!hunt);
       if (sober()) { drainNeeds(R3.busy ? .35 : 1); d.crave = 0; d.buzz = 0; apply(); L2.hud(); return; }
       drainNeeds(R3.busy ? .35 : 1);
       if (d.buzz > 0) d.buzz = Math.max(0, d.buzz - 100 / 180);
@@ -79,7 +79,7 @@ const L2Bottle = (() => {
     const d = st(), c = sober() ? 0 : d.crave, b = d.buzz, root = document.querySelector('.l2');
     const n = needs(), weak = n.hunger <= 0 || n.thirst <= 0 || n.energy <= 0;
     const body = (n.hunger < 20 ? .88 : 1) * (n.energy < 20 ? .85 : 1) * (weak ? .85 : 1);
-    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .006 + (c - 80) / 20 * .014 : 0, sway: (c >= 60 ? .01 + (c - 60) / 40 * .012 : 0) + b / 100 * .03 + (n.hunger <= 0 ? .012 : 0), slow: (c >= 80 ? .72 : b > 50 ? .85 : 1) * body, noRun: n.energy <= 0 });
+    if (R3.setFx) R3.setFx({ shake: c >= 80 ? .006 + (c - 80) / 20 * .014 : 0, sway: (c >= 60 ? .01 + (c - 60) / 40 * .012 : 0) + b / 100 * .03 + (n.hunger <= 0 ? .012 : 0), slow: (c >= 80 ? .72 : b > 50 ? .85 : 1) * body, noRun: n.energy <= 0, run: L2Money.runBoost() });
     document.body.classList.toggle('l2-weak', weak && (Router.screen === 'reality'));
     const cls = { 'l2-sweats': c >= 35, 'l2-nausea': c >= 60, 'l2-shakes': c >= 80, 'l2-drunk': b > 30 };
     const on = Router.screen === 'reality' || App.inReality(); // the shakes follow you to the tables
@@ -89,72 +89,96 @@ const L2Bottle = (() => {
   }
 
   /* ---------- the Barman: what comes for you if you don't stop ---------- */
-  // A hallucination in a stained white apron. He comes when the craving has been screaming for a while,
-  // or every few minutes once you've given in. He walks through walls. Outrun him for half a minute, get
-  // out of the room, or call Mori. If he catches you, you go down; the third time, you don't get up.
+  // A hallucination: a black shape with a red glow, the size of a person. While the craving is bad you
+  // catch it standing still in the dark spots of a place, and it's gone when you get near or the
+  // light finds it. When the craving has been screaming for a while (or every few minutes once you've
+  // given in) it hunts you, flat through the air and straight through walls. Light slows it: get
+  // under a streetlamp, or carry a torch (wallet.js). Outrun it for half a minute, get out of the place, or call Mori. If it
+  // catches you, you see its face; the third time, you don't get up.
   const NO_HUNT = ['cemetery', 'spur', 'clinic'];
+  let stalkCool = 40, stalking = null;
   function demons(d) {
     if (hunt) { if (R3.area !== hunt.area) endHunt('door'); return; }
     if (R3.busy || NO_HUNT.includes(R3.area) || L2.has('done')) { maxedFor = 0; return; }
-    huntCool = Math.max(0, huntCool - 1);
-    if (!d.glimpsed && d.crave >= 80) { d.glimpsed = 1; glimpse(); return; }
+    huntCool = Math.max(0, huntCool - 1); stalkCool = Math.max(0, stalkCool - 1);
+    if (!d.glimpsed && d.crave >= 80) { d.glimpsed = 1; stalk(true); return; }
+    // the bad hours: it watches you from the dark
+    if (!stalking && !stalkCool && (d.crave >= 65 || d.path === 'gaveIn') && Math.random() < (L2Money.torchOn() ? .02 : .04)) { stalkCool = 35 + Math.random() * 40; stalk(false); }
     if (d.path === 'gaveIn') { d.hn = (d.hn == null ? 120 : d.hn) - 1; if (d.hn <= 0) { d.hn = 150 + Math.random() * 90; startHunt(); } return; }
     maxedFor = d.crave >= 95 ? maxedFor + 1 : 0;
     if (maxedFor >= 25 && !huntCool) { maxedFor = 0; startHunt(); }
   }
-  const makeBarman = () => L2Demon.make();
   let actx = null;
-  function thump(v) { // a heartbeat, louder as he gets closer
+  function thump(v) { // a heartbeat, louder as it gets closer
     if (App.state.settings.sound === false) return;
     try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const t = actx.currentTime;
       for (const [dt, f] of [[0, 62], [.16, 52]]) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = f; g.gain.setValueAtTime(.0001, t + dt); g.gain.exponentialRampToValueAtTime(.35 * v, t + dt + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dt + .22); o.connect(g); g.connect(actx.destination); o.start(t + dt); o.stop(t + dt + .25); }
     } catch (e) { }
   }
-  // the first time: he's just standing there, at the edge of the light, and then he isn't
-  function glimpse() {
-    const P = R3.player, g = makeBarman(), id = {};
-    g.position.set(P.x + Math.sin(P.yaw + .5) * 9, 0, P.z + Math.cos(P.yaw + .5) * 9); g.rotation.y = Math.atan2(P.x - g.position.x, P.z - g.position.z);
-    let life = 0; R3.api.every((t, dt) => { if (!id) return; life += dt; if (g.parent) g.userData.animate(t, dt, 9, 0); g.visible = life < 2.4 && Math.random() > .05; if (life > 2.4 && g.parent) g.parent.remove(g); });
-    L2Demon.sting();
-    L2.toast('🍸 Something tall at the edge of the light, in a rotten barman\'s apron. Too many eyes. When you look again, it\'s gone.');
+  // somewhere dark, on screen, a fair way off
+  function darkSpot(near, far) {
+    const P = R3.player, M = R3.map; if (!M) return null;
+    for (let i = 0; i < 60; i++) {
+      const a = Math.random() * Math.PI * 2, r = near + Math.random() * (far - near), x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r;
+      if (!M.inside(Math.floor(x), Math.floor(y)) || M.blocked(Math.floor(x), Math.floor(y))) continue;
+      if (M.lights.some(l => Math.hypot(l.x - x, l.y - y) < l.r * .6)) continue;
+      const [sx, sy] = R3.toScreen(x, y); if (sx < 30 || sy < 120 || sx > innerWidth - 30 || sy > innerHeight - 60) continue;
+      return [x, y];
+    }
+    return null;
+  }
+  // standing very still in the dark. Go towards it and it's gone.
+  function stalk(first) {
+    if (!R3.map) return;
+    const at = darkSpot(6, 10); if (!at) return;
+    const g = L2Demon.make(); g.x = at[0]; g.y = at[1];
+    const S = stalking = { g, life: 0, seen: false, area: R3.area };
+    R3.api.every((t, dt) => {
+      if (stalking !== S) return;
+      S.life += dt; const dist = Math.hypot(R3.player.x - g.x, R3.player.y - g.y); g.update(t, dt, dist);
+      if (g.fade > .5 && !S.seen) { S.seen = true; L2Demon.sting(); }
+      if ((S.seen && g.fade < .03 && g.want === 0) || S.life > 9 || R3.area !== S.area || hunt) { stalking = null; L2Demon.remove(g); }
+    });
+    if (first) L2.toast('🍸 Over there, in the dark: someone standing very still, black against a red glow. You walk towards it. Nobody.');
   }
   function startHunt() {
-    if (hunt || typeof THREE === 'undefined' || !R3.api.root) return;
-    const P = R3.player, g = makeBarman(), d = st();
-    g.position.set(P.x - Math.sin(P.yaw) * 11, 0, P.z - Math.cos(P.yaw) * 11);
+    if (hunt || !R3.map) return;
+    if (stalking) { L2Demon.remove(stalking.g); stalking = null; }
+    const P = R3.player, g = L2Demon.make(), d = st();
+    const at = darkSpot(9, 12) || [P.x - 10, P.y - 10]; g.x = at[0]; g.y = at[1]; g.mode = 'fly';
     const H = hunt = { g, area: R3.area, t: 0, beat: 0 };
     document.body.classList.add('l2-hunted'); App.count('l2_hunted');
-    L2.toast(d.hunts ? '🍸 He\'s back. Run.' : `🍸 Something is behind you. Footsteps that don't echo. Don't look. Run. (${R3.touch ? 'Push the stick all the way out, or tap 🏃' : 'Hold Shift'}. Get out of the room, or call Mori.)`);
+    L2.toast(d.hunts ? '🍸 It\'s back. Run. Find the light.' : `🍸 Something is coming for you through the air, through the walls. Light slows it. Run. (${R3.touch ? 'Tap 🏃, or drag far' : 'Hold Shift'}. Get out of here, or call Mori.)`);
     d.hunts = (d.hunts || 0) + 1;
     R3.api.every((t, dt) => {
       if (hunt !== H || R3.busy) return;
       H.t += dt;
-      const dx = R3.player.x - g.position.x, dz = R3.player.z - g.position.z, dist = Math.hypot(dx, dz);
-      const speed = 2 + Math.min(.9, H.t * .035); // walk 2.1, run 3.6 (less with the shakes)
-      g.position.x += dx / dist * speed * dt; g.position.z += dz / dist * speed * dt; g.rotation.y = Math.atan2(dx, dz);
-      g.userData.animate(t, dt, dist, speed); L2Demon.tick(dt, Math.max(0, 1 - dist / 14));
-      g.visible = Math.random() > .03;
-      H.beat -= dt; if (H.beat <= 0) { H.beat = .35 + Math.min(.7, dist / 14); thump(Math.max(.2, 1 - dist / 14)); }
-      if (dist < .75) caught();
-      else if (H.t > 28) endHunt('outran');
+      const dx = R3.player.x - g.x, dy = R3.player.y - g.y, dist = Math.hypot(dx, dy) || .01;
+      g.update(t, dt, dist);
+      const speed = (2.6 + Math.min(1, H.t * .04)) * g.pace * (L2Money.torchOn() ? .8 : 1); // faster than a walk, slower than a run (less with the shakes, or a torch in its face)
+      g.vx = dx / dist * speed; g.vy = dy / dist * speed; g.x += g.vx * dt; g.y += g.vy * dt;
+      L2Demon.tick(dt, Math.max(0, 1 - dist / 12));
+      H.beat -= dt; if (H.beat <= 0) { H.beat = .35 + Math.min(.7, dist / 12); thump(Math.max(.2, 1 - dist / 12)); }
+      if (dist < .7) caught();
+      else if (H.t > (L2Money.torchOn() ? 20 : 28)) endHunt('outran');
     });
   }
   function endHunt(how) {
     const H = hunt; if (!H) return; hunt = null; huntCool = 90; L2Demon.quiet();
-    if (H.g.parent) H.g.parent.remove(H.g);
+    L2Demon.remove(H.g);
     document.body.classList.remove('l2-hunted');
     if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); }
     if (how === 'outran') L2.toast('🍸 You look back. Nothing. Just a coat on a hook. Your heart doesn\'t believe it.');
-    if (how === 'door') L2.toast('🍸 The door closes behind you. He doesn\'t follow. Not yet.');
-    if (how === 'mori') L2.toast('🍸 Mori\'s voice in your ear, steady, and he steps back into the dark like he was never there.');
+    if (how === 'door') L2.toast('🍸 The door closes behind you. It doesn\'t follow. Not yet.');
+    if (how === 'mori') L2.toast('🍸 Mori\'s voice in your ear, steady, and the red goes out of the dark like it was never there.');
   }
   async function caught() {
     const d = st(); endHunt('caught'); huntCool = 120; d.strikes = (d.strikes || 0) + 1; App.save();
     await L2Demon.scare(); apply();
     if (d.strikes >= 3) { await L2.death(); return; }
     await L2.ui.say(d.strikes === 1
-      ? [{ who: 'narr', text: 'Fingers like cold nails close on your shoulder. Its face splits open an inch from yours, and the breath that comes out of it is your brand. Your knees go.' }, { who: 'narr', text: 'When you open your eyes you\'re on the floor and somebody is asking if you\'re all right. It\'s gone. The taste isn\'t.' }]
-      : [{ who: 'narr', text: 'It catches you by the collar and lifts you off your feet. Something in your chest stutters and catches, like a song skipping on a jukebox.' }, { name: 'A security guard', who: 'x', text: 'Hey. Hey! Stay with me. Look at me.' }, { who: 'narr', text: 'You come back. Barely. Next time, you might not.' }]);
+      ? [{ who: 'narr', text: 'It has your face. Grey and starved, the eyes gone yellow in the skull, the lips split: you, a few years and a lot of bottles from now. The breath that comes out of it is your brand. Your knees go.' }, { who: 'narr', text: 'When you open your eyes you\'re on the floor and somebody is asking if you\'re all right. It\'s gone. The taste isn\'t.' }]
+      : [{ who: 'narr', text: 'Your own dead face, so close you can see the broken veins. It takes you by the collar and lifts you off your feet. Something in your chest stutters and catches, like a song skipping on a jukebox.' }, { name: 'A security guard', who: 'x', text: 'Hey. Hey! Stay with me. Look at me.' }, { who: 'narr', text: 'You come back. Barely. Next time, you might not.' }]);
     d.crave = Math.max(d.crave, 85); apply();
   }
 
@@ -215,5 +239,5 @@ const L2Bottle = (() => {
   const path = () => st().path;
   const ready = () => !!st().steps.sponsorOffered && !sober();
 
-  return { needs, feed, roundNeeds, _startHunt: startHunt, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, get state() { return st(); }, SEV };
+  return { needs, feed, roundNeeds, _startHunt: startHunt, _stalk: stalk, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, get state() { return st(); }, SEV };
 })();

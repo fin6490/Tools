@@ -179,8 +179,8 @@ body.l2-weak .l2-vignette { box-shadow: inset 0 0 160px 60px rgba(0,0,0,.75); }
 .l2-gmsg { margin: .3rem 0 .6rem; color: #c3cbd4; font-size: .9rem; line-height: 1.45; min-height: 1.3em; }
 .l2-gsub { margin: 0 0 .5rem; color: var(--l2-dim); font-size: .82rem; line-height: 1.45; }
 .l2-tally { font-variant-numeric: tabular-nums; font-size: .95rem; margin-bottom: .6rem; }
-.l2-board { display: grid; gap: 6px; margin-bottom: .7rem; }
-.l2-board.wheel { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+.l2-board { display: grid; gap: 6px; margin-bottom: .7rem; grid-auto-rows: min-content; align-items: start; }
+.l2-board.bigsix { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
 .l2-board.sicbo { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
 .l2-spot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: .55rem .3rem; min-height: 54px; background: rgba(14,74,52,.55); border: 1px solid rgba(217,194,122,.35);
   border-radius: 4px; color: #f3ead8; font: inherit; cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
@@ -258,3 +258,28 @@ body.l2-hunted .l2-grain { opacity: .16; }
 .ph-piece { width: 64px; height: 64px; padding: 0; border: 1px solid var(--l2-line); background: #000; cursor: pointer; overflow: hidden; clip-path: polygon(0 4%, 10% 0, 30% 3%, 55% 0, 80% 4%, 100% 0, 97% 30%, 100% 60%, 96% 100%, 70% 97%, 40% 100%, 15% 96%, 0 100%, 3% 60%); }
 .ph-piece.sel { outline: 2px solid var(--l2-accent); outline-offset: 2px; clip-path: none; }
 .ph-img { display: block; width: 100%; height: 100%; transition: transform .2s; }
+
+/* the floor games draw their machine at the top of the bet sheet */
+.l2-over.game { flex-direction: column; justify-content: flex-end; align-items: center; }
+.l2-over.game > * { flex: none; }
+.l2-stage { display: block; width: min(760px, 100%); border-radius: 8px 8px 0 0; background: #000; pointer-events: none; box-shadow: 0 -8px 30px rgba(0,0,0,.6); }
+@media (max-height: 760px) { .l2-over.game .l2-game { max-height: 46vh; max-height: 46dvh; } }
+
+/* the scare: the face fills the screen, under the flash */
+.l2-scareface { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 89; pointer-events: none; }
+/* in the isometric world the prompt sits low, out of the way of your character */
+.r3-prompt { top: auto !important; bottom: calc(max(28px, env(safe-area-inset-bottom)) + 84px); }
+
+/* Level 2 money: the torch in the HUD, goals, promotions, and Rosie's sink */
+.l2-torch { font-size: .8rem; color: #ffe9a8; white-space: nowrap; } .l2-torch:empty { display: none; }
+.l2-goal { height: 6px; border-radius: 3px; background: rgba(255,255,255,.1); margin-top: .35rem; overflow: hidden; }
+.l2-goal i { display: block; height: 100%; background: linear-gradient(90deg, #c9a14a, #ffe08a); }
+.l2-clue.got b { color: #8fd18f; }
+.l2-promos .l2-btn { margin-top: .45rem; }
+b.l2-sub2 { display: block; margin-top: 1rem; color: #e8d7a8; font-size: .9rem; }
+.l2-sink { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; padding: .6rem 0; }
+.l2-plate { aspect-ratio: 1; border-radius: 50%; border: 3px solid #e8e8e8; cursor: pointer; min-height: 56px;
+  background: radial-gradient(circle at 50% 50%, rgba(120,90,40,calc(var(--dirt) * .9)) 0 40%, rgba(90,70,40,calc(var(--dirt) * .6)) 41% 60%, transparent 61%), radial-gradient(circle, #fff 0 62%, #dfe6ea 63%); transition: transform .08s; }
+.l2-plate:active { transform: scale(.93); } .l2-plate.clean { box-shadow: 0 0 14px rgba(200,240,255,.7); cursor: default; }
+/* on a phone the right-hand chips wrap under each other, so the objective keeps a readable width */
+@media (max-width: 560px) { .l2-left { flex: 1 1 46%; min-width: 46%; } .l2-right { flex-wrap: wrap; justify-content: flex-end; row-gap: 6px; } .l2-torch { padding: .35rem .5rem; border-radius: 20px; background: var(--l2-glass); border: 1px solid var(--l2-line); } }
