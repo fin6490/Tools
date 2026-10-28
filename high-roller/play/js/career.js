@@ -209,6 +209,8 @@ const ACHIEVEMENTS = [
   { id: 'l2comped', name: 'Comped', desc: 'Level 2: claim every one of tonight\'s Meridian Rewards promotions', test: () => !!(App.state.l2 && App.state.l2.money && Object.keys(App.state.l2.money.promos).length >= 5), reward: 0, swagger: 10 },
   { id: 'l2kit', name: 'Ready for the Dark', desc: 'Level 2: own a torch, running shoes and a raincoat', test: () => !!(App.state.l2 && App.state.l2.money && ['torch', 'shoes', 'coat'].every(k => App.state.l2.money.kit[k])), reward: 0, swagger: 5 },
   { id: 'l2shift', name: 'Honest Work', desc: 'Level 2: wash up at Rosie\'s when you\'re broke', test: () => App.counter('l2_shift') > 0, reward: 0, swagger: 5 },
+  { id: 'l2poker', name: 'The Thursday Game', desc: 'Level 2: win the card game in the back of Sully\'s', test: () => App.counter('l2_poker_harbour_win') > 0, reward: 0, swagger: 10 },
+  { id: 'l2chen', name: 'Private Table', desc: 'Level 2: win Mr. Chen\'s private game in the Salon', test: () => App.counter('l2_poker_chen_win') > 0, reward: 0, swagger: 15 },
   { id: 'l2fever', name: 'Fever Dream', desc: 'Fall asleep in the Meridian and dream your way back to town', test: () => !!(App.state.l2 && App.state.l2.slept), reward: 0, swagger: 5 },
   { id: 'goodListener', name: 'Good Listener', desc: 'Hear your first whisper: ask someone about the right thing in chat', test: () => App.counter('whispers') >= 1, reward: 0, swagger: 2 },
   { id: 'allEars', name: 'All Ears', desc: 'Hear every whisper in town', test: () => App.counter('whispers') >= WHISPERS.length, reward: 0, swagger: 6 },

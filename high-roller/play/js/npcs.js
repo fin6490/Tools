@@ -883,6 +883,7 @@ const Crowd = {
     const style = p.styleName || 'regular';
     const ctx = () => `You are in ${T.def.name}, a no-limit hold'em tournament, level ${T.level + 1}, playing as a ${p.styleName}. Your stack: ${Math.round(p.stack).toLocaleString()} chips; the player's stack: ${Math.round((T.seats.find(q => q && q.me) || {}).stack || 0).toLocaleString()}. ${Holdem.brief(p)} Talk about the actual hands and the actual action above, specifically, like a real player at this table would.`;
     if (p.rival) return { ...Chat.spec(p.rival), brief: ctx };
+    if (p.l2 && typeof L2People !== 'undefined') return L2People.pokerSpec(p.l2, ctx);
     return this.base('poker:' + p.name, p.name, p.face || '🃏', '#0b4022', `a ${style} poker player in the Back Room tournament`, `Poker tournament grinder with a ${style} style. Chatty at the table in the way poker players are: needling, superstitious, full of bad-beat stories, always fishing for information and giving away as little as they can.`, 'Shuffle up and deal.', ctx);
   },
 };

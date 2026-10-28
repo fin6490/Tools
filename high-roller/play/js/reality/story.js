@@ -149,6 +149,7 @@ const L2 = (() => {
     document.body.classList.add('reality');
     // back from a table or the slots: the money you won or lost is real money
     if (st.atTable) { st.cash = App.state.bank; App.state.bank = st.dreamBank; App.state.venue = st.dreamVenue || App.state.venue; st.atTable = false; L2Money.back(st.cash); App.save(); }
+    if (App.counter('l2_poker_harbour_win') > 0 && !st.flags.wonHarbour) { st.flags.wonHarbour = 1; setTimeout(() => toast('♠ You took down the Thursday game. In the Salon, Mr. Chen has heard.'), 1500); }
     const host = h('div.r3');
     main.append(h('div.l2', host,
       h('div.l2-hud', h('div.l2-left', h('div.l2-obj'), h('div.l2-needs', { title: 'Hunger · Thirst · Energy' }, [['hunger', '🍔'], ['thirst', '💧'], ['energy', '⚡']].map(([k, i]) => h('div.l2-nb', h('span', i), h('div.l2-bar', h('i.l2-' + k)))))), h('div.l2-right', h('span.l2-crave'), h('span.l2-torch'), h('span.l2-cash'), h('button.l2-ic', { onclick: journal, title: 'Notebook', 'aria-label': 'Notebook' }, '📓'), h('button.l2-ic', { onclick: menu, title: 'Menu', 'aria-label': 'Menu' }, '☰'))),
@@ -379,6 +380,15 @@ const L2 = (() => {
       if (ok) toTable(() => Router.openTable(game));
     },
     async wheel() { await L2Games.wheel(); },
+    // the card games: the Thursday game in Sully's back room, then Mr. Chen's private table
+    async pokerGame(key) {
+      const d = Holdem.TOURNEYS[key];
+      if (key === 'harbour' && !has('heardGame')) return say([{ name: 'Sully', who: 'x', text: 'That\'s private. Friends of friends. *He doesn\'t look up from the radio he\'s fixing.*' }]);
+      const c = await choose(`${d.name}: ${d.desc} ${fmt(d.buyin)} to sit. You have ${fmt(S().cash)}.`, [['sit', `♠ Sit down (${fmt(d.buyin)})`], ['no', 'Not now']]);
+      if (c !== 'sit' || !L2Money.pay(d.buyin)) return;
+      App.count('l2_poker');
+      toTable(() => Holdem.startL2(key));
+    },
     async rewards() { await L2Money.rewards(); },
     async pawn() { await L2Money.sully(); },
     async eddieGrave() { await L2Money.eddieGrave(); },

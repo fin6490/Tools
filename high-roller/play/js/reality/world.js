@@ -389,7 +389,8 @@ const L2World = (() => {
   // Sully's Pawn & Hardware: guitars on the wall, watches under glass, and a safe
   function pawn(A, mk) {
     room(A, mk, 11, 8, { floor: 'wood', wall: '#4a3a2a', hangN: [{ kind: 'guitar', at: 1, w: .8, y: 1.2, h: 1.2, body: '#a0522d' }, { kind: 'guitar', at: 2, w: .8, y: 1.2, h: 1.2, body: '#2a2a2a' }, { kind: 'guitar', at: 3, w: .8, y: 1.2, h: 1.2, body: '#c8a040' }, { kind: 'neon', at: 5, w: 3, y: 2, h: .5, text: 'WE BUY GOLD', labelColor: '#ffd27a', size: 11 }, { kind: 'clock', at: 8.6, w: .5, y: 2, h: .5 }],
-      hangW: [{ kind: 'board', at: 3, w: 2, y: 1.2, h: 1, color: '#5a4a3a' }, { kind: 'tv', at: 6, w: 1.2, y: 1.4, h: .8 }] });
+      hangW: [{ kind: 'door', at: .6, w: 1.2, y: 0, h: 2.2, color: '#2a1a10', label: 'BACK ROOM', labelColor: '#e8d7a8' }, { kind: 'board', at: 3, w: 2, y: 1.2, h: 1, color: '#5a4a3a' }, { kind: 'tv', at: 6, w: 1.2, y: 1.4, h: .8 }] });
+    A.use(.8, 1.3, 'The back room: the Thursday game', act('pokerGame', 'harbour'), { r: 1.2 });
     A.prop('display', 1, 2.2, { w: 4 }); A.prop('safe', 9.4, .9); A.prop('shelf', 6.6, .3, { w: 2.4 }); A.prop('crate', 9.6, 5); A.prop('crate', 9.6, 6);
     place(A, 'sully', 3, 1.4, { face: 1, r: 1.2 });
     A.use(3, 3.4, 'Sully, behind the counter', act('pawn'), { r: 1.8 });
