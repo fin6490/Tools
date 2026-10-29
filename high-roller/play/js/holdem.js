@@ -657,14 +657,15 @@ const Holdem = (() => {
   function lobby(main) {
     const st = App.state, P = (st.stats.poker || {});
     const rows = Object.keys(TOURNEYS).filter(k => !TOURNEYS[k].l2).map(k => {
-      const d = TOURNEYS[k], why = d.req && d.req(), today = !d.when || d.when();
+      const d = TOURNEYS[k], lap = App.inLaptop(), why = !lap && d.req && d.req(), today = lap || !d.when || d.when(); // on the laptop every table runs, every hour
       const blocked = why || (!today && 'Not running today') || (st.bank < d.buyin + d.fee && `Needs ${fmt(d.buyin + d.fee)}`);
       return h('div.item' + (blocked ? '.dim' : ''), h('div.item-i', '♠️'), h('b', d.name), h('p', d.desc),
         h('div.tags', h('span', `${fmt(d.buyin)} + ${fmt(d.fee)}`), h('span', `${d.field} players`), h('span', `Pool ${fmt(d.buyin * d.field)}`), h('span', `1st ${fmt(Math.round(d.buyin * d.field * PAYOUTS(d.field)[0]))}`)),
         blocked ? h('div.muted.small', '🔒 ' + blocked) : h('button.btn.sm.primary', { onclick: () => start(k) }, 'Register'));
     });
-    main.append(h('div.shop', h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, '← Back to the Spur'),
-      h('div', h('h2', '♠️ The Back Room'), h('p.muted', 'Smoke-stained felt, a busted jukebox, and the best poker in town.'))),
+    const lap = App.inLaptop();
+    main.append(h('div.shop', h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, lap ? '← Close the laptop' : '← Back to the Spur'),
+      lap ? h('div', h('h2', '♠️ LuckyStrike.bet Poker'), h('p.muted', 'Sit and go, every hour, against strangers with names like ace_king_99.')) : h('div', h('h2', '♠️ The Back Room'), h('p.muted', 'Smoke-stained felt, a busted jukebox, and the best poker in town.'))),
       h('p.muted.small', `Your record: ${P.played || 0} tournaments · ${P.cashes || 0} cashes · ${P.wins || 0} wins · ${fmt(P.won || 0)} won.${App.perk('odds') ? '' : ''} No-limit hold'em: starting stacks are tournament chips; blinds rise every few hands.`),
       h('div.shopgrid', rows)));
   }

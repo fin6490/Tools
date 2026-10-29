@@ -209,7 +209,7 @@ const Rivals = {
 
   /* ---------- seats at the table ---------- */
   onTableOpen(t) {
-    if (App.state.mode !== 'career' || App.inReality()) return;
+    if (App.state.mode !== 'career' || App.offStory()) return;
     t.rivals = [];
     const here = this.at(t.ctx.venueId);
     for (const id of here) if (RIVALS[id].games.includes(t.game.id) ? RNG.chance(0.6) : RNG.chance(0.15)) this.sit(t, id, true);

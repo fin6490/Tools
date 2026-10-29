@@ -280,7 +280,7 @@ const Slots = (() => {
   /* ---------- the screen ---------- */
   const bet = () => SLOT_MACHINES[V].bets[betIdx];
   const art = g => SlotArt.svg(SLOT_MACHINES[V].cls, g);
-  const money = x => x >= 1000 || Number.isInteger(x) ? fmt(Math.round(x)) : '$' + x.toFixed(2);
+  const money = x => x >= 1000 || Number.isInteger(x) ? fmt(Math.round(x)) : CUR + x.toFixed(2);
   function screen(main, venueId) {
     V = venueId || App.state.venue || 'spur';
     if (!SLOT_MACHINES[V]) V = 'spur';
@@ -292,7 +292,7 @@ const Slots = (() => {
     for (let r = 0; r < 5; r++) { const col = h('div.sl-reel'); el.cells.push([0, 1, 2].map(() => { const c = h('div.sl-cell'); col.append(c); return c; })); reels.append(col); }
     main.append(h('div.sl.' + m.cls,
       h('div.table-top', el.back = h('button.btn.ghost.sm', { onclick: () => { if (!busy) { auto = 0; Router.go('world'); } } }, '← Leave'),
-        h('div.tt-title', h('b', m.name), h('span', `${App.inReality() ? 'The Meridian' : VENUES[V].name} · ${m.tag}`)), h('button.btn.ghost.sm', { onclick: paytable }, 'Paytable')),
+        h('div.tt-title', h('b', m.name), h('span', `${App.inReality() ? 'The Meridian' : App.inLaptop() ? 'LuckyStrike.bet' : VENUES[V].name} · ${m.tag}`)), h('button.btn.ghost.sm', { onclick: paytable }, 'Paytable')),
       el.meters = h('div.sl-meters'),
       h('div.sl-cab', h('div.sl-marquee', m.name), el.jps = h('div.sl-jps'), reels, el.over = h('div.sl-over'), el.banner = h('div.sl-banner'), el.msg = h('div.sl-msg', 'Good luck!')),
       h('div.sl-ctl',

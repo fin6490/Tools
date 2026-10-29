@@ -1,0 +1,92 @@
+/* Level 3: the bedsit (js/bedsit.js). First person, full screen, one bar left. */
+body.bedsit { overflow: hidden; background: #000; }
+body.bedsit main.screen { padding: 0; margin: 0; max-width: none; }
+.l3 { position: fixed; inset: 0; z-index: 40; background: #000; color: #e8e2d4; font-family: Georgia, 'Times New Roman', serif; user-select: none; -webkit-user-select: none; --blur: 0px; }
+.l3-host { position: absolute; inset: 0; filter: blur(var(--blur)); transition: filter 1.2s; }
+.l3-host canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; cursor: grab; }
+.l3-vign { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .55) 100%); transition: background 2s; }
+.l3.sick .l3-vign { background: radial-gradient(ellipse at center, transparent 35%, rgba(40, 0, 0, .6) 100%); animation: l3-pulse 2.6s ease-in-out infinite; }
+@keyframes l3-pulse { 50% { opacity: .65; } }
+
+/* the HUD: the drink, the money, the debt */
+.l3-hud { position: absolute; top: 10px; left: 12px; right: 56px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; justify-content: space-between; pointer-events: none; text-shadow: 0 1px 3px #000; }
+.l3-drink { display: flex; align-items: center; gap: 8px; background: rgba(10, 8, 6, .62); border: 1px solid rgba(232, 184, 90, .35); border-radius: 10px; padding: 6px 10px; }
+.l3-drink span { font-size: 18px; }
+.l3-bar { width: 140px; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.l3-bar i { display: block; height: 100%; width: 50%; background: linear-gradient(90deg, #b8762a, #f0c060); transition: width .6s; }
+.l3-drink em { font-style: normal; font-size: 13px; min-width: 74px; }
+.l3-drink.low { border-color: #c0392b; animation: l3-pulse 1.2s ease-in-out infinite; }
+.l3-drink.low .l3-bar i { background: linear-gradient(90deg, #7a1a12, #e0503a); }
+.l3-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; background: rgba(10, 8, 6, .62); border: 1px solid rgba(255, 255, 255, .12); border-radius: 10px; padding: 6px 10px; }
+.l3-cash { font: 700 18px/1 system-ui, sans-serif; color: #7dffb0; }
+.l3-goal { width: 140px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.l3-goal i { display: block; height: 100%; background: #7dffb0; }
+.l3-right small, .l3-cans { font: 12px system-ui, sans-serif; opacity: .8; }
+.l3-cans { flex-basis: 100%; }
+.l3-menu { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(10, 8, 6, .62); color: #e8e2d4; font-size: 20px; cursor: pointer; }
+
+/* looking at things */
+.l3-cross { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255, 255, 255, .6); box-shadow: 0 0 3px #000; pointer-events: none; }
+.l3-prompt { position: absolute; left: 50%; top: calc(50% + 22px); transform: translateX(-50%); padding: 4px 12px; border-radius: 14px; background: rgba(10, 8, 6, .7); font-size: 15px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+.l3-prompt.on { opacity: 1; }
+.l3-prompt.on::after { content: '  ✋'; }
+.l3-use { position: absolute; right: 18px; bottom: 22px; width: 68px; height: 68px; border-radius: 50%; border: 2px solid rgba(232, 184, 90, .55); background: rgba(10, 8, 6, .6); font-size: 30px; cursor: pointer; touch-action: none; }
+.l3-stick { position: absolute; display: none; width: 100px; height: 100px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .06); pointer-events: none; }
+.l3-stick i { position: absolute; left: 30px; top: 30px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, .35); }
+.l3-hint { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); max-width: min(560px, calc(100% - 120px)); text-align: center; font: 13px/1.4 system-ui, sans-serif; background: rgba(10, 8, 6, .65); padding: 6px 12px; border-radius: 10px; pointer-events: none; transition: opacity 1.5s; }
+.l3-hint.out { opacity: 0; }
+
+/* narration and choices: your own voice */
+.l3-say { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; padding: 16px 16px max(28px, env(safe-area-inset-bottom)); background: linear-gradient(transparent 45%, rgba(0, 0, 0, .7)); cursor: pointer; font-family: Georgia, serif; color: #ece6d6; }
+.l3-say.pick { cursor: default; align-items: center; background: rgba(0, 0, 0, .55); }
+.l3-line { max-width: 640px; width: 100%; background: rgba(14, 11, 8, .92); border: 1px solid rgba(232, 184, 90, .3); border-radius: 12px; padding: 14px 18px; box-shadow: 0 8px 30px rgba(0, 0, 0, .6); }
+.l3-line b { display: block; color: #e8b85a; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.l3-line p { margin: 0; font-size: 17px; line-height: 1.5; }
+.l3-line i { color: #c8c0b0; }
+.l3-say > small { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font: 11px system-ui, sans-serif; opacity: .5; }
+.l3-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.l3-btn { font: 15px system-ui, sans-serif; text-align: left; color: #ece6d6; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .18); border-radius: 9px; padding: 10px 14px; cursor: pointer; }
+.l3-btn:hover, .l3-btn:focus-visible { background: rgba(232, 184, 90, .18); border-color: rgba(232, 184, 90, .6); }
+.l3-btn.ghost { background: none; }
+.l3-toast { position: fixed; z-index: 70; left: 50%; top: 70px; transform: translateX(-50%); max-width: calc(100% - 32px); background: rgba(14, 11, 8, .92); border: 1px solid rgba(232, 184, 90, .35); color: #ece6d6; font: 14px/1.4 Georgia, serif; padding: 8px 14px; border-radius: 10px; animation: l3-toast 3.2s forwards; pointer-events: none; }
+@keyframes l3-toast { 0% { opacity: 0; transform: translate(-50%, -8px); } 8%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+
+/* the laptop */
+.l3-laptop { position: fixed; inset: 0; z-index: 55; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 0, 0, .6); }
+.l3-lap { width: min(720px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; background: #0c1424; color: #e8eef8; border: 10px solid #1c1c22; border-radius: 14px; padding: 14px 16px 18px; font-family: system-ui, sans-serif; box-shadow: 0 0 60px rgba(90, 140, 255, .3); }
+.l3-lap-h { display: flex; align-items: center; gap: 12px; }
+.l3-lap-h b { color: #ffd34d; font: 700 22px Georgia, serif; }
+.l3-lap-h span { margin-left: auto; color: #5aff9a; font-weight: 700; }
+.l3-x { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #2a3a5a; background: #16233a; color: #e8eef8; font-size: 22px; cursor: pointer; }
+.l3-lap h4 { margin: 14px 0 6px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #8aa0c8; }
+.l3-lap-note { margin: 8px 0; color: #9ab; font-size: 13px; }
+.l3-goal2 { position: relative; height: 18px; border-radius: 9px; background: #16233a; overflow: hidden; }
+.l3-goal2 i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #1e7a44, #5aff9a); }
+.l3-goal2 span { position: relative; display: block; text-align: center; font-size: 12px; line-height: 18px; text-shadow: 0 1px 2px #000; }
+.l3-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.l3-game { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 10px; border-radius: 9px; border: 1px solid #2a3a5a; background: #16233a; color: #e8eef8; cursor: pointer; min-height: 64px; }
+.l3-game:hover, .l3-game:focus-visible { background: #2a4a7a; }
+.l3-game span { font-size: 20px; }
+.l3-game b { font-size: 14px; }
+.l3-game small { font-size: 11px; color: #8aa0c8; }
+.hud-l3 { background: #0c1424; }
+
+/* the endings */
+.l3-end { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; background: #000; animation: l3-fade 2.5s; }
+.l3-end.good { background: radial-gradient(ellipse at 50% 30%, #5a6a7a, #1a2028 70%); }
+@keyframes l3-fade { from { opacity: 0; } }
+.l3-end-box { max-width: 520px; text-align: center; color: #ece6d6; font-family: Georgia, serif; }
+.l3-end-box small { letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+.l3-end-box h2 { font-size: 40px; margin: 8px 0 14px; color: #c0392b; }
+.l3-end.good h2 { color: #f0d890; }
+.l3-end-box p { font-size: 17px; line-height: 1.5; }
+.l3-end-box .muted { opacity: .65; font-size: 14px; }
+.l3-end-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.l3-end-btns .l3-btn { text-align: center; }
+.l3-go { border-color: #8a9496; }
+
+@media (max-width: 600px) {
+  .l3-bar, .l3-goal { width: 96px; }
+  .l3-line p { font-size: 16px; }
+  .l3-hint { bottom: 100px; }
+}
