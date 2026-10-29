@@ -215,6 +215,7 @@ const ACHIEVEMENTS = [
   { id: 'faroCall', name: 'Calling the Turn', desc: 'Call the last three cards at faro, in order', test: () => App.counter('faroCalls') > 0, reward: 0, swagger: 5 },
   { id: 'l2keeps', name: 'A Shoebox', desc: 'Level 2: find all ten keepsakes in the city', test: () => App.counter('l2_keeps') >= 10, reward: 0, swagger: 10 },
   { id: 'l2jobs', name: 'Good Neighbour', desc: 'Level 2: do four side jobs for people in the city', test: () => App.counter('l2_jobs') >= 4, reward: 0, swagger: 8 },
+  { id: 'l3auto', name: 'Set and Forget', desc: 'Level 3: let an autobet run fifty bets on the laptop', test: () => App.counter('l3_auto50') > 0, reward: 0, swagger: 5 },
   { id: 'l3mirror', name: 'It\'s You', desc: 'Level 3: look in the mirror in the bedsit', test: () => App.counter('l3_mirror') > 0, reward: 0, swagger: 10 },
   { id: 'l3bad', name: 'Last Orders', desc: 'Level 3: reach a bad true ending', test: () => App.counter('l3_end_collapse') + App.counter('l3_end_broke') > 0, reward: 0, swagger: 10 },
   { id: 'l3good', name: 'Day One', desc: 'Level 3: win back £500,000, clear the debt and check into rehab', test: () => App.counter('l3_end_rehab') > 0, reward: 0, swagger: 50 },
@@ -389,8 +390,9 @@ const Career = {
   },
 
   checkAchievements() {
+    const lap = App.inLaptop(); // at the laptop in Level 3, only Level 3's own: the dream's wait for the dream
     for (const a of ACHIEVEMENTS) {
-      if (App.state.achievements[a.id]) continue;
+      if (App.state.achievements[a.id] || (lap && !/^l3/.test(a.id))) continue;
       let ok = false; try { ok = a.test(); } catch (e) { }
       if (ok) {
         App.state.achievements[a.id] = App.state.day;
