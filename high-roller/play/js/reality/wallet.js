@@ -26,23 +26,28 @@ const L2Money = (() => {
     torch: { icon: '🔦', name: 'A torch', price: 120, desc: 'Your own light, wherever you go. The Barman slows in it, and you only have to outlast it for 20 seconds, not 30. Batteries run down (faster while it hunts you).' },
     shoes: { icon: '👟', name: 'Running shoes', price: 220, desc: 'Somebody\'s, barely worn. You run a quarter faster.' },
     coat: { icon: '🧥', name: 'A raincoat', price: 160, desc: 'Out in the rain without one, your energy drains half as fast again.' },
+    // the proper stuff: Sully gets it in once you've needed it (and it costs what it's worth)
+    maglite: { icon: '🔦', name: 'A police Maglite', price: 1200, needs: 'torch', when: () => (L2Bottle.state.hunts || 0) >= 1, wait: 'once the thing in the dark has come for you', desc: 'Twice the reach of the cheap one, and the batteries last twice as long. The Barman hates it.' },
+    runners: { icon: '👟', name: 'Proper running shoes', price: 1500, needs: 'shoes', when: () => Object.keys(L2.state.clues).length >= 4, wait: 'when you\'re deeper into this', desc: 'Box-fresh. You run nearly half as fast again.' },
+    wax: { icon: '🧥', name: 'A waxed jacket', price: 900, needs: 'coat', desc: 'Warm and dry. The rain stops wearing you down at all, and you tire a little slower.' },
+    medal: { icon: '📿', name: 'A St Christopher medal', price: 2000, when: () => (L2Bottle.state.hunts || 0) >= 2, wait: 'when you need it', desc: 'The patron saint of travellers. Sully swears it\'s silver. It comes for you less often with it on.' },
   };
   const BATTERY = 15, MEDS = 300, RING = 9500, STONE = 4500, ADVANCE = 5000;
   const torchOn = () => owns('torch') && S().battery > 0;
   // what the torch gives the engine: a wide cone of white light round you, flickering when it's low
-  const lamp = () => torchOn() ? { r: 5.8, i: S().battery < 15 && Math.random() < .2 ? .3 : .95, color: '#fff4d8' } : null;
+  const lamp = () => torchOn() ? { r: owns('maglite') ? 7.4 : 5.8, i: S().battery < 15 && Math.random() < .2 ? .3 : .95, color: '#fff4d8' } : null;
   // called once a second by the bottle's clock
   function tick(hunting) {
     if (!torchOn()) return;
     const dark = R3.map && (R3.map.info.dark || 0) >= .4;
     if (!dark && !hunting) return;
-    const m = S(), was = m.battery; m.battery = Math.max(0, m.battery - (hunting ? 1.6 : .12));
+    const m = S(), was = m.battery; m.battery = Math.max(0, m.battery - (hunting ? 1.6 : .12) * (owns('maglite') ? .5 : 1));
     if (was >= 15 && m.battery < 15) L2.toast('🔦 The torch is going yellow. Batteries at the Kwik Mart or Sully\'s.');
     if (was > 0 && m.battery <= 0) L2.toast('🔦 The torch dies. The dark comes back in.');
   }
   // the rain soaks you without a coat
-  const soak = () => (R3.map && R3.map.info.rain && !owns('coat')) ? 1.5 : 1;
-  const runBoost = () => owns('shoes') ? 1.25 : 1;
+  const soak = () => owns('wax') ? .9 : (R3.map && R3.map.info.rain && !owns('coat')) ? 1.5 : 1;
+  const runBoost = () => owns('runners') ? 1.42 : owns('shoes') ? 1.25 : 1;
   const craveMul = () => (S().meds ? .6 : 1) * (S().ring ? .85 : 1);
 
   /* ---------- Sully's Pawn & Hardware ---------- */
@@ -56,15 +61,18 @@ const L2Money = (() => {
     }
     for (;;) {
       const opts = [];
-      for (const k in KIT) if (!owns(k)) opts.push([k, `${KIT[k].icon} ${KIT[k].name} (${fmt(KIT[k].price)})`]);
+      const later = [];
+      for (const k in KIT) { const it = KIT[k]; if (owns(k) || (it.needs && !owns(it.needs))) continue; if (it.when && !it.when()) { later.push(it.name.replace(/^An? /, '')); continue; } opts.push([k, `${it.icon} ${it.name} (${fmt(it.price)})`]); }
+      if (typeof L2Life !== 'undefined' && L2Life.jobOn('marcus') && !L2.state.sax) opts.push(['sax', `🎷 The Selmer saxophone in the window (${fmt(600)})`]);
       if (owns('torch')) opts.push(['battery', `🔋 Batteries (${fmt(BATTERY)})`]);
       if (!m.ring) opts.push(['ring', `💍 Your wedding ring (${fmt(RING)})`]);
       opts.push(['sell', '🎲 What do you buy?'], ['bye', 'Leave']);
-      const c = await choose(`Sully's Pawn & Hardware. ${fmt(cash())} in your wallet.`, opts);
+      const c = await choose(`Sully's Pawn & Hardware. ${fmt(cash())} in your wallet.${later.length ? ` (Sully: "I can get you ${later.join(', ').toLowerCase()} too. Come back ${KIT[Object.keys(KIT).find(k => KIT[k].name.replace(/^An? /, '') === later[0])].wait}.")` : ''}`, opts);
       if (c === 'bye' || c == null) return;
       if (c === 'sell') { await say([{ name: 'Sully', who: 'x', text: 'Gold, watches, guitars. Not that. *He nods at your hands.* I don\'t buy shakes. And not your phone either, you\'ll need it tonight.' }]); continue; }
       if (c === 'battery') { if (pay(BATTERY)) { m.battery = 100; L2.toast('🔋 Fresh batteries. The torch throws a hard white circle.'); } continue; }
       if (c === 'ring') { await ring(); continue; }
+      if (c === 'sax') { if (pay(600)) { L2.state.sax = 1; App.save(); await say([{ name: 'Sully', who: 'x', text: 'Marcus\'s horn? *He lifts it out of the window like a sleeping baby.* About time somebody did. Tell him I oiled the keys every month.' }]); } continue; }
       const it = KIT[c]; if (!it) return;
       const yes = await choose(`${it.icon} ${it.name}, ${fmt(it.price)}. ${it.desc}`, [['buy', `Buy it (${fmt(it.price)})`], ['no', 'Not now']]);
       if (yes !== 'buy' || !pay(it.price)) continue;
@@ -163,6 +171,7 @@ const L2Money = (() => {
     const m = S(), was = m.sat; if (was == null) return; m.sat = null;
     const diff = now - was;
     if (diff > 0) App.count('l2_walkup');
+    if (typeof L2Life !== 'undefined') { if (diff <= -200) L2Life.lift(-4, 'down at the tables'); else if (diff >= 200) L2Life.lift(3, 'up at the tables'); }
     if (diff >= 5000) App.count('l2_bigwin');
     if (diff < 0 && -diff >= Math.max(100, was * .4) && !L2Bottle.path()) {
       const d = L2Bottle.state; d.crave = Math.min(100, d.crave + 15);

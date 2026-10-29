@@ -26,7 +26,7 @@ const L2Bottle = (() => {
   const stepsDone = () => { const d = st(); return ['admit', 'flask', 'sponsor'].filter(k => d.steps[k]).length; };
   const refusals = () => Object.keys(st().refused).length;
   // craving per second: severe ~6½ minutes to the shakes, mild ~14; every recovery step eases it
-  const rate = () => { const d = st(); return [0, 100 / 840, 100 / 560, 100 / 400][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul(); };
+  const rate = () => { const d = st(); return [0, 100 / 840, 100 / 560, 100 / 400][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul() * (typeof L2Life !== 'undefined' ? L2Life.craveMul() : 1); };
 
   /* ---------- food, water and sleep: the same bars as in the dream, carried over ---------- */
   // Level 2 uses the dream's own hunger, thirst and energy, so you wake up as hungry as you went to
@@ -57,7 +57,7 @@ const L2Bottle = (() => {
     stop(); init(); apply();
     timer = setInterval(() => {
       if (Router.screen !== 'reality' || document.hidden || !App.state || !App.state.l2) return;
-      const d = st(); tick++; L2Money.tick(!!hunt);
+      const d = st(); tick++; L2Money.tick(!!hunt); if (typeof L2Life !== 'undefined') L2Life.tick(!!hunt);
       if (sober()) { drainNeeds(R3.busy ? .35 : 1); d.crave = 0; d.buzz = 0; apply(); L2.hud(); return; }
       drainNeeds(R3.busy ? .35 : 1);
       if (d.buzz > 0) d.buzz = Math.max(0, d.buzz - 100 / 180);
@@ -105,9 +105,9 @@ const L2Bottle = (() => {
     if (!d.glimpsed && d.crave >= 80) { d.glimpsed = 1; stalk(true); return; }
     // the bad hours: it watches you from the dark
     if (!stalking && !stalkCool && (d.crave >= 65 || d.path === 'gaveIn') && Math.random() < (L2Money.torchOn() ? .02 : .04)) { stalkCool = 35 + Math.random() * 40; stalk(false); }
-    if (d.path === 'gaveIn') { d.hn = (d.hn == null ? 120 : d.hn) - 1; if (d.hn <= 0) { d.hn = 150 + Math.random() * 90; startHunt(); } return; }
+    if (d.path === 'gaveIn') { d.hn = (d.hn == null ? 120 : d.hn) - 1; if (d.hn <= 0) { d.hn = (150 + Math.random() * 90) * (L2Money.owns('medal') ? 1.5 : 1); startHunt(); } return; }
     maxedFor = d.crave >= 95 ? maxedFor + 1 : 0;
-    if (maxedFor >= 25 && !huntCool) { maxedFor = 0; startHunt(); }
+    if (maxedFor >= (L2Money.owns('medal') ? 40 : 25) && !huntCool) { maxedFor = 0; startHunt(); }
   }
   let actx = null;
   function thump(v) { // a heartbeat, louder as it gets closer
@@ -163,7 +163,7 @@ const L2Bottle = (() => {
     if (stalking) { L2Demon.remove(stalking.g); stalking = null; }
     const g = L2Demon.make(), d = st(); g.mode = 'vanish'; g.fade = 0; g.x = -99; g.y = -99;
     const H = hunt = { g, area: R3.area, t: 0, beat: 0, dur: 38 + Math.random() * 14, phase: 'hidden', timer: 1.2, shows: 0 };
-    document.body.classList.add('l2-hunted'); App.count('l2_hunted');
+    document.body.classList.add('l2-hunted'); App.count('l2_hunted'); if (typeof L2Life !== 'undefined') L2Life.lift(-6, 'hunted');
     L2.toast(d.hunts ? '🍸 It\'s back. Keep moving. Stay in the light.' : `🍸 Something is hunting you. It comes out of the dark, round corners. Keep moving and stay in the light. (${R3.touch ? 'Tap 🏃 to run' : 'Hold Shift to run'}. Leaving this place, a cab or calling Mori ends it.)`);
     d.hunts = (d.hunts || 0) + 1;
     R3.api.every((t, dt) => {
@@ -195,12 +195,13 @@ const L2Bottle = (() => {
     const H = hunt; if (!H) return; hunt = null; huntCool = 90; L2Demon.quiet();
     L2Demon.remove(H.g);
     document.body.classList.remove('l2-hunted');
-    if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); }
+    if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); if (typeof L2Life !== 'undefined') L2Life.lift(4, 'you made it'); }
     if (how === 'outran') L2.toast('🍸 The smoke thins, and doesn\'t come back. It\'s gone. For now. Your heart doesn\'t believe it.');
     if (how === 'door') L2.toast('🍸 The door closes behind you. It doesn\'t follow. Not yet.');
     if (how === 'mori') L2.toast('🍸 Mori\'s voice in your ear, steady, and the red goes out of the dark like it was never there.');
   }
   async function caught() {
+    if (typeof L2Life !== 'undefined') L2Life.lift(-15, 'it caught you');
     const d = st(); endHunt('caught'); huntCool = 120; d.strikes = (d.strikes || 0) + 1; App.save();
     await L2Demon.scare(); apply();
     if (d.strikes >= 3) { await L2.death(); return; }
@@ -211,23 +212,23 @@ const L2Bottle = (() => {
   }
 
   /* ---------- drinking, and not ---------- */
-  async function drink(where, cost = 0) {
+  async function drink(where, cost = 0, strength = 60) {
     const d = st();
     if (cost && L2.state.cash < cost) { L2.toast('Not enough money.'); return false; }
     if (cost) L2.state.cash -= cost;
     if (hunt) endHunt('fed');
-    d.drinks++; d.crave = 0; d.stage = 0; d.buzz = Math.min(100, d.buzz + 60); App.count('l2_drinks');
+    d.drinks++; d.crave = 0; d.stage = 0; d.buzz = Math.min(100, d.buzz + strength); App.count('l2_drinks');
     await L2.ui.say([{ who: 'narr', text: pick(['The first swallow burns, and then the world goes quiet and kind. Your hands are still. You hate how much better you feel.', 'It goes down like an apology. The shakes stop before the glass is empty.', 'Warmth, and then nothing. The nothing is what you came for.']) }]);
     apply(); L2.hud(); check(); App.save(); return true;
   }
-  function refuse(where) { const d = st(); if (d.refused[where]) return; d.refused[where] = 1; d.crave = Math.max(0, d.crave - 10); App.count('l2_refused'); L2.toast(`🕊️ You said no (${refusals()} of 3).`); check(); App.save(); }
+  function refuse(where) { const d = st(); if (d.refused[where]) return; d.refused[where] = 1; d.crave = Math.max(0, d.crave - 10); App.count('l2_refused'); if (typeof L2Life !== 'undefined') L2Life.lift(5, 'you said no'); L2.toast(`🕊️ You said no (${refusals()} of 3).`); check(); App.save(); }
   // a drink is offered: take it or don't
   async function offer(where, line, cost = 0) {
     const d = st(); if (d.path || d.refused[where]) return;
     const c = await L2.ui.choose(line, [['no', where === 'delia' ? '"Just water, Delia."' : 'Leave it.'], ['yes', cost ? `Drink it (${fmt(cost)})` : 'Drink it']]);
     if (c === 'yes') await drink(where, cost); else { refuse(where); await L2.ui.say([{ who: 'narr', text: pick(['You don\'t. It costs more than it should, saying no. It always will.', 'Your hand stops halfway. You put it in your pocket and leave it there.', 'Not tonight. You say it out loud, to make it true.']) }]); }
   }
-  async function step(k) { const d = st(); if (d.steps[k] || d.path) return; d.steps[k] = 1; App.save(); check(); }
+  async function step(k) { const d = st(); if (d.steps[k] || d.path) return; d.steps[k] = 1; if (typeof L2Life !== 'undefined') L2Life.lift(8, 'one step'); App.save(); check(); }
   async function callMori() {
     const d = st();
     if (!d.steps.sponsorOffered) return;
