@@ -69,13 +69,14 @@ class Shoe {
 }
 
 // Money: whole dollars show without cents; payouts like 3:2 or 0.95 can leave cents.
+let CUR = '$'; // Level 3 is in pounds: the Router sets this
 function fmt(n, opts = {}) {
   const neg = n < 0; n = Math.abs(n);
   const cents = Math.round(n * 100) % 100 !== 0;
   let s;
-  if (opts.short && n >= 1e6) s = '$' + (n / 1e6).toFixed(n >= 1e7 ? 1 : 2).replace(/\.0+$/, '') + 'M';
-  else if (opts.short && n >= 1e4) s = '$' + (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K';
-  else s = '$' + n.toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
+  if (opts.short && n >= 1e6) s = CUR + (n / 1e6).toFixed(n >= 1e7 ? 1 : 2).replace(/\.0+$/, '') + 'M';
+  else if (opts.short && n >= 1e4) s = CUR + (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K';
+  else s = CUR + n.toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
   return (neg ? '-' : '') + (opts.sign && !neg ? '+' : '') + s;
 }
 const round2 = x => Math.round(x * 100) / 100;

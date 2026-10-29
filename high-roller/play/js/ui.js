@@ -208,7 +208,7 @@ class Table {
         h('div.tt-right',
           this.plEl = h('div.pl', { role: 'status', 'aria-label': 'Session profit and loss' }),
           this.extraEl = h('div.tt-extra'),
-          App.inReality() ? null : h('button.btn.ghost.sm.talk', { onclick: () => Chat.open(Dealers.spec(ctx.venueId, game.id, this)), title: 'Chat with the dealer' }, '💬 ' + Dealers.name(ctx.venueId, game.id)),
+          App.offStory() ? null : h('button.btn.ghost.sm.talk', { onclick: () => Chat.open(Dealers.spec(ctx.venueId, game.id, this)), title: 'Chat with the dealer' }, '💬 ' + Dealers.name(ctx.venueId, game.id)),
           h('button.btn.ghost.sm', { onclick: () => this.showInfo() }, 'Paytables'))),
       this.seatsEl = h('div.seats'),
       this.felt = h('div.felt.felt-' + felt,

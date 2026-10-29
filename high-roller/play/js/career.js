@@ -214,6 +214,9 @@ const ACHIEVEMENTS = [
   { id: 'faroCall', name: 'Calling the Turn', desc: 'Call the last three cards at faro, in order', test: () => App.counter('faroCalls') > 0, reward: 0, swagger: 5 },
   { id: 'l2keeps', name: 'A Shoebox', desc: 'Level 2: find all ten keepsakes in the city', test: () => App.counter('l2_keeps') >= 10, reward: 0, swagger: 10 },
   { id: 'l2jobs', name: 'Good Neighbour', desc: 'Level 2: do four side jobs for people in the city', test: () => App.counter('l2_jobs') >= 4, reward: 0, swagger: 8 },
+  { id: 'l3mirror', name: 'It\'s You', desc: 'Level 3: look in the mirror in the bedsit', test: () => App.counter('l3_mirror') > 0, reward: 0, swagger: 10 },
+  { id: 'l3bad', name: 'Last Orders', desc: 'Level 3: reach a bad true ending', test: () => App.counter('l3_end_collapse') + App.counter('l3_end_broke') > 0, reward: 0, swagger: 10 },
+  { id: 'l3good', name: 'Day One', desc: 'Level 3: win back £500,000, clear the debt and check into rehab', test: () => App.counter('l3_end_rehab') > 0, reward: 0, swagger: 50 },
   { id: 'l2tulips', name: 'The Night Watch', desc: 'Level 2: find out who leaves the white tulips', test: () => App.counter('l2_tulips') > 0, reward: 0, swagger: 12 },
   { id: 'l2hope', name: 'Hopeful', desc: 'Level 2: lift your spirit all the way to Hopeful', test: () => App.counter('l2_hopeful') > 0, reward: 0, swagger: 6 },
   { id: 'l2jackpot', name: 'Meridian Jackpot', desc: 'Level 2: win the Major or the Grand on the Jackpot Wheel', test: () => App.counter('l2_jp_major') + App.counter('l2_jp_grand') > 0, reward: 0, swagger: 10 },
@@ -390,7 +393,7 @@ const Career = {
       let ok = false; try { ok = a.test(); } catch (e) { }
       if (ok) {
         App.state.achievements[a.id] = App.state.day;
-        if (a.reward) App.credit(a.reward);
+        if (a.reward) { const away = App.inLaptop() ? App.state.l3 : App.inReality() ? App.state.l2 : null; if (away) away.dreamBank = round2((away.dreamBank || 0) + a.reward); else App.credit(a.reward); } // a dream's prize goes to the dream's bankroll, not the money you're holding at a Level 2 or 3 table
         UI.toast(`🏅 Achievement: ${a.name}${a.reward ? ' · +' + fmt(a.reward) : ''}${a.swagger ? ' · ★ +' + a.swagger : ''}`, 'award', a.desc);
         SFX.cash();
       }
@@ -399,7 +402,7 @@ const Career = {
 
   afterRound() {
     this.checkAchievements();
-    if (App.state.mode !== 'career' || App.inReality()) return;
+    if (App.state.mode !== 'career' || App.offStory()) return;
     this.checkChapter();
   },
 
@@ -460,7 +463,7 @@ const Career = {
 
   /* ---------- the day cycle ---------- */
   /* ---------- needs: hunger, thirst and energy (energy is state.stamina) ---------- */
-  needsOn() { return App.state && App.state.mode === 'career' && !App.inReality(); },
+  needsOn() { return App.state && App.state.mode === 'career' && !App.offStory(); },
   // tiredness 0-100 builds once you've been up longer than your bed allows; only sleep resets it
   tiredness() {
     const st = App.state; if (!this.needsOn()) return 0;
@@ -486,6 +489,7 @@ const Career = {
   },
   // drain the bars. kind = 'round' (k = rounds) or 'step'
   drain(kind, k = 1) {
+    if (App.inLaptop()) { L3.roundNeeds(kind, k); return; } // the bedsit has one bar left
     if (App.inReality()) { if (typeof L2Bottle !== 'undefined') L2Bottle.roundNeeds(kind, k); return; } // the waking world keeps its own time
     const was = App.state ? (App.state.clock || 540) : 0;
     const mins = (kind === 'round' ? 4 : 0.25) * k;

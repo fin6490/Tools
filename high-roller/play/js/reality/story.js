@@ -705,7 +705,9 @@ const L2 = (() => {
       { who: 'narr', text: '*Ten storeys of rain between you and the street. The city glitters like the dream town did, only colder. Somewhere under the noise, very faintly, a jukebox is playing.*' },
     ]));
     const opts = [has('calledMori') ? ['good', 'Keep him talking. Mori is eight minutes out.'] : ['good', 'Refuse. Hold up the drive and walk to the door.'], ['horror', 'Take the money. Hand him the drive.'], ['mystery', 'Ask him about the seventeenth card.']];
+    if (Object.keys(found()).length && typeof L3 !== 'undefined') opts.push(['mirror', '🪞 Look at your reflection in the black glass of the roof door.']); // the true ending: Level 3
     const c = await choose('The drive is in your hand.', opts);
+    if (c === 'mirror') return mirrorDoor();
     set('finale', c); S().ending = c;
     if (c === 'good') {
       if (has('calledMori')) await say([{ who: 'you', text: 'Tell me about the house, Augustin. Tell me what "I don\'t care how" means.' }, { who: 'vale', text: '*smiles, and keeps talking, the way rich men do, and the rain swallows the sound of the stairwell door*' }, { who: 'mori', text: 'Augustin Vale. Calvin Rourke. Hands where I can see them.' }, { who: 'narr', text: '*Blue lights on wet concrete. Rourke kneels in the rain. Vale asks for his lawyer as if he\'s ordering wine.*' }, { who: 'mori', text: 'It\'s enough. Tommy\'s statement, the footage, the ledger, the recording. It\'s more than enough. ...Go home. Or go and see them. They\'d want you to.' }, ...eddieLines()]);
@@ -722,6 +724,17 @@ const L2 = (() => {
     // mystery
     await say([{ who: 'you', text: 'Tell me about the seventeenth card, Augustin.' }, { who: 'vale', text: '*frowns* The what?' }, { who: 'narr', text: '*For a second there is a top hat on his head. Then there isn\'t. The rain stops falling and just hangs there, a million silver threads in the air.*' }, { name: 'Kessler', who: 'x', text: 'You never could leave a game unfinished, could you, partner?' }, { who: 'narr', text: '*The roof door swings open on warm light and an old jukebox. Sawdust. The smell of coffee. It can\'t be. It is.*' }]);
     await goArea('spur');
+  }
+  // the way out of the dream altogether: Level 3
+  async function mirrorDoor() {
+    App.count('l2_mirror');
+    await say([{ who: 'narr', text: '*You turn away from them, to the stairwell door. Black glass, wet with rain. You have looked at it before. You have never looked into it.*' },
+      { who: 'narr', text: '*There is no rain in the reflection. There is no roof. There is a small room with a yellow bulb, and a man on the end of an unmade bed, lit blue by a laptop. He is very thin. His hands are shaking.*' },
+      { who: 'vale', text: '...Who are you talking to?' },
+      { who: 'narr', text: '*Behind you, Vale has no face. He never did. Neither does Rourke. Neither does the city. You can see now where the edges are.*' },
+      { who: 'narr', text: '*The man in the glass looks up. He has your eyes. Then he has red points where eyes should be, and you understand what was chasing you, all those nights. It was never chasing you. It was waiting for you to turn round.*' },
+      { who: 'narr', text: '*The rain stops being rain. It\'s the hum of a fridge.*' }]);
+    L3.begin();
   }
   const eddieLines = () => S().clues.call ? [{ who: 'mori', text: 'And Calvin: the 9:47 call. Calder Street. VLH 917. I kept the printout.' }, { who: 'rourke', text: '*for the first time all night, he looks afraid*' }, { who: 'mori', text: 'Eddie Marsh called for help. You let him die for it. That\'s going in front of a judge too.' }] : [];
   async function epilogue() {
@@ -857,6 +870,7 @@ const L2 = (() => {
     if (S().clues.rabbit || has('okafor')) opts.splice(1, 0, ['phone', '💬 Phone someone to talk']);
     if (R3.area === 'city') opts.splice(1, 0, ['taxi', '🚕 Hail a cab']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
+    if (App.state.l3 && typeof L3 !== 'undefined') opts.push(['l3', '🪞 Level 3: the bedsit']);
     opts.push(['restart', '↺ Start Level 2 again'], ['title', 'Title screen']);
     const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }
@@ -866,6 +880,7 @@ const L2 = (() => {
     if (c === 'phone') { const who = await choose('Who do you call?', [...(has('okafor') ? [['okafor', 'Dr. Okafor']] : []), ...(S().clues.rabbit ? [['mori', 'Detective Mori']] : []), ['back', 'Nobody']]); if (who !== 'back') chat(who); }
     if (c === 'sleep') await feverDream();
     if (c === 'roof') await replay();
+    if (c === 'l3') Router.go('bedsit');
     if (c === 'restart') { const ok = await choose('Start Level 2 again from waking up in the clinic? Everything you\'ve found tonight is forgotten; the dream and the endings you\'ve seen are kept.', [['no', 'Not now'], ['yes', '↺ Start again']]); if (ok === 'yes') restart(); }
     if (c === 'title') Router.go('title');
   }
