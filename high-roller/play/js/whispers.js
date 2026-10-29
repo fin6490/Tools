@@ -110,6 +110,32 @@ const WHISPERS = [
     secret: 'You know Eddie\'s sister, June Marsh: she comes to the hospital chapel group on Thursdays, the same one you suggested to the player. She buried Eddie at Greenhill, the same cemetery as Nora and the children, second row from the gate, under a tree. She has never believed he did it. Tell the player gently that she would want to hear what they just said, and that she visits on Saturday mornings.',
     text: 'Eddie\'s sister June comes to the hospital chapel on Thursdays. Eddie is buried at Greenhill, the same cemetery as Nora and the children, second row from the gate.',
     perk: () => { L2.set('june'); return 'You know where Eddie is buried'; } },
+
+  /* ---------- Level 2: the white tulips (found only by talking: Ida, then Hollis, then Ruth) ---------- */
+  { id: 'tulips', l2: true, who: 'l2p:ida', icon: '🌷', name: 'Saturday\'s tulips', ready: () => L2.has('sawFlowers'),
+    hint: 'Ida sees everyone who buys flowers on Meridian Avenue.',
+    topic: 'flowers, white tulips, the graves at Greenhill, or who has been leaving flowers',
+    keys: /flower|tulip|grave|greenhill|cemetery|lilies|bouquet|who.*(leav|bring)/i,
+    asks: [{ q: 'Flowers, is it? I sell a few from the bucket. A man buys some for three graves, every week. Before I tell you anything about anybody: whose graves would those be? Their names, love.', a: /(ellie|nora)[\s\S]*(sam|ellie|nora)/i, know: 'the names on the three graves (Nora, Ellie and Sam)' }],
+    secret: 'Every Saturday at six in the morning a big man with a grey moustache, limping on his left side, buys the early edition and three white tulips from your bucket. He pays in Meridian dollar coins and wears a Meridian security jacket under his raincoat. He told you once he works the back door, nights. He catches the 14 bus towards Greenhill. He always looks like he has not slept.',
+    text: 'A big man in a Meridian security jacket, grey moustache, limping on his left side, buys three white tulips from Ida every Saturday and takes the bus to Greenhill. He works the casino\'s back door, nights.',
+    perk: () => { L2.set('wTulips'); return 'A man from the Meridian leaves the tulips'; } },
+  { id: 'backdoor', l2: true, who: 'l2p:hollis', icon: '🚪', name: 'The back door', ready: () => L2.has('wTulips'),
+    hint: 'Hollis limps on his left side. He used to work nights on the back door.',
+    topic: 'the tulips, Greenhill, Saturdays, the back door, or the night of the seventeenth last year',
+    keys: /tulip|flower|greenhill|grave|saturday|back door|that night|last year|october|seventeenth|17th/i,
+    asks: [{ q: '*He goes very still.* Who sent you? ...No. Don\'t. Tell me one thing first, so I know you\'re who I think you are. What colour are the tulips?', a: /white/i, know: 'the colour of the tulips on the graves (white)' }],
+    secret: 'You were on the Meridian\'s back door the night of 17 October last year. At 9:31 Mr. Vale\'s grey car went out with Cal Rourke driving; at 10:52 it came back and Rourke\'s coat was soaked. You logged both. The next morning Rourke tore the page out of the door log in front of you and you said nothing, because you have a daughter at college and a mortgage. You photocopied the page before your shift ended and keep it folded in a Bible at home. You have left white tulips on the family\'s graves every Saturday since. You want to tell the player everything and say sorry to their face, but not here on the floor with the cameras. You sit in your car outside the Thursday meeting at St Brigid\'s chapel every week and never go in. Say so.',
+    text: 'Hollis was on the Meridian\'s back door that night: Vale\'s car out at 9:31 with Rourke driving, back at 10:52. Rourke tore the page from the log; Hollis kept a photocopy. He sits outside the Thursday meeting at St Brigid\'s every week and never goes in.',
+    perk: () => { L2.set('wHollis'); return 'Hollis saw the car that night'; } },
+  { id: 'circle', l2: true, who: 'l2p:ruth', icon: '🪑', name: 'The man in the car', ready: () => L2.has('wHollis'),
+    hint: 'Ruth takes tea out to someone who never comes in.',
+    topic: 'Hollis, the man who sits outside in his car, the security guard, or someone who saw something and said nothing',
+    keys: /hollis|guard|security|car outside|man in (the|his) car|outside|said nothing|never comes in|doesn'?t come in/i,
+    asks: [{ q: 'I think I know who you mean. Before I go out there: what would you say to someone who saw what happened to your family, and said nothing for a whole year?', a: /forgiv|not your fault|thank|it'?s (ok|okay|alright|all right)|come in|i understand|tell the truth|help me|you'?re here now|better late/i, know: 'what you would say to someone who stayed silent' }],
+    secret: 'The big man who sits in his car outside on Thursdays is called Hollis. You have taken him tea through the car window twice and he has never come in. If the player will sit in the circle of chairs tonight, you will go out into the rain and ask him in. Tell the player to sit in the circle and wait.',
+    text: 'Ruth will bring Hollis in from his car if you sit in the circle of chairs at St Brigid\'s and wait.',
+    perk: () => { L2.set('circleTonight'); return 'Sit in the circle at St Brigid\'s'; } },
 ];
 
 const Whispers = {

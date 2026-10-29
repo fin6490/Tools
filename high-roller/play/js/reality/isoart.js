@@ -302,15 +302,15 @@ const ISOART = (() => {
     return { pj, poly, box, cyl, glowAt, text };
   }
   const FOOT = { // footprints [dx0, dy0, dx1, dy1] from the anchor, for props you can't walk through
-    car: [-.9, -2.1, .9, 2.1], carx: [-2.1, -.9, 2.1, .9], bj: [-1.2, -.7, 1.2, .7], poker: [-1.4, -.9, 1.4, .9], roulette: [-1.4, -.7, 1.4, .7], slot: [-.4, -.4, .4, .4], bar: [0, 0, 1, 1],
+    car: [-.9, -2.1, .9, 2.1], carx: [-2.1, -.9, 2.1, .9], bj: [-1.2, -.7, 1.2, .7], craps: [-1.4, -.7, 1.4, .7], poker: [-1.4, -.9, 1.4, .9], roulette: [-1.4, -.7, 1.4, .7], slot: [-.4, -.4, .4, .4], bar: [0, 0, 1, 1],
     bed: [0, 0, 1.4, 2.1], desk: [0, 0, 1.4, .7], sofa: [0, 0, 2, .8], plant: [-.25, -.25, .25, .25], lamp: [-.15, -.15, .15, .15], bench: [-.8, -.25, .8, .25], benchy: [-.25, -.8, .25, .8], tree: [-.3, -.3, .3, .3],
     phone: [-.3, -.3, .3, .3], shelter: [-1.2, -.5, 1.2, .5], vending: [-.45, -.4, .45, .4], cooler: [-.2, -.2, .2, .2], shelf: [0, 0, 2, .6], fridge: [0, 0, 1, .7], counter: [0, 0, 1, 1], cage: [0, 0, 1, 1],
     grave: [-.4, -.15, .4, .15], pillar: [-.4, -.4, .4, .4], screens: [0, 0, 3, .4], chair: [-.25, -.25, .25, .25], wheel: [-.6, -.3, .6, .3], pusher: [-.6, -.5, .6, .5], sicbo: [-1, -.6, 1, .6],
-    column: [-.35, -.35, .35, .35], jukebox: [-.35, -.25, .35, .25], newsstand: [-.6, -.3, .6, .3], hotdog: [-.6, -.35, .6, .35], candles: [-.4, -.2, .4, .2], safe: [-.35, -.35, .35, .35], arcade: [-.35, -.3, .35, .3], filing: [0, 0, .5, .6], ivstand: [-.15, -.15, .15, .15], cafetable: [-.35, -.35, .35, .35], mailbox: [-.2, -.2, .2, .2], trafficlight: [-.1, -.1, .1, .1], stopsign: [-.1, -.1, .1, .1], floorlamp: [-.15, -.15, .15, .15], bin: [-.25, -.25, .25, .25], crate: [-.4, -.4, .4, .4], hydrant: [-.15, -.15, .15, .15], piano: [0, 0, 1.6, .8], pew: [0, 0, 2.4, .5], altar: [-.8, -.4, .8, .4], bus: [-1.2, -4, 1.2, 4],
+    boxes: [-.32, -.27, .32, .27], coatrack: [-.15, -.15, .15, .15], trolley: [-.45, -.28, .45, .28], tank: [-.75, -.75, .75, .75], vent: [-.35, -.35, .35, .35], armchair: [-.35, -.35, .35, .35], column: [-.35, -.35, .35, .35], jukebox: [-.35, -.25, .35, .25], newsstand: [-.6, -.3, .6, .3], hotdog: [-.6, -.35, .6, .35], candles: [-.4, -.2, .4, .2], safe: [-.35, -.35, .35, .35], arcade: [-.35, -.3, .35, .3], filing: [0, 0, .5, .6], ivstand: [-.15, -.15, .15, .15], cafetable: [-.35, -.35, .35, .35], mailbox: [-.2, -.2, .2, .2], trafficlight: [-.1, -.1, .1, .1], stopsign: [-.1, -.1, .1, .1], floorlamp: [-.15, -.15, .15, .15], bin: [-.25, -.25, .25, .25], crate: [-.4, -.4, .4, .4], hydrant: [-.15, -.15, .15, .15], piano: [0, 0, 1.6, .8], pew: [0, 0, 2.4, .5], altar: [-.8, -.4, .8, .4], bus: [-1.2, -4, 1.2, 4],
   };
   const solidProp = k => !!FOOT[k] || !!SIZED[k];
   // furniture with a size (a long bar, a shelf unit) takes up all of it
-  const SIZED = { piecase: [1, .6], display: [1.6, .6], booth: [1.6, 1.7], counter: [1, 1], bar: [1, 1], desk: [1.4, .7], shelf: [2, .6], fridge: [1, .7], cage: [1, 1], screens: [3, .4], sofa: [2, .8], piano: [1.6, .8], pew: [2.4, .5], backbar: [3, .5], pool: [2.4, 1.3] };
+  const SIZED = { bookcase: [1.2, .4], kitchen: [2.4, .6], wardrobe: [1, .6], radiator: [1, .14], piecase: [1, .6], display: [1.6, .6], booth: [1.6, 1.7], counter: [1, 1], bar: [1, 1], desk: [1.4, .7], shelf: [2, .6], fridge: [1, .7], cage: [1, 1], screens: [3, .4], sofa: [2, .8], piano: [1.6, .8], pew: [2.4, .5], backbar: [3, .5], pool: [2.4, 1.3] };
   const foot = (k, x, y, o = {}) => { if (SIZED[k]) { const [w, d] = SIZED[k]; return [x, y, x + (o.w || w), y + (o.d || d)]; } const f = (o.rot && FOOT[k + 'x']) || FOOT[k]; return [x + f[0], y + f[1], x + f[2], y + f[3]]; };
   function prop(ctx, kind, sx, sy, z, o, t, TW, TH, V, th) {
     const B = boxer(ctx, sx, sy, z, TW, TH, V), { pj, poly, box, cyl, glowAt, text } = B;
@@ -333,11 +333,12 @@ const ISOART = (() => {
         if (o.plate) text(o.rot ? 2.12 : 0, o.rot ? 0 : 2.12, .38, o.plate, '#efe9c8', 7, o.rot ? 'e' : 's', 'bold');
         break;
       }
-      case 'bj': case 'poker': case 'roulette': { // a table: wooden rail, felt, chips, a little lamp glow
-        const [w, d] = kind === 'poker' ? [2.8, 1.8] : kind === 'roulette' ? [2.8, 1.4] : [2.4, 1.4];
+      case 'bj': case 'poker': case 'roulette': case 'craps': { // a table: wooden rail, felt, chips, a little lamp glow
+        const [w, d] = kind === 'poker' ? [2.8, 1.8] : kind === 'roulette' || kind === 'craps' ? [2.8, 1.4] : [2.4, 1.4];
         box(-w / 2, -d / 2, 0, w, d, .78, '#3a2214', '#5a3a22');
         poly([pj(-w / 2 + .15, -d / 2 + .15, .79), pj(w / 2 - .15, -d / 2 + .15, .79), pj(w / 2 - .15, d / 2 - .15, .79), pj(-w / 2 + .15, d / 2 - .15, .79)], '#0e5a3a');
         if (kind === 'roulette') { const [cx, cy] = pj(-.7, 0, .82); ctx.save(); ctx.translate(cx, cy); ctx.scale(1, .5); ctx.rotate(t * 1.4); for (let i = 0; i < 18; i++) { ctx.fillStyle = i % 2 ? '#8a1010' : '#111'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 22 * z, i / 18 * 6.283, (i + 1) / 18 * 6.283); ctx.fill(); } ctx.fillStyle = '#c9a14a'; ctx.beginPath(); ctx.arc(0, 0, 7 * z, 0, 7); ctx.fill(); ctx.restore(); }
+        else if (kind === 'craps') { ctx.strokeStyle = 'rgba(240,230,200,.55)'; ctx.lineWidth = 1.2 * z; for (const k of [.32, .46]) { ctx.beginPath(); ctx.moveTo(...pj(-1.2, k, .8)); ctx.lineTo(...pj(1.2, k, .8)); ctx.stroke(); } text(0, -.1, .8, 'PASS LINE', 'rgba(240,230,200,.6)', 3.5, 's', 'normal'); box(.6, -.25, .8, .12, .12, .12, '#f4f0e6'); box(.78, -.18, .8, .12, .12, .12, '#c0392b'); box(-1.38, -.68, .79, 2.76, .14, .25, '#3a2214', '#5a3a22'); }
         else { ctx.strokeStyle = 'rgba(230,220,180,.35)'; ctx.lineWidth = 1.2 * z; ctx.beginPath(); const a = pj(-.6, .2, .8), b = pj(.6, .2, .8); ctx.moveTo(...a); ctx.quadraticCurveTo(pj(0, .6, .8)[0], pj(0, .6, .8)[1], ...b); ctx.stroke(); }
         for (let i = 0; i < 5; i++) cyl(-.6 + i * .3, .35, .8, .06, .05 + (i % 3) * .03, ['#c0392b', '#2471a3', '#1e8449', '#7d3c98', '#e8e8e8'][i]);
         break;
@@ -346,6 +347,30 @@ const ISOART = (() => {
       case 'bar': box(0, 0, 0, o.w || 1, o.d || 1, 1.05, '#3a2214', '#6a4426'); break;
       case 'counter': box(0, 0, 0, o.w || 1, o.d || 1, .95, col || '#4a4f58', o.top || '#8a8f98'); break;
       case 'stool': cyl(0, 0, 0, .08, .7, '#222'); cyl(0, 0, .7, .2, .08, '#7a1a2a'); break;
+      case 'bookcase': { const w = o.w || 1.2, d = o.d || .4; box(0, 0, 0, w, d, 2, o.color || '#4a3020', '#5a3a26');
+        const cols = ['#7a2a2a', '#2a4a6a', '#3a5a3a', '#8a6a3a', '#5a3a5a', '#c8b88a', '#2a2a2a', '#6a2a1a'];
+        for (const zz of [.12, .58, 1.04, 1.5]) { let x = .06; let i = Math.floor(zz * 7); while (x < w - .12) { const bw = .05 + ((i * 37) % 5) * .012, bh = .3 + ((i * 13) % 4) * .03; poly([pj(x, d + .01, zz), pj(x + bw, d + .01, zz), pj(x + bw, d + .01, zz + bh), pj(x, d + .01, zz + bh)], cols[i % cols.length], false); x += bw + .01; i++; if (i % 9 === 4) x += .1; } }
+        for (const zz of [.1, .56, 1.02, 1.48, 1.94]) { const a = pj(0, d + .01, zz), b2 = pj(w, d + .01, zz); ctx.strokeStyle = '#2a1a10'; ctx.lineWidth = 1.4 * z; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b2); ctx.stroke(); }
+        break; }
+      case 'kitchen': { const w = o.w || 2.4, d = o.d || .6; box(0, 0, 0, w, d, .9, o.color || '#c8c0b0', '#7a7268');
+        for (let i = 0; i < Math.round(w / .6); i++) poly([pj(.05 + i * .6, d + .01, .1), pj(.55 + i * .6, d + .01, .1), pj(.55 + i * .6, d + .01, .8), pj(.05 + i * .6, d + .01, .8)], shade(o.color || '#c8c0b0', .9));
+        poly([pj(.25, .1, .91), pj(.85, .1, .91), pj(.85, .5, .91), pj(.25, .5, .91)], '#8a949e'); cyl(.55, .18, .91, .03, .3, '#b8c0c8'); // the sink and its tap
+        for (const [hx, hy] of [[1.4, .2], [1.75, .2], [1.4, .42], [1.75, .42]]) cyl(hx, hy, .91, .1, .01, '#1a1a1a');
+        box(0, 0, 1.45, w, .35, .6, shade(o.color || '#c8c0b0', .95));
+        if (o.kettle) cyl(2.15, .3, .91, .08, .2, '#d8d8d8');
+        break; }
+      case 'wardrobe': { const w = o.w || 1, d = o.d || .6; box(0, 0, 0, w, d, 2.1, o.color || '#5a3a24', '#6a4a2e'); const a = pj(w / 2, d + .01, .1), b2 = pj(w / 2, d + .01, 2); ctx.strokeStyle = '#2a1a10'; ctx.lineWidth = 1.2 * z; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b2); ctx.stroke(); for (const k of [-.08, .08]) { const [hx, hy] = pj(w / 2 + k, d + .01, 1.05); ctx.fillStyle = '#c9a14a'; ctx.beginPath(); ctx.arc(hx, hy, 1.4 * z, 0, 7); ctx.fill(); } break; }
+      case 'radiator': { const w = o.w || 1; box(0, 0, 0, w, .14, .6, '#d8d8d4', '#e8e8e4'); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1 * z; for (let i = 1; i < w * 10; i++) { const a = pj(i / 10, .15, .06), b2 = pj(i / 10, .15, .56); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b2); ctx.stroke(); } break; }
+      case 'boxes': box(-.3, -.25, 0, .6, .5, .42, '#a8804e', '#c09a62'); box(-.22, -.18, .42, .46, .38, .34, '#b08a58', '#c8a470'); { const a = pj(-.22, .01, .76), b2 = pj(.24, .01, .76); ctx.strokeStyle = '#d8c8a0'; ctx.lineWidth = 2 * z; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b2); ctx.stroke(); } if (o.label) text(0, .21, .55, o.label, '#3a2a1a', 4, 's', 'normal'); break;
+      case 'toys': { box(-.3, .1, 0, .12, .12, .12, '#c0392b'); box(-.15, .14, 0, .12, .12, .12, '#2a62c9'); box(-.22, .12, .12, .12, .12, .12, '#f1c40f'); cyl(.2, -.1, 0, .09, .16, '#e86a3a'); if (!o.noTruck) { box(.05, .25, .02, .36, .16, .14, '#c62828'); cyl(.1, .42, .02, .04, .02, '#111'); cyl(.35, .42, .02, .04, .02, '#111'); } break; }
+      case 'coatrack': cyl(0, 0, 0, .04, 1.75, '#3a2a1a'); cyl(0, 0, 0, .18, .03, '#2a1a10'); if (o.coat) poly([pj(-.12, .05, 1.65), pj(.12, .05, 1.65), pj(.16, .08, .9), pj(-.16, .08, .9)], o.coat); break;
+      case 'trolley': box(-.45, -.28, .12, .9, .56, .7, '#8a8f98', '#d8d8d4'); box(-.4, -.24, .82, .35, .45, .16, '#f4f4f0'); box(0, -.24, .82, .35, .45, .12, '#e8d8c8'); for (const [wx, wy] of [[-.38, .22], [.38, .22]]) cyl(wx, wy, 0, .06, .1, '#222'); break;
+      case 'tank': cyl(0, 0, 0, .7, 1.6, '#6a6e74', '#7a7e84'); for (const hh of [.4, .8, 1.2]) { const a = pj(-.5, .5, hh), b2 = pj(.5, .5, hh); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b2); ctx.stroke(); } break;
+      case 'vent': box(-.35, -.35, 0, .7, .7, .5, '#5a5e64', '#3a3e44'); { const [cx2, cy2] = pj(0, 0, .51); ctx.save(); ctx.translate(cx2, cy2); ctx.scale(1, .5); ctx.rotate(t * 3); ctx.strokeStyle = '#8a8e94'; ctx.lineWidth = 2 * z; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(i * 1.57) * 12 * z, Math.sin(i * 1.57) * 12 * z); ctx.stroke(); } ctx.restore(); } break;
+      case 'armchair': box(-.35, -.35, 0, .7, .7, .42, o.color || '#6a3a3a'); box(-.35, -.35, .42, .7, .16, .45, o.color || '#6a3a3a'); box(-.35, -.35, .42, .14, .7, .2, shade(o.color || '#6a3a3a', .9)); box(.21, -.35, .42, .14, .7, .2, shade(o.color || '#6a3a3a', .9)); break;
+      case 'glint': { // something worth a look: a faint twinkle until you've found it
+        const ph = ((t * 1000 + (o.seed || 0) * 997) % 3600) / 3600; if (ph > .22) break;
+        const a = Math.sin(ph / .22 * Math.PI), [gx, gy] = pj(0, 0, o.h || .25), r = (2 + a * 4) * z; ctx.fillStyle = `rgba(255,248,220,${a * .9})`; ctx.fillRect(gx - r, gy - .5 * z, r * 2, 1.2 * z); ctx.fillRect(gx - .5 * z, gy - r, 1.2 * z, r * 2); break; }
       case 'chair': { const cc = col || '#3a4a5a', bk = o.back || 'n'; if (bk === 'n' || bk === 'w') box(bk === 'w' ? -.22 : -.22, -.22, .45, bk === 'w' ? .08 : .44, bk === 'w' ? .44 : .08, .5, cc); box(-.22, -.22, 0, .44, .44, .45, cc); if (bk === 's' || bk === 'e') box(bk === 'e' ? .14 : -.22, bk === 's' ? .14 : -.22, .45, bk === 'e' ? .08 : .44, bk === 's' ? .08 : .44, .5, cc); break; } // its back on the side it says
       case 'bed': box(0, 0, 0, 1.4, 2.1, .45, '#7a8188', '#e8ecef'); box(.2, .1, .45, 1, .45, .12, '#fff', '#fff'); box(0, 1, .46, 1.4, 1.05, .06, o.sheet || '#9fb2c4'); break;
       case 'desk': box(0, 0, 0, o.w || 1.4, o.d || .7, .75, col || '#5a3a22', o.top || '#6e4a2c'); if (o.lamp) { cyl(.25, .2, .75, .08, .35, '#c9a14a'); glowAt(.25, .2, 1.15, '#ffd9a0', 30); } if (o.screen) { box(.6, .1, .75, .5, .06, .35, '#111', '#222'); poly([pj(.62, .17, .8), pj(1.08, .17, .8), pj(1.08, .17, 1.07), pj(.62, .17, 1.07)], '#3d7a8a', false); } break;

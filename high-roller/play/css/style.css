@@ -354,7 +354,8 @@ body[data-back="gold"] { --card-back: repeating-linear-gradient(45deg, #c9a14a 0
 .fp.lit { background: #ff7a1a; color: #fff; box-shadow: 0 0 8px #ff7a1a; }
 .dice-tray { display: flex; align-items: center; gap: .6rem; }
 .cr-status { display: flex; align-items: center; gap: .7rem; background: rgba(0, 0, 0, .3); border-radius: 12px; padding: .45rem .6rem; flex-wrap: wrap; }
-.cr-status .history { flex: 1; display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+.cr-status .history { flex: 1 1 120px; display: flex; gap: 3px; flex-wrap: nowrap; justify-content: flex-end; min-width: 0; overflow: hidden; } /* one line: the oldest rolls slide off the left */
+.cr-status .roll-total { min-width: 3.4em; text-align: center; line-height: 1.05; } .cr-status .roll-total small { display: block; font-size: .58rem; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
 .cr-puck { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 .72rem system-ui; background: #111; color: #fff; border: 2px solid #fff; flex: none; text-align: center; line-height: 1; }
 .cr-puck.on { background: #fff; color: #111; box-shadow: 0 0 12px rgba(255, 255, 255, .6); }
 .cr-guide { font-size: .86rem; background: rgba(255, 233, 168, .1); border-left: 3px solid var(--gold); border-radius: 6px; padding: .4rem .6rem; color: #fff6dc; }

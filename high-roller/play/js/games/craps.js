@@ -124,7 +124,7 @@ GAMES.craps = (() => {
     for (let i = 0; i < 8; i++) { setDie(d1, 1 + RNG.int(6)); setDie(d2, 1 + RNG.int(6)); await sleep(70); }
     const a = 1 + RNG.int(6), b = 1 + RNG.int(6), n = a + b, isHard = a === b;
     setDie(d1, a); setDie(d2, b); d1.classList.remove('rolling'); d2.classList.remove('rolling');
-    $('#cr-total').textContent = n + (isHard && [4, 6, 8, 10].includes(n) ? ' the hard way' : '');
+    const tot = $('#cr-total'); tot.innerHTML = ''; tot.append(String(n), isHard && [4, 6, 8, 10].includes(n) ? h('small', 'hard way') : ''); // a tag under the number, so the bar never changes width
     st.history.push(n);
     resolve(n, a, b);
     st.shooterRolls++;
