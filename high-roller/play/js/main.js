@@ -96,7 +96,7 @@ const Router = {
   hudEl() {
     const st = App.state;
     if (App.inLaptop()) return h('header.hud.hud-l2.hud-l3', h('button.logo', { onclick: () => this.safeGo('bedsit'), title: 'Back to the laptop' }, '←', h('span', 'LuckyStrike.bet')),
-      h('div.hud-stats', h('div.hs.bank', h('small', 'Your balance'), h('b#hud-bank'))));
+      h('div.hud-stats', h('div.hs.drink', h('small', '🍺 Drink'), h('b#hud-drink')), h('div.hs.bank', h('small', 'Your balance'), h('b#hud-bank'))));
     if (App.inReality()) return h('header.hud.hud-l2', h('button.logo', { onclick: () => this.safeGo('reality'), title: 'Back to the Meridian' }, '←', h('span', 'The Meridian')),
       h('div.hud-stats', h('div.hs.bank', h('small', 'Your money'), h('b#hud-bank'))));
     return h('header.hud',
@@ -114,6 +114,7 @@ const Router = {
   hud() {
     if (!App.state) return;
     const st = App.state, set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+    if (App.inLaptop() && typeof L3 !== 'undefined') L3.lapHud();
     set('hud-bank', Math.abs(st.bank) >= 1e5 && innerWidth < 700 ? CUR + (st.bank >= 1e9 ? (st.bank / 1e9).toFixed(2) + 'B' : st.bank >= 995e3 ? (st.bank / 1e6).toFixed(2) + 'M' : (st.bank / 1e3).toFixed(1) + 'K') : fmt(st.bank)); set('hud-day', 'Day ' + st.day); set('hud-clock', (World.isNight() ? '🌙 ' : '☀️ ') + World.clockText());
     set('hud-debt', fmt(App.debt)); set('hud-swag', '★ ' + Career.swagger());
     const d = document.getElementById('hud-debt'); if (d) d.parentElement.classList.toggle('zero', App.debt === 0);
