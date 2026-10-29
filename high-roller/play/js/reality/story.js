@@ -368,7 +368,7 @@ const L2 = (() => {
     async pusher(id) { await L2Games.pusher(id); },
     async cashier() {
       if (!S().clues.cheque) return say([{ name: 'Cashier', who: 'x', text: 'Chips or cash? ...Oh. Sorry. Take your time.' }]);
-      if (has('cashed')) return say([{ name: 'Cashier', who: 'x', text: 'Anything else tonight?' }, { who: 'narr', text: '*The money is just numbers. It was always going to be just numbers.*' }]);
+      if (has('cashed')) return L2Money.noSecond(); // once only: after that, it's shifts
       await say([{ who: 'narr', text: '*The envelope is in your pocket. Half a million dollars, made out to you, for them.*' }, { who: 'narr', text: '*In the dream you spent months clawing back a debt one hand at a time. Here it would take one signature.*' }]);
       await L2Money.advance();
     },
@@ -870,7 +870,7 @@ const L2 = (() => {
     if (S().clues.rabbit || has('okafor')) opts.splice(1, 0, ['phone', '💬 Phone someone to talk']);
     if (R3.area === 'city') opts.splice(1, 0, ['taxi', '🚕 Hail a cab']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
-    if (App.state.l3 && typeof L3 !== 'undefined') opts.push(['l3', '🪞 Level 3: the bedsit']);
+    if (typeof L3 !== 'undefined') opts.push(['l3', App.state.l3 ? '🪞 Level 3: the bedsit' : '🧪 Try Level 3 (testing)']); // testing: open to every save for now
     opts.push(['restart', '↺ Start Level 2 again'], ['title', 'Title screen']);
     const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }
@@ -880,7 +880,7 @@ const L2 = (() => {
     if (c === 'phone') { const who = await choose('Who do you call?', [...(has('okafor') ? [['okafor', 'Dr. Okafor']] : []), ...(S().clues.rabbit ? [['mori', 'Detective Mori']] : []), ['back', 'Nobody']]); if (who !== 'back') chat(who); }
     if (c === 'sleep') await feverDream();
     if (c === 'roof') await replay();
-    if (c === 'l3') Router.go('bedsit');
+    if (c === 'l3') L3.begin();
     if (c === 'restart') { const ok = await choose('Start Level 2 again from waking up in the clinic? Everything you\'ve found tonight is forgotten; the dream and the endings you\'ve seen are kept.', [['no', 'Not now'], ['yes', '↺ Start again']]); if (ok === 'yes') restart(); }
     if (c === 'title') Router.go('title');
   }

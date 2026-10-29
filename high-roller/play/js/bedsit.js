@@ -457,7 +457,7 @@ const L3 = (() => {
     G = null; document.body.classList.remove('bedsit'); document.querySelectorAll('.l3-say,.l3-laptop,.l3-toast').forEach(n => n.remove());
   }
   // the way in: the roof of the Meridian, a reflection in the black glass of the door
-  async function begin() { if (!App.state.l3) App.state.l3 = fresh(); App.save(); Router.go('bedsit'); } // a room you've already woken in is as you left it (☰ starts it over)
+  async function begin() { if (!App.state.l3) App.state.l3 = fresh(); App.save(); Router.safeGo('bedsit'); } // safeGo: not from the middle of a hand // a room you've already woken in is as you left it (☰ starts it over)
 
   return { screen, unmount, begin, roundNeeds, back, checkEnd, ending, restart, GOAL, START, money, get state() { return S(); }, get G() { return G; }, A, openLaptop, CHANNELS };
 })();

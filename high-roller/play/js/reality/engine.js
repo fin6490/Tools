@@ -101,8 +101,13 @@ const R3 = (() => {
     for (const th of M.things) {
       if (th.hidden) continue;
       if (th.kind === 'person' || th.kind === 'demon') { points.push({ d: th.x + th.y, th, x: th.x, y: th.y }); continue; }
-      const d = th.kind === 'wall' ? th.x + th.y - .2 : (th.o && th.o.depth != null ? th.o.depth : th.box ? th.box[2] + th.box[3] - .5 : th.x + th.y + .5);
-      boxes.push({ d, th, b: th.kind === 'wall' ? null : th.box || th.foot });
+      // a railing runs its whole length: sort it by where it ends, and let people and cars find their side of it
+      const rail = th.kind === 'fence' && !th.box ? (th.o.rot ? [th.x - .05, th.y, th.x + .05, th.y + (th.o.len || 4)] : [th.x, th.y - .05, th.x + (th.o.len || 4), th.y + .05]) : null;
+      const d = th.kind === 'wall' ? th.x + th.y - .2 : (th.o && th.o.depth != null ? th.o.depth : th.box ? th.box[2] + th.box[3] - .5 : rail ? rail[2] + rail[3] - .5 : th.x + th.y + .5);
+      const b = th.kind === 'wall' ? null : th.box || th.foot || rail || (UPRIGHT.has(th.kind) ? [th.x - .2, th.y - .2, th.x + .2, th.y + .2] : null);
+      // a stool, a chair, a bin: placed in front of or behind the long things round it (a bar, a counter, a building) the way people are, not by one depth number
+      if (b && th.kind !== 'wall' && !(th.o && th.o.depth != null) && b[2] - b[0] <= 1.2 && b[3] - b[1] <= 1.2) { points.push({ d, th, x: (b[0] + b[2]) / 2, y: (b[1] + b[3]) / 2 }); continue; }
+      boxes.push({ d, th, b });
     }
     points.push({ d: P.x + P.y, me: true, x: P.x, y: P.y });
     boxes.sort((a, b) => a.d - b.d);
@@ -139,6 +144,7 @@ const R3 = (() => {
       ctx.restore();
     }
   }
+  const UPRIGHT = new Set(['stool', 'chair', 'bin', 'lamp', 'plant', 'hydrant', 'mailbox', 'trafficlight', 'stopsign', 'floorlamp', 'ivstand', 'coatrack', 'cafetable', 'grave', 'tree', 'phone', 'column']); // small things that stand up, with no footprint of their own
   function drawMe(t) {
     const [sx, sy] = toScreen(P.x, P.y);
     ISOART.person(ctx, sx, sy, zoom, me(), P.dir, t, P.moving ? P.step : 0, V, true);

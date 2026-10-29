@@ -11,7 +11,8 @@
      floor games. Claim them at the Rewards desk.
    - A cab costs money and gets you across the city, even with something behind you.
    - Losing hurts more awake: walk away from a table down hard and the craving comes up like a wave.
-     Broke? Rosie needs someone to wash up, and the cage will advance $5,000 against your cheque. */
+     Broke? The cage will advance $5,000 against your cheque, once. After that nobody will lend you a cent,
+     so you work: Rosie's, the Kwik Mart, Sully's and the Low Tide will all give you an hour (js/reality/shifts.js). */
 const L2Money = (() => {
   const cnt = k => App.counter(k) - ((L2.state.base || {})[k] || 0); // counted since this run of Level 2 began
   const S = () => { const s = L2.state; if (!s.money) s.money = { kit: {}, battery: 0, promos: {}, washed: 0 }; return s.money; };
@@ -66,10 +67,11 @@ const L2Money = (() => {
       if (typeof L2Life !== 'undefined' && L2Life.jobOn('marcus') && !L2.state.sax) opts.push(['sax', `🎷 The Selmer saxophone in the window (${fmt(600)})`]);
       if (owns('torch')) opts.push(['battery', `🔋 Batteries (${fmt(BATTERY)})`]);
       if (!m.ring) opts.push(['ring', `💍 Your wedding ring (${fmt(RING)})`]);
-      opts.push(['sell', '🎲 What do you buy?'], ['bye', 'Leave']);
+      opts.push(['work', `🔩 Ask if there\'s any work going (${fmt(L2Shifts.SHIFTS.sully.pay)}, a stocktake)`], ['sell', '🎲 What do you buy?'], ['bye', 'Leave']);
       const c = await choose(`Sully's Pawn & Hardware. ${fmt(cash())} in your wallet.${later.length ? ` (Sully: "I can get you ${later.join(', ').toLowerCase()} too. Come back ${KIT[Object.keys(KIT).find(k => KIT[k].name.replace(/^An? /, '') === later[0])].wait}.")` : ''}`, opts);
       if (c === 'bye' || c == null) return;
       if (c === 'sell') { await say([{ name: 'Sully', who: 'x', text: 'Gold, watches, guitars. Not that. *He nods at your hands.* I don\'t buy shakes. And not your phone either, you\'ll need it tonight.' }]); continue; }
+      if (c === 'work') { await L2Shifts.work('sully'); continue; }
       if (c === 'battery') { if (pay(BATTERY)) { m.battery = 100; L2.toast('🔋 Fresh batteries. The torch throws a hard white circle.'); } continue; }
       if (c === 'ring') { await ring(); continue; }
       if (c === 'sax') { if (pay(600)) { L2.state.sax = 1; App.save(); await say([{ name: 'Sully', who: 'x', text: 'Marcus\'s horn? *He lifts it out of the window like a sleeping baby.* About time somebody did. Tell him I oiled the keys every month.' }]); } continue; }
@@ -122,24 +124,13 @@ const L2Money = (() => {
     await say([{ name: 'Cashier', who: 'x', text: 'Five thousand. Would you like that in chips?' }, { who: 'narr', text: '*She counts it out. It doesn\'t feel like winning. Nothing ever will again.*' }]);
   }
 
-  /* ---------- washing up at Rosie's ---------- */
-  async function washUp() {
-    const m = S();
-    if (Date.now() - (m.washedAt || 0) < 120000) return say([{ name: 'Rosie', who: 'x', text: 'Sit down a minute, love, you\'ve only just finished. Have a coffee.' }]);
-    await say([{ name: 'Rosie', who: 'x', text: 'Work? *She looks at you a long moment.* My pot washer walked out on Tuesday. Forty dollars and a bowl of soup for a sinkful. Don\'t break anything.' }]);
-    const ok = await L2.ui.panel('The sink at Rosie\'s', done => {
-      const plates = [], wrap = h('div.l2-sink'), left = h('p.l2-read', 'Scrub every plate till it shines: tap each one until it\'s clean.');
-      let n = 8;
-      for (let i = 0; i < 8; i++) {
-        let dirt = 3; const p = h('button.l2-plate', { 'aria-label': 'Dirty plate', onclick: () => { if (!dirt) return; dirt--; p.style.setProperty('--dirt', dirt / 3); SFX.click && SFX.click(); if (!dirt) { p.classList.add('clean'); p.setAttribute('aria-label', 'Clean plate'); n--; left.textContent = n ? `${n} to go.` : 'Done. Rosie inspects one against the light and nods.'; if (!n) setTimeout(() => done(true), 600); } } });
-        p.style.setProperty('--dirt', 1); plates.push(p); wrap.append(p);
-      }
-      return h('div', left, wrap);
-    }, { closeLabel: 'Give up' });
-    if (!ok) return;
-    m.washedAt = Date.now(); m.washed++; earn(40); L2Bottle.feed({ hunger: 35, thirst: 10, energy: -12 }); App.count('l2_shift'); Career.checkAchievements();
-    await say([{ name: 'Rosie', who: 'x', text: 'Forty, and the soup. You do good work. Come back any time you\'re short, I\'ll always have a sink.' }]);
+  // the cage won't advance twice: after that, it's work
+  async function noSecond() {
+    await say([{ name: 'Cashier', who: 'x', text: 'One advance against a cheque, I\'m afraid. That\'s the rule, and it isn\'t mine. *She looks at you, and lowers her voice.* If you\'re short tonight, Rosie\'s always needs someone at the sink. So does the Kwik Mart, and Sully, and Delia behind the bar.' },
+      { who: 'narr', text: '*Nobody else in the city will lend you a cent. Your credit died while you slept. If you need more, you\'ll have to work for it.*' }]);
   }
+  // the old name: Rosie's sink is now one of the shifts (js/reality/shifts.js)
+  const washUp = () => L2Shifts.work('rosie');
 
   /* ---------- Meridian Rewards: tonight's promotions ---------- */
   const PROMOS = [
@@ -206,9 +197,9 @@ const L2Money = (() => {
       L2.state.clues.call || L2.state.clues.eddie ? goal('🪦', 'A headstone for Eddie Marsh', STONE, m.stone, 'At Greenhill, where he\'s buried under a number.') : null,
       h('div.l2-clue', h('b', '🎒 Kit'), h('p', kit.length ? kit.map(k => `${KIT[k].icon} ${KIT[k].name}`).join(' · ') + (owns('torch') ? ` · 🔋 ${Math.round(m.battery)}%` : '') : 'Nothing yet. Sully\'s sells torches, running shoes and raincoats.'), m.meds ? h('p', '💊 Naltrexone') : null),
       h('b.l2-sub2', '🎟️ Tonight\'s promotions (claim at the Rewards desk on the casino floor)'), promoList(false),
-      h('p.l2-hint', 'Short of money? Rosie\'s needs someone to wash up, and the cage will advance you money against your cheque. A cab (☰ menu, out on the street) gets you anywhere in the city, even with something behind you.'));
+      h('p.l2-hint', 'Short of money? The cage will advance you $5,000 against your cheque, once. After that nobody will lend you any, so ask for a shift: washing up at Rosie\'s, the shelves at the Kwik Mart, the stocktake at Sully\'s or the bar at the Low Tide. A cab (☰ menu, out on the street) gets you anywhere in the city, even with something behind you.'));
   }
   function hudText() { return owns('torch') ? `🔦${Math.round(S().battery)}%` : ''; }
 
-  return { KIT, PROMOS, owns, pay, earn, lamp, tick, soak, runBoost, craveMul, torchOn, sully, ring, eddieGrave, meds, advance, washUp, rewards, check, sat, back, taxi, panel, hudText, get state() { return S(); }, RING, STONE };
+  return { KIT, PROMOS, owns, pay, earn, lamp, tick, soak, runBoost, craveMul, torchOn, sully, ring, eddieGrave, meds, advance, noSecond, washUp, rewards, check, sat, back, taxi, panel, hudText, get state() { return S(); }, RING, STONE };
 })();
