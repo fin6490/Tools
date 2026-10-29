@@ -100,7 +100,7 @@ const L2World = (() => {
       A.floor(23, y + 1, 1, 1, 'pavement');
     });
     A.sign(23, 35.5, '17', { color: '#e8e2d4', z: 2.4, size: 9, side: 'e' });
-    A.prop('tape', 23.2, 33.8, { x0: 0, y0: 0, x1: 0, y1: 3.4, solid: false });
+    A.prop('tape', 23.3, 37.2, { x0: 0, y0: 0, x1: 0, y1: -3.4, solid: false }); // tied from the far post, so it's drawn after the house and both posts show
     A.use(23.6, 35.5, '17 Calder Street. Home.', act('house'), { r: 1.6 });
     for (const y of [30, 37, 43]) A.prop('tree', 12, y);
     A.prop('shelter', 28.5, 36.5, { rot: true }); A.use(28.2, 36.5, 'The bus shelter on Calder Street', act('shelter'), { r: 1.6 });

@@ -42,14 +42,14 @@ const L2Life = (() => {
   /* ======================= menus ======================= */
   // [key, icon, name, price, { hunger, thirst, energy, sp }, { alc: buzz } ]
   const MENUS = {
-    lowtide: { who: 'delia', title: 'The Low Tide', line: '"Kitchen\'s open till two, hon. What are you having?"', items: [
+    lowtide: { who: 'delia', shift: 'lowtide', title: 'The Low Tide', line: '"Kitchen\'s open till two, hon. What are you having?"', items: [
       ['lager', '🍺', 'A pint of lager', 6, {}, { alc: 45 }], ['stout', '🍺', 'A pint of stout', 7, { hunger: 6 }, { alc: 50 }], ['wine', '🍷', 'A glass of red', 9, {}, { alc: 50 }], ['whisky', '🥃', 'Whisky, neat', 14, {}, { alc: 70 }], ['rum', '🥃', 'Dark rum and cola', 11, { thirst: 10 }, { alc: 60 }],
       ['cola', '🥤', 'Cola', 3, { thirst: 30, energy: 6 }], ['lime', '🍋', 'Lime and soda', 3, { thirst: 35, sp: 1 }], ['ginger', '🫚', 'Ginger beer (the soft kind)', 3, { thirst: 30, sp: 1 }], ['coffee', '☕', 'Coffee', 3, { energy: 22, thirst: 5 }], ['tea', '🫖', 'A pot of tea', 2, { thirst: 25, energy: 8, sp: 2 }],
       ['chips', '🍟', 'A bowl of chips', 5, { hunger: 25, sp: 1 }], ['toastie', '🥪', 'Cheese toastie', 7, { hunger: 35, sp: 2 }], ['chilli', '🌶️', 'Delia\'s chilli', 9, { hunger: 50, thirst: -5, sp: 4 }], ['burger', '🍔', 'Burger and fries', 16, { hunger: 60, energy: 8, sp: 4 }], ['water', '💧', 'Water', 0, { thirst: 35 }]] },
-    diner: { who: 'rosie', title: 'Rosie\'s', line: '"What\'ll it be, love?"', job: true, items: [
+    diner: { who: 'rosie', title: 'Rosie\'s', line: '"What\'ll it be, love?"', shift: 'rosie', items: [
       ['burger', '🍔', 'Cheeseburger and fries', 14, { hunger: 60, energy: 6, sp: 4 }], ['pancakes', '🥞', 'A stack of pancakes', 8, { hunger: 45, energy: 10, sp: 5 }], ['eggs', '🍳', 'Eggs, bacon and toast', 10, { hunger: 55, energy: 8, sp: 4 }], ['blt', '🥪', 'A BLT', 9, { hunger: 40, sp: 2 }], ['soup', '🥣', 'Soup of the day', 7, { hunger: 35, thirst: 10, sp: 3 }],
       ['pie', '🥧', 'A slice of cherry pie', 6, { hunger: 25, sp: 4 }], ['shake', '🥤', 'A chocolate milkshake', 5, { hunger: 15, thirst: 25, energy: 8, sp: 3 }], ['oj', '🍊', 'Orange juice', 3, { thirst: 35, energy: 4 }], ['coffee', '☕', 'Coffee (refills free)', 3, { energy: 25, thirst: 5 }], ['tea', '🫖', 'Tea', 2, { thirst: 25, energy: 8, sp: 1 }], ['water', '💧', 'A glass of water', 0, { thirst: 35 }]] },
-    kwik: { who: 'omar', title: 'Kwik Mart', line: '"Take your time."', items: [
+    kwik: { who: 'omar', title: 'Kwik Mart', line: '"Take your time."', shift: 'kwik', items: [
       ['water', '💧', 'Bottle of water', 2, { thirst: 40 }], ['juice', '🧃', 'Orange juice', 3, { thirst: 35, energy: 5 }], ['milk', '🥛', 'Pint of milk', 2, { thirst: 25, hunger: 8 }], ['icedcoffee', '🧋', 'Iced coffee', 4, { energy: 25, thirst: 15 }], ['energy', '⚡', 'Energy drink', 4, { energy: 35, thirst: 10, sp: -1 }], ['cola', '🥤', 'Cola', 2, { thirst: 30, energy: 8 }],
       ['sandwich', '🥪', 'Sandwich', 5, { hunger: 35, sp: 1 }], ['roll', '🥐', 'Sausage roll', 3, { hunger: 25 }], ['noodles', '🍜', 'Pot noodle (they\'ll add hot water)', 3, { hunger: 30, thirst: 5, sp: 1 }], ['fruit', '🍎', 'An apple and a banana', 2, { hunger: 15, thirst: 5, sp: 1 }], ['choc', '🍫', 'Chocolate bar', 2, { hunger: 18, energy: 5, sp: 1 }], ['crisps', '🥔', 'Crisps', 2, { hunger: 12, thirst: -5 }],
       ['gum', '🍬', 'Mints', 1, { sp: 0 }, { crave: 2 }], ['flowers', '💐', 'A bunch of carnations', 6, { sp: 3 }, { flowers: 1 }], ['nicgum', '🟩', 'Nicotine gum', 8, {}, { job: 'shona' }]] },
@@ -98,7 +98,7 @@ const L2Life = (() => {
             if (consume(k, it)) { if (extra.after) extra.after(k); render(); }
           }, !x.alc && price === 0, S().cash < price));
         }
-        if (Mn.job && S().cash < 100) list.append(row('🧽', 'Ask if there\'s any work going', 'Wash up for an hour: $40 and a meal', 'Ask', async () => { done(); await L2Money.washUp(); lift(4, 'honest work'); }));
+        if (Mn.shift) { const r = L2Shifts.row(Mn.shift); list.append(row(r.icon, `Ask for a shift: ${r.name.toLowerCase()}`, r.sub, 'Ask', async () => { done(); await r.go(); })); } // work, any time you want it
         if (extra.rows) extra.rows(list, done, row);
         if (Mn.who) list.append(row('💬', `Talk to ${Mn.who === 'delia' ? 'Delia' : L2People.PEOPLE[Mn.who] ? L2People.PEOPLE[Mn.who].name.split(' ')[0] : Mn.who}`, 'Catch up, ask about tonight', 'Talk', () => { done(); if (Mn.who === 'delia') L2.chatWith('delia'); else L2People.talk(Mn.who); }));
         body.append(list, h('p.l2-mfoot', `${fmt(S().cash)} in your wallet`));

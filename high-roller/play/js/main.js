@@ -147,7 +147,7 @@ const Screens = {
       h('div.slot-btns',
         s ? h('button.btn.primary.sm', { onclick: () => { App.start(s, i); Router.go('world'); } }, 'Continue') : null,
         s && (s.l2 || s.ending) ? h('button.btn.sm.l2-go', { onclick: () => { App.start(s, i); Router.go('reality'); } }, s.l2 ? 'Level 2' : 'Wake up') : null,
-        s && s.l3 ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); Router.go('bedsit'); } }, 'Level 3') : null,
+        s ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); L3.begin(); }, title: s.l3 ? 'The bedsit' : 'For testing: go straight to Level 3' }, s.l3 ? 'Level 3' : '🧪 Level 3') : null, // testing: open to every save for now
         h('button.btn.sm', { onclick: () => Screens.newGame(i, 'career') }, 'New Career'),
         h('button.btn.ghost.sm', { onclick: () => Screens.newGame(i, 'free') }, 'Free Play'),
         s ? h('button.btn.ghost.sm.danger', { onclick: async () => { if (await UI.confirm('Delete save?', `Erase slot ${i} (${s.name})? This can't be undone.`, 'Delete')) { App.deleteSlot(i); Router.go('title'); } } }, 'Delete') : null));
@@ -401,7 +401,7 @@ const Screens = {
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('status'); } }, '📋 Status, story & trophies'),
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('case'); } }, '🔎 Case file: The Seventeenth Card'),
         st.ending || st.l2 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('reality'); } }, '👁️ Level 2: The Meridian') : null,
-        st.l3 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('bedsit'); } }, '🪞 Level 3: The bedsit') : null,
+        h('button.btn', { onclick: () => { box.close(); L3.begin(); } }, st.l3 ? '🪞 Level 3: The bedsit' : '🧪 Try Level 3 (testing)'), // testing: open to every save for now
         h('button.btn', { onclick: () => { box.close(); World.townMap(); } }, '🗺️ Town map'),
         h('button.btn', { onclick: () => { box.close(); Chat.settings(); } }, '💬 AI chat with characters'),
         h('button.btn', { onclick: () => { box.close(); Looks.edit(); } }, '🪞 Your look'),
