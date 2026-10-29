@@ -304,7 +304,10 @@ const L3 = (() => {
     const fridge = soft(.62, 1.6, .62, M({ color: 0xe4e2da, roughness: .35 }), RW - .32, 0, 2.05, 0, .03); // its door, postcards and all, is a picture on the front
     const ff = add(new THREE.PlaneGeometry(.58, 1.56), M({ map: TEX.fridge(), roughness: .35 }), RW - .632, .8, 2.05, -Math.PI / 2); ff.castShadow = false;
     box(.005, .006, .58, M({ color: 0x8a8a88 }), RW - .635, 1.15, 2.05); for (const [y, hh] of [[1.25, .25], [.5, .45]]) box(.03, hh, .03, M({ color: 0xb8b8b0, metalness: .5, roughness: .3 }), RW - .66, y, 1.82); // freezer line, handles
-    use(ff, 'The fridge', () => A.fridge()); use(fridge, 'The fridge', () => A.fridge()); solid(RW - .66, 1.72, RW, 2.38);
+    use(ff, 'The fridge', () => A.fridge());
+    const noteC = document.createElement('canvas'); noteC.width = 128; noteC.height = 176; { const g = noteC.getContext('2d'); g.fillStyle = '#f4ea9a'; g.fillRect(0, 0, 128, 176); g.strokeStyle = 'rgba(80,120,200,.35)'; for (let y = 36; y < 176; y += 14) { g.beginPath(); g.moveTo(6, y); g.lineTo(122, y); g.stroke(); } g.fillStyle = '#2a2a6a'; g.font = 'bold 18px "Bradley Hand", "Segoe Print", cursive'; g.fillText('TO DO', 30, 26); g.strokeStyle = '#2a2a6a'; g.lineWidth = 1.6; for (let i = 0; i < 9; i++) { const y = 33 + i * 14; g.beginPath(); g.moveTo(14, y); for (let x = 14; x < 50 + rnd() * 60; x += 6) g.lineTo(x, y - 2 - rnd() * 4); g.stroke(); } g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(44, -4, 40, 14); }
+    const note = add(new THREE.PlaneGeometry(.16, .22), M({ map: new THREE.CanvasTexture(noteC), roughness: .9 }), RW - .6345, 1.3, 2.24, -Math.PI / 2); note.castShadow = false; note.rotation.z = .05;
+    use(note, 'The list on the fridge', () => A.list()); use(fridge, 'The fridge', () => A.fridge()); solid(RW - .66, 1.72, RW, 2.38);
     const mw = box(.5, .3, .36, M({ color: 0x2a2a2e, roughness: .4 }), RW - .3, 1.6, 2.05); box(.005, .2, .26, M({ color: 0x0a0c0e, roughness: .1, metalness: .4 }), RW - .552, 1.65, 2.0); box(.005, .03, .06, M({ color: 0x40ff80, emissive: 0x20a040, emissiveIntensity: 1 }), RW - .553, 1.82, 2.18); // the microwave, 12:00 blinking
 
     // --- the bed, unmade, against the left wall: a frame, a mattress, a rumpled duvet, one flat pillow
@@ -474,7 +477,25 @@ const L3 = (() => {
     if (st.drink < 35 && Date.now() - lastThought > 40000) { lastThought = Date.now(); toast('🍺 ' + THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)]); }
   }
   // a hand at the laptop takes time too
-  function roundNeeds(kind, k = 1) { if (kind === 'round') { const st = S(); st.drink = Math.max(1, st.drink - 6 * k); } }
+  // at the laptop the drink runs down with the clock, as it does in the room, not by the bet: an autobet
+  // of a hundred costs no more than a minute's thinking (roundNeeds is kept so the tables have a hook)
+  function roundNeeds() { }
+  let lapTimer = 0;
+  function lapStart() { clearInterval(lapTimer); lapTimer = setInterval(lapTick, 1000); }
+  function lapStop() { clearInterval(lapTimer); lapTimer = 0; }
+  function lapTick() {
+    if (!App.state || !App.inLaptop()) return lapStop();
+    if (document.hidden) return;
+    const st = S(); st.drink = Math.max(0, st.drink - DRAIN); lapHud(); notePeak(App.state.bank);
+    if (st.drink < 35 && st.drink > 0 && Date.now() - lastThought > 40000) { lastThought = Date.now(); UI.toast('🍺 ' + THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)], 'warn'); }
+    if (st.drink > 0) return;
+    // empty: let the hand in play finish (stop an autobet), then back to the room, where you go down
+    if (typeof Originals !== 'undefined' && Originals.busy()) { Originals.stopAuto(); return; }
+    const scr = Router.screen; // only the game on screen can hold you: a hand in play, spinning reels, a seat in a tournament
+    if ((scr === 'table' && Router.table && Router.table.busy) || (scr === 'slots' && typeof Slots !== 'undefined' && Slots.busy()) || (scr === 'pokertable' && typeof Holdem !== 'undefined' && Holdem.active()) || (scr === 'darts' && typeof Darts !== 'undefined' && Darts.active())) return;
+    lapStop(); Router.go('bedsit');
+  }
+  function lapHud() { const e = document.getElementById('hud-drink'); if (!e) return; const v = S().drink; e.textContent = `${Math.round(v)}% · ${stateOf(v)}`; e.parentElement.classList.toggle('low', v < 35); }
 
   /* ---------- the loop ---------- */
   function frame(now) {
@@ -520,46 +541,52 @@ const L3 = (() => {
   const A = {
     async fridge() {
       const st = S();
-      const c = await choose(`The fridge. ${st.cans ? `${st.cans} can${st.cans > 1 ? 's' : ''} of the cheap lager on the shelf, and nothing else but a lemon gone grey.` : 'Empty, apart from a lemon gone grey. The light inside is the warmest thing in the room.'} Postcards on the door, and a leaflet.`, [...(st.cans ? [['drink', '🍺 Drink a can (the drink +30)']] : []), ['leaflet', '📄 Read the leaflet on the door'], ['cards', '🖼️ Look at the postcards'], ['no', 'Close it']]);
+      const c = await choose(`The fridge. ${st.cans ? `${st.cans} can${st.cans > 1 ? 's' : ''} of the cheap lager on the shelf, and nothing else but a lemon gone grey.` : 'Empty, apart from a lemon gone grey. The light inside is the warmest thing in the room.'} Postcards on the door, and a leaflet.`, [...(st.cans ? [['drink', '🍺 Drink a can (the drink +30)']] : []), ['leaflet', '📄 Read the leaflet on the door'], ['cards', '🖼️ Look at the postcards'], ['list', '📝 Read the list stuck to the door'], ['no', 'Close it']]);
       if (c === 'drink') { st.cans--; st.drink = Math.min(100, st.drink + 30); App.count('l3_cans'); App.save(); hud(); await say([{ text: pickOne(['*Ssssk.* Warm before it\'s halfway down. Your hands stop. Your head stops. Everything stops, for a bit.', 'You drink it standing at the open fridge, in its light, like a man at a shrine.', 'It doesn\'t taste of anything any more. That isn\'t why you drink it.']) }]); if (!st.cans && !st.order) toast('🍺 That was the last one. The laptop can order more.'); }
-      if (c === 'leaflet') await say([{ text: 'ST JUDE\'S RECOVERY CENTRE. Alcohol and gambling. "You don\'t have to do this alone." 0800 17 17 17.' }, { text: 'St Jude\'s. The clinic you woke up in, in the dream. Dr. Okafor was a voice on their helpline, once, at four in the morning. You hung up when she asked your name.' }, { text: 'They\'d want you sober. They\'d want the debt dealt with. Five hundred thousand pounds. You put the leaflet back under its magnet.' }]);
-      if (c === 'cards') { S().flags.cards = 1; await say([{ text: 'A postcard of a paddle steamer, bought in a charity shop. A beer mat from a pub called the Rusty Spur, which closed in 2009. A calendar page with a lucky 17 on it.' }, { text: 'Sal sent you postcards, in the dream. Nobody has ever sent you a postcard.' }]); }
+      if (c === 'leaflet') await say([{ text: 'ST JUDE\'S RECOVERY CENTRE. Alcohol and gambling. "You don\'t have to do this alone." 0800 17 17 17.' }, { text: 'St Jude\'s. The clinic you woke up in, in the dream. Dr. Okafor was a voice on their helpline, once, at four in the morning. You hung up when she asked your name.' }, { text: 'They\'d want you sober. They\'d want the debt dealt with. Five hundred thousand pounds. You put the leaflet back under its magnet.' }]).then(async () => { if (await choose('0800 17 17 17. Your phone is on the bed, on four per cent.', [['ring', '📞 Ring the number'], ['no', 'Not tonight']]) === 'ring') await ring(); });
+      if (c === 'list') return A.list();
+      if (c === 'cards') { S().flags.cards = 1; mark('src_cards'); await say([{ text: 'A postcard of a paddle steamer, bought in a charity shop. A beer mat from a pub called the Rusty Spur, which closed in 2009. A calendar page with a lucky 17 on it.' }, { text: 'Sal sent you postcards, in the dream. Nobody has ever sent you a postcard.' }]); }
     },
     async laptop() { openLaptop(); },
     async mirror() {
-      const st = S(); App.count('l3_mirror'); Career.checkAchievements();
+      const st = S(); mark('mirror'); Career.checkAchievements();
       if (G) { G.leanT = 1; G.stare = 0; } const back = () => { if (G) G.leanT = 0; };
       if (!st.flags.mirror) { st.flags.mirror = 1; App.save(); return say([{ text: '*You look up from the basin.*' }, { text: 'Too tall for the mirror. Starved thin, hunched, the ribs showing through a dressing gown gone grey. The head hangs forward on its neck like it\'s too heavy. Two red points where the eyes should be.' }, { text: 'It moves when you move. It\'s you. It was always you. The thing that hunted you through the Meridian was only ever this: a man in a room, and what the drink has made of him.' }]).then(back); }
       return say([{ text: pickOne(['It\'s still you.', 'You make yourself look. It looks back.', 'You try smiling. The jaw hangs open instead.']) }]).then(back);
     },
     async door() {
       S().drink = Math.max(1, S().drink - 2); hud();
-      if (S().order === 'here') { S().order = 0; S().cans += 8; App.save(); hud(); return say([{ text: '*You open the door on the chain, just wide enough to pull the carrier bag in. Eight cans. The stairwell is empty. Nobody is ever there.*' }]); }
+      if (S().order === 'here') { S().order = 0; S().cans += 8; mark('delivered'); App.save(); hud(); return say([{ text: '*You open the door on the chain, just wide enough to pull the carrier bag in. Eight cans. The stairwell is empty. Nobody is ever there.*' }]); }
       await say([{ text: pickOne(['Your hand on the latch. The landing beyond it, the stairs, the street, the people. Your heart goes like a bird in a box. Not today.', 'You stand at the door for a long time. You don\'t open it.', 'The last time you went out was in June. You think it was June.']) }]);
     },
     async letters() {
+      mark('src_letters');
       await say([{ text: 'A drift of envelopes nobody has opened since the spring. You open them now.' }, { text: 'VINNIE\'S LOANS LTD: £120,000. LUCKYSTRIKE.BET CREDIT: £88,400. KESSLER CAPITAL (debt purchase): £143,000. Three credit cards. The council. HMRC. A payday lender called Big Nico.' }, { text: 'At the bottom, in your own handwriting on the back of one: £500,000. Then a 17, underlined twice.' }, { text: 'Vinnie. Kessler. Nico. The dream gave them faces.' }]);
     },
     async photo() {
+      mark('src_photo');
       await say([{ text: 'A family on a beach, laughing: a woman with her hair blowing across her face, a girl of about nine, a little boy on his dad\'s shoulders.' }, { text: 'Nora. Ellie. Sam.' }, { text: 'There\'s a sticker in the corner: SAMPLE, FRAME £4.99. It\'s the photo the frame came with. You bought it on the market and never took the picture out. You gave them names. You gave them a whole life.' }, { text: 'Nobody died. Nobody was ever here.' }]);
     },
+    async list() { openList(); },
     async chair() {
       const c = await choose('The armchair. It has your shape worn into it.', [['sit', 'Sit and watch the television'], ['no', 'Not now']]);
       if (c !== 'sit') return; S().drink = Math.max(1, S().drink - 4); hud();
       await say([{ text: pickOne(['You sit. On the television, someone wins a car. The audience goes wild. You don\'t move for an hour.', 'You sit in the dent you\'ve made in it. The remote is where it always is. The channels are all the same people.', 'The springs complain. You look at the door for a long time, and then at the fridge, and then at the door.']) }]);
     },
-    async calendar() { await say([{ text: 'October. Nothing in any of the squares except the 17th, circled so hard the pen went through. You can\'t remember why. You never could.' }]); },
+    async calendar() { mark('src_calendar'); await say([{ text: 'October. Nothing in any of the squares except the 17th, circled so hard the pen went through. You can\'t remember why. You never could.' }]); },
     async bed() { const c = await choose('The bed. The sheets haven\'t been changed since the summer.', [['lie', 'Lie down for a while'], ['no', 'Not yet']]); if (c !== 'lie') return; S().drink = Math.max(1, S().drink - 12); hud(); await say([{ text: 'The ceiling has a stain shaped like a river. You lie and look at it until it stops looking like anything, and you dream, for a minute, of a bright little town where everyone you never had is only missing.' }]); },
-    async window() { await say([{ text: '*You lift one slat of the blind.* Across the road, the bookmaker\'s sign: MERIDIAN BETS. Rain on the glass. A bus going somewhere. You let the slat fall.' }]); },
-    async books() { await say([{ text: 'Paperbacks. "Beat the Dealer". A darts annual from 1984 with a man called Mick on the cover. A thriller, dog-eared: "The Seventeenth Card". A book about grief you bought for someone you never knew.' }, { text: 'All the stories you borrowed.' }]); },
+    async window() { mark('src_window'); await say([{ text: '*You lift one slat of the blind.* Across the road, the bookmaker\'s sign: MERIDIAN BETS. Rain on the glass. A bus going somewhere. You let the slat fall.' }]); },
+    async books() { mark('src_books'); await say([{ text: 'Paperbacks. "Beat the Dealer". A darts annual from 1984 with a man called Mick on the cover. A thriller, dog-eared: "The Seventeenth Card". A book about grief you bought for someone you never knew.' }, { text: 'All the stories you borrowed.' }]); },
     async radio() {
+      mark('src_radio');
       const st = S(); const c = await choose('An old radio. One station comes in clearly.', [['spur', '📻 Country and honky-tonk'], ['riverboat', '📻 Old jazz'], ['off', 'Turn it off']]);
       st.radio = c === 'off' ? null : c; App.save(); if (typeof Music !== 'undefined' && Music.refresh) Music.refresh(); if (c !== 'off') toast(c === 'spur' ? '📻 A piano somewhere, and a woman laughing. It sounds like the Spur.' : '📻 A clarinet, a crackle. It sounds like the riverboat.');
     },
     async tv() {
+      mark('src_tv');
       const st = S(); st.tv = (st.tv + 1) % CHANNELS.length; st.flags['tv' + st.tv] = 1; App.save();
       const ch = CHANNELS[st.tv]; await say([{ text: `*Click.* ${ch.name}.` }, { text: ch.line }]);
-      if (CHANNELS.every((_, i) => st.flags['tv' + i]) && !st.flags.allTv) { st.flags.allTv = 1; await say([{ text: 'Every face from the dream is on this television. You took them, one by one, and gave them to yourself as friends.' }]); }
+      if (CHANNELS.every((_, i) => st.flags['tv' + i]) && !st.flags.allTv) { st.flags.allTv = 1; mark('tvall'); await say([{ text: 'Every face from the dream is on this television. You took them, one by one, and gave them to yourself as friends.' }]); }
     },
     async darts() {
       const c = await choose('The dartboard. Three darts in the treble twenty, where you left them. Mick says he\'ll give you a game. Mick always says that.', [['play', '🎯 A leg of 301 with Mick'], ['no', 'Not now']]);
@@ -569,15 +596,63 @@ const L3 = (() => {
   };
   const pickOne = a => a[Math.floor(Math.random() * a.length)];
 
+  /* ---------- the list on the fridge: Level 3's goals ---------- */
+  // ticked by what you do (counters on the save, so they stay ticked if you wake up in the bedsit again)
+  const SRC = ['tv', 'photo', 'letters', 'cards', 'books', 'calendar', 'window', 'radio'];
+  const got = k => App.counter('l3_' + k) > 0, peak = () => App.counter('l3_peak');
+  const GOALS = [
+    ['mirror', 'Look yourself in the eye', () => got('mirror')],
+    ['sources', 'Find where it all came from: the TV, the photo, the letters, the postcards, the books, the calendar, the window, the radio', () => SRC.every(k => got('src_' + k)), () => `${SRC.filter(k => got('src_' + k)).length} of 8`],
+    ['tvall', 'Watch every channel', () => got('tvall')],
+    ['mick', 'Beat Mick at darts', () => App.counter('l3_dartswin') > 0],
+    ['called', 'Ring the number on the leaflet, and tell them your name', () => got('called')],
+    ['delivered', 'Get a delivery to the door', () => got('delivered')],
+    ['x10', 'Win ten times your stake on one bet', () => got('x10')],
+    ['x100', 'Win a hundred times your stake on one bet', () => got('x100')],
+    ['auto', 'Let an autobet run fifty bets', () => got('auto50')],
+    ['k10', 'Get to £10,000', () => peak() >= 1e4, () => `best ${money(peak() || START)}`],
+    ['k100', 'Get to £100,000', () => peak() >= 1e5, () => `best ${money(peak() || START)}`],
+    ['out', 'Pay them all back. Walk out of the door.', () => !!(S().endings || {}).rehab, () => `${money(GOAL)}`],
+  ];
+  const goalsDone = () => GOALS.filter(g => g[2]()).length;
+  function mark(k) {
+    const before = GOALS.filter(g => g[2]()).map(g => g[0]);
+    if (!got(k)) App.count('l3_' + k);
+    const now = GOALS.filter(g => g[2]() && !before.includes(g[0]));
+    for (const g of now) toast(`📝 Crossed off the list: ${g[1].split(':')[0]}`);
+    if (now.length) Career.checkAchievements();
+  }
+  function notePeak(v) { const c = App.state.stats.counters; if (v > (c.l3_peak || 0)) { const was = c.l3_peak || 0; c.l3_peak = Math.round(v); for (const [k, n] of [['k10', 1e4], ['k100', 1e5]]) if (was < n && v >= n) toast(`📝 Crossed off the list: Get to ${money(n)}`); Career.checkAchievements(); } }
+  function openList() {
+    if (document.querySelector('.l3-listbg')) return;
+    if (G) G.busy++;
+    const close = () => { o.remove(); if (G) G.busy = Math.max(0, G.busy - 1); };
+    const E = S().endings || {}, END = [['rehab', 'Day One'], ['collapse', 'Last Orders'], ['broke', 'The House Always Wins']];
+    const o = h('div.l3-listbg', { onclick: e => { if (e.target === o) close(); } }, h('div.l3-paper',
+      h('h3', 'THINGS TO DO'), h('small', `in your own handwriting · ${goalsDone()} of ${GOALS.length} crossed off`),
+      h('ul', GOALS.map(([k, label, done, prog]) => h('li' + (done() ? '.done' : ''), h('span.l3-tick', done() ? '☑' : '☐'), h('span', label, prog && !done() ? h('em', ` (${prog()})`) : null)))),
+      h('p.l3-ends', 'Ways it ends: ', END.map(([k, n]) => h('b' + (E[k] ? '.found' : ''), E[k] ? n : '?'))),
+      h('button.l3-btn', { onclick: close }, 'Stick it back on the fridge')));
+    document.body.append(o);
+  }
+  // the helpline: the same voice as the dream's doctor
+  async function ring() {
+    await say([{ text: '*It rings four times. Then a woman answers, and her voice is calm and unhurried, and you know it from somewhere.*' }, { who: 'St Jude\'s', text: 'St Jude\'s helpline, you\'re through to Dr. Okafor. Take your time. Are you safe tonight?' }, { who: 'You', text: '...I don\'t know.' }, { who: 'St Jude\'s', text: 'That\'s all right. That\'s an honest answer. Can you tell me your name?' }]);
+    const c = await choose('She waits. She doesn\'t mind waiting.', [['name', 'Tell her your name'], ['hang', 'Hang up']]);
+    if (c === 'hang') return say([{ text: 'You hang up. Your hand is shaking so much the phone rattles on the bed. But you rang. You\'ve never rung before.' }]);
+    mark('called');
+    await say([{ who: 'You', text: `It\'s ${(App.state.name || 'me').split(' ')[0]}.` }, { who: 'St Jude\'s', text: `Hello, ${(App.state.name || 'you').split(' ')[0]}. Thank you. Tell me about tonight.` }, { text: 'You tell her about the drink, and the money, and the laptop that\'s always open. You don\'t tell her about the town. She doesn\'t ask you to do anything except ring again.' }, { text: 'When you put the phone down an hour later nothing has changed, and something has.' }]);
+  }
+
   /* ---------- the laptop: every game from the dreams, with real money ---------- */
   // lap: opened from the laptop, so leaving it comes back to the laptop's games
   function toGame(go, lap) {
     const st = S(); st.atTable = true; st.fromLaptop = !!lap; st.dreamBank = App.state.bank; st.dreamVenue = App.state.venue; st.before = st.cash;
-    App.state.bank = st.cash; App.state.venue = 'palace'; if (G) st.pos = { x: G.x, z: G.z, yaw: G.yaw }; App.save(); go();
+    App.state.bank = st.cash; App.state.venue = 'palace'; if (G) st.pos = { x: G.x, z: G.z, yaw: G.yaw }; App.save(); go(); lapStart(); lapHud();
   }
   function back() {
-    const st = S(); if (!st.atTable) return;
-    st.cash = Math.round(App.state.bank * 100) / 100; App.state.bank = st.dreamBank; App.state.venue = st.dreamVenue || App.state.venue; st.atTable = false;
+    const st = S(); lapStop(); if (!st.atTable) return;
+    st.cash = Math.round(App.state.bank * 100) / 100; notePeak(st.cash); App.state.bank = st.dreamBank; App.state.venue = st.dreamVenue || App.state.venue; st.atTable = false;
     const diff = st.cash - (st.before || st.cash); if (diff < 0) st.lost += -diff; App.save();
   }
   function openLaptop() {
@@ -658,10 +733,11 @@ const L3 = (() => {
       { text: 'You\'re on the end of a bed in a room above a bookmaker\'s. The laptop is open. It\'s always open. The light from it is blue and the light from the bulb is yellow and there isn\'t any other light.' },
       { text: 'There was no Meridian. No town. No case. You haven\'t been outside since the summer. You haven\'t had a job in three years, or a friend in longer. You owe five hundred thousand pounds, and you have eight hundred and fifty.' },
       { text: 'Your hands are shaking. There are three cans in the fridge.' }]), 600); }
-    else setTimeout(() => { checkEnd(); if (fromLap && G && !S().ended && !document.querySelector('.l3-say, .l3-laptop, .l3-end')) openLaptop(); }, 400); // back to the laptop's games, not the room
+    else setTimeout(() => { if (S().drink <= 0) return collapse(); checkEnd(); if (fromLap && G && !S().ended && !document.querySelector('.l3-say, .l3-laptop, .l3-end')) openLaptop(); }, 400); // back to the laptop's games, not the room
   }
   async function menu() {
-    const c = await choose('☰', [['save', '💾 Save'], ['gfx', `Graphics: ${App.state.settings.gfx === 'low' ? 'low (faster)' : 'high'}`], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['restart', '↺ Wake up in the bedsit again (start Level 3 over)'], ['title', 'Back to the title'], ['no', 'Close']]);
+    const c = await choose('☰', [['list', `📝 The list on the fridge (${goalsDone()} of ${GOALS.length})`], ['save', '💾 Save'], ['gfx', `Graphics: ${App.state.settings.gfx === 'low' ? 'low (faster)' : 'high'}`], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['restart', '↺ Wake up in the bedsit again (start Level 3 over)'], ['title', 'Back to the title'], ['no', 'Close']]);
+    if (c === 'list') openList();
     if (c === 'save') { savePos(); App.save(); toast('Saved.'); }
     if (c === 'restart') restart();
     if (c === 'gfx') { App.state.settings.gfx = App.state.settings.gfx === 'low' ? 'high' : 'low'; savePos(); App.save(); unmount(); Router.go('bedsit'); }
@@ -677,5 +753,5 @@ const L3 = (() => {
   // the way in: the roof of the Meridian, a reflection in the black glass of the door
   async function begin() { if (!App.state.l3) App.state.l3 = fresh(); App.save(); Router.safeGo('bedsit'); } // safeGo: not from the middle of a hand // a room you've already woken in is as you left it (☰ starts it over)
 
-  return { screen, unmount, begin, roundNeeds, back, checkEnd, ending, restart, GOAL, START, money, get state() { return S(); }, get G() { return G; }, A, openLaptop, CHANNELS };
+  return { GOALS, goalsDone, openList, screen, unmount, begin, roundNeeds, lapHud, back, checkEnd, ending, restart, GOAL, START, money, get state() { return S(); }, get G() { return G; }, A, openLaptop, CHANNELS };
 })();

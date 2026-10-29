@@ -40,7 +40,7 @@ const Originals = (() => {
   /* ---------- money: a bet settles into the bank and the stats ---------- */
   function settle(bet, payout, mult) {
     const st = App.state; st.bank = r2(st.bank - bet + payout);
-    App.roundDone('orig_' + S.game, { wagered: bet, returned: payout, net: r2(payout - bet), stamina: .06 });
+    App.roundDone('orig_' + S.game, { wagered: bet, returned: payout, net: r2(payout - bet) });
     S.stats.wagered = r2(S.stats.wagered + bet); S.stats.profit = r2(S.stats.profit + payout - bet); S.stats[payout > bet ? 'wins' : 'losses']++; S.stats.curve.push(S.stats.profit); if (S.stats.curve.length > 200) S.stats.curve.shift();
     S.hist.unshift({ mult, win: payout > bet }); S.hist.length = Math.min(S.hist.length, 14);
     paintStats(); paintHist();
@@ -57,27 +57,79 @@ const Originals = (() => {
   }
 
   /* ---------- autobet ---------- */
+  // What to do after a bet. "Chance" means the win chance of the game's target (Dice's line, Limbo's
+  // target, Crash's auto cash-out; in Mines, fewer or more mines). Values are a percentage (relative to
+  // the current bet or chance), pounds, or nothing.
+  const ACTIONS = [['reset', 'Reset the bet', ''], ['betInc', 'Increase the bet by', '%'], ['betDec', 'Decrease the bet by', '%'], ['betAdd', 'Add to the bet', '£'], ['betSub', 'Take off the bet', '£'], ['betSet', 'Set the bet to', '£'],
+    ['chInc', 'Increase win chance by', '%'], ['chDec', 'Decrease win chance by', '%'], ['chSet', 'Set win chance to', '%'], ['chReset', 'Reset win chance', ''], ['flip', 'Switch over / under', ''], ['stop', 'Stop the autobet', '']];
+  const unitOf = a => (ACTIONS.find(x => x[0] === a) || [])[2] || '';
+  function act(A, a, v) {
+    const clampB = b => r2(Math.max(MIN, Math.min(MAX, b))), C = S.chance;
+    if (a === 'reset') A.bet = A.base;
+    else if (a === 'betInc') A.bet = clampB(A.bet * (1 + v / 100));
+    else if (a === 'betDec') A.bet = clampB(A.bet * (1 - Math.min(99, v) / 100));
+    else if (a === 'betAdd') A.bet = clampB(A.bet + v);
+    else if (a === 'betSub') A.bet = clampB(A.bet - v);
+    else if (a === 'betSet') A.bet = clampB(v);
+    else if (C && a === 'chInc') C.set(C.get() * (1 + v / 100));
+    else if (C && a === 'chDec') C.set(C.get() * (1 - Math.min(99, v) / 100));
+    else if (C && a === 'chSet') C.set(v);
+    else if (C && a === 'chReset') C.set(A.baseChance);
+    else if (a === 'flip' && S.flip) S.flip();
+    else if (a === 'stop') A.stopNow = true;
+  }
+  // does an advanced rule fire after this bet?
+  function fires(R, A, won) {
+    const n = Math.max(1, +R.n || 1);
+    if (R.of === 'profit' || R.of === 'loss') { const run = r2(S.stats.profit - A.start), hit = R.of === 'profit' ? run >= n : -run >= n; const f = hit && !R.armed; R.armed = hit; return f; }
+    if (R.of === 'bets') return R.when === 'first' ? A.count === n : R.when === 'above' ? A.count > n : A.count % n === 0;
+    const mine = R.of === 'wins' ? won : !won; if (!mine) return false;
+    const total = R.of === 'wins' ? A.wins : A.losses, streak = R.of === 'wins' ? A.winRun : A.lossRun;
+    return R.when === 'every' ? total % n === 0 : R.when === 'streak' ? streak % n === 0 : R.when === 'first' ? streak === n : streak > n;
+  }
   async function runAuto() {
-    const A = S.auto, f = S.autoForm;
-    A.on = true; A.base = readBet(); A.left = Math.max(0, parseInt(f.n.value, 10) || 0); A.count = 0; A.start = S.stats.profit;
-    const onWin = { reset: f.winMode.value === 'reset', pct: +f.winPct.value || 0 }, onLoss = { reset: f.lossMode.value === 'reset', pct: +f.lossPct.value || 0 };
-    const stopP = +f.stopP.value || 0, stopL = +f.stopL.value || 0, me = S;
-    paintButton();
-    let bet = A.base;
+    const A = S.auto, f = S.autoForm, me = S;
+    Object.assign(A, { on: true, base: readBet(), bet: readBet(), left: Math.max(0, parseInt(f.n.value, 10) || 0), count: 0, wins: 0, losses: 0, winRun: 0, lossRun: 0, start: S.stats.profit, stopNow: false, baseChance: S.chance ? S.chance.get() : 0 });
+    const onWin = [f.winAct.value, +f.winVal.value || 0], onLoss = [f.lossAct.value, +f.lossVal.value || 0], rules = f.rules.map(R => ({ when: R.when.value, n: +R.n.value, of: R.of.value, act: R.act.value, v: +R.v.value || 0, armed: false }));
+    const stopP = +f.stopP.value || 0, stopL = +f.stopL.value || 0;
+    if (f.nLeft) f.nLeft.textContent = ''; paintButton();
     while (me === S && A.on) {
-      if (!canBet(bet)) break;
-      setBet(bet);
-      const won = await S.play(bet, true); if (me !== S) return;
-      A.count++; if (A.count >= 50) { App.count('l3_auto50'); Career.checkAchievements(); }
+      if (!canBet(A.bet)) break;
+      setBet(A.bet);
+      const won = await S.play(A.bet, true); if (me !== S) return;
+      A.count++; if (won) { A.wins++; A.winRun++; A.lossRun = 0; } else { A.losses++; A.lossRun++; A.winRun = 0; }
+      if (A.count >= 50) { App.count('l3_auto50'); Career.checkAchievements(); }
       const run = r2(S.stats.profit - A.start);
+      act(A, ...(won ? onWin : onLoss));
+      for (const R of rules) if (fires(R, A, won)) act(A, R.act, R.v);
+      if (f.nLeft) f.nLeft.textContent = `${A.left ? `${A.left - A.count} left` : `${A.count} bets`} · run ${run >= 0 ? '+' : ''}${fmt(run)}`;
+      if (A.stopNow) { UI.toast('Autobet stopped by a rule', 'good'); break; }
       if (A.left && A.count >= A.left) break;
       if (stopP && run >= stopP) { UI.toast(`Stop on profit: +${fmt(run)}`, 'good'); break; }
       if (stopL && -run >= stopL) { UI.toast(`Stop on loss: ${fmt(run)}`, 'warn'); break; }
-      const rule = won ? onWin : onLoss; bet = rule.reset ? A.base : r2(bet * (1 + rule.pct / 100));
-      if (f.nLeft) f.nLeft.textContent = A.left ? `${A.left - A.count} left` : `${A.count} bets`;
       await new Promise(r => setTimeout(r, S.game === 'plinko' || S.game === 'crash' ? 60 : 160));
     }
-    if (me === S) { A.on = false; paintButton(); if (f.nLeft) f.nLeft.textContent = ''; }
+    if (me === S) { A.on = false; paintButton(); }
+  }
+  // the autobet panel, once the game has said whether it has a win chance to change
+  function autoPanel(box) {
+    const f = S.autoForm, C = S.chance, sel = (opts, v) => { const s2 = h('select.orig-in'); opts.forEach(([k, l]) => s2.append(h('option', { value: k, selected: k === v }, l))); return s2; };
+    const acts = ACTIONS.filter(([k]) => !(k.startsWith('ch') && !C) && !(k === 'flip' && !S.flip));
+    const pair = (a0, v0) => { const a = sel(acts.map(([k, l]) => [k, l]), a0), v = h('input.orig-in.pct', { type: 'number', min: 0, step: 'any', value: v0 }), u = h('span.orig-unit'); const sync = () => { const un = unitOf(a.value); u.textContent = un; v.style.visibility = un ? 'visible' : 'hidden'; }; a.onchange = sync; sync(); return { a, v, row: h('div.orig-row', a, v, u) }; };
+    const w = pair('reset', 0), l = pair('reset', 100); f.winAct = w.a; f.winVal = w.v; f.lossAct = l.a; f.lossVal = l.v;
+    f.rules = []; const list = h('div.orig-rules');
+    const addRule = () => {
+      const R = { when: sel([['every', 'Every'], ['streak', 'Every streak of'], ['first', 'First streak of'], ['above', 'Streak above']], 'streak'), n: h('input.orig-in.pct', { type: 'number', min: 1, value: 3 }), of: sel([['wins', 'wins'], ['losses', 'losses'], ['bets', 'bets'], ['profit', '£ profit (run)'], ['loss', '£ loss (run)']], 'losses') };
+      const ap = pair('betInc', 100); R.act = ap.a; R.v = ap.v;
+      const row = h('div.orig-rule', h('div.orig-row', h('span.orig-on', 'On'), R.when, R.n, R.of), h('div.orig-row', h('span.orig-on', '→'), ap.a, ap.v, ap.row.lastChild, h('button.orig-x', { 'aria-label': 'Remove the rule', onclick: () => { f.rules.splice(f.rules.indexOf(R), 1); row.remove(); } }, '×')));
+      const tidy = () => { const money = R.of.value === 'profit' || R.of.value === 'loss'; R.when.style.display = money ? 'none' : ''; }; R.of.onchange = tidy; tidy();
+      f.rules.push(R); list.append(row);
+    };
+    box.append(
+      h('div.orig-field', h('label', 'Number of bets (0 = until you stop)'), f.n, f.nLeft),
+      h('div.orig-field', h('label', 'On win'), w.row), h('div.orig-field', h('label', 'On loss'), l.row),
+      h('details.orig-adv', h('summary', 'Advanced rules (streaks, every N bets, profit)'), list, h('button.orig-sub', { onclick: addRule }, '＋ Add a rule'), h('small.orig-note', C ? `Win chance is ${C.label}. Changes are relative: "increase by 10%" makes 49.5% into 54.45%.` : 'This game has no win chance to change: rules can change the bet or stop the autobet.')),
+      h('div.orig-field', h('label', 'Stop on profit (£)'), f.stopP), h('div.orig-field', h('label', 'Stop on loss (£)'), f.stopL));
   }
   function stopAuto() { if (S) S.auto.on = false; }
 
@@ -92,12 +144,8 @@ const Originals = (() => {
     const betRow = h('div.orig-field', h('label', 'Bet amount'), h('div.orig-bet', S.betIn, h('button', { onclick: () => setBet(readBet() / 2) }, '½'), h('button', { onclick: () => setBet(readBet() * 2) }, '2×'), h('button', { onclick: () => setBet(Math.min(MAX, bal())) }, 'Max')));
     const modeTabs = h('div.orig-mode', ['manual', 'auto'].map(m => h('button' + (m === S.mode ? '.on' : ''), { onclick: e => { if (busy()) return; S.mode = m; modeTabs.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === e.currentTarget)); autoBox.style.display = m === 'auto' ? '' : 'none'; paintButton(); if (S.onMode) S.onMode(m); } }, m === 'manual' ? 'Manual' : 'Auto')));
     const sel = (opts, v) => { const s = h('select.orig-in'); opts.forEach(([k, l]) => s.append(h('option', { value: k, selected: k === v }, l))); return s; };
-    const f = S.autoForm = { n: h('input.orig-in', { type: 'number', min: 0, value: 20 }), winMode: sel([['reset', 'Reset'], ['inc', 'Increase by']], 'reset'), winPct: h('input.orig-in.pct', { type: 'number', value: 0 }), lossMode: sel([['reset', 'Reset'], ['inc', 'Increase by']], 'reset'), lossPct: h('input.orig-in.pct', { type: 'number', value: 100 }), stopP: h('input.orig-in', { type: 'number', min: 0, value: 0 }), stopL: h('input.orig-in', { type: 'number', min: 0, value: 0 }), nLeft: h('small.orig-left') };
-    const autoBox = h('div.orig-auto', { style: { display: 'none' } },
-      h('div.orig-field', h('label', 'Number of bets (0 = until you stop)'), f.n, f.nLeft),
-      h('div.orig-field', h('label', 'On win'), h('div.orig-row', f.winMode, f.winPct, h('span', '%'))),
-      h('div.orig-field', h('label', 'On loss'), h('div.orig-row', f.lossMode, f.lossPct, h('span', '%'))),
-      h('div.orig-field', h('label', 'Stop on profit'), f.stopP), h('div.orig-field', h('label', 'Stop on loss'), f.stopL));
+    S.autoForm = { n: h('input.orig-in', { type: 'number', min: 0, value: 20 }), stopP: h('input.orig-in', { type: 'number', min: 0, value: 0 }), stopL: h('input.orig-in', { type: 'number', min: 0, value: 0 }), nLeft: h('small.orig-left') };
+    const autoBox = h('div.orig-auto', { style: { display: 'none' } }); // filled once the game is set up (autoPanel)
     S.ctl = h('div.orig-ctl'); S.btn = h('button.orig-go', { onclick: () => press() });
     S.stage = h('div.orig-stage'); S.histEl = h('div.orig-hist');
     S.statsEl = h('div.orig-stats');
@@ -105,6 +153,7 @@ const Originals = (() => {
       h('div.orig-main', h('div.orig-side', modeTabs, betRow, S.ctl, autoBox, S.btn), h('div.orig-right', S.histEl, S.stage)), S.statsEl);
     main.append(el); S.el = el;
     ({ dice, limbo, crash, plinko, mines })[game]();
+    autoPanel(autoBox);
     paintButton(); paintStats(); paintHist();
   }
   function press() {
@@ -146,6 +195,8 @@ const Originals = (() => {
       out.mult.value = mult().toFixed(4); out.line.value = target.toFixed(2); out.chance.value = chance().toFixed(2); flip.textContent = over ? 'Roll over ⇄' : 'Roll under ⇄';
     };
     range.oninput = () => { target = +range.value; sync(); };
+    S.chance = { label: 'the chance of the roll landing on your side of the line', get: () => chance(), set: c => { c = Math.max(2, Math.min(98, c)); target = r2(over ? 100 - c : c); sync(); } };
+    S.flip = () => { over = !over; target = r2(100 - target); sync(); };
     out.line.onchange = () => { target = +out.line.value; sync(); };
     out.chance.onchange = () => { const c = Math.max(2, Math.min(98, +out.chance.value)); target = over ? 100 - c : c; sync(); };
     out.mult.onchange = () => { const c = Math.max(2, Math.min(98, EDGE * 100 / Math.max(1.0102, +out.mult.value))); target = over ? 100 - c : c; sync(); };
@@ -170,6 +221,7 @@ const Originals = (() => {
     const big = h('div.orig-big', '1.00×');
     const sync = () => { target = Math.max(1.01, Math.min(1e6, +tIn.value || 2)); chance.value = (EDGE / target * 100).toFixed(6).replace(/0+$/, ''); };
     tIn.onchange = sync;
+    S.chance = { label: '99% ÷ your target', get: () => EDGE / target * 100, set: c => { c = Math.max(.0001, Math.min(98, c)); tIn.value = Math.max(1.01, Math.floor(EDGE * 100 / c * 100) / 100).toFixed(2); sync(); } };
     S.stage.append(h('div.orig-limbo', big, h('div.orig-trio', field('Target multiplier', tIn), field('Win chance', chance, h('span', '%')))));
     S.ctl.append(h('p.orig-note', 'The result has to reach your target. 2× wins about half the time.'));
     S.play = async (bet, auto) => {
@@ -200,6 +252,7 @@ const Originals = (() => {
     };
     draw(1, 0);
     S.label = () => S.live ? `Cash out ${fmt(r2(S.live.bet * S.live.m))}` : 'Bet';
+    S.chance = { label: '99% ÷ your auto cash-out', get: () => EDGE / Math.max(1.01, +cash.value || 2) * 100, set: c => { c = Math.max(.0001, Math.min(98, c)); cash.value = Math.max(1.01, Math.floor(EDGE * 100 / c * 100) / 100).toFixed(2); } };
     S.play = (bet, auto) => new Promise(done => {
       const at = fall(), auto2 = Math.max(1.01, +cash.value || 2), speed = auto ? 3 : 1, t0 = performance.now();
       const L = S.live = { bet, m: 1, out: null }; paintButton();
@@ -282,6 +335,7 @@ const Originals = (() => {
     function randomPick() { if (S.mode === 'auto') { const free = [...Array(25).keys()].filter(i => !picks.has(i)); if (free.length) { picks.add(free[Math.floor(Math.random() * free.length)]); reset(); paintInfo(); } return; } if (!board) return; const free = cells.map((c, i) => i).filter(i => !cells[i].classList.contains('open')); tap(free[Math.floor(Math.random() * free.length)]); }
     function cashOut() { if (!board || !k) return; const b = board, m = minesMult(n, k); reveal(b.m); board = null; S.live = null; S.manual = null; settle(b.bet, r2(b.bet * m), m); if (SFX.win) SFX.win(); paintButton(); paintInfo(); minesSel.disabled = false; }
     S.onMode = m => { picks = new Set(); reset(); paintInfo(); };
+    S.chance = { label: 'the share of the board without a mine (more chance, fewer mines)', get: () => (25 - n) / 25 * 100, set: c => { n = Math.max(1, Math.min(24, 25 - Math.max(1, picks.size), Math.round(25 - c / 100 * 25))); minesSel.value = n; paintInfo(); } }; // never so many mines that the picked tiles can't all be gems
     S.play = async (bet, auto) => {
       if (!auto) { reset(); board = { bet, m: deal() }; k = 0; S.live = board; S.manual = () => cashOut(); minesSel.disabled = true; paintButton(); paintInfo(); return null; }
       if (!picks.size) { UI.toast('Pick the tiles to turn first', 'warn'); S.auto.on = false; return false; }
