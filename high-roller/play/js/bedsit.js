@@ -14,7 +14,7 @@
      called The Seventeenth Card), the dartboard and the friend who isn't there to throw against, the
      stock photo in the frame, the letters by the door, the fridge postcards, the radio. */
 const L3 = (() => {
-  const GOAL = 500000, MIN_BET = 5, START = 850, DRAIN = 100 / 420; // the drink, per second: about seven minutes from full
+  const GOAL = 500000, MIN_BET = 1, START = 850, DRAIN = 100 / 420; // the drink, per second: about seven minutes from full
   const fresh = (keep = {}) => ({ v: 1, cash: START, drink: 72, cans: 3, order: 0, radio: null, tv: 0, flags: {}, pos: null, atTable: false, endings: keep.endings || {}, lost: 0 });
   const S = () => { const s = App.state; if (!s.l3) s.l3 = fresh(); return s.l3; };
   const money = n => '£' + Math.round(n).toLocaleString('en-GB');
@@ -266,7 +266,6 @@ const L3 = (() => {
     box(.12, .02, .04, chrome, 4.72, 1.0, RD - .08); box(.03, .06, .02, chrome, 4.67, .97, RD - .07); // the lever handle
     box(.25, .05, .015, chrome, 5.05, .85, RD - .065); // the letterbox
     add(new THREE.CylinderGeometry(.01, .01, .02, 10), black, 5.05, 1.55, RD - .065).rotation.x = Math.PI / 2; // spyhole
-    for (let i = 0; i < 8; i++) add(new THREE.TorusGeometry(.011, .003, 4, 8), chrome, 4.66 + i * .02, 1.42 - Math.sin(i / 7 * Math.PI) * .05, RD - .085).rotation.y = Math.PI / 2; // the chain
     box(.8, .012, .5, M({ color: 0x5a4a2a, roughness: 1 }), 5.05, 0, RD - .35); // the doormat
     const lt = add(new THREE.PlaneGeometry(1.0, .5), new THREE.MeshStandardMaterial({ map: TEX.letters(), transparent: true, roughness: 1 }), 5.0, .016, RD - .4); lt.rotation.x = -Math.PI / 2; lt.castShadow = false;
     use(door, 'The front door', () => A.door()); use(lt, 'The letters by the door', () => A.letters());
@@ -501,7 +500,7 @@ const L3 = (() => {
     // look into the mirror too long and your reflection's mouth starts to open
     const staring = -Math.sin(eyaw) > .85 && Math.abs(ez - 3.3) < .8 && RW - ex < 2.6 && Math.abs(epitch) < .5 && (!G.busy || ln > .5);
     G.stare = staring ? G.stare + dt : Math.max(0, G.stare - dt * 3);
-    const open = Math.min(1, Math.max(0, (G.stare - 2.5) / 1.4)); G.jaw.position.y = Y.userData.jawY - open * .04; G.jaw.rotation.x = open * .3;
+    const open = Math.min(1, Math.max(0, (G.stare - 2.5) / 1.4)); G.jaw.position.y = Y.userData.jawY - open * .013; G.jaw.rotation.x = open * .1; // only a little: the painted mouth stays a black hole
     if (open >= 1 && !G.stung) { G.stung = 1; if (typeof L2Demon !== 'undefined' && L2Demon.sting) try { L2Demon.sting(); } catch (_) { } toast('🪞 Don\'t look at it for too long.'); }
     if (!G.stare) G.stung = 0;
     // focus
@@ -571,8 +570,9 @@ const L3 = (() => {
   const pickOne = a => a[Math.floor(Math.random() * a.length)];
 
   /* ---------- the laptop: every game from the dreams, with real money ---------- */
-  function toGame(go) {
-    const st = S(); st.atTable = true; st.dreamBank = App.state.bank; st.dreamVenue = App.state.venue; st.before = st.cash;
+  // lap: opened from the laptop, so leaving it comes back to the laptop's games
+  function toGame(go, lap) {
+    const st = S(); st.atTable = true; st.fromLaptop = !!lap; st.dreamBank = App.state.bank; st.dreamVenue = App.state.venue; st.before = st.cash;
     App.state.bank = st.cash; App.state.venue = 'palace'; if (G) st.pos = { x: G.x, z: G.z, yaw: G.yaw }; App.save(); go();
   }
   function back() {
@@ -581,6 +581,7 @@ const L3 = (() => {
     const diff = st.cash - (st.before || st.cash); if (diff < 0) st.lost += -diff; App.save();
   }
   function openLaptop() {
+    if (document.querySelector('.l3-laptop')) return; // already open
     const st = S(); if (G) G.busy++;
     const o = h('div.l3-laptop'), close = () => { o.remove(); if (G) G.busy = Math.max(0, G.busy - 1); };
     const games = ['bj', 'uth', 'tcp', 'ms', 'lir', 'c4', 'bac', 'craps', 'roulette', 'war'].filter(g => GAMES[g]);
@@ -590,9 +591,10 @@ const L3 = (() => {
       h('div.l3-lap-h', h('b', 'LuckyStrike.bet'), h('span', `Balance ${money(st.cash)}`), h('button.l3-x', { onclick: close, 'aria-label': 'Close the laptop' }, '×')),
       h('p.l3-lap-note', `You owe ${money(GOAL)}. Win it and you could clear the lot. Lose it all and that\'s the end of the money.`),
       h('div.l3-goal2', h('i', { style: { width: Math.min(100, st.cash / GOAL * 100) + '%' } }), h('span', `${money(st.cash)} of ${money(GOAL)}`)),
-      h('h4', 'Tables'), h('div.l3-grid', games.map(g => card('🂡', GAMES[g].name, 'Live dealer', () => toGame(() => Router.openTable(g))))),
-      h('h4', 'Slots'), h('div.l3-grid', slots.map(v => card('🎰', SLOT_MACHINES[v].name, 'Jackpots', () => toGame(() => Router.go('slots', v))))),
-      h('h4', 'Poker'), h('div.l3-grid', card('♠', 'Tournaments', 'Sit and go, every hour', () => toGame(() => Router.go('poker')))),
+      typeof Originals !== 'undefined' ? [h('h4', '⚡ Originals · autobet'), h('div.l3-grid', Object.entries(Originals.GAMES).map(([k, g]) => card(g.icon, g.name, g.blurb, () => toGame(() => Router.go('originals', k), true))))] : null,
+      h('h4', 'Tables'), h('div.l3-grid', games.map(g => card('🂡', GAMES[g].name, 'Live dealer', () => toGame(() => Router.openTable(g), true)))),
+      h('h4', 'Slots'), h('div.l3-grid', slots.map(v => card('🎰', SLOT_MACHINES[v].name, 'Jackpots', () => toGame(() => Router.go('slots', v), true)))),
+      h('h4', 'Poker'), h('div.l3-grid', card('♠', 'Tournaments', 'Sit and go, every hour', () => toGame(() => Router.go('poker'), true))),
       h('h4', 'Shop'), h('div.l3-grid', st.order ? h('p.l3-lap-note', st.order === 'here' ? 'Your delivery is outside the door.' : 'Your delivery is on its way.') : card('🍺', 'Order 8 cans', '£16 · to the door in a minute', () => order()))));
     document.body.append(o);
   }
@@ -639,7 +641,7 @@ const L3 = (() => {
   function screen(main) {
     const st = S();
     document.body.classList.add('bedsit');
-    back();
+    const fromLap = st.atTable && st.fromLaptop; back();
     const root = h('div.l3', h('div.l3-host'),
       h('div.l3-hud', h('div.l3-drink', h('span', '🍺'), h('div.l3-bar', h('i')), h('em')), h('div.l3-right', h('b.l3-cash'), h('div.l3-goal', h('i')), h('small', `owed ${money(GOAL)}`)), h('small.l3-cans')),
       h('div.l3-prompt'), h('div.l3-cross'), h('button.l3-use', { 'aria-label': 'Use' }, '✋'), h('div.l3-stick', h('i')),
@@ -656,7 +658,7 @@ const L3 = (() => {
       { text: 'You\'re on the end of a bed in a room above a bookmaker\'s. The laptop is open. It\'s always open. The light from it is blue and the light from the bulb is yellow and there isn\'t any other light.' },
       { text: 'There was no Meridian. No town. No case. You haven\'t been outside since the summer. You haven\'t had a job in three years, or a friend in longer. You owe five hundred thousand pounds, and you have eight hundred and fifty.' },
       { text: 'Your hands are shaking. There are three cans in the fridge.' }]), 600); }
-    else setTimeout(checkEnd, 400);
+    else setTimeout(() => { checkEnd(); if (fromLap && G && !S().ended && !document.querySelector('.l3-say, .l3-laptop, .l3-end')) openLaptop(); }, 400); // back to the laptop's games, not the room
   }
   async function menu() {
     const c = await choose('☰', [['save', '💾 Save'], ['gfx', `Graphics: ${App.state.settings.gfx === 'low' ? 'low (faster)' : 'high'}`], ['sound', `Sound: ${App.state.settings.sound !== false ? 'on' : 'off'}`], ['restart', '↺ Wake up in the bedsit again (start Level 3 over)'], ['title', 'Back to the title'], ['no', 'Close']]);

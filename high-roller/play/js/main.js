@@ -34,6 +34,7 @@ const Router = {
     if (screen === 'world' && App.inLaptop()) screen = 'bedsit'; // closing a game on the laptop in Level 3
     if (this.screen === 'reality') L2.unmount();
     if (this.screen === 'bedsit' && screen !== 'bedsit') L3.unmount();
+    if (this.screen === 'originals' && typeof Originals !== 'undefined') Originals.unmount();
     CUR = screen === 'bedsit' || App.inLaptop() ? '£' : '$';
     World.unmount();
     this.teardownTable();
@@ -60,6 +61,7 @@ const Router = {
     if (Holdem.active() && this.screen === 'pokertable') return UI.toast('Use ← Leave to leave the tournament', 'warn');
     if (Darts.active() && this.screen === 'darts') return UI.toast('Finish the match first (or concede)', 'warn');
     if (Slots.busy() && this.screen === 'slots') return UI.toast('Let the reels stop first', 'warn');
+    if (this.screen === 'originals' && typeof Originals !== 'undefined' && Originals.busy()) return UI.toast('Stop the autobet (or finish the round) first', 'warn');
     if (this.table) {
       if (this.table.busy) return UI.toast('Finish the round first', 'warn');
       const block = this.game && this.game.canLeave && this.game.canLeave();
@@ -93,7 +95,7 @@ const Router = {
   },
   hudEl() {
     const st = App.state;
-    if (App.inLaptop()) return h('header.hud.hud-l2.hud-l3', h('button.logo', { onclick: () => this.safeGo('bedsit'), title: 'Close the laptop' }, '←', h('span', 'Close the laptop')),
+    if (App.inLaptop()) return h('header.hud.hud-l2.hud-l3', h('button.logo', { onclick: () => this.safeGo('bedsit'), title: 'Back to the laptop' }, '←', h('span', 'LuckyStrike.bet')),
       h('div.hud-stats', h('div.hs.bank', h('small', 'Your balance'), h('b#hud-bank'))));
     if (App.inReality()) return h('header.hud.hud-l2', h('button.logo', { onclick: () => this.safeGo('reality'), title: 'Back to the Meridian' }, '←', h('span', 'The Meridian')),
       h('div.hud-stats', h('div.hs.bank', h('small', 'Your money'), h('b#hud-bank'))));
@@ -132,6 +134,7 @@ const Screens = {
   world(main) { World.mount(main); },
   reality(main) { L2.screen(main); },
   bedsit(main) { L3.screen(main); },
+  originals(main, game) { Originals.screen(main, game); },
   poker(main) { Holdem.lobby(main); },
   pokertable(main) { Holdem.table(main); },
   darts(main) { Darts.screen(main); },

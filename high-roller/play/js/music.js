@@ -138,7 +138,7 @@ const Music = (() => {
     if (scr === 'reality') return R3.area === 'spur' ? 'spur' : R3.area === 'lowtide' && st.l2 && st.l2.jukebox && STYLES[st.l2.jukebox] ? st.l2.jukebox : R3.area && R3.area !== 'eye' ? 'reality' : '';
     if (scr === 'bedsit') return st.l3 && STYLES[st.l3.radio] ? st.l3.radio : ''; // the radio on the bookshelf, or nothing but the fridge
     if (App.inReality() && (scr === 'table' || scr === 'slots')) return '';
-    if (App.inLaptop() && ['table', 'slots', 'poker', 'pokertable', 'darts'].includes(scr)) return st.l3 && STYLES[st.l3.radio] ? st.l3.radio : ''; // the laptop: only the radio
+    if (App.inLaptop() && ['table', 'slots', 'poker', 'pokertable', 'darts', 'originals'].includes(scr)) return st.l3 && STYLES[st.l3.radio] ? st.l3.radio : ''; // the laptop: only the radio
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';
       if (w.map === 'v:spur' && st.flags && st.flags.spurJuke && STYLES[st.flags.spurJuke]) return st.flags.spurJuke; // the jukebox
