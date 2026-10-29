@@ -122,7 +122,7 @@ const L2Demon = (() => {
     const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
     const cx = W / 2, sk = mix(mix(L.skin, '#7d8a76', .55), '#4b5048', .1), rgb = [1, 3, 5].map(i => parseInt(sk.slice(i, i + 2), 16));
     const tone = (k, a = 1) => `rgba(${Math.min(255, rgb[0] * k) | 0},${Math.min(255, rgb[1] * k) | 0},${Math.min(255, rgb[2] * k) | 0},${a})`;
-    const blob = (x, y, rx, ry, col, col2 = 'rgba(0,0,0,0)') => { g.save(); g.translate(x, y); g.scale(1, ry / rx); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, col); gr.addColorStop(1, col2); g.fillStyle = gr; g.fillRect(-rx, -rx, rx * 2, rx * 2); g.restore(); };
+    const blob = (x, y, rx, ry, col, col2 = 'rgba(0,0,0,0)') => { g.save(); g.translate(x, y); g.scale(1, ry / rx); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, col); gr.addColorStop(1, col2); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rx, 0, 7); g.fill(); g.restore(); }; // round, not square: a blob with an opaque edge used to show its box
     // the head: long and narrow, pinched at the temples and under the cheekbones
     const head = new Path2D(); head.moveTo(cx, 40); head.bezierCurveTo(cx + 175, 40, cx + 200, 200, cx + 168, 270); head.bezierCurveTo(cx + 150, 330, cx + 175, 400, cx + 150, 470);
     head.bezierCurveTo(cx + 125, 590, cx + 70, 690, cx, 700); head.bezierCurveTo(cx - 70, 690, cx - 125, 590, cx - 150, 470); head.bezierCurveTo(cx - 175, 400, cx - 150, 330, cx - 168, 270); head.bezierCurveTo(cx - 200, 200, cx - 175, 40, cx, 40);
