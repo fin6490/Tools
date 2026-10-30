@@ -167,37 +167,37 @@ const World = (() => {
     diner: { name: "Mel's Diner", W: 16, H: 11, floor: 'tile', theme: { wall: '#c94f4f', trim: '#7a1d1d', tileA: '#f3efe6', tileB: '#2b2b2b' }, staff: ['mel', 5, 3],
       f: [['hcounter', 2, 4, 9, 1, { place: 'diner', label: 'Counter: order food (Mel)' }], ['shelf', 2, 2, 9, 1], ['case', 11, 4, 2, 1, { talk: 'The pie case. Cherry, apple, pecan. The cherry is Doc\'s favourite: Mel says he used to send Sal to fetch it.', label: 'Pie case' }],
         ['jukebox', 14, 2, 1, 1, { fn: 'jukebox', label: 'Jukebox' }], ['photo', 7, 1, 2, 1, { talk: 'A faded photo by the register: Sal and Mel in 1984, Sal holding a golden dart. "Golden Arrow champ," it says in marker. "Paid his tab in full that week."', label: 'Old photo' }],
-        ['booth', 2, 7, 2, 2], ['booth', 6, 7, 2, 2], ['booth', 11, 7, 2, 2], ['plant', 14, 8, 1, 1]],
+        ['booth', 2, 7, 2, 2], ['booth', 6, 7, 2, 2], ['booth', 11, 7, 2, 2], ['plant', 14, 8, 1, 1], ['window', 1, 1, 2, 1], ['clock', 4, 1, 1, 1], ['neon', 10, 1, 2, 1, null, { text: 'EAT', col: '#ff4d6d' }], ['window', 12, 1, 2, 1], ['stool', 3, 5, 1, 1], ['stool', 5, 5, 1, 1, null, { col: '#c62828' }], ['stool', 9, 5, 1, 1]],
       folk: [[4, 8, 0], [13, 6, 1]] },
     store: { name: 'Quik-Stop', W: 14, H: 10, floor: 'tile', theme: { wall: '#2e86c1', trim: '#154360', tileA: '#e8eef2', tileB: '#c9d6df' }, staff: ['raj', 3, 3],
       f: [['hcounter', 1, 4, 5, 1, { place: 'store', label: 'Register: snacks and drinks (Raj)' }], ['fridge', 8, 2, 5, 1, { place: 'store', label: 'Drinks cooler' }], ['rack', 1, 7, 2, 1, { fn: 'paper', label: 'Newspaper rack: today\'s paper' }],
-        ['machine', 11, 6, 1, 1, { fn: 'scratch', label: 'Scratch-card machine ($5)' }], ['shelf', 5, 7, 5, 1, { talk: 'Aisle 3: chips, jerky, aspirin, playing cards. Somebody has stacked the decks of cards in perfect suit order. Raj swears it wasn\'t him.', label: 'Shelves' }]],
+        ['machine', 11, 6, 1, 1, { fn: 'scratch', label: 'Scratch-card machine ($5)' }], ['shelf', 5, 7, 5, 1, { talk: 'Aisle 3: chips, jerky, aspirin, playing cards. Somebody has stacked the decks of cards in perfect suit order. Raj swears it wasn\'t him.', label: 'Shelves' }], ['poster', 2, 1, 2, 1, null, { text: 'LOTTO', col: '#ffe066' }], ['clock', 5, 1, 1, 1], ['poster', 11, 1, 2, 1, null, { text: '2 FOR $3', col: '#b3e5fc' }]],
       folk: [[10, 8, 2]] },
     motel: { name: 'Starlite Motel', W: 14, H: 10, floor: 'carpet', theme: { wall: '#6c3483', trim: '#2e1338', carpet: '#5b4a3a' }, staff: ['darlene', 3, 3],
       f: [['hcounter', 1, 4, 5, 1, { sleep: ['motel'], label: 'Front desk: a room for the night (Darlene)' }], ['door', 8, 1, 1, 1, { fn: 'room7', label: 'Room 7' }],
         ['door', 10, 1, 1, 1, { talk: 'Room 8. A Do Not Disturb sign and a lot of snoring.', label: 'Room 8' }], ['door', 6, 1, 1, 1, { fn: 'laptop', label: 'Room 12: your room' }], ['machine', 12, 3, 1, 1, { fn: 'ice', label: 'Ice machine' }], ['machine', 12, 6, 1, 1, { place: 'vending', label: 'Vending machine' }],
-        ['plant', 1, 7, 1, 1], ['tv', 6, 7, 2, 1, { talk: 'The lobby TV is showing the late news: "Gaming Commission denies probe into Monte Royale." Darlene snorts.', label: 'Lobby TV' }]],
+        ['plant', 1, 7, 1, 1], ['tv', 6, 7, 2, 1, { talk: 'The lobby TV is showing the late news: "Gaming Commission denies probe into Monte Royale." Darlene snorts.', label: 'Lobby TV' }], ['keys', 1, 1, 2, 1], ['clock', 4, 1, 1, 1], ['frame', 12, 1, 1, 1], ['sofa', 9, 7, 2, 1, null, { col: '#7a4a6a' }], ['lamp', 11, 7, 1, 1]],
       folk: [] },
     pawn: { name: "Vinnie's Pawn & Loan", W: 14, H: 10, floor: 'wood', theme: { wall: '#3d3d3d', trim: '#1d1d1d' }, staff: null,
       f: [['hcounter', 3, 4, 8, 1, { screen: 'loans', label: 'Loan counter: borrow or repay' }], ['case', 1, 6, 3, 1, { fn: 'watchcase', label: 'Display case' }],
         ['case', 10, 6, 3, 1, { talk: 'Guitars, a taxidermied armadillo, a slot-machine handle. Everything in town ends up here eventually, kid.', label: 'Display case' }], ['safe', 12, 2, 1, 1, { talk: 'A huge old safe. Vinnie leans on it whenever he talks numbers.', label: 'Safe' }],
-        ['door', 2, 1, 1, 1, { talk: 'The back office. A sign reads: KNOCK. THEN LEAVE.', label: 'Back office' }]],
+        ['door', 2, 1, 1, 1, { talk: 'The back office. A sign reads: KNOCK. THEN LEAVE.', label: 'Back office' }], ['neon', 5, 1, 3, 1, null, { text: 'LOANS', col: '#ffd54f' }], ['guitar', 9, 1, 2, 1], ['clock', 4, 1, 1, 1], ['frame', 11, 1, 1, 1]],
       folk: [] },
     shop: { name: 'Lucky Strike Outfitters', W: 16, H: 11, floor: 'carpet', theme: { wall: '#b03a2e', trim: '#5a1a14', carpet: '#3b2a40' }, staff: ['rosa', 7, 3],
       f: [['hcounter', 5, 4, 6, 1, { screen: 'shop', label: 'Counter: shop with Rosa' }], ['rack', 1, 3, 3, 1, { screen: 'shop', label: 'Suits and hats' }], ['mirror', 13, 2, 1, 1, { fn: 'mirror', label: 'Full-length mirror' }],
-        ['car', 1, 7, 4, 2, { talk: 'A cherry-red convertible on a rotating stand. A tag on the mirror says SOLD... SOON?', label: 'Showroom car' }], ['case', 11, 7, 3, 1, { screen: 'shop', label: 'Watches, rings and gear' }], ['plant', 14, 8, 1, 1]],
+        ['car', 1, 7, 4, 2, { talk: 'A cherry-red convertible on a rotating stand. A tag on the mirror says SOLD... SOON?', label: 'Showroom car' }], ['case', 11, 7, 3, 1, { screen: 'shop', label: 'Watches, rings and gear' }], ['plant', 14, 8, 1, 1], ['poster', 9, 1, 2, 1, null, { text: 'NEW IN', col: '#f8bbd0' }], ['frame', 3, 1, 2, 1], ['sconce', 12, 1, 1, 1], ['sconce', 1, 1, 1, 1]],
       folk: [] },
     grand: { name: 'Grand Hotel', W: 18, H: 12, floor: 'carpet', theme: { wall: '#d8c38a', trim: '#8a6a24', carpet: '#7a1d2a' }, staff: ['pemberton', 4, 3],
       f: [['hcounter', 2, 4, 6, 1, { sleep: ['grand', 'penthouse'], label: 'Reception: rooms and suites (Mr. Pemberton)' }], ['piano', 12, 3, 3, 2, { fn: 'piano', label: 'Grand piano' }], ['elevator', 16, 2, 1, 1, { sleep: ['penthouse'], label: 'Elevator to the penthouse' }],
-        ['fountain2', 8, 7, 2, 2, { talk: 'A marble fountain full of coins. Somebody has thrown in a casino chip from the Salon. Bold.', label: 'Lobby fountain' }], ['plant', 1, 8, 1, 1], ['plant', 16, 8, 1, 1], ['rug', 5, 6, 8, 4]],
+        ['fountain2', 8, 7, 2, 2, { talk: 'A marble fountain full of coins. Somebody has thrown in a casino chip from the Salon. Bold.', label: 'Lobby fountain' }], ['plant', 1, 8, 1, 1], ['plant', 16, 8, 1, 1], ['rug', 5, 6, 8, 4], ['frame', 7, 1, 2, 1], ['clock', 5, 1, 1, 1], ['sconce', 3, 1, 1, 1], ['sconce', 10, 1, 1, 1], ['sconce', 14, 1, 1, 1], ['sofa', 3, 9, 2, 1, null, { col: '#6a2a2a' }], ['sofa', 12, 10, 2, 1, null, { col: '#6a2a2a' }]],
       folk: [[13, 8, 3]] },
     apts: { name: 'Downtown Apartments', W: 12, H: 10, floor: 'wood', theme: { wall: '#7f8c8d', trim: '#34495e' }, staff: null,
       f: [['mailbox', 1, 3, 2, 1, { fn: 'mail', label: 'Mailboxes' }], ['door', 5, 1, 1, 1, { sleep: ['apartment'], label: 'Your apartment' }], ['door', 8, 1, 1, 1, { talk: 'Apartment 2B. Someone inside is practising the trumpet. Badly.', label: 'Apartment 2B' }],
-        ['elevator', 10, 2, 1, 1, { sleep: ['penthouse'], label: 'Elevator' }], ['plant', 1, 7, 1, 1]],
+        ['elevator', 10, 2, 1, 1, { sleep: ['penthouse'], label: 'Elevator' }], ['plant', 1, 7, 1, 1], ['board', 2, 1, 2, 1], ['frame', 7, 1, 1, 1], ['rug', 3, 4, 5, 3], ['bench', 7, 6, 2, 1]],
       folk: [] },
     steak: { name: 'Prime Cut Steakhouse', W: 16, H: 11, floor: 'carpet', theme: { wall: '#3e2723', trim: '#c9a14a', carpet: '#4a1c1c' }, staff: ['philippe', 3, 7],
       f: [['desk', 2, 8, 3, 1, { place: 'steak', label: 'Maître d\': a table for one (Philippe)' }], ['table', 6, 3, 2, 2], ['table', 10, 3, 2, 2], ['table', 10, 7, 2, 2], ['tank', 13, 2, 2, 1, { talk: 'A lobster tank. One of them is wearing a tiny rubber band and an expression of deep resignation.', label: 'Lobster tank' }],
-        ['door', 2, 1, 1, 1, { fn: 'cellar', label: 'Wine cellar' }], ['plant', 14, 8, 1, 1]],
+        ['door', 2, 1, 1, 1, { fn: 'cellar', label: 'Wine cellar' }], ['plant', 14, 8, 1, 1], ['wine', 5, 1, 3, 1], ['frame', 9, 1, 2, 1], ['sconce', 12, 1, 1, 1], ['sconce', 4, 1, 1, 1]],
       folk: [[8, 3, 4], [12, 7, 5]] },
     // behind the longhorns at the Spur, down a flight of stairs: Sal's secret, after the story (salquest.js)
     club: { name: 'The Seventeen Club', W: 16, H: 11, floor: 'carpet', theme: { wall: '#1e3a2f', trim: '#c9a14a', carpet: '#3a1414' }, staff: null,
@@ -214,9 +214,9 @@ const World = (() => {
     m.rect(0, 0, W, 2, G.WALL); m.rect(0, 0, 1, H, G.WALL); m.rect(W - 1, 0, 1, H, G.WALL); m.rect(0, H - 1, W, 1, G.WALL);
     const doorX = Math.floor(W / 2); m.set(doorX, H - 1, floor);
     m.doors[doorX + ',' + (H - 1)] = { exit: key, label: 'Back to the street' };
-    for (const [kind, x, y, w, hh, act] of R.f) {
-      m.props.push({ type: 'furn', kind, x, y, w, h: hh });
-      if (kind !== 'rug' && kind !== 'photo' && kind !== 'photowall') m.blockRect(x, y, w, hh);
+    for (const [kind, x, y, w, hh, act, o] of R.f) {
+      m.props.push({ type: 'furn', kind, x, y, w, h: hh, ...(o || {}) });
+      if (!['rug', 'photo', 'photowall', ...WALL_ART].includes(kind)) m.blockRect(x, y, w, hh);
       if (act) for (let j = 0; j < hh; j++) for (let i = 0; i < w; i++) m.act(x + i, y + j, act);
     }
     if (R.staff && STAFF[R.staff[0]]) {
@@ -228,6 +228,8 @@ const World = (() => {
     m.start = [doorX, H - 2];
     return m;
   }
+  // things that hang on the wall, not stand on the floor
+  const WALL_ART = ['window', 'clock', 'frame', 'poster', 'neon', 'sconce', 'board', 'keys', 'guitar', 'wine'];
   // furniture, drawn in the same chunky pixel style as the rest of the town
   function paintFurn(c, p) {
     const px = p.x * T, py = p.y * T, w = p.w * T, hh = p.h * T, R = (x, y, ww, h2, col) => { c.fillStyle = col; c.fillRect(px + x, py + y, ww, h2); };
@@ -252,8 +254,23 @@ const World = (() => {
       case 'elevator': R(1, 0, 14, 16, '#9e9e9e'); R(3, 2, 4, 14, '#cfd8dc'); R(9, 2, 4, 14, '#cfd8dc'); R(6, 0, 4, 2, '#ffd54f'); break;
       case 'fountain2': c.fillStyle = '#eceff1'; c.beginPath(); c.arc(px + w / 2, py + hh / 2, w / 2, 0, 7); c.fill(); c.fillStyle = '#4fc3f7'; c.beginPath(); c.arc(px + w / 2, py + hh / 2, w / 2 - 4, 0, 7); c.fill(); R(w / 2 - 2, 4, 4, hh / 2, '#cfd8dc'); break;
       case 'phone': R(2, -6, 12, 22, '#c62828'); R(4, -3, 8, 9, '#b3e5fc'); R(4, 8, 8, 6, '#b3e5fc'); R(5, -5, 6, 1, '#ffeb3b'); break;
+      case 'window': { R(0, 1, w, 14, '#d8d0c0'); const g = c.createLinearGradient(0, py + 2, 0, py + 13); g.addColorStop(0, '#16233a'); g.addColorStop(1, '#34466a'); c.fillStyle = g; c.fillRect(px + 2, py + 2, w - 4, 11); for (let i = 0; i < p.w * 3; i++) R(4 + i * 5, 8 + (i % 3), 2, 2, i % 2 ? '#ffd27a' : '#9ec5ff'); R(w / 2 - .5, 2, 1, 11, '#d8d0c0'); R(2, 7, w - 4, 1, '#d8d0c0'); R(-1, 13, w + 2, 2, '#bfb6a4'); R(2, 2, 3, 3, 'rgba(255,255,255,.15)'); break; }
+      case 'clock': c.fillStyle = '#3e2723'; c.beginPath(); c.arc(px + 8, py + 7, 5.5, 0, 7); c.fill(); c.fillStyle = '#f5efe0'; c.beginPath(); c.arc(px + 8, py + 7, 4.5, 0, 7); c.fill(); R(7.5, 3.5, 1, 4, '#222'); R(8, 6.5, 3, 1, '#222'); break;
+      case 'frame': { R(1, 1, w - 2, 12, '#c9a14a'); R(2, 2, w - 4, 10, '#2a1a10'); const g = c.createLinearGradient(0, py + 3, 0, py + 11); g.addColorStop(0, '#7aa0c8'); g.addColorStop(.6, '#d8c8a0'); g.addColorStop(1, '#5a7a4a'); c.fillStyle = g; c.fillRect(px + 3, py + 3, w - 6, 8); R(3, 9, w - 6, 2, '#4a6a3a'); c.fillStyle = 'rgba(255,240,200,.6)'; c.beginPath(); c.arc(px + w - 7, py + 5, 1.5, 0, 7); c.fill(); break; }
+      case 'poster': R(1, 2, w - 2, 11, p.col || '#f1c40f'); R(2, 3, w - 4, 3, '#c0392b'); c.fillStyle = '#222'; c.font = 'bold 5px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(p.text || 'SALE', px + w / 2, py + 11); break;
+      case 'neon': c.save(); c.font = 'bold 9px Georgia'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.shadowColor = p.col || '#ff4d6d'; c.shadowBlur = 6; c.fillStyle = p.col || '#ff4d6d'; c.fillText(p.text || 'OPEN', px + w / 2, py + 11); c.fillText(p.text || 'OPEN', px + w / 2, py + 11); c.restore(); break;
+      case 'sconce': { const g = c.createRadialGradient(px + 8, py + 5, 1, px + 8, py + 5, 11); g.addColorStop(0, 'rgba(255,220,150,.7)'); g.addColorStop(1, 'rgba(255,220,150,0)'); c.fillStyle = g; c.fillRect(px - 4, py - 4, 24, 22); R(6, 6, 4, 5, '#c9a14a'); R(7, 3, 2, 3, '#fff3c4'); break; }
+      case 'board': R(0, 2, w, 11, '#8d6e63'); R(1, 3, w - 2, 9, '#c8a27a'); for (let i = 0; i < p.w * 3; i++) { R(2 + i * 5, 4 + (i % 2) * 3, 4, 4, ['#fff9c4', '#ffffff', '#b3e5fc', '#ffcdd2'][i % 4]); R(3 + i * 5, 4 + (i % 2) * 3, 1, 1, '#c0392b'); } break;
+      case 'keys': R(0, 2, w, 11, '#5d4037'); R(1, 3, w - 2, 9, '#6d4c41'); for (let i = 0; i < p.w * 4; i++) for (const ky of [4, 8]) { R(2 + i * 4, ky, 1, 1, '#bdbdbd'); if ((i + ky) % 3) R(1.5 + i * 4, ky + 1, 2, 2, '#ffd54f'); } break;
+      case 'guitar': for (let i = 0; i < p.w; i++) { const gx = px + i * T + 8; R(i * T + 7.5, 0, 1, 6, '#3e2723'); c.fillStyle = ['#c0392b', '#d4a35a'][i % 2]; c.beginPath(); c.ellipse(gx, py + 11, 4, 4, 0, 0, 7); c.fill(); c.beginPath(); c.ellipse(gx, py + 7, 3, 3, 0, 0, 7); c.fill(); c.fillStyle = '#1a1a1a'; c.beginPath(); c.arc(gx, py + 9, 1.2, 0, 7); c.fill(); } break;
+      case 'wine': R(0, 1, w, 14, '#3e2723'); for (let i = 0; i < p.w * 3; i++) for (let j = 0; j < 3; j++) { R(1 + i * 5, 2 + j * 4, 4, 3, '#1a0f0a'); R(2 + i * 5, 3 + j * 4, 2, 2, ['#5a1020', '#2a4a20', '#6a1a2a'][(i + j) % 3]); } break;
+      case 'sofa': c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(px + 1, py + 12, w, 4); R(0, 1, w, 7, p.col || '#6d4c41'); R(0, 7, w, 7, p.col || '#795548'); R(0, 7, w, 1, 'rgba(0,0,0,.25)'); R(0, 3, 3, 11, 'rgba(0,0,0,.25)'); R(w - 3, 3, 3, 11, 'rgba(0,0,0,.25)'); for (let i = 0; i < p.w; i++) R(i * T + 3, 8, T - 5, 3, 'rgba(255,255,255,.1)'); break;
+      case 'stool': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + 9, py + 13, 4, 2, 0, 0, 7); c.fill(); R(7, 7, 2, 7, '#9e9e9e'); R(5, 13, 6, 1, '#757575'); c.fillStyle = p.col || '#c62828'; c.beginPath(); c.ellipse(px + 8, py + 6, 5, 3, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(px + 5, py + 4, 4, 1); break;
+      case 'lamp': { const g = c.createRadialGradient(px + 8, py + 3, 1, px + 8, py + 3, 16); g.addColorStop(0, 'rgba(255,214,140,.45)'); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.fillRect(px - 10, py - 12, 36, 34); R(7, 5, 2, 9, '#5d4037'); R(4, 13, 8, 2, '#3e2723'); R(4, 0, 8, 6, '#f3e0b5'); R(4, 5, 8, 1, '#c9a14a'); break; }
+      case 'bench': c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(px + 2, py + 11, w - 2, 3); R(0, 3, w, 3, '#8d6e63'); R(0, 7, w, 4, '#a1887f'); R(0, 7, w, 1, 'rgba(255,255,255,.15)'); R(2, 11, 2, 4, '#4e342e'); R(w - 4, 11, 2, 4, '#4e342e'); break;
       case 'rug': c.fillStyle = 'rgba(201, 161, 74, .35)'; c.fillRect(px, py, w, hh); c.strokeStyle = 'rgba(201, 161, 74, .8)'; c.lineWidth = 2; c.strokeRect(px + 3, py + 3, w - 6, hh - 6); break;
-      case 'table': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break;
+      case 'table': for (const sx2 of [-4, w - 4]) { c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(px + sx2 + 1, py + hh / 2 - 1, 9, 9); R(sx2, hh / 2 - 6, 8, 3, '#4e2a1a'); R(sx2, hh / 2 - 3, 8, 7, '#7a3a24'); R(sx2 + 1, hh / 2 - 2, 6, 1, 'rgba(255,255,255,.15)'); } // a chair either side
+        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break;
       case 'tank': R(0, 2, w, hh - 2, '#263238'); R(2, 3, w - 4, hh - 6, 'rgba(79, 195, 247, .7)'); R(8, 8, 5, 3, '#e53935'); R(18, 6, 5, 3, '#e53935'); break;
       case 'bar2': R(0, 2, w, hh - 2, '#4a1f10'); R(0, 0, w, 5, '#7a3a1c'); R(0, 4, w, 1, '#c9a14a'); R(0, hh - 2, w, 2, '#c9a14a'); for (let i = 0; i < p.w; i++) R(i * T + 6, 7, 4, 6, '#2a0f06'); break;
       case 'faro': c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(px + 3, py + 4, w - 2, hh - 2); R(0, 0, w, hh - 2, '#4a2a14'); R(2, 2, w - 4, hh - 6, '#1d5a3a'); for (let i = 0; i < 13; i++) { const cx = 5 + (i % 7) * 7, cy = i < 7 ? 5 : 16; R(cx, cy, 5, 8, '#f5f0e0'); R(cx + 2, cy + 3, 1, 2, '#111'); } R(w - 10, 5, 6, 18, '#c9a14a'); R(w - 9, 6, 4, 16, '#8a1d1d'); break;
@@ -381,18 +398,27 @@ const World = (() => {
       case G.SAND: fill('#d8c28c'); for (let i = 0; i < 3; i++) fill('#c9b07a', Math.floor(r(i) * 15), Math.floor(r(i + 3) * 15), 1, 1); break;
       case G.WATER: fill('#2d6aa8'); for (let i = 0; i < 2; i++) fill('#3b7ec0', Math.floor(r(i) * 12), Math.floor(r(i + 4) * 15), 4, 1); break;
       case G.PLANK: fill('#8a6038'); for (let i = 0; i < 4; i++) fill('#6e4a2a', 0, i * 4 + 3, 16, 1); fill('#5a3a1f', (y % 2) * 8 + 3, 0, 1, 16); break;
-      case G.TILE: fill((x + y) % 2 ? theme.tileA : theme.tileB); fill('rgba(0,0,0,.08)', 0, 15, 16, 1); break;
-      case G.WOOD: fill('#8a5a33'); for (let i = 0; i < 4; i++) fill('#77492a', 0, i * 4 + 3, 16, 1); fill('#6a3f22', ((y * 5) % 16), 0, 1, 16); break;
+      case G.TILE: fill((x + y) % 2 ? theme.tileA : theme.tileB); fill('rgba(255,255,255,.14)', 1, 1, 7, 1); fill('rgba(255,255,255,.08)', 1, 1, 1, 6); fill('rgba(0,0,0,.1)', 0, 15, 16, 1); fill('rgba(0,0,0,.06)', 15, 0, 1, 16); break;
+      case G.WOOD: { // boards in rows, each its own shade, the joints staggered, a knot here and there
+        const tones = ['#8a5a33', '#83552f', '#91613a', '#7d4f2c'];
+        for (let i = 0; i < 4; i++) { fill(tones[Math.floor(r(i + 50) * 4)], 0, i * 4, 16, 4); fill('rgba(255,225,180,.07)', 0, i * 4, 16, 1); fill('#5e3a1f', 0, i * 4 + 3, 16, 1); if (r(i + 70) < .55) fill('#5e3a1f', Math.floor(r(i + 60) * 16), i * 4, 1, 3); if (r(i + 80) < .25) fill('rgba(60,30,10,.4)', Math.floor(r(i + 90) * 12), i * 4 + 1, 3, 1); }
+        break;
+      }
       case G.CARPET: {
         fill(theme ? theme.carpet : '#7a1d2a');
         const acc = theme ? theme.trim : '#c9a14a';
         if ((x + y) % 2 === 0) { c.fillStyle = acc; c.globalAlpha = .35; c.fillRect(px + 7, py + 3, 2, 2); c.fillRect(px + 3, py + 7, 2, 2); c.fillRect(px + 11, py + 7, 2, 2); c.fillRect(px + 7, py + 11, 2, 2); c.globalAlpha = 1; }
+        for (let i = 0; i < 7; i++) fill(r(i + 100) < .5 ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.12)', Math.floor(r(i + 110) * 15), Math.floor(r(i + 120) * 15), 1, 1); // the pile
         break;
       }
       case G.WALL: {
         const col = theme ? theme.wall : '#555', trim = theme ? theme.trim : '#333';
         fill(col);
-        if (y === 1 && m.at(x, y + 1) !== G.WALL) { fill(trim, 0, 13, 16, 3); fill('rgba(255,255,255,.08)', 0, 0, 16, 2); if (x % 4 === 0) fill(trim, 7, 0, 2, 13); }
+        if (y === 1 && m.at(x, y + 1) !== G.WALL) { // the back wall: paper above a panelled dado, a skirting board
+          for (let k = 0; k < 2; k++) fill('rgba(255,255,255,.05)', 2 + k * 8, 1, 3, 6); fill('rgba(0,0,0,.2)', 0, 8, 16, 5); fill('rgba(255,255,255,.1)', 0, 8, 16, 1); fill('rgba(0,0,0,.18)', 2, 9, 12, 3); fill('rgba(255,255,255,.05)', 2, 9, 12, 1);
+          fill(trim, 0, 13, 16, 3); fill('rgba(255,255,255,.08)', 0, 0, 16, 2); if (x % 4 === 0) fill(trim, 7, 0, 2, 13);
+        }
+        else if (y === 0 && m.room) { fill('rgba(0,0,0,.22)', 0, 0, 16, 4); fill(trim, 0, 4, 16, 1); fill('rgba(255,255,255,.04)', (x % 2) * 8, 5, 8, 11); } // a cornice
         else if (y >= 2) { fill(trim, 0, 0, 16, 1); fill('rgba(0,0,0,.25)'); }
         break;
       }
@@ -554,9 +580,14 @@ const World = (() => {
     for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) paintTile(c, m, x, y);
     // draw trees again so canopies overlap neighbouring tiles nicely
     m.buildings.forEach(b => paintBuilding(c, b));
+    if (m.room) { // pools of warm light from the ceiling, and a soft shadow under everything that stands on the floor
+      for (let x = 3; x < m.w - 1; x += 5) { const g = c.createRadialGradient(x * T, m.h * T * .55, 4, x * T, m.h * T * .55, 5 * T); g.addColorStop(0, 'rgba(255,228,170,.13)'); g.addColorStop(1, 'rgba(255,228,170,0)'); c.fillStyle = g; c.fillRect(0, 2 * T, m.w * T, m.h * T); }
+      c.fillStyle = 'rgba(0,0,0,.2)'; for (const p of m.props) if (p.type === 'furn' && p.y >= 2 && !['rug', 'table', 'stool', 'sofa', 'bench', 'lamp', 'car', 'fountain2'].includes(p.kind)) c.fillRect(p.x * T + 2, p.y * T + 4, p.w * T, p.h * T);
+    }
     m.props.forEach(p => p.type === 'boat' ? paintBoat(c, p) : p.type === 'furn' ? paintFurn(c, p) : paintProp(c, p));
     m.tables.forEach(tb => paintTable(c, tb));
     paintDecor(c, m);
+    if (m.room) { const g = c.createRadialGradient(m.w * T / 2, m.h * T * .55, m.h * T * .3, m.w * T / 2, m.h * T * .55, m.w * T * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.28)'); c.fillStyle = g; c.fillRect(0, 0, m.w * T, m.h * T); }
     // street names are painted on the road itself so people walk over them
     c.font = `bold ${T * .55}px "Trebuchet MS", sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = 'rgba(255, 255, 255, .4)';
     m.labels.filter(L => L.street).forEach(L => c.fillText(L.text, L.x * T, L.y * T));
@@ -691,7 +722,8 @@ const World = (() => {
     const r = S.root.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1); // pixel art gains nothing past 2x
     S.cv.width = Math.round(r.width * dpr); S.cv.height = Math.round(r.height * dpr);
     S.cv.style.width = r.width + 'px'; S.cv.style.height = r.height + 'px';
-    const css = Math.max(2, Math.floor(Math.min(r.width / (16 * 18), r.height / (16 * 12))));
+    let css = Math.max(2, Math.floor(Math.min(r.width / (16 * 18), r.height / (16 * 12))));
+    if (S.m && S.m.room) css = Math.max(css, Math.min(css + 2, Math.floor(Math.min(r.width / (16 * (S.m.w + .5)), r.height / (16 * (S.m.h + .5))) * 4) / 4)); // a small room fills the screen, not a corner of it
     S.u = css * dpr; S.dpr = dpr;
   }
 
@@ -836,6 +868,7 @@ const World = (() => {
     const m = getMap(mapId);
     populate(m);
     S.m = m; S.p.x = x != null ? x : m.start[0]; S.p.y = y != null ? y : m.start[1]; S.p.dir = dir || 'up'; S.p.moving = null;
+    resize();
     savePos(); App.save(); updateGoal(); showArea(true);
     fade.classList.remove('on');
   }
@@ -1173,6 +1206,18 @@ const World = (() => {
   function clock() { return App.state.clock || 540; }
   function isNight() { const t = clock() % 1440; return t >= 1200 || t < 360; }
   function clockText() { const t = Math.floor(clock()) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+  // where a fragment is hidden, in the words somebody in town would use: the building it's in, or what it's near outside
+  function fragWhere(i) {
+    const k = FRAGMENTS[i]; if (!k) return 'somewhere in town';
+    if (k.map.startsWith('v:')) return 'somewhere inside ' + ((VENUES[k.map.slice(2)] || {}).name || 'one of the casinos');
+    if (k.map.startsWith('r:')) return 'somewhere inside ' + ((ROOMS[k.map.slice(2)] || {}).name || 'one of the buildings');
+    const m = getMap('town'), fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m), SalQuest.spots(m)), sp = keepSpots(m, fixed).find(q => q.keep === i);
+    if (!sp) return 'out on the streets somewhere';
+    let near = null, nd = 1e9;
+    for (const d in m.doors) { const [dx, dy] = d.split(',').map(Number), dd = Math.hypot(dx - sp.x, dy - sp.y); if (dd < nd && m.doors[d].label) { nd = dd; near = m.doors[d].label; } }
+    const t = m.at(sp.x, sp.y), on = t === G.GRASS || t === G.FLOWERS ? 'in the grass' : t === G.SAND ? 'down on the riverbank' : t === G.PLANK ? 'out on the boards' : 'on the pavement';
+    return `${on}${near ? `${nd < 5 ? ' just outside' : nd < 10 ? ' not far from' : ' a fair walk from'} ${near}` : ''}`;
+  }
   // somewhere outside you could plausibly have ended up after a night you don't remember
   function wakeSomewhere() {
     const m = getMap('town'); if (!m.fragCand) keepSpots(m, []);
@@ -1184,5 +1229,5 @@ const World = (() => {
     const where = t === G.GRASS || t === G.FLOWERS ? RNG.pick(['face-down in the grass', 'curled up in a flowerbed', 'on your back in the grass, staring at the sky']) : t === G.SAND ? 'half buried in sand on the riverbank' : t === G.PLANK ? 'on the planks of the dock, one shoe missing' : RNG.pick(['on the pavement', 'propped against a lamppost', 'in a doorway', 'flat on the sidewalk']);
     return { x, y, text: `${where}${near ? `${nd < 6 ? ' outside' : ' not far from'} ${near}` : ''}` };
   }
-  return { mount, unmount, townMap, wakeSomewhere, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
+  return { mount, unmount, townMap, wakeSomewhere, fragWhere, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
 })();
