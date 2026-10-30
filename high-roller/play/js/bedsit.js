@@ -5,6 +5,8 @@
    on the laptop, and the thing that hunted you is in the mirror.
    - It's first person and fully 3D (three.js, js/vendor): walk with WASD, the arrows or the stick on
      the left of a phone screen; look by dragging; use things with E, Space, the ✋ button, or a tap.
+   - If you never drank in either dream, the drink is still here (it always was), but the story says so: the
+     dreams were your subconscious telling you to deal with it (the intro, the mirror, the helpline, two endings).
    - One bar is left: the drink. It runs down all the time, faster at the laptop. The fridge has a few
      cans and the laptop can order more. Let it reach empty and you collapse (a bad true ending).
    - The laptop has every game from the dreams, with your real money (£850 to start). Make £500,000
@@ -15,8 +17,12 @@
      stock photo in the frame, the letters by the door, the fridge postcards, the radio. */
 const L3 = (() => {
   const GOAL = 500000, MIN_BET = 1, START = 850, DRAIN = 100 / 420; // the drink, per second: about seven minutes from full
-  const fresh = (keep = {}) => ({ v: 1, cash: START, drink: 72, cans: 3, pills: 12, calm: 0, bathOpen: 0, order: 0, radio: null, tv: 0, flags: {}, pos: null, atTable: false, endings: keep.endings || {}, lost: 0 });
-  const S = () => { const s = App.state; if (!s.l3) s.l3 = fresh(); return s.l3; };
+  // did you stay off the drink in both dreams (no drinks in the town, none when you woke in the city)? Then the dreams were
+  // the part of you that knows, telling you to deal with it: you wake in the same room with the same problem, told a little differently
+  const dryDreams = () => typeof App !== 'undefined' && App.counter('drinks') === 0 && App.counter('l2_drinks') === 0;
+  const fresh = (keep = {}) => ({ dry: dryDreams(), v: 1, cash: START, drink: 72, cans: 3, pills: 12, calm: 0, bathOpen: 0, order: 0, radio: null, tv: 0, flags: {}, pos: null, atTable: false, endings: keep.endings || {}, lost: 0 });
+  const S = () => { const s = App.state; if (!s.l3) s.l3 = fresh(); if (s.l3.dry == null) s.l3.dry = dryDreams(); return s.l3; };
+  const dry = () => !!S().dry;
   const money = n => '£' + Math.round(n).toLocaleString('en-GB');
   let G = null; // the running room
 
@@ -734,7 +740,7 @@ const L3 = (() => {
     async mirror() {
       const st = S(); mark('mirror'); Career.checkAchievements();
       if (G) { G.leanT = 1; G.stare = 0; } const back = () => { if (G) G.leanT = 0; };
-      if (!st.flags.mirror) { st.flags.mirror = 1; App.save(); return say([{ text: '*You look up from the basin.*' }, { text: 'Too tall for the mirror. Starved thin, hunched, the ribs showing through a dressing gown gone grey. The head hangs forward on its neck like it\'s too heavy. Two red points where the eyes should be.' }, { text: 'It moves when you move. It\'s you. It was always you. The thing that hunted you through the Meridian was only ever this: a man in a room, and what the drink has made of him.' }]).then(back); }
+      if (!st.flags.mirror) { st.flags.mirror = 1; App.save(); return say([{ text: '*You look up from the basin.*' }, { text: 'Too tall for the mirror. Starved thin, hunched, the ribs showing through a dressing gown gone grey. The head hangs forward on its neck like it\'s too heavy. Two red points where the eyes should be.' }, dry() ? { text: 'It moves when you move. It\'s you. In the dreams you kept it away: not a drop, not once, and it never got near you. But it was here all along, in the glass, waiting for you to wake up.' } : { text: 'It moves when you move. It\'s you. It was always you. The thing that hunted you through the Meridian was only ever this: a man in a room, and what the drink has made of him.' }]).then(back); }
       return say([{ text: pickOne(['It\'s still you.', 'You make yourself look. It looks back.', 'You try smiling. The jaw hangs open instead.']) }]).then(back);
     },
     async door() {
@@ -824,7 +830,7 @@ const L3 = (() => {
     const c = await choose('She waits. She doesn\'t mind waiting.', [['name', 'Tell her your name'], ['hang', 'Hang up']]);
     if (c === 'hang') return say([{ text: 'You hang up. Your hand is shaking so much the phone rattles on the bed. But you rang. You\'ve never rung before.' }]);
     mark('called');
-    await say([{ who: 'You', text: `It\'s ${(App.state.name || 'me').split(' ')[0]}.` }, { who: 'St Jude\'s', text: `Hello, ${(App.state.name || 'you').split(' ')[0]}. Thank you. Tell me about tonight.` }, { text: 'You tell her about the drink, and the money, and the laptop that\'s always open. You don\'t tell her about the town. She doesn\'t ask you to do anything except ring again.' }, { text: 'When you put the phone down an hour later nothing has changed, and something has.' }]);
+    await say([{ who: 'You', text: `It\'s ${(App.state.name || 'me').split(' ')[0]}.` }, { who: 'St Jude\'s', text: `Hello, ${(App.state.name || 'you').split(' ')[0]}. Thank you. Tell me about tonight.` }, { text: 'You tell her about the drink, and the money, and the laptop that\'s always open. You don\'t tell her about the town. She doesn\'t ask you to do anything except ring again.' }, ...(dry() ? [{ text: 'You do tell her one thing: in your dreams you never drink. You walk straight past it. She\'s quiet for a moment. "Then part of you already knows what it wants," she says. "That\'s the part we\'ll work with."' }] : []), { text: 'When you put the phone down an hour later nothing has changed, and something has.' }]);
   }
 
   /* ---------- the laptop: every game from the dreams, with real money ---------- */
@@ -873,10 +879,12 @@ const L3 = (() => {
         { text: 'Then you take the leaflet off the fridge and ring the number. A woman answers. Her voice is calm and unhurried, and she asks your name, and this time you tell her.' },
         { text: '*Two weeks later you open the front door, all the way, and walk down the stairs with a holdall. The rain has stopped. The bus is the 14.*' },
         { text: 'Day one. Day ninety. Day three hundred and sixty-five. You go to the meetings on Thursdays. You sit in the circle. You tell them about a town that never existed and the people in it, and somebody says: "It sounds like you loved them." You did.' },
+        ...(st.dry ? [{ text: 'In the dreams you\'d already said no a thousand times: to every bar in the town, to every bottle in the city. It turns out that was practice.' }] : []),
         { text: 'You keep the photo in the frame. You never did take it out. You just stopped needing it to be true.' }] },
       collapse: { title: 'Last Orders', kind: 'A bad true ending', lines: [
         { text: 'The shaking stops being in your hands and starts being everywhere. The room tilts. The fridge hums. You are on the carpet, and the carpet is very soft, and very far away.' },
         { text: 'In the mirror over the basin, nothing moves.' },
+        ...(st.dry ? [{ text: 'You stayed dry in every dream. Some part of you was trying to tell you. You just couldn\'t hear it awake.' }] : []),
         { text: 'It was four days before the neighbour downstairs noticed the television had been on the whole time.' }] },
       broke: { title: 'The House Always Wins', kind: 'A bad true ending', lines: [
         { text: 'The balance says £0.00. You refresh it. It says £0.00.' },
@@ -915,6 +923,7 @@ const L3 = (() => {
       { text: '*The rain stops being rain. It\'s the hum of a fridge.*' },
       { text: 'You\'re on the end of a bed in a room above a bookmaker\'s. The laptop is open. It\'s always open. The light from it is blue and the light from the bulb is yellow and there isn\'t any other light.' },
       { text: 'There was no Meridian. No town. No case. You haven\'t been outside since the summer. You haven\'t had a job in three years, or a friend in longer. You owe five hundred thousand pounds, and you have eight hundred and fifty.' },
+      ...(dry() ? [{ text: 'In the dreams you never touched a drop. Not in the town, not in the city: you walked past every bar and every bottle and you never knew why.' }, { text: 'Now you do. That was the part of you that still knows, telling you the one thing you won\'t tell yourself awake: deal with it.' }] : []),
       { text: 'Your hands are shaking. There are three cans in the fridge.' }]), 600); }
     else setTimeout(() => { if (S().drink <= 0) return collapse(); checkEnd(); if (fromLap && G && !S().ended && !document.querySelector('.l3-say, .l3-laptop, .l3-end')) openLaptop(); }, 400); // back to the laptop's games, not the room
   }
