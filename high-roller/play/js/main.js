@@ -1,31 +1,7 @@
 /* Screens and navigation: title, hub, venue lobby, table, shop, loan shark, trophies, stats. */
-const Avatar = {
-  svg() {
-    const it = k => App.has(k);
-    const suit = it('tux') ? '#111' : it('suit') ? '#2f3e5c' : it('blazer') ? '#6b4f3a' : '#4a7a46';
-    const lapel = it('tux') ? '#2a2a2a' : it('suit') ? '#25314a' : '#5a4230';
-    const shirt = it('tux') || it('suit') ? '#f4f4f4' : '#d9cba3';
-    const tie = it('tux') ? '<path d="M52 78 L60 82 L68 78 L68 86 L60 82 L52 86Z" fill="#111"/>' : it('suit') ? '<path d="M58 80 h4 l3 26 -5 6 -5 -6z" fill="#a3242e"/>' : '';
-    const hat = it('fedora') ? '<ellipse cx="60" cy="30" rx="30" ry="6" fill="#3b2f2a"/><path d="M40 30 Q42 8 60 10 Q78 8 80 30Z" fill="#4b3b33"/><rect x="41" y="24" width="38" height="5" fill="#1d1715"/>' : '<path d="M38 40 Q40 16 60 16 Q80 16 82 40 Q74 28 60 28 Q46 28 38 40Z" fill="#3a2a1e"/>';
-    const shades = it('shades') ? '<rect x="44" y="40" width="14" height="8" rx="3" fill="#111"/><rect x="62" y="40" width="14" height="8" rx="3" fill="#111"/><rect x="57" y="42" width="6" height="2" fill="#111"/>' : '<circle cx="51" cy="44" r="2.5" fill="#222"/><circle cx="69" cy="44" r="2.5" fill="#222"/>';
-    const chain = it('chain') ? '<path d="M46 80 Q60 104 74 80" stroke="#f5c542" stroke-width="3.5" fill="none" stroke-dasharray="3 1.5"/><circle cx="60" cy="96" r="4" fill="#f5c542"/>' : '';
-    const cigar = it('cigar') ? '<rect x="66" y="56" width="16" height="3.5" rx="1.5" fill="#7b4a2a"/><circle cx="83" cy="57.5" r="2" fill="#f60"/><path d="M84 52 q3 -4 0 -8 q-3 -4 1 -8" stroke="#bbb" fill="none" stroke-width="1.2" opacity=".7"/>' : '';
-    const watch = it('watch') ? '<rect x="18" y="130" width="10" height="8" rx="2" fill="#d4af37"/><circle cx="23" cy="134" r="2.6" fill="#fff"/>' : '';
-    const ring = it('ring') ? '<circle cx="100" cy="142" r="3" fill="#bdf" stroke="#fff" stroke-width="1"/><path d="M100 132 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5z" fill="#fff"/>' : '';
-    const smile = App.state.stats.streak >= 3 ? '<path d="M50 58 Q60 68 70 58" stroke="#5a2b1a" stroke-width="2.5" fill="none"/>' : App.state.stats.streak <= -3 ? '<path d="M51 63 Q60 56 69 63" stroke="#5a2b1a" stroke-width="2.5" fill="none"/>' : '<path d="M51 60 Q60 65 69 60" stroke="#5a2b1a" stroke-width="2.5" fill="none"/>';
-    return `<svg viewBox="0 0 120 160" class="avatar-svg" role="img" aria-label="Your gambler">
-      <rect x="10" y="86" width="100" height="80" rx="30" fill="${suit}"/>
-      <path d="M42 80 L60 120 L78 80Z" fill="${shirt}"/>
-      <path d="M40 82 L58 118 L48 124 L34 90Z M80 82 L62 118 L72 124 L86 90Z" fill="${lapel}"/>
-      ${tie}${chain}
-      <rect x="16" y="100" width="14" height="40" rx="7" fill="${suit}"/><rect x="90" y="100" width="14" height="40" rx="7" fill="${suit}"/>
-      <circle cx="23" cy="142" r="7" fill="#e8b58f"/><circle cx="97" cy="142" r="7" fill="#e8b58f"/>${watch}${ring}
-      <rect x="52" y="64" width="16" height="18" fill="#e0a97f"/>
-      <ellipse cx="60" cy="46" rx="22" ry="25" fill="#f0c19a"/>
-      ${hat}${shades}${smile}${cigar}
-    </svg>`;
-  },
-};
+// you, on the Status screen: the same portrait as the mirror (Your look: skin, hair, beard, glasses, outfit, and whichever
+// of the hat, shades and chain you own and wear)
+const Avatar = { svg() { return Looks.svg(); } };
 
 const Router = {
   screen: 'title', table: null, game: null,
