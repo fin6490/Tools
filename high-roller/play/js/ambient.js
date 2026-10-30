@@ -30,6 +30,8 @@ const Ambient = (() => {
     roof: { bed: [['rain', 1400, .5], ['wind', 260, .3]], fx: [['thump', 16000]] },
     cemetery: { bed: [['wind', 320, .18], ['rain', 2200, .05]], fx: [] },
     steak: { bed: [['murmur', 360, .3]], fx: [['clink', 2200]] },
+    // Level 3: the bedsit, and the laptop in it: the fridge, rain on the window, the tap dripping (no casino floor)
+    bedsit: { bed: [['hum', 50, .07], ['rain', 1100, .1]], fx: [['drip', 6500], ['car', 18000]] },
   };
   const noiseBuf = () => {
     const n = ac.sampleRate * 2, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
@@ -85,6 +87,7 @@ const Ambient = (() => {
   // which soundscape fits where you are right now
   function where() {
     const st = App.state, scr = Router.screen; if (!st) return '';
+    if (scr === 'bedsit' || App.inLaptop()) return 'bedsit'; // a game on the laptop is still in the room, not on a casino floor
     if (scr === 'reality') { const a = R3.area; return a === 'salon' ? 'l2salon' : a === 'corridor' || a === 'room' ? 'hotel' : a || ''; }
     if (scr === 'world') {
       const w = World.where(); if (!w) return '';

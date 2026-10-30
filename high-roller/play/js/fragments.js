@@ -41,6 +41,21 @@ const Fragments = {
     if (typeof Mood !== 'undefined') Mood.change(-2, 'memories');
     Career.checkAchievements(); App.save();
   },
+  // once you've woken up (Level 2) the pieces matter, and the town seems to know you're looking: anyone you talk to can
+  // point you towards one that's still missing (in the AI chat, or with the button in the chat window when there's no AI)
+  awake() { return !!(App.state.l2 && App.state.mode === 'career'); },
+  missing() { return FRAGMENTS.map((k, i) => i).filter(i => !this.has(i)); },
+  brief() {
+    if (!this.awake()) return '';
+    const miss = this.missing(); if (!miss.length) return '';
+    return `Something about this town has changed, though nobody says so: the player has woken up once already, and they are looking for the small things that don't belong here, each with a torn square of a photograph on the back (they might call them fragments, keepsakes, pieces, or the photo). They have found ${this.count()} of ${FRAGMENTS.length}. You have noticed where some of the missing ones are: ${miss.map(i => `${FRAGMENTS[i].name.toLowerCase()} (${World.fragWhere(i)})`).join('; ')}. If they ask about these things, or about lost things, the photograph, a family or anything that doesn't belong, give them ONE of these at a time, in your own voice: what you saw and roughly where (the building, or what it's near outside), vague but useful. Never list them all. For these things only, you may give clues.`;
+  },
+  hint(who) {
+    const miss = this.missing(); if (!miss.length) return 'I think you\'ve found everything there was to find. Whatever it was you were looking for.';
+    const st = App.state.flags, k = 'fragAsk_' + who, n = (st[k] || 0); st[k] = n + 1;
+    const i = miss[n % miss.length], thing = FRAGMENTS[i].name.toLowerCase(), where = World.fragWhere(i);
+    return [`Funny you should ask. I saw ${thing} ${where}. It didn't look like it belonged to anybody here.`, `${where[0].toUpperCase() + where.slice(1)}. There's ${thing} there. I didn't touch it. It didn't feel like mine to touch.`, `You're looking for those things too? Try ${where}. ${thing[0].toUpperCase() + thing.slice(1)}, last I saw.`, `Somebody left ${thing} ${where}. Gave me the strangest feeling, like I'd forgotten someone's birthday.`][n % 4];
+  },
   panel() {
     const n = this.count();
     if (!n) return null;

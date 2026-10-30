@@ -109,6 +109,16 @@ const SFX = (() => {
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
   }
+  // running water and the like: noise through a filter that sweeps from f0 to f1, faded in over `att` seconds
+  function wash(dur, f0, f1, gain, att = 0.1, type = 'lowpass', q = 0.7, when = 0) {
+    const c = ac(); if (!c || !on()) return;
+    const t = c.currentTime + when, len = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.linearRampToValueAtTime(f1, t + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain, t + att); g.gain.setValueAtTime(gain, t + dur * 0.6); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(c.destination); src.start(t); src.stop(t + dur + 0.05);
+  }
   return {
     chip() { noise(0.06, 3200, 3, 0.5); setTimeout(() => noise(0.04, 4200, 4, 0.3), 35); },
     card() { noise(0.09, 1800, 0.8, 0.35); },
@@ -126,6 +136,13 @@ const SFX = (() => {
       [0, 90, 150, 230].forEach((d, i) => setTimeout(() => noise(0.04, 2600 - i * 300, 4, 0.4), ms * .85 + d));
     },
     reel() { noise(0.02, 2200, 5, 0.08); },
+    // the bedsit's own: water, a door, the toilet, a strip of pills
+    flush() { wash(2.6, 260, 1300, 0.32, 0.12); wash(1.4, 500, 220, 0.18, 0.05, 'bandpass', 2, 1.9); wash(3.2, 2600, 2200, 0.035, 0.6, 'bandpass', 3, 2.4); },
+    trickle() { wash(2.4, 2800, 2300, 0.06, 0.25, 'bandpass', 5); },
+    shower() { wash(1.6, 3000, 2600, 0.08, 0.2, 'highpass', 0.7); },
+    creak() { const c = ac(); if (!c || !on()) return; const o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime; o.type = 'sawtooth'; o.frequency.setValueAtTime(140, t); for (let i = 1; i <= 8; i++) o.frequency.linearRampToValueAtTime(140 + Math.sin(i * 1.7) * 40 + i * 6, t + i * 0.09); f.type = 'bandpass'; f.frequency.value = 1100; f.Q.value = 6; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.08); g.gain.linearRampToValueAtTime(0.0001, t + 0.8); o.connect(f).connect(g).connect(c.destination); o.start(t); o.stop(t + 0.85); },
+    latch() { tone(1500, 0.04, 'square', 0.03); noise(0.04, 2400, 3, 0.25); },
+    pills() { for (let i = 0; i < 7; i++) setTimeout(() => noise(0.03, 3200 + Math.random() * 1500, 6, 0.25), i * 45 + Math.random() * 20); },
     reelStop() { tone(110, 0.09, 'sine', 0.12); noise(0.05, 900, 1.5, 0.25); },
   };
 })();

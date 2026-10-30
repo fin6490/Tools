@@ -367,6 +367,8 @@ const L2World = (() => {
     A.use(2.5, .9, horror ? 'The roof door' : 'Stairs to the roof', horror ? act('horrorLift') : act('toRoof'), { r: 1.4 });
     if (horror) for (let i = 0; i < 9; i++) A.use(.8, 2.5 + i * 3, 'Room 1717', act('horrorDoor'), { r: 1.2 });
     else A.use(.8, 2.5 + 8 * 3, 'Room 1717', act('room1717'), { r: 1.4 });
+    A.prop('rug', 1.4, 3, { w: 2.2, d: 24, color: horror ? '#3a0606' : '#5a1a22' });
+    if (!horror) { A.prop('plant', 4.3, 3.6); A.prop('plant', 4.3, 21.5); A.prop('vending', 4.1, 17.5); A.prop('radiator', 4.5, 8); }
     if (!horror) { place(A, 'lupe', 3.4, 14, { face: -1 }); A.prop('trolley', 4.1, 12.8); A.use(4.2, 12, 'Lupe\'s trolley', async () => { await L2.ui.say([{ who: 'narr', text: '*Towels, little soaps, and a box of the mints they leave on pillows. You take one. Lupe pretends not to see.*' }]); L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 3); L2Bottle.apply(); }, { r: 1.1 }); for (const y of [4.5, 20, 27]) A.prop('plant', 4.4, y); }
     exit(A, 2, 29, horror ? 'The lift' : 'Lift down to the casino', horror ? act('horrorLift') : act('toFloor', 'lift'));
     const ls = []; for (let i = 0; i < 6; i++) ls.push(A.light(2.5, 2 + i * 5, { r: 4.5, color: horror ? '#ff2a2a' : '#ffd9a0', i: .9, flicker: horror ? .9 : 0 }));
@@ -390,6 +392,11 @@ const L2World = (() => {
     A.decal(7, 7, c => { c.strokeStyle = 'rgba(240,210,90,.7)'; c.lineWidth = 3; c.beginPath(); c.ellipse(0, 16, 70, 35, 0, 0, 7); c.stroke(); c.fillStyle = 'rgba(255,255,255,.75)'; c.font = 'bold 30px Arial'; c.textAlign = 'center'; c.fillText('H', 0, 27); });
     for (let i = 0; i < 16; i++) { A.prop('crate', i + .5, .3, { color: '#3a3d44', solid: false }); }
     A.block(0, 0, 16, 1, { height: .9, style: 'concrete' }); A.block(0, 1, 1, 15, { height: .9, style: 'concrete' });
+    for (const [x, y] of [[2.5, 10], [4, 10], [2.5, 11.5]]) A.prop('vent', x, y); A.prop('steam', 3.2, 10.2);
+    A.prop('boxes', 2, 13.6); A.prop('crate', 11.5, 2.4, { color: '#4a4d54' }); A.prop('crate', 12.4, 2.6, { color: '#3a3d44' });
+    for (const [x, y] of [[5, 12], [10, 9], [12.5, 6]]) A.prop('puddle', x, y);
+    A.block(14, 2, 1.4, 1.4, { height: 2.2, style: 'concrete' }); // the lift housing
+    lamp(A, 15.2, 8.5, '#ffcf8a');
     if (!L2.has('finale')) {
       A.person({ x: 7, y: 4, face: 1, skin: '#e0b090', hair: '#bbb', coat: '#f0ece0', pants: '#2a2a2a', shirt: '#f4f4f4', tie: '#7a0f1e' });
       A.person({ x: 9, y: 4.5, face: -1, skin: '#d8b090', hair: '#3a3a3a', coat: '#1c2228', pants: '#14181c', build: 'broad' });
@@ -533,12 +540,16 @@ const L2World = (() => {
     return { spawn: [8.5, 14.3, 0], dark: morning ? .05 : .55, bg: morning ? '#2a2a24' : '#05070a', darkColor: morning ? 'rgba(255,220,180,1)' : undefined, rain: !morning, name: 'Greenhill' };
   }
   function spur(A, mk) {
-    room(A, mk, 12, 10, { floor: 'wood', wall: '#5a3a22', hangN: [{ kind: 'picture', at: 2, w: 3, y: 1.4, h: .9, color: '#1a1410', label: 'THE RUSTY SPUR', labelColor: '#ffcf6a' }] });
+    room(A, mk, 12, 10, { floor: 'wood', wall: '#5a3a22', hangN: [{ kind: 'picture', at: 2, w: 3, y: 1.4, h: .9, color: '#1a1410', label: 'THE RUSTY SPUR', labelColor: '#ffcf6a' }, { kind: 'neon', at: 7.4, w: 2.6, y: 2.1, h: .5, text: 'COLD BEER', labelColor: '#ff6a4d', size: 12 }],
+      hangW: [{ kind: 'dartboard', at: 6.5, w: 1, y: 1.3, h: 1 }, { kind: 'picture', at: 3, w: 1.4, y: 1.2, h: .9, color: '#3a2a1a', frame: '#c9a14a' }] });
+    A.prop('backbar', 1, .3, { w: 8 }); A.prop('bottles', 6.6, 2, { n: 3 }); A.prop('glass', 3.2, 2.1); A.prop('glass', 8, 2.2);
     A.prop('bar', 1, 1.6, { w: 8, d: 1 }); for (let i = 0; i < 6; i++) A.prop('stool', 2 + i * 1.3, 3.2);
+    for (const [tx, ty] of [[2.2, 6.2], [8.6, 6.4]]) { A.prop('cafetable', tx, ty); A.prop('chair', tx + .9, ty); A.prop('chair', tx - .9, ty + .1); }
+    A.prop('booth', 9.4, 8.4, { w: 1.6, color: '#5a2a1a' }); A.prop('coatrack', .7, 8.6); A.prop('plant', 11.2, 4.6); A.prop('floorlamp', .8, 4.6);
     A.person({ x: 5, y: .9, face: 1, skin: (typeof Looks !== 'undefined' ? Looks.get().skin : '#e0b090'), hair: '#999', coat: '#5a3a22', pants: '#2a2a2a', shirt: '#e8e2d4' });
     A.use(5, 3.2, 'The man behind the bar', act('sal'), { r: 1.8 });
-    A.prop('slot', 10.5, 2, { label: 'JUKE' }); A.use(10, 3, 'The jukebox', act('spurJukebox'), { r: 1.4 });
-    A.light(5, 3, { r: 7, color: '#ffcf8a', i: 1 });
+    A.prop('jukebox', 10.6, 2.4); A.use(10, 3, 'The jukebox', act('spurJukebox'), { r: 1.4 });
+    A.light(5, 3, { r: 7, color: '#ffcf8a', i: 1 }); A.light(2.2, 6, { r: 3.5, color: '#ffb46a', i: .6 }); A.light(8.6, 6.2, { r: 3.5, color: '#ffb46a', i: .6 });
     return { spawn: [5.5, 8.4, 0], dark: .25, bg: '#0a0604', soft: true, name: 'the Rusty Spur' };
   }
 
