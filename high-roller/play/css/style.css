@@ -79,7 +79,7 @@ body[data-screen="table"] main.screen { max-width: 1400px; padding: .5rem; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; }
 .panel.me { display: flex; gap: 1rem; align-items: center; grid-column: 1; }
 .avatar { width: 110px; flex: none; background: radial-gradient(circle at 50% 35%, #3a2a1a, #130e09); border-radius: 14px; border: 1px solid var(--line); padding: 6px; }
-.avatar-svg { display: block; width: 100%; }
+.avatar svg { display: block; width: 100%; height: auto; }
 .me-info { min-width: 0; }
 .inv { display: flex; flex-wrap: wrap; gap: 4px; margin: .5rem 0; font-size: 1.2rem; }
 .net { font-size: .9rem; color: var(--muted); } .net b { color: var(--ink); }
