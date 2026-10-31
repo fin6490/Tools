@@ -382,17 +382,43 @@ UI.meter = function (key, label) {
 
 /* ---------- Toasts and modals ---------- */
 UI.esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-// big news (achievements, side jobs, chapters) stays up long enough to read, with an optional
-// second line; everyday messages slip away after a few seconds. Taps pass through toasts, so they
-// never block the joystick or the table buttons underneath.
+// Story news ('big': a chapter, new evidence, a keepsake, a whisper, a side job paid) stays until you tap it, so you can't miss
+// it; no more than three at once, the rest wait their turn. Achievements and the like ('award') stay eight seconds, and go
+// sooner if you tap them; everyday messages slip away after three. Only the toasts you can close catch taps: the space round
+// them passes through to the joystick and the table buttons underneath.
+UI._tq = [];
 UI.toast = function (msg, type = '', sub = '') {
   let box = $('#toasts'); if (!box) { box = h('div#toasts'); document.body.append(box); }
-  const long = type === 'big' || type === 'award', ms = long ? 8000 : 3200;
-  const t = h('div.toast.' + (type || 'info'), { role: long ? 'status' : null }, sub ? [h('div', msg), h('small.toast-sub', sub)] : msg);
+  const sticky = type === 'big', long = type === 'award';
+  if (sticky && box.querySelectorAll('.toast.sticky:not(.out)').length >= 3) { UI._tq.push([msg, type, sub]); return; }
   let gone = false;
-  const go = () => { if (gone) return; gone = true; t.classList.add('out'); setTimeout(() => t.remove(), 450); };
+  const go = () => {
+    if (gone) return; gone = true; t.classList.add('out');
+    setTimeout(() => { t.remove(); if (sticky && UI._tq.length) UI.toast(...UI._tq.shift()); }, 450);
+  };
+  const t = h('div.toast.' + (type || 'info') + (sticky ? '.sticky' : ''), { role: sticky || long ? 'status' : null, onclick: sticky || long ? go : null, title: sticky ? 'Tap to close' : null },
+    sub ? [h('div', msg), h('small.toast-sub', sub)] : h('div', msg), sticky ? h('small.toast-x', 'tap to close ✕') : null);
   box.append(t);
-  setTimeout(go, ms);
+  if (!sticky) setTimeout(go, long ? 8000 : 3200);
+};
+
+// Between one day and the next: the screen goes to night (or, if you passed out, simply goes dark), the clock runs on from
+// when you lay down to when you wake, and then the morning comes up. A tap skips it.
+UI.night = function ({ title = 'Night', sub = '', from = 1380, to = 1860, kind = 'sleep' } = {}) {
+  return new Promise(res => {
+    const quick = matchMedia('(prefers-reduced-motion: reduce)').matches, ms = kind === 'nap' ? 1500 : quick ? 900 : 2600;
+    const hm = t => { t = ((Math.round(t) % 1440) + 1440) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.floor(t % 60 / 15) * 15).padStart(2, '0'); };
+    const clock = h('b.nt-clock', hm(from)), stars = h('div.nt-stars');
+    for (let i = 0; i < 40; i++) stars.append(h('i', { style: { left: (i * 37 % 100) + '%', top: (i * 53 % 60) + '%', animationDelay: (i % 7) * .3 + 's' } }));
+    const o = h('div.night-tx.' + kind, { role: 'status', 'aria-live': 'polite' }, stars, h('div.nt-moon'),
+      h('div.nt-body', h('div.nt-z', kind === 'out' ? '…' : 'z z z'), h('h2', title), sub ? h('p', sub) : null, clock, h('small', 'tap to skip')));
+    document.body.append(o); requestAnimationFrame(() => o.classList.add('on'));
+    const t0 = performance.now(); let done = false, raf = 0;
+    const tick = now => { const k = Math.min(1, (now - t0) / (ms * .8)); clock.textContent = hm(from + (to - from) * k); o.classList.toggle('dawn', k > .7); if (!done) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    const end = () => { if (done) return; done = true; cancelAnimationFrame(raf); clock.textContent = hm(to); o.classList.remove('on'); setTimeout(() => { o.remove(); res(); }, 350); };
+    o.onclick = end; setTimeout(end, ms);
+  });
 };
 
 UI.modal = function ({ title, body, buttons, wide, closable = true, cls }) {

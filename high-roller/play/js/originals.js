@@ -39,6 +39,7 @@ const Originals = (() => {
 
   /* ---------- money: a bet settles into the bank and the stats ---------- */
   function settle(bet, payout, mult) {
+    if (payout > 0 && typeof L3Promo !== 'undefined') payout = r2(payout * L3Promo.boost()); // LuckyStrike's Originals Power Hour
     const st = App.state; st.bank = r2(st.bank - bet + payout);
     App.roundDone('orig_' + S.game, { wagered: bet, returned: payout, net: r2(payout - bet) });
     S.stats.wagered = r2(S.stats.wagered + bet); S.stats.profit = r2(S.stats.profit + payout - bet); S.stats[payout > bet ? 'wins' : 'losses']++; S.stats.curve.push(S.stats.profit); if (S.stats.curve.length > 200) S.stats.curve.shift();
@@ -149,7 +150,7 @@ const Originals = (() => {
     S.ctl = h('div.orig-ctl'); S.btn = h('button.orig-go', { onclick: () => press() });
     S.stage = h('div.orig-stage'); S.histEl = h('div.orig-hist');
     S.statsEl = h('div.orig-stats');
-    el.append(h('div.orig-head', h('b', '⚡ LuckyStrike Originals'), h('span.orig-rtp', '99% RTP · provably random'), h('span.orig-bal')), tabs,
+    el.append(h('div.orig-head', h('b', '⚡ LuckyStrike Originals'), h('span.orig-rtp', typeof L3Promo !== 'undefined' && L3Promo.boost() > 1 ? '⚡ Power Hour: 102% RTP' : '99% RTP · provably random'), h('span.orig-bal')), tabs,
       h('div.orig-main', h('div.orig-side', modeTabs, betRow, S.ctl, autoBox, S.btn), h('div.orig-right', S.histEl, S.stage)), S.statsEl);
     main.append(el); S.el = el;
     ({ dice, limbo, crash, plinko, mines })[game]();

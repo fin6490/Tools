@@ -383,7 +383,9 @@ const Slots = (() => {
     if (busy || !el) return;
     const B = bet(), why = Career.canPlay();
     if (why) { auto = 0; renderAuto(); return UI.toast(why, 'warn'); }
-    if (!App.debit(B)) { auto = 0; renderAuto(); return UI.toast('Not enough bankroll for that bet', 'warn'); }
+    const promo = App.inLaptop() && typeof L3Promo !== 'undefined', cover = promo ? L3Promo.spinCover(B) : 0; // LuckyStrike's free spins
+    if (!App.debit(B - cover)) { if (cover) L3Promo.state.spins++; auto = 0; renderAuto(); return UI.toast('Not enough bankroll for that bet', 'warn'); }
+    if (cover) el.msg.textContent = `🎁 Free spin (${L3Promo.state.spins} left)`;
     busy = true; el.spin.disabled = true; el.back.disabled = true; el.gamble.hidden = true; gambleWin = 0;
     const s = st(); s.spins++; s.wagered += B; App.count('slotSpins');
     let paid = 0, feature = false;
@@ -408,6 +410,7 @@ const Slots = (() => {
         await sleep(1800);
       }
       renderMeters();
+      if (promo) L3Promo.round({ wagered: B - cover, returned: paid, net: paid - (B - cover) });
       s.won += paid; if (paid / B > s.best) s.best = Math.round(paid / B);
       if (paid >= 100 * B) App.count('slotEpic');
       if (paid > 0 && !feature && paid <= 50 * B) { gambleWin = paid; el.gamble.hidden = false; }

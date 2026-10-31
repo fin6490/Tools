@@ -852,9 +852,10 @@ const L3 = (() => {
     const slots = ['spur', 'riverboat', 'palace', 'salon'].filter(v => SLOT_MACHINES[v]);
     const card = (icon, name, sub, fn) => h('button.l3-game', { onclick: () => { close(); fn(); } }, h('span', icon), h('b', name), h('small', sub));
     o.append(h('div.l3-lap',
-      h('div.l3-lap-h', h('b', 'LuckyStrike.bet'), h('span', `Balance ${money(st.cash)}`), h('button.l3-x', { onclick: close, 'aria-label': 'Close the laptop' }, '×')),
+      h('div.l3-lap-h', h('b', 'LuckyStrike.bet'), h('span', `Balance ${money(st.cash)}`), typeof L3Promo !== 'undefined' && L3Promo.ready() ? h('span.l3-badge', `🎁 ${L3Promo.ready()}`) : null, h('button.l3-x', { onclick: close, 'aria-label': 'Close the laptop' }, '×')),
       h('p.l3-lap-note', `You owe ${money(GOAL)}. Win it and you could clear the lot. Lose it all and that\'s the end of the money.`),
       h('div.l3-goal2', h('i', { style: { width: Math.min(100, st.cash / GOAL * 100) + '%' } }), h('span', `${money(st.cash)} of ${money(GOAL)}`)),
+      typeof L3Promo !== 'undefined' ? [h('h4', '🎁 Promotions'), L3Promo.panel(() => { close(); openLaptop(); })] : null,
       typeof Originals !== 'undefined' ? [h('h4', '⚡ Originals · autobet'), h('div.l3-grid', Object.entries(Originals.GAMES).map(([k, g]) => card(g.icon, g.name, g.blurb, () => toGame(() => Router.go('originals', k), true))))] : null,
       h('h4', 'Tables'), h('div.l3-grid', games.map(g => card('🂡', GAMES[g].name, 'Live dealer', () => toGame(() => Router.openTable(g), true)))),
       h('h4', 'Slots'), h('div.l3-grid', slots.map(v => card('🎰', SLOT_MACHINES[v].name, 'Jackpots', () => toGame(() => Router.go('slots', v), true)))),
