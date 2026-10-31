@@ -5,15 +5,23 @@
 const Holdem = (() => {
   const LEVELS = [[25, 50, 0], [50, 100, 0], [75, 150, 0], [100, 200, 25], [150, 300, 25], [200, 400, 50], [300, 600, 75], [400, 800, 100], [600, 1200, 150], [800, 1600, 200], [1000, 2000, 300], [1500, 3000, 400], [2000, 4000, 500], [3000, 6000, 1000], [5000, 10000, 1000], [8000, 16000, 2000], [12000, 24000, 3000], [20000, 40000, 5000]];
   const TOURNEYS = {
-    sng6: { name: 'Back Room Sit & Go', field: 6, seats: 6, buyin: 100, fee: 10, perLevel: 6, stack: 10000, desc: 'Six players, one table. Top two paid.' },
-    sng9: { name: 'Nine-Handed Turbo', field: 9, seats: 9, buyin: 1000, fee: 100, perLevel: 5, stack: 10000, desc: 'A full ring that moves fast. Top three paid.' },
+    sng6: { name: 'Back Room Sit & Go', field: 6, seats: 6, buyin: 100, fee: 10, perLevel: 6, stack: 10000, tier: 'easy', desc: 'Six players, one table. Top two paid. A soft game: people who came for a drink and a laugh.' },
+    sng9: { name: 'Nine-Handed Turbo', field: 9, seats: 9, buyin: 1000, fee: 100, perLevel: 5, stack: 10000, tier: 'soft', desc: 'A full ring that moves fast. Top three paid. Mostly amateurs, a regular or two.' },
     daily: { name: 'The Spur Daily', field: 27, seats: 9, buyin: 5000, fee: 500, perLevel: 7, stack: 10000, desc: 'Three tables down to a final table. Top six paid.' },
     major: { name: 'The Tenth-Day Major', field: 45, seats: 9, buyin: 50000, fee: 5000, perLevel: 7, stack: 15000, desc: 'Five tables, deep stacks, the biggest regular field in town. Runs every tenth day (day 10, 20, 30...).', when: () => App.state.day % 10 === 0, req: () => App.state.chapter >= 2 ? null : 'Reach chapter 3 (the Gilded Palace)' },
     hr: { name: 'High Roller', field: 18, seats: 9, buyin: 500000, fee: 25000, perLevel: 6, stack: 20000, desc: 'Two tables of serious money.', req: () => App.state.chapter >= 3 ? null : 'Reach the Salon Privé (chapter 4)' },
     // Level 2: the games in the waking city, played with real money (L2People knows the players)
-    harbour: { l2: true, name: 'The Thursday Game', field: 6, seats: 6, buyin: 500, fee: 0, perLevel: 5, stack: 5000, desc: 'The back room at Sully\'s. Six players, cash on the table, top two paid.', players: ['lou', 'mags', 'sean', 'dale', 'sully'] },
+    harbour: { l2: true, name: 'The Thursday Game', field: 6, seats: 6, buyin: 500, fee: 0, perLevel: 5, stack: 5000, tier: 'easy', desc: 'The back room at Sully\'s. Six players, cash on the table, top two paid. A friendly game.', players: ['lou', 'mags', 'sean', 'dale', 'sully'] },
     chen: { l2: true, name: 'Mr. Chen\'s Private Game', field: 6, seats: 6, buyin: 5000, fee: 0, perLevel: 6, stack: 10000, desc: 'A private table in the Salon. Five thousand to sit.', players: ['chen', 'hk1', 'hk2', 'hk3', 'hk4'] },
     shr: { name: 'Super High Roller', field: 9, seats: 9, buyin: 5000000, fee: 100000, perLevel: 6, stack: 20000, desc: 'Nine players, five million each. Legends only.', req: () => App.state.ending ? null : 'Finish the story first' },
+  };
+  // how good the field is. The cheap games are full of people who came for a drink: calling stations, rocks and wild men, no
+  // sharks; they don't study how you play, and they misjudge their hands (misread: how far off their sense of their own
+  // chances can be). The money games get the full range, and players who adjust to you.
+  const FIELD = {
+    easy: { pool: ['station', 'station', 'rock', 'nit', 'maniac', 'lag', 'trapper'], misread: .22, adapt: 0 },
+    soft: { pool: ['station', 'rock', 'nit', 'maniac', 'lag', 'trapper', 'tag'], misread: .12, adapt: .4 },
+    pro: { pool: null, misread: 0, adapt: 1 },
   };
   const PAYOUTS = n => n <= 6 ? [.65, .35] : n <= 10 ? [.5, .3, .2] : n <= 20 ? [.4, .26, .18, .1, .06] : n <= 30 ? [.36, .22, .15, .11, .09, .07] : [.3, .2, .14, .1, .08, .07, .06, .05];
   // personalities. loose: how many hands they play; agg: raise rather than call; bluff: how often
@@ -83,7 +91,7 @@ const Holdem = (() => {
   /* ---------- tournament setup ---------- */
   let T = null;
   function newPlayer(i, def) {
-    const style = RNG.pick(Object.keys(STYLES));
+    const style = RNG.pick((FIELD[def.tier] || FIELD.pro).pool || Object.keys(STYLES));
     return withTells({ id: 'p' + i, name: NAMES[i % NAMES.length], face: FACES[i % FACES.length], color: COLORS[i % COLORS.length], style: STYLES[style], styleName: STYLES[style].label, stack: def.stack });
   }
   const L2STYLE = { lou: 'shark', mags: 'station', sean: 'lag', dale: 'rock', sully: 'trapper', chen: 'shark', hk1: 'tag', hk2: 'maniac', hk3: 'nit', hk4: 'lag' };
@@ -106,7 +114,7 @@ const Holdem = (() => {
     RNG.shuffle(players);
     const seats = [me].concat(players.slice(0, def.seats - 1));
     const field = players.slice(def.seats - 1);
-    T = { key, def, seats, field, btn: RNG.int(seats.length), level: 0, hand: 0, entrants: def.field, pool: def.buyin * def.field, busted: [], log: [], fast: false, over: false };
+    T = { key, def, f: FIELD[def.tier] || FIELD.pro, seats, field, btn: RNG.int(seats.length), level: 0, hand: 0, entrants: def.field, pool: def.buyin * def.field, busted: [], log: [], fast: false, over: false };
     return T;
   }
   const blinds = () => LEVELS[Math.min(T.level, LEVELS.length - 1)];
@@ -290,11 +298,14 @@ const Holdem = (() => {
     }
     return 0;
   }
+  // an amateur's sense of their own chances is only roughly right
+  const misread = eq => { const m = T && T.f ? T.f.misread : 0; return m ? Math.max(0, Math.min(1, eq + (RNG.float() * 2 - 1) * m)) : eq; };
   // how a player is playing right now: their nature, bent by tilt, and adjusted to your habits
   function mood(p) {
     const s = { ...p.style };
     if (p.tilt > 0) { const k = s.tilt; s.loose = Math.min(.95, s.loose + .3 * k); s.agg = Math.min(1, s.agg + .2 * k); s.bluff = Math.min(.6, s.bluff + .2 * k); s.stick += .15 * k; }
     const me = T.seats.find(q => q && q.me), t = me && me.st;
+    s.adapt = (s.adapt || 0) * (T.f ? T.f.adapt : 1);
     if (t && s.adapt && t.hands >= 8) {
       const pfr = t.pfr / t.hands, ftb = t.faced >= 4 ? t.ftb / t.faced : .45;
       s.vsRaiser = Math.max(-1, Math.min(2.5, (pfr - .18) * 10)) * s.adapt;   // you raise a lot: fight back
@@ -318,7 +329,7 @@ const Holdem = (() => {
     // of winning it; looser players round in their favour
     const callShove = () => {
       const pay = Math.min(toCall, p.stack), price = pay / (pot + pay);
-      const eq = equity(p.cards, H.board, Math.max(1, contenders().length - 1), T.fast ? 80 : 200);
+      const eq = misread(equity(p.cards, H.board, Math.max(1, contenders().length - 1), T.fast ? 80 : 200));
       return eq >= price - .02 - s.loose * .06 + (s.stick ? -s.stick * .03 : 0);
     };
     if (H.street === 0) {
@@ -355,7 +366,7 @@ const Holdem = (() => {
     }
     // after the flop: how strong, how drawn, and who's betting
     const opp = contenders().length - 1;
-    const eq = equity(p.cards, H.board, opp, T.fast ? 70 : 160);
+    const eq = misread(equity(p.cards, H.board, opp, T.fast ? 70 : 160));
     const draw = drawOf(p.cards, H.board), river = H.board.length === 5;
     const odds = toCall / Math.max(1, pot + toCall);
     const sizeFor = tag => { let f = s.size * (.75 + RNG.float() * .5); if (s.leak > 0 && tag === 'value') f *= 1.35; if (s.leak > 0 && tag === 'bluff') f *= .7; if (s.leak < 0 && tag === 'bluff') f *= 1.4; return Math.max(bb, pot * f); };
@@ -491,9 +502,9 @@ const Holdem = (() => {
     while (H.board.length < 5) { H.board.push(H.shoe.draw()); render(); await pause(1500); }
     cs.forEach(p => { p.eval = Poker.best(p.cards.concat(H.board)); });
     // the best hand is turned over; a beaten hand can go into the muck unseen, unless it was all in
-    // (all-in hands are tabled) or its owner likes to show
+    // (all-in hands are tabled), it's already face up (an all-in run-out turns everyone over), or its owner likes to show
     cs.forEach(p => { const beaten = cs.some(q => q !== p && q.eval.score > p.eval.score && q.total >= p.total); // someone who covers them has them beat: no pot left to win
-      p.shown = p.me || !beaten || p.stack === 0 || RNG.chance(SHOWY[p.styleName] || .3); p.mucked = !p.shown; if (p.mucked) { p.last = 'Mucks'; log(`🂠 ${p.name} mucks.`); } });
+      p.shown = p.shown || p.me || !beaten || p.stack === 0 || RNG.chance(SHOWY[p.styleName] || .3); p.mucked = !p.shown; if (p.mucked) { p.last = 'Mucks'; log(`🂠 ${p.name} mucks.`); } });
     render(); await pause(T.fast ? 200 : 1800);
     // side pots by contribution level
     const all = T.seats.filter(p => p && p.inHand);
