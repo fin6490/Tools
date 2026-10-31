@@ -570,6 +570,7 @@ const Career = {
     if (st.today.nap) { UI.toast('You already napped today. Your body wants a real night\'s sleep.', 'warn'); return; }
     if ((st.clock || 540) > 1680 - 120) { UI.toast('Too late for a nap: just go to bed.', 'warn'); return; }
     if (L.nap && !App.debit(L.nap)) { UI.toast(`A nap here costs ${fmt(L.nap)}`, 'warn'); return; }
+    await UI.night({ title: 'A nap', sub: L.name, from: st.clock || 540, to: (st.clock || 540) + 120, kind: 'nap' });
     st.today.nap = true; st.clock = (st.clock || 540) + 120; st.wokeAt = (st.wokeAt || 540) + 300; // net: about 30% less tired
     st.hunger = Math.max(0, st.hunger - 5); st.thirst = Math.max(0, st.thirst - 8);
     st.stamina = Math.min(this.energyCap(), st.stamina + 30);
@@ -585,7 +586,7 @@ const Career = {
     st.bank = round2(st.bank - robbed);
     const spot = drunk && typeof World !== 'undefined' && World.wakeSomewhere ? World.wakeSomewhere() : null;
     if (!spot) await UI.dialog([{ who: 'narrator', text: `You collapse on the sidewalk and sleep where you fall.${robbed ? ` When you wake up, **${fmt(robbed)}** is missing from your wallet.` : ''} Next time, find a bed before you hit empty.` }]);
-    await this.endDay({ name: spot ? 'Somewhere outside' : 'The sidewalk', energy: 0.5, grace: 5, base: 35, hours: 7 }, 0);
+    await this.endDay({ name: spot ? 'Somewhere outside' : 'The sidewalk', energy: 0.5, grace: 5, base: 35, hours: 7, out: true }, 0);
     if (spot) {
       if (Router.screen === 'world') World.unmount();
       st.world = { map: 'town', x: spot.x, y: spot.y, dir: 'down' }; App.count('wokeOutside'); App.save();
@@ -613,6 +614,7 @@ const Career = {
     if (interest) lines.push(['Loan interest', fmt(-interest)]);
     for (const l of Mood.night(L)) lines.push(l);
     const bed = st.clock || 540, wake = Math.round(clamp(bed + (L.hours || 8) * 60 - 1440, 360, 840) / 15) * 15;
+    await UI.night({ title: L.out ? 'Everything goes dark' : `Night ${st.day}`, sub: L.out ? `You come round: ${L.name.toLowerCase()}` : L.name, from: bed, to: wake + 1440, kind: L.out ? 'out' : 'sleep' });
     st.day++; st.clock = wake; st.wokeAt = wake; st.rest = { grace: L.grace != null ? L.grace : 8, base: L.base || 0 };
     st.staminaMax = this.staminaMax(); st.restMax = Math.round(st.staminaMax * Math.max(1, L.energy || 1));
     st.stamina = Math.round(Math.min(st.staminaMax * (L.energy || 1), this.energyCap()));

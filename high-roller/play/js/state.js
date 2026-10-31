@@ -159,6 +159,7 @@ const App = {
     if (r.wagered > 0 || r.stamina) Career.drain('round', r.stamina != null ? r.stamina : 1);
     Mood.round(gameId, r, round2(st.bank - r.net));
     Career.afterRound(gameId, r);
+    if (r.wagered > 0 && this.inLaptop() && typeof L3Promo !== 'undefined') L3Promo.round(r); // the site's cashback, rakeback and bonus wagering
     if (r.wagered > 0 && this.inLaptop()) { const m = r.returned / r.wagered; if (m >= 10) this.count('l3_x10'); if (m >= 100) this.count('l3_x100'); } // big wins, for the list on the bedsit's fridge
     if (r.wagered > 0 && !this.offStory()) Quests.event('round', { gameId, venue: st.venue, ...r });
     this.save(); Router.hud();
