@@ -43,7 +43,7 @@ const L2Pub = (() => {
     for (let s = 0; s < 4; s++) {
       const h2 = dt / 4;
       for (const b of B) { if (b.in) continue; b.x += b.vx * h2; b.y += b.vy * h2; const sp = Math.hypot(b.vx, b.vy); if (sp > 0) { const f = Math.max(0, sp - .5 * h2) / sp; b.vx *= f; b.vy *= f; } if (sp < .004) { b.vx = b.vy = 0; }
-        for (const [px, py] of POCKETS) if (Math.hypot(b.x - px, b.y - py) < r * 1.9) { b.in = true; b.vx = b.vy = 0; pots.push(b); }
+        for (const [px, py] of POCKETS) if (Math.hypot(b.x - px, b.y - py) < r * 2.2) { b.in = true; b.vx = b.vy = 0; pots.push(b); }
         if (b.in) continue;
         if (b.x < r) { b.x = r; b.vx = -b.vx * .8; } if (b.x > 1 - r) { b.x = 1 - r; b.vx = -b.vx * .8; } if (b.y < r) { b.y = r; b.vy = -b.vy * .8; } if (b.y > 2 - r) { b.y = 2 - r; b.vy = -b.vy * .8; } }
       for (let i = 0; i < B.length; i++) for (let j = i + 1; j < B.length; j++) {
@@ -57,7 +57,7 @@ const L2Pub = (() => {
     return { moving, pots, hits };
   }
   // Lou picks the shot with the best cut angle and a clear line, and plays it with a little error
-  function aiShot(B, mine) {
+  function aiShot(B, mine, err = .03) {
     const cue = B[0]; let best = null;
     const clear = (x0, y0, x1, y1, skip) => B.every(b => { if (b.in || skip.includes(b)) return true; const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), u = ((b.x - x0) * dx + (b.y - y0) * dy) / (L * L); if (u < 0 || u > 1) return true; return Math.hypot(x0 + dx * u - b.x, y0 + dy * u - b.y) > r * 2.05; });
     for (const b of B) { if (b.in || b === cue || !mine(b)) continue; for (const [px, py] of POCKETS) {
@@ -67,23 +67,31 @@ const L2Pub = (() => {
       const v = cut * 2 - L * .4 - CL * .3; if (!best || v > best.v) best = { v, a: Math.atan2(cy, cx), p: Math.min(3.2, 1.2 + (L + CL) * 1.3) };
     } }
     if (!best) { const t = B.find(b => !b.in && b !== cue && mine(b)) || B.find(b => !b.in && b !== cue); best = { a: Math.atan2(t.y - cue.y, t.x - cue.x), p: 1.8 }; }
-    return { a: best.a + gauss() * .018, p: best.p };
+    return { a: best.a + gauss() * err, p: best.p };
   }
   // full screen, like the dream's tables: touch the table to aim (the guide shows where the white meets
   // the first ball and where that ball goes), then hold Shoot and let go when the power is right
   async function pool(id) {
     const P = L2People.PEOPLE[id], first = P.name.split(' ')[0], n = await stake(P.name, 'Pub rules. Reds and yellows, black last. You break.'); if (!n) return;
     L2Money.pay(n); App.count('l2_pool');
-    const res = await new Promise(done => {
-      const o = h('div.l2-over.game.pool'); document.body.append(o); R3.freeze(true);
-      const head = h('div.l2-gh', h('b', `🎱 Pool with ${first} · ${fmt(n)} a side`), h('span.l2-gcash', fmt(S().cash)), h('button.l2-x', { 'aria-label': 'Concede' }, '×'));
-      const score = h('div.l2-pscore'), cv = h('canvas.l2-stage.l2-pool'), info = h('p.l2-gmsg'), meter = h('div.l2-pmeter', h('i'));
-      const shootBtn = h('button.l2-btn.go', 'Hold to shoot'), foot = h('div.l2-game', info, h('div.l2-gfoot', meter, shootBtn));
+    const res = await table({ first, n, cash: () => fmt(S().cash), shaky, freeze: on => R3.freeze(on), err: .03 });
+    if (res === 'win') { L2Money.earn(n * 2); App.count('l2_poolwin'); Career.checkAchievements(); return say([{ name: P.name, who: 'x', text: RNG.pick(['Well, well. A shark in the Low Tide. Take it, take it.', 'Beginner\'s luck. That\'s what I\'m telling everyone.', 'Rematch. Not tonight. My ego needs a lie down.']) }, { who: 'narr', text: `*${fmt(n * 2)} back in your pocket.*` }]); }
+    return say([{ name: P.name, who: 'x', text: res ? RNG.pick(['Unlucky, friend. Rack \'em again?', 'The black\'s a cruel ball. Pay up.', 'Nice try. Really. I mean it. Mostly.']) : 'Walking away? I\'ll take that as a win.' }]);
+  }
+  // the game itself: { first: their name, n: the stake, cash(): your money as text, shaky(): 0..1+, freeze(on), err: their aim }
+  // resolves 'win', 'lose' or null (conceded)
+  function table({ first, n, cash = () => '', shaky = () => 0, freeze = () => { }, err = .03 }) {
+    return new Promise(done => {
+      const o = h('div.l2-over.game.pool'); document.body.append(o); freeze(true);
+      const head = h('div.l2-gh', h('b', `🎱 Pool with ${first} · ${fmt(n)} a side`), h('span.l2-gcash', cash()), h('button.l2-x', { 'aria-label': 'Concede' }, '×'));
+      const score = h('div.l2-pscore'), cv = h('canvas.l2-stage.l2-pool'), info = h('p.l2-gmsg'), power = h('input.l2-ppow', { type: 'range', min: 5, max: 100, value: 45, 'aria-label': 'Shot power' });
+      const nudge = d => h('button.l2-btn.nudge', { 'aria-label': d < 0 ? 'Aim left' : 'Aim right', onpointerdown: e => { e.preventDefault(); const go = () => { if (st.turn === 'me' && !st.rolling && !st.over) st.aim += d; }; go(); clearInterval(o._nt); o._nt = setInterval(go, 60); }, onpointerup: () => clearInterval(o._nt), onpointerleave: () => clearInterval(o._nt) }, d < 0 ? '◀' : '▶');
+      const shootBtn = h('button.l2-btn.go', 'Shoot'), foot = h('div.l2-game', info, h('div.l2-gfoot', nudge(-.006), nudge(.006), h('label.l2-ppw', h('small', 'Power'), power), shootBtn));
       const slot = h('div.l2-gstage', cv); o.append(head, score, slot, foot);
       const B = rack(), st = { turn: 'me', mine: null, rolling: false, firstHit: null, over: false, aim: -Math.PI / 2, power: 0, charging: null, aiAim: null };
       const COL = { w: ['#ffffff', '#c8c8c8'], r: ['#e0453a', '#7a1410'], y: ['#ffd84a', '#a87a08'], k: ['#3a3a3a', '#050505'] };
       const hisCol = () => st.mine ? (st.mine === 'r' ? 'y' : 'r') : null, left = c => B.filter(b => b.c === c && !b.in).length;
-      const finish = r2 => { if (st.over === 'done') return; st.over = 'done'; o.classList.add('out'); setTimeout(() => o.remove(), 300); setTimeout(() => R3.freeze(false), 400); document.removeEventListener('keydown', key); document.removeEventListener('keyup', keyUp); done(r2); };
+      const finish = r2 => { if (st.over === 'done') return; st.over = 'done'; o.classList.add('out'); setTimeout(() => o.remove(), 300); setTimeout(() => freeze(false), 400); document.removeEventListener('keydown', key); document.removeEventListener('keyup', keyUp); done(r2); };
       head.querySelector('.l2-x').onclick = () => { if (!st.rolling) finish(null); };
       // the table on the screen: upright on a phone, on its side on a wide screen
       let L = { s: 100, ox: 0, oy: 0, rot: false, cw: 300, ch: 400 }, dpr = Math.min(2, devicePixelRatio || 1);
@@ -117,7 +125,7 @@ const L2Pub = (() => {
           }
         }
         for (const b of B) { if (b.in) continue; const [bx2, by2] = toS(b.x, b.y), R2 = r * s; g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(bx2 + R2 * .25, by2 + R2 * .3, R2, R2 * .9, 0, 0, 7); g.fill(); const gr = g.createRadialGradient(bx2 - R2 * .35, by2 - R2 * .4, R2 * .1, bx2, by2, R2); gr.addColorStop(0, COL[b.c][0]); gr.addColorStop(1, COL[b.c][1]); g.fillStyle = gr; g.beginPath(); g.arc(bx2, by2, R2, 0, 7); g.fill(); if (b.c === 'k') { g.fillStyle = '#f4f4f4'; g.beginPath(); g.arc(bx2, by2, R2 * .42, 0, 7); g.fill(); g.fillStyle = '#111'; g.font = `bold ${R2 * .7}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('8', bx2, by2 + .5); } g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.arc(bx2 - R2 * .35, by2 - R2 * .4, R2 * .22, 0, 7); g.fill(); }
-        if (st.charging) { st.power = (Math.sin((performance.now() - st.charging) / 1000 * 2.4 - Math.PI / 2) + 1) / 2; meter.firstChild.style.width = Math.round(st.power * 100) + '%'; meter.firstChild.style.background = `hsl(${120 - st.power * 120},70%,50%)`; }
+        st.power = power.value / 100;
         requestAnimationFrame(draw);
       };
       const paintScore = () => { score.innerHTML = ''; score.append(h('span' + (st.turn === 'me' ? '.on' : ''), `You ${st.mine ? (st.mine === 'r' ? '🔴' : '🟡') + ' ' + left(st.mine) + ' left' : ''}`), h('span.mid', st.mine ? '' : 'Open table'), h('span' + (st.turn === 'him' ? '.on' : ''), `${first} ${st.mine ? (hisCol() === 'r' ? '🔴' : '🟡') + ' ' + left(hisCol()) + ' left' : ''}`)); shootBtn.disabled = st.turn !== 'me' || st.rolling; };
@@ -133,7 +141,7 @@ const L2Pub = (() => {
         paintScore();
         if (st.turn === 'him' && !st.over) {
           await new Promise(r2 => setTimeout(r2, 700)); if (!o.isConnected) return;
-          const s2 = aiShot(B, b => st.mine ? b.c === hisCol() || (left(hisCol()) === 0 && b.c === 'k') : b.c !== 'k');
+          const s2 = aiShot(B, b => st.mine ? b.c === hisCol() || (left(hisCol()) === 0 && b.c === 'k') : b.c !== 'k', err);
           const from = st.aim; for (let i = 1; i <= 20; i++) { st.aiAim = from + (((s2.a - from + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * i / 20; await new Promise(r2 => setTimeout(r2, 35)); } await new Promise(r2 => setTimeout(r2, 350));
           st.aiAim = null; const pots2 = await shoot(s2.a, s2.p); await after(pots2, 'him');
         } else if (st.turn === 'me' && !st.over) { const c = B[0]; const t = B.find(b => !b.in && b !== c && (st.mine ? b.c === st.mine || (left(st.mine) === 0 && b.c === 'k') : b.c !== 'k')); if (t) st.aim = Math.atan2(t.y - c.y, t.x - c.x); }
@@ -144,17 +152,14 @@ const L2Pub = (() => {
       cv.addEventListener('pointerdown', e => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_) { } cv._drag = true; aimAt(e); });
       cv.addEventListener('pointermove', e => { if (cv._drag) aimAt(e); });
       ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => cv.addEventListener(ev, () => { cv._drag = false; }));
-      const charge = () => { if (st.turn !== 'me' || st.rolling || st.over || st.charging) return; st.charging = performance.now(); };
-      const release = async () => { if (!st.charging) return; st.charging = null; const p = Math.max(.08, st.power), shake = shaky(), a = st.aim + gauss() * (.004 + .025 * shake); const pots = await shoot(a, p * 3.8); st.power = 0; meter.firstChild.style.width = '0'; await after(pots, 'me'); };
-      shootBtn.addEventListener('pointerdown', e => { e.preventDefault(); charge(); }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => shootBtn.addEventListener(ev, release));
-      const key = e => { if (e.key === 'Escape' && !st.rolling) finish(null); if (st.turn !== 'me' || st.rolling) return; if (e.key === 'ArrowLeft') st.aim -= e.shiftKey ? .05 : .008; if (e.key === 'ArrowRight') st.aim += e.shiftKey ? .05 : .008; if (e.key === ' ' && !e.repeat) { e.preventDefault(); charge(); } };
-      const keyUp = e => { if (e.key === ' ') release(); };
+      const fire = async () => { if (st.turn !== 'me' || st.rolling || st.over) return; const p = Math.max(.05, power.value / 100), shake = shaky(), a = st.aim + gauss() * (.002 + .02 * shake); const pots = await shoot(a, p * 3.8); await after(pots, 'me'); };
+      shootBtn.addEventListener('click', fire);
+      const key = e => { if (e.key === 'Escape' && !st.rolling) finish(null); if (st.turn !== 'me' || st.rolling) return; if (e.key === 'ArrowLeft') st.aim -= e.shiftKey ? .05 : .006; if (e.key === 'ArrowRight') st.aim += e.shiftKey ? .05 : .006; if (e.key === 'ArrowUp') power.value = Math.min(100, +power.value + 5); if (e.key === 'ArrowDown') power.value = Math.max(5, +power.value - 5); if (e.key === ' ' && !e.repeat) { e.preventDefault(); fire(); } };
+      const keyUp = () => { };
       document.addEventListener('keydown', key); document.addEventListener('keyup', keyUp);
-      info.textContent = 'Touch the table to aim: the white line shows where the cue ball goes, the gold line where the ball it hits goes. Hold Shoot (or Space) and let go when the power is right.' + (shaky() ? ' Your hands aren\'t steady tonight.' : '');
+      info.textContent = 'Touch the table to aim (◀ ▶ for fine aim): the white line shows where the cue ball goes, the gold line where the ball it hits goes. Set the power with the slider, then Shoot (or Space).' + (shaky() ? ' Your hands aren\'t steady tonight.' : '');
       paintScore(); requestAnimationFrame(draw);
     });
-    if (res === 'win') { L2Money.earn(n * 2); App.count('l2_poolwin'); Career.checkAchievements(); return say([{ name: P.name, who: 'x', text: RNG.pick(['Well, well. A shark in the Low Tide. Take it, take it.', 'Beginner\'s luck. That\'s what I\'m telling everyone.', 'Rematch. Not tonight. My ego needs a lie down.']) }, { who: 'narr', text: `*${fmt(n * 2)} back in your pocket.*` }]); }
-    return say([{ name: P.name, who: 'x', text: res ? RNG.pick(['Unlucky, friend. Rack \'em again?', 'The black\'s a cruel ball. Pay up.', 'Nice try. Really. I mean it. Mostly.']) : 'Walking away? I\'ll take that as a win.' }]);
   }
-  return { darts, pool, _rack: rack, _sim: simulate, _ai: aiShot };
+  return { darts, pool, table, _rack: rack, _sim: simulate, _ai: aiShot };
 })();

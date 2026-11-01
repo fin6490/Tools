@@ -73,8 +73,8 @@ const Postcards = {
       ], 'Folded inside the case back of the watch.');
     } else await UI.dialog([{ who: 'vinnie', text: RNG.pick(['That ticket\'s for a saxophone. You don\'t look like a sax guy.', 'Nope. Do the math again, kid. Honest table, crooked shoe.', 'Wrong ticket. Natural pays three to two, last I checked.']) }]);
   },
-  async cellar() {
-    if (this.active() !== 3) { await UI.dialog([{ who: 'narrator', text: 'The wine cellar. Philippe guards the key like a state secret.' }]); return; }
+  async cellar(inside) {
+    if (this.active() !== 3) { await UI.dialog([{ who: 'narrator', text: inside ? 'The bin book: every bottle down here, by its number, in Philippe\'s copperplate. Nothing in it is asking for you. Yet.' : 'The wine cellar. Philippe guards the key like a state secret.' }]); return; }
     const inp = h('input.field#pc-bin', { inputmode: 'numeric', maxlength: 4, placeholder: 'Bin', autocomplete: 'off' });
     const ok = await UI.modal({ title: '🍷 The wine cellar', body: h('div', h('p', 'Philippe raises one eyebrow. "Monsieur wishes to request a bin? By number, naturally."'), h('label.lbl', { for: 'pc-bin' }, 'Bin number'), inp), buttons: [{ label: 'Never mind', value: false, cls: 'ghost' }, { label: 'Ask nicely', value: true, cls: 'primary' }] });
     if (!ok) return;

@@ -339,3 +339,7 @@ b.l2-sub2 { display: block; margin-top: 1rem; color: #e8d7a8; font-size: .9rem; 
 .l2-pint em { position: absolute; left: 0; right: 0; bottom: 80%; height: 17%; border-top: 2px dashed #7dff9a; border-bottom: 2px dashed #7dff9a; pointer-events: none; }
 .l2-pint.over { border-color: #e0503a; }
 .l2-tap { align-self: center; min-width: 200px; min-height: 56px; font-size: 1.05rem; touch-action: none; user-select: none; -webkit-user-select: none; }
+/* pool: a power slider and fine-aim buttons instead of a timed meter */
+.l2-ppw { flex: 1; display: flex; align-items: center; gap: .4rem; min-width: 120px; } .l2-ppw small { opacity: .7; font-size: .75rem; }
+.l2-ppow { flex: 1; accent-color: #e8b860; height: 28px; }
+.l2-btn.nudge { min-width: 44px; padding: .45rem .6rem; font-size: 1rem; }

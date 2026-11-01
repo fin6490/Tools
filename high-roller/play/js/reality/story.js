@@ -535,7 +535,7 @@ const L2 = (() => {
   function chat(who) {
     const p = PEOPLE[who], sp = Crowd.base('l2:' + who, p.name, '', '#334', p.role.toLowerCase(), personas[who], () => OPENERS[who] || 'Yes?', () => '');
     sp.rules = () => [
-      `You are ${p.name}, ${p.role.toLowerCase()}, in "High Roller", a casino game with a story. This is the second level: the waking world, after the player woke from a long trauma dream about a bright cartoon casino town.`,
+      `You are ${p.name}, ${p.role.toLowerCase()}, in "The Meridian", a casino game with a story. This is the second level: the waking world, after the player woke from a long trauma dream about a bright cartoon casino town.`,
       'The setting: the Meridian Casino Resort, a real, rain-soaked city casino, tonight, the first anniversary of the night the player\'s wife Nora and their children Ellie (9) and Sam (4) were killed at home while the player was away on a work trip. The police closed the case blaming a drifter. The player is looking for the truth.',
       `Your personality: ${personas[who]}`,
       `What the player has found so far: ${Object.keys(S().clues).map(k => CLUES[k][0]).join(', ') || 'nothing yet'}.`,

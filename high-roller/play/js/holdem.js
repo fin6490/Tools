@@ -19,9 +19,9 @@ const Holdem = (() => {
   // sharks; they don't study how you play, and they misjudge their hands (misread: how far off their sense of their own
   // chances can be). The money games get the full range, and players who adjust to you.
   const FIELD = {
-    easy: { pool: ['station', 'station', 'rock', 'nit', 'maniac', 'lag', 'trapper'], misread: .22, adapt: 0 },
-    soft: { pool: ['station', 'rock', 'nit', 'maniac', 'lag', 'trapper', 'tag'], misread: .12, adapt: .4 },
-    pro: { pool: null, misread: 0, adapt: 1 },
+    easy: { pool: ['station', 'station', 'station', 'rock', 'rock', 'nit', 'maniac'], misread: .3, adapt: 0, bluff: .4 },
+    soft: { pool: ['station', 'station', 'rock', 'nit', 'maniac', 'lag', 'trapper'], misread: .2, adapt: .2, bluff: .7 },
+    pro: { pool: null, misread: 0, adapt: 1, bluff: 1 },
   };
   const PAYOUTS = n => n <= 6 ? [.65, .35] : n <= 10 ? [.5, .3, .2] : n <= 20 ? [.4, .26, .18, .1, .06] : n <= 30 ? [.36, .22, .15, .11, .09, .07] : [.3, .2, .14, .1, .08, .07, .06, .05];
   // personalities. loose: how many hands they play; agg: raise rather than call; bluff: how often
@@ -305,7 +305,7 @@ const Holdem = (() => {
     const s = { ...p.style };
     if (p.tilt > 0) { const k = s.tilt; s.loose = Math.min(.95, s.loose + .3 * k); s.agg = Math.min(1, s.agg + .2 * k); s.bluff = Math.min(.6, s.bluff + .2 * k); s.stick += .15 * k; }
     const me = T.seats.find(q => q && q.me), t = me && me.st;
-    s.adapt = (s.adapt || 0) * (T.f ? T.f.adapt : 1);
+    s.adapt = (s.adapt || 0) * (T.f ? T.f.adapt : 1); s.bluff *= T.f && T.f.bluff != null ? T.f.bluff : 1; // amateurs bluff less, and badly
     if (t && s.adapt && t.hands >= 8) {
       const pfr = t.pfr / t.hands, ftb = t.faced >= 4 ? t.ftb / t.faced : .45;
       s.vsRaiser = Math.max(-1, Math.min(2.5, (pfr - .18) * 10)) * s.adapt;   // you raise a lot: fight back

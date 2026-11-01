@@ -96,7 +96,7 @@ const L2People = (() => {
     const p = PEOPLE[id];
     const sp = Crowd.base('l2p:' + id, p.name, '', '#334', p.role, p.persona, () => p.opener, () => '');
     sp.rules = () => [
-      `You are ${p.name}, ${p.role}, in "High Roller", a casino game with a story. This is the second level: the real, waking world, after the player woke from a long dream of a bright cartoon casino town.`,
+      `You are ${p.name}, ${p.role}, in "The Meridian", a casino game with a story. This is the second level: the real, waking world, after the player woke from a long dream of a bright cartoon casino town.`,
       'The setting: a rain-soaked American city at night, around the Meridian Casino Resort, tonight the 17th of October. The player has just come out of a year on a sleep ward at St Jude\'s. A year ago tonight their wife Nora and their children Ellie and Sam were killed at home; the police blamed a drifter who died in custody, and the case was closed. You know only what was in the papers about that, and you speak about it gently if at all.',
       `Your personality: ${p.persona}`,
       L2.aiFrame(),

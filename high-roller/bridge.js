@@ -1,4 +1,4 @@
-// bridge.js — connects High Roller (/high-roller/play/) to SpinDecks accounts.
+// bridge.js — connects The Meridian (/high-roller/play/) to SpinDecks accounts.
 // The game defines window.HR_HOST before its own scripts run; this fills it in:
 // who's signed in, whether they're premium (and the site owner), and how many AI
 // chats they have left today. AI chat goes through the highroller-chat Edge Function,
