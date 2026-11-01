@@ -372,6 +372,7 @@ const Quests = {
     if (q.reward.swagger) st.flags.bonusSwagger = (st.flags.bonusSwagger || 0) + q.reward.swagger;
     Rel.add(q.giver, 4, 'job');
     UI.toast(`✅ Side job done: ${q.title}${q.reward.cash ? ' · +' + fmt(q.reward.cash) : ''} · ★ +${q.reward.swagger}`, 'award', q.desc); SFX.big();
+    if (typeof World !== 'undefined' && World.repopulate) setTimeout(() => World.repopulate(), 0); // what the job opened up (the Back Room's door) is there now, not next visit
     App.news(`✅ Finished "${q.title}".`); App.save(); Router.hud();
   },
   bump(id, by = 1) {
@@ -518,6 +519,8 @@ const Chat = {
       if (Rel.is(who)) box.append(Rel.chatRow(who, api));
       if (who === 'doc') box.append(Spotter.card(api));
       if (who === 'sparky') { const t = Postcards.sparkyPanel(api); if (t) box.append(t); }
+      if (who === 'vinnie' && App.state.mode === 'career' && typeof Office !== 'undefined') box.append(h('div.ev-row', h('span.muted.small', Office.st().key ? '🗝️ You have the back office key.' : `💼 Errands: ${Math.min(Office.st().errands, Office.KEY_AT)} of ${Office.KEY_AT} towards the back office key.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Office.vinnieErrand(), 50); } }, '💼 Ask for an errand')));
+      if (who === 'dolores' && App.state.mode === 'career' && typeof Office !== 'undefined') box.append(h('div.ev-row', h('span.muted.small', `📋 You're her ${Office.rank().name.toLowerCase()}.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Office.spurBoard(), 50); } }, '📋 Work a shift')));
       if (who === 'mick') App.state.flags.metMick = 1;
       if (who === 'mick') box.append(h('div.ev-row', h('span.muted.small', `Your arm: ${Darts.armLabel(Darts.wobble())}.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Darts.lobby(), 50); } }, '🎯 Play darts')));
     };
@@ -537,7 +540,7 @@ const Chat = {
   rules(sp) {
     if (sp.rules) return sp.rules(); // Level 2 characters bring their own world
     return [
-      `You are ${sp.name}, ${sp.role}, in "High Roller", a casino game with a story: ${this.frame()}`,
+      `You are ${sp.name}, ${sp.role}, in "The Meridian", a casino game with a story: ${this.frame()}`,
       `Your personality: ${sp.persona}`,
       `What's going on right now:\n${this.worldBrief(sp.id)}${sp.brief ? '\n' + sp.brief() : ''}`,
       Mystery.brief(sp.id),
@@ -696,7 +699,7 @@ const Chat = {
     let open = true; pop.then(() => { open = false; ctl.abort(); });
     const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 20000);
     const prompt = [
-      'Write the front page of "The Lucky Ledger", the gossip-hungry daily paper of the casino town in the game High Roller.',
+      'Write the front page of "The Lucky Ledger", the gossip-hungry daily paper of the casino town in the game The Meridian.',
       `Use these facts about the town (don't contradict them):\n${this.worldBrief('paper')}\nRecent events: ${st.news.slice(0, 8).map(n => n.text).join(' | ')}`,
       Mystery.brief('paper'),
       local ? `One of the four items must be a small, affectionate local story inspired by this, about a resident of town (the player, unnamed): ${local}` : '',

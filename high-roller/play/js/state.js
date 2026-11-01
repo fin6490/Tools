@@ -98,6 +98,14 @@ const App = {
     try { localStorage.setItem(this.slotKey(this.slot), JSON.stringify(this.state)); }
     catch (e) { UI.toast('Could not save (browser storage blocked). Use Export to keep your game.', 'warn'); }
   },
+  // a copy of the game as it is now in another slot (you keep playing in this one); the copy remembers where it came from
+  saveCopy(i) {
+    if (!this.state || i === this.slot) return false;
+    if (typeof World !== 'undefined' && World.savePos) World.savePos();
+    this.save();
+    const copy = JSON.parse(JSON.stringify(this.state)); copy.saved = Date.now(); copy.copyOf = this.slot;
+    try { localStorage.setItem(this.slotKey(i), JSON.stringify(copy)); return true; } catch (e) { UI.toast('Could not save (browser storage blocked).', 'warn'); return false; }
+  },
   deleteSlot(i) { try { localStorage.removeItem(this.slotKey(i)); } catch (e) { } },
   exportSave() {
     // conversations can quote your personal details, so they stay in this browser and out of exports
@@ -109,7 +117,7 @@ const App = {
   async importSave(file, slot) {
     const txt = await file.text();
     const s = JSON.parse(txt);
-    if (!s || typeof s.bank !== 'number' || !s.mode) throw new Error('Not a High Roller save file');
+    if (!s || typeof s.bank !== 'number' || !s.mode) throw new Error('Not a save file from The Meridian');
     this.start(s, slot);
   },
 

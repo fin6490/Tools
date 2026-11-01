@@ -30,7 +30,7 @@ const Me = {
     { k: 'finder', fact: 'made a Value & Reload Finder: an odds scanner, a lay calculator and a profit tracker for bookmaker offers',
       kessler: 'Odds scanners. A lay calculator. A profit tracker for the bookmakers\' reload offers. You don\'t gamble at all, do you? You audit.',
       head: 'BOOKIES BAFFLED BY LAY CALCULATOR — Every free bet in the county is being backed, laid and logged to the penny, according to one very tidy spreadsheet.' },
-    { k: 'town', fact: 'is the person building this whole town, High Roller, one feature request at a time',
+    { k: 'town', fact: 'is the person building this whole town, The Meridian, one feature request at a time',
       kessler: 'And this town. I\'ve read the commit log: every building, every card, every one of my tables. You asked for them. So tell me: which of us is really the house?',
       head: 'TOWN GROWS OVERNIGHT, AGAIN — Residents woke to find new rooms in every building, a duck pond and a working jukebox. City Hall says the permits were "requested in a chat."' },
   ],

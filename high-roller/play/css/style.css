@@ -1038,3 +1038,35 @@ body.jittery .hud { animation: hr-jitter .18s linear infinite; }
 .sl.vault { --sl-stock: linear-gradient(180deg, #c9bb94, #f6efdc 50%, #c9bb94); }
 .sl.vault .sl-reel { border-left-color: #e9d48a; border-right-color: #5a4a1a; }
 @media (prefers-reduced-motion: reduce) { .sl-cab::before { animation: none; } }
+/* save slots: pick one to copy to or load */
+.slot-pick { display: grid; gap: .4rem; margin-top: .5rem; }
+.slot-opt { display: grid; gap: .1rem; text-align: left; padding: .55rem .8rem; }
+.slot-opt small { font-weight: 400; opacity: .75; font-size: .78rem; }
+.slot-opt.cur { border-color: var(--gold); }
+/* Vinnie's back office: Sal's silver dollar in the air */
+.ofc-toss { display: grid; justify-items: center; gap: .8rem; padding: 1rem 0; perspective: 600px; }
+.ofc-coin { position: relative; width: 96px; height: 96px; transform-style: preserve-3d; animation: ofcflip 1.7s cubic-bezier(.2, .6, .3, 1) forwards; }
+.ofc-coin.tails { animation-name: ofcflipT; }
+.ofc-coin i { position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 900 2rem Georgia, serif; font-style: normal; color: #5a4a1a; background: radial-gradient(circle at 35% 30%, #fbfbfb, #b8bcc4 60%, #7a7f88); border: 4px solid #9aa0a8; backface-visibility: hidden; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .5); }
+.ofc-coin i.b { transform: rotateY(180deg); }
+@keyframes ofcflip { 0% { transform: translateY(0) rotateY(0); } 50% { transform: translateY(-70px) rotateY(1080deg); } 100% { transform: translateY(0) rotateY(2160deg); } }
+@keyframes ofcflipT { 0% { transform: translateY(0) rotateY(0); } 50% { transform: translateY(-70px) rotateY(1080deg); } 100% { transform: translateY(0) rotateY(2340deg); } }
+.ofc-res { font: 900 1.6rem Georgia, serif; letter-spacing: .2em; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .ofc-coin { animation-duration: .01s; } }
+
+/* the title screen: The Meridian, a neon sign over a city at night in the rain */
+.title.mer { position: relative; isolation: isolate; padding: 4vh 1rem 2rem; min-height: calc(100vh - 2rem); }
+.mer-scene { position: absolute; inset: 0 0 auto 0; height: min(62vh, 520px); z-index: -2; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.mer-scene svg { width: 100%; height: 100%; display: block; }
+.mer-beacon { animation: merb 1.6s steps(2, jump-none) infinite; } @keyframes merb { 50% { opacity: .15; } }
+.mer-rain { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .22; background-image: repeating-linear-gradient(105deg, transparent 0 22px, rgba(170, 190, 255, .35) 22px 23px, transparent 23px 47px); background-size: 120px 120px; animation: merrain .5s linear infinite; }
+@keyframes merrain { to { background-position: -30px 120px; } }
+.mer-sign { margin: 8vh auto 1.2rem; display: inline-grid; justify-items: center; padding: .6rem 1.6rem .8rem; border: 2px solid rgba(255, 90, 110, .65); border-radius: 14px; background: rgba(8, 6, 14, .72); box-shadow: 0 0 22px rgba(255, 60, 90, .35), inset 0 0 18px rgba(255, 60, 90, .2); }
+.mer-sign small { font: 700 .95rem Georgia, serif; letter-spacing: .6em; color: #ffd9a0; text-shadow: 0 0 8px #ffb070; margin-right: -.6em; }
+.title.mer h1 { margin: 0; font: 900 clamp(2.4rem, 10vw, 5.2rem) Georgia, 'Times New Roman', serif; letter-spacing: .14em; color: #ffe8e8; text-shadow: 0 0 6px #ff6a7a, 0 0 18px #ff2a4a, 0 0 42px #c0102a; }
+.title.mer h1 .flk { animation: merflk 4s infinite; }
+@keyframes merflk { 0%, 41%, 45%, 47%, 100% { opacity: 1; } 43%, 46% { opacity: .25; text-shadow: none; } }
+.mer-sub { font: italic 400 .95rem Georgia, serif; color: #cbb98f; letter-spacing: .12em; margin-top: .1rem; }
+.title.mer .tagline { color: #e6dccb; text-shadow: 0 1px 6px #000; }
+.title.mer .slot { background: rgba(23, 19, 29, .88); backdrop-filter: blur(4px); }
+@media (prefers-reduced-motion: reduce) { .mer-rain, .mer-beacon, .title.mer h1 .flk { animation: none; } }

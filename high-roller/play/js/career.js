@@ -110,6 +110,12 @@ const ITEMS = {
   trustee: { cat: 'Deeds', name: 'Trustee of the Monte Royale', icon: '⚖️', price: 0, swagger: 60, income: 300000, award: 'justice', desc: 'The Gaming Commission put you in charge of Kessler\'s casino while it is wound up, honestly this time. Pays $300,000 a day.' },
   palaceDeed: { cat: 'Deeds', name: 'Controlling Stake: The Gilded Palace', icon: '🏰', price: 25000000, swagger: 100, income: 350000, requires: 'spurDeed', desc: 'Margot will want a word. Pays $350,000 a day.' },
   // Investments: businesses that pay you every night (the road to a billion)
+  // small businesses for the early days: pay for themselves in two to four weeks, a little every morning
+  shoeshine: { cat: 'Investments', name: 'Shoeshine Stand on Main Street', icon: '👞', price: 800, income: 45, desc: 'A chair, a box of polish and a kid called Danny who knows everybody. Pays $45 a day.' },
+  hotdog: { cat: 'Investments', name: 'Hot Dog Cart by the Park', icon: '🌭', price: 2500, income: 130, desc: 'Mustard, onions, and a spot by the duck pond. Pays $130 a day.' },
+  vending: { cat: 'Investments', name: 'Vending Machines (Motel & Quik-Stop)', icon: '🥤', price: 6000, income: 300, desc: 'Six machines, one key, nobody asks where the quarters go. Pays $300 a day.' },
+  laundromat: { cat: 'Investments', name: 'Suds Laundromat', icon: '🧺', price: 15000, income: 650, requiresChapter: 1, desc: 'Twelve washers, a change machine and a radio stuck on the ballgame. Pays $650 a day.' },
+  cab: { cat: 'Investments', name: 'A Taxi Medallion', icon: '🚕', price: 40000, income: 1500, requiresChapter: 1, desc: 'A yellow cab and a driver who never stops talking. Pays $1,500 a day.' },
   backroom: { cat: 'Investments', name: 'Back Room Refit', icon: '♠️', price: 15000, swagger: 3, requiresQuest: 'pokerRoom', desc: 'New felt, a working jukebox and a lock Kessler doesn\'t have a key to. Reopens the Spur\'s poker room.' },
   dinerStake: { cat: 'Investments', name: "Partner in Mel's Diner", icon: '🍳', price: 250000, income: 2500, requiresChapter: 2, desc: 'Half the pie, literally. Pays $2,500 a day.' },
   quikstop: { cat: 'Investments', name: 'Quik-Stop Franchise', icon: '🏪', price: 1000000, income: 12000, requiresChapter: 3, desc: 'Twelve stores, one terrible coffee recipe. Pays $12,000 a day.' },
@@ -267,6 +273,11 @@ const ACHIEVEMENTS = [
   { id: 'dMick', name: 'Student Becomes Master', desc: 'Beat Mick Doyle for real money', test: () => App.counter('dartBeatMick') >= 1, reward: 1000, swagger: 3 },
   { id: 'dGold', name: 'The Golden Arrow', desc: 'Win the Golden Arrow knockout', test: () => App.counter('dartGAwin') >= 1, reward: 0, swagger: 6 },
   // poker
+  { id: 'office', name: 'Knock, Then Enter', desc: 'Earn the key to Vinnie\'s back office', test: () => App.counter('officeKey') >= 1, reward: 500, swagger: 2 },
+  { id: 'cellar', name: 'Bin There', desc: 'Get into Prime Cut\'s wine cellar', test: () => App.counter('cellarOpen') >= 1, reward: 100 },
+  { id: 'spurShifts', name: 'On the Clock', desc: 'Work ten shifts at the Rusty Spur', test: () => App.counter('spurShifts') >= 10, reward: 250, swagger: 1 },
+  { id: 'spurPool', name: 'Pool Shark', desc: 'Beat five regulars at pool at the Spur', test: () => App.counter('spurPoolWin') >= 5, reward: 500, swagger: 2 },
+  { id: 'officeLedger', name: 'Cooked Books', desc: 'Read Vinnie\'s ledger without getting caught', test: () => App.counter('officeLedger') >= 1, reward: 500, swagger: 1 },
   { id: 'backroom', name: 'Shuffle Up', desc: 'Reopen the Spur\'s back poker room', test: () => !!App.state.flags.pokerRoom, reward: 500, swagger: 2 },
   { id: 'pkCash', name: 'In the Money', desc: 'Cash in a poker tournament', test: () => !!(App.state.stats.poker && App.state.stats.poker.cashes), reward: 250 },
   { id: 'pkWin', name: 'Ship It', desc: 'Win a poker tournament', test: () => !!(App.state.stats.poker && App.state.stats.poker.wins), reward: 1000, swagger: 2 },
@@ -544,6 +555,7 @@ const Career = {
     }
     SFX.cash(); UI.toast(`${m.icon} ${m.name}${free ? ' (comped)' : ''}`, 'good');
     Mood.consume(id, m);
+    if (placeId === 'steak') App.count('steakMeals'); // three and Philippe calls you a regular (the cellar)
     App.save(); Router.hud(); return true;
   },
   happyHour(venue) { const t = (App.state.clock || 540) % 1440; return venue === 'spur' && t >= 1020 && t < 1140; },

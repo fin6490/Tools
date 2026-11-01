@@ -76,7 +76,7 @@ const Router = {
     if (App.inReality()) return h('header.hud.hud-l2', h('button.logo', { onclick: () => this.safeGo('reality'), title: 'Back to the Meridian' }, '←', h('span', 'The Meridian')),
       h('div.hud-stats', h('div.hs.bank', h('small', 'Your money'), h('b#hud-bank'))));
     return h('header.hud',
-      h('button.logo', { onclick: () => this.safeGo('world'), title: 'Back to the map' }, '🎲', h('span', 'High Roller')),
+      h('button.logo', { onclick: () => this.safeGo('world'), title: 'Back to the map' }, '🎲', h('span', 'The Meridian')),
       h('div.hud-stats',
         h('div.hs', h('small', st.name), h('b#hud-day', 'Day ' + st.day), h('em#hud-clock.hud-clock')),
         h('div.hs.bank', h('small', 'Bankroll'), h('b#hud-bank')),
@@ -122,7 +122,7 @@ const Screens = {
     const slots = App.listSlots();
     const slotRow = ({ i, s }) => h('div.slot',
       h('div.slot-info', h('b', `Slot ${i}`), s
-        ? h('span', `${s.name} · ${s.mode === 'free' ? 'Free Play' : 'Career, ch. ' + (s.chapter + 1)} · Day ${s.day} · ${fmt(s.bank)}${s.flags && s.flags.gameOver ? ' · 💀' : ''}`)
+        ? h('span', Screens.slotLine(s))
         : h('span.muted', 'Empty')),
       h('div.slot-btns',
         s ? h('button.btn.primary.sm', { onclick: () => { App.start(s, i); Router.go('world'); } }, 'Continue') : null,
@@ -138,9 +138,10 @@ const Screens = {
       if (!slot) return;
       try { await App.importSave(f, slot); Router.go('world'); UI.toast('Save imported', 'good'); } catch (err) { UI.toast('Import failed: ' + err.message, 'warn'); }
     } });
-    main.append(h('div.title',
-      h('div.title-cards', ['A♠', 'K♥', 'Q♦', 'J♣'].map((t, i) => h('div.tcard' + (i % 3 ? '.red' : ''), { style: { '--i': i } }, t))),
-      h('h1', 'HIGH ROLLER'), h('p.tagline', 'Pay off Sal\'s debt. Beat the house. Find out what really happened to Sal.'),
+    main.append(h('div.title.mer',
+      h('div.mer-scene', { 'aria-hidden': 'true', html: Screens.skyline() }), h('div.mer-rain', { 'aria-hidden': 'true' }),
+      h('div.mer-sign', h('small', 'THE'), h('h1', { 'aria-label': 'The Meridian' }, ...'MERIDIAN'.split('').map((c, i) => h('span' + (i === 3 ? '.flk' : ''), c))), h('span.mer-sub', 'a casino story')),
+      h('p.tagline', 'Pay off Sal\'s debt. Beat the house. Find out what really happened to Sal.'),
       h('p.greeting', Me.greeting()),
       h('div.slots', slots.map(slotRow)),
       h('div.title-foot', h('button.btn.ghost.sm', { onclick: () => fileIn.click() }, '⤒ Import save file'), fileIn,
@@ -367,6 +368,48 @@ const Screens = {
         rows.map(r => h('tr', r.map((c, i) => h(i ? 'td.num' : 'td', c)))))));
   },
 
+  // the title's night: a city of lit windows, and the Meridian's tower in the middle with its sign
+  skyline() {
+    let seed = 17; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    let out = '', x = 0;
+    while (x < 1200) {
+      const w = 40 + r() * 70, hh = 90 + r() * 170, mid = x > 520 && x < 680;
+      if (mid) { x = 680; continue; }
+      out += `<rect x="${x}" y="${400 - hh}" width="${w}" height="${hh}" fill="#0c0b16"/>`;
+      for (let wy = 400 - hh + 12; wy < 392; wy += 14) for (let wx = x + 6; wx < x + w - 8; wx += 11) if (r() < .28) out += `<rect x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="5" height="7" fill="${r() < .8 ? '#e8b860' : '#8ab0ff'}" opacity="${(.35 + r() * .6).toFixed(2)}"/>`;
+      x += w + 2;
+    }
+    // the tower
+    out += `<rect x="540" y="60" width="120" height="340" fill="#100e1c"/><rect x="560" y="40" width="80" height="24" fill="#100e1c"/><rect x="596" y="8" width="8" height="34" fill="#100e1c"/><circle cx="600" cy="8" r="4" fill="#ff3a3a" class="mer-beacon"/>`;
+    for (let wy = 80; wy < 392; wy += 16) for (let wx = 552; wx < 650; wx += 12) if (r() < .45) out += `<rect x="${wx}" y="${wy}" width="6" height="9" fill="#f0c070" opacity="${(.3 + r() * .7).toFixed(2)}"/>`;
+    return `<svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="mersky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05040c"/><stop offset=".6" stop-color="#1c1030"/><stop offset="1" stop-color="#4a1a2a"/></linearGradient></defs><rect width="1200" height="400" fill="url(#mersky)"/>${out}<rect y="396" width="1200" height="4" fill="#ff3a5a" opacity=".25"/></svg>`;
+  },
+  // one line about a saved game
+  slotLine(s) {
+    if (!s) return 'Empty';
+    const ago = s.saved ? Math.round((Date.now() - s.saved) / 60000) : null, when = ago == null ? '' : ago < 1 ? ' · just now' : ago < 60 ? ` · ${ago} min ago` : ago < 1440 ? ` · ${Math.round(ago / 60)} h ago` : ` · ${Math.round(ago / 1440)} d ago`;
+    return `${s.name} · ${s.mode === 'free' ? 'Free Play' : s.l3 ? 'Level 3' : s.l2 ? 'Level 2' : 'Career, ch. ' + (s.chapter + 1)} · Day ${s.day} · ${fmt(s.bank)}${s.flags && s.flags.gameOver ? ' · 💀' : ''}${s.copyOf ? ` · a copy of slot ${s.copyOf}` : ''}${when}`;
+  },
+  // save a copy of this game to another slot (a checkpoint before something risky), or load another slot
+  async saveSlots(mode) {
+    const list = App.listSlots();
+    const m = UI.modal({ title: mode === 'copy' ? '🗂️ Save a copy' : '📂 Load a slot',
+      body: h('div', h('p.muted.small', mode === 'copy' ? `You keep playing in slot ${App.slot}; the copy waits in the slot you pick. If something goes badly, load it back.` : `Your game in slot ${App.slot} is saved first.`),
+        h('div.slot-pick', list.map(({ i, s }) => h('button.btn.slot-opt' + (i === App.slot ? '.cur' : ''), { disabled: i === App.slot || (mode === 'load' && !s) ? true : null, onclick: () => m.close(i) },
+          h('b', `Slot ${i}${i === App.slot ? ' (playing)' : ''}`), h('small', Screens.slotLine(s)))))),
+      buttons: [{ label: 'Cancel', value: 0, cls: 'ghost' }] });
+    const pick = await m;
+    if (!pick) return;
+    const target = list[pick - 1].s;
+    if (mode === 'copy') {
+      if (target && !(await UI.confirm('Overwrite?', `Slot ${pick} has ${target.name}'s game (${Screens.slotLine(target)}). Replace it with a copy of this one?`, 'Overwrite'))) return;
+      if (App.saveCopy(pick)) UI.toast(`🗂️ A copy is safe in slot ${pick}. You're still playing slot ${App.slot}.`, 'good');
+    } else {
+      if (World.savePos) World.savePos(); App.save();
+      if (Router.screen === 'world') World.unmount();
+      App.start(target, pick); Router.go(target.l3 && target.l3.atTable ? 'bedsit' : 'world'); UI.toast(`📂 Slot ${pick}: ${target.name}, day ${target.day}`, 'good');
+    }
+  },
   menu() {
     const st = App.state;
     const sel = (key, opts) => h('select.field.sm', { onchange: e => { st.settings[key] = e.target.value === 'true' ? true : e.target.value === 'false' ? false : e.target.value; App.save(); } },
@@ -387,6 +430,8 @@ const Screens = {
         h('button.btn', { onclick: () => { box.close(); Looks.edit(); } }, '🪞 Your look'),
         h('button.btn', { onclick: () => { box.close(); Me.edit(); } }, '🗂️ Your file (make it personal)'),
         h('button.btn', { onclick: () => { App.save(); UI.toast('Saved to slot ' + App.slot, 'good'); } }, '💾 Save now'),
+        h('button.btn', { onclick: () => { box.close(); Screens.saveSlots('copy'); } }, '🗂️ Save a copy to another slot'),
+        h('button.btn', { onclick: () => { box.close(); Screens.saveSlots('load'); } }, '📂 Load another slot'),
         h('button.btn', { onclick: () => App.exportSave() }, '⤓ Export save file'),
         h('button.btn.ghost', { onclick: () => { box.close(); App.save(); Router.safeGo('title'); } }, '⏏ Quit to title')),
       h('p.muted.small', `Slot ${App.slot} · autosaves after every round`));

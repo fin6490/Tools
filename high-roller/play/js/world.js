@@ -151,7 +151,12 @@ const World = (() => {
     // a rug under every table, a plant by the door, and at the Spur a jukebox in the corner
     m.tables.forEach(tb => m.props.unshift({ type: 'furn', kind: 'rug', x: tb.x - 1, y: tb.y - 1, w: tb.w + 2, h: tb.h + 2 }));
     for (const [px2, py2] of [[1, H - 2]]) { m.props.push({ type: 'furn', kind: 'plant', x: px2, y: py2, w: 1, h: 1 }); m.blockRect(px2, py2, 1, 1); }
-    if (venueId === 'spur') { m.props.push({ type: 'furn', kind: 'jukebox', x: 1, y: 12, w: 1, h: 1 }); m.blockRect(1, 12, 1, 1); m.act(1, 12, { fn: 'spurJukebox', label: '🎵 Jukebox' }); }
+    if (venueId === 'spur') {
+      m.props.push({ type: 'furn', kind: 'jukebox', x: 1, y: 12, w: 1, h: 1 }); m.blockRect(1, 12, 1, 1); m.act(1, 12, { fn: 'spurJukebox', label: '🎵 Jukebox' });
+      m.props.unshift({ type: 'furn', kind: 'rug', x: 18, y: 7, w: 6, h: 4 }); m.props.push({ type: 'furn', kind: 'pooltable', x: 19, y: 8, w: 4, h: 2 }); m.blockRect(19, 8, 4, 2);
+      for (let j = 0; j < 2; j++) for (let k = 0; k < 4; k++) m.act(19 + k, 8 + j, { fn: 'spurPool', label: '🎱 Pool: hustle the regulars' });
+      m.props.push({ type: 'furn', kind: 'board', x: 5, y: 1, w: 1, h: 1 }); m.act(5, 1, { fn: 'spurWork', label: '📋 Staff wanted: work a shift' });
+    }
     m.decor = venueId;
     const n = I.npc, ch = CHARACTERS[n.who];
     m.npcs.push({ x: n.x, y: n.y, dir: n.bartender ? 'right' : 'down', look: { shirt: ch.color, pants: '#222', skin: n.who === 'kessler' ? '#e8c4a0' : '#f0c19a', hair: { dolores: '#a0522d', doc: '#ddd', margot: '#111', kessler: '#999' }[n.who], hat: n.who === 'kessler' }, who: n.who, name: ch.name, story: true });
@@ -180,8 +185,8 @@ const World = (() => {
       folk: [] },
     pawn: { name: "Vinnie's Pawn & Loan", W: 14, H: 10, floor: 'wood', theme: { wall: '#3d3d3d', trim: '#1d1d1d' }, staff: null,
       f: [['hcounter', 3, 4, 8, 1, { screen: 'loans', label: 'Loan counter: borrow or repay' }], ['case', 1, 6, 3, 1, { fn: 'watchcase', label: 'Display case' }],
-        ['case', 10, 6, 3, 1, { talk: 'Guitars, a taxidermied armadillo, a slot-machine handle. Everything in town ends up here eventually, kid.', label: 'Display case' }], ['safe', 12, 2, 1, 1, { talk: 'A huge old safe. Vinnie leans on it whenever he talks numbers.', label: 'Safe' }],
-        ['door', 2, 1, 1, 1, { talk: 'The back office. A sign reads: KNOCK. THEN LEAVE.', label: 'Back office' }], ['neon', 5, 1, 3, 1, null, { text: 'LOANS', col: '#ffd54f' }], ['guitar', 9, 1, 2, 1], ['clock', 4, 1, 1, 1], ['frame', 11, 1, 1, 1]],
+        ['case', 10, 6, 3, 1, { talk: 'Guitars, a taxidermied armadillo, a slot-machine handle. Everything in town ends up here eventually, kid.', label: 'Display case' }], ['safe', 12, 2, 1, 1, { fn: 'vinnieErrand', label: 'Vinnie, leaning on the safe: ask for an errand' }],
+        ['door', 2, 1, 1, 1, { fn: 'office', label: 'Vinnie\'s back office (KNOCK. THEN LEAVE.)' }], ['neon', 5, 1, 3, 1, null, { text: 'LOANS', col: '#ffd54f' }], ['guitar', 9, 1, 2, 1], ['clock', 4, 1, 1, 1], ['frame', 11, 1, 1, 1]],
       folk: [] },
     shop: { name: 'Lucky Strike Outfitters', W: 16, H: 11, floor: 'carpet', theme: { wall: '#b03a2e', trim: '#5a1a14', carpet: '#3b2a40' }, staff: ['rosa', 7, 3],
       f: [['hcounter', 5, 4, 6, 1, { screen: 'shop', label: 'Counter: shop with Rosa' }], ['rack', 1, 3, 3, 1, { screen: 'shop', label: 'Suits and hats' }], ['mirror', 13, 2, 1, 1, { fn: 'mirror', label: 'Full-length mirror' }],
@@ -197,8 +202,22 @@ const World = (() => {
       folk: [] },
     steak: { name: 'Prime Cut Steakhouse', W: 16, H: 11, floor: 'carpet', theme: { wall: '#3e2723', trim: '#c9a14a', carpet: '#4a1c1c' }, staff: ['philippe', 3, 7],
       f: [['desk', 2, 8, 3, 1, { place: 'steak', label: 'Maître d\': a table for one (Philippe)' }], ['table', 6, 3, 2, 2], ['table', 10, 3, 2, 2], ['table', 10, 7, 2, 2], ['tank', 13, 2, 2, 1, { talk: 'A lobster tank. One of them is wearing a tiny rubber band and an expression of deep resignation.', label: 'Lobster tank' }],
-        ['door', 2, 1, 1, 1, { fn: 'cellar', label: 'Wine cellar' }], ['plant', 14, 8, 1, 1], ['wine', 5, 1, 3, 1], ['frame', 9, 1, 2, 1], ['sconce', 12, 1, 1, 1], ['sconce', 4, 1, 1, 1]],
+        ['door', 2, 1, 1, 1, { fn: 'cellar', label: 'The wine cellar' }], ['plant', 14, 8, 1, 1], ['wine', 5, 1, 3, 1], ['frame', 9, 1, 2, 1], ['sconce', 12, 1, 1, 1], ['sconce', 4, 1, 1, 1]],
       folk: [[8, 3, 4], [12, 7, 5]] },
+    // behind KNOCK. THEN LEAVE. in the pawn shop, once Vinnie gives you the key (office.js)
+    office: { name: "Vinnie's Back Office", W: 12, H: 9, floor: 'carpet', theme: { wall: '#3a2a1e', trim: '#1a120c', carpet: '#3a1414' }, staff: null,
+      f: [['rug', 3, 3, 6, 4], ['frame', 4, 1, 2, 1, { talk: 'A racehorse called Seventeen Hands. It came last at Saratoga in 1979 with a thousand of Vinnie\'s dollars on its nose. He keeps the painting so he never forgets.', label: 'The racehorse' }],
+        ['photo', 8, 1, 2, 1, { talk: 'A photo, curled at the corners: Vinnie and Sal, young, outside the Spur, arms round each other\'s shoulders. Somebody has drawn a tiny 17 on Sal\'s jacket in biro.', label: 'A photo on the wall' }], ['clock', 2, 1, 1, 1],
+        ['desk', 4, 3, 3, 1, { fn: 'officeLedger', label: 'Vinnie\'s desk and the ledger' }], ['deskphone', 7, 3, 1, 1, { fn: 'officePhone', label: 'The phone: the big errands' }],
+        ['safe', 10, 2, 1, 1, { talk: 'The safe. Vinnie leans on its little brother in the shop. Nobody knows this combination but Vinnie, and Nico can\'t count that high.', label: 'The big safe' }],
+        ['shelf', 1, 2, 2, 1], ['sofa', 1, 6, 2, 1, null, { col: '#5a2a1a' }], ['lamp', 9, 6, 1, 1], ['plant', 10, 6, 1, 1]],
+      folk: [] },
+    // under Prime Cut, down the stairs behind Philippe's desk (office.js)
+    cellar: { name: 'The Wine Cellar', W: 12, H: 9, floor: 'tile', theme: { wall: '#3a2c20', trim: '#1a120c', tileA: '#4a3a2a', tileB: '#3a2c20' }, staff: null,
+      f: [['wine', 1, 1, 4, 1], ['wine', 7, 1, 4, 1], ['sconce', 6, 1, 1, 1], ['barrel', 1, 3, 1, 1], ['barrel', 1, 4, 1, 1], ['barrel', 10, 3, 1, 1], ['barrel', 10, 4, 1, 1],
+        ['table', 5, 3, 2, 2, { fn: 'cellarGlass', label: 'The tasting table: a glass of the good stuff ($40)' }], ['desk', 8, 6, 2, 1, { fn: 'cellarBins', label: 'The bin book: every bottle by its bin number' }],
+        ['crates', 2, 6, 2, 1, { fn: 'cellarDelivery', label: 'Philippe\'s deliveries (an errand)' }]],
+      folk: [] },
     // behind the longhorns at the Spur, down a flight of stairs: Sal's secret, after the story (salquest.js)
     club: { name: 'The Seventeen Club', W: 16, H: 11, floor: 'carpet', theme: { wall: '#1e3a2f', trim: '#c9a14a', carpet: '#3a1414' }, staff: null,
       f: [['rug', 5, 3, 6, 4], ['shelf', 1, 2, 4, 1], ['bar2', 1, 3, 4, 1, { fn: 'clubBar', label: 'The bar (mahogany, and Sal\'s rye)' }], ['photowall', 6, 1, 3, 1, { fn: 'salPhotos', label: 'A wall of old photographs' }],
@@ -268,6 +287,14 @@ const World = (() => {
       case 'stool': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + 9, py + 13, 4, 2, 0, 0, 7); c.fill(); R(7, 7, 2, 7, '#9e9e9e'); R(5, 13, 6, 1, '#757575'); c.fillStyle = p.col || '#c62828'; c.beginPath(); c.ellipse(px + 8, py + 6, 5, 3, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(px + 5, py + 4, 4, 1); break;
       case 'lamp': { const g = c.createRadialGradient(px + 8, py + 3, 1, px + 8, py + 3, 16); g.addColorStop(0, 'rgba(255,214,140,.45)'); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.fillRect(px - 10, py - 12, 36, 34); R(7, 5, 2, 9, '#5d4037'); R(4, 13, 8, 2, '#3e2723'); R(4, 0, 8, 6, '#f3e0b5'); R(4, 5, 8, 1, '#c9a14a'); break; }
       case 'bench': c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(px + 2, py + 11, w - 2, 3); R(0, 3, w, 3, '#8d6e63'); R(0, 7, w, 4, '#a1887f'); R(0, 7, w, 1, 'rgba(255,255,255,.15)'); R(2, 11, 2, 4, '#4e342e'); R(w - 4, 11, 2, 4, '#4e342e'); break;
+      case 'barrel': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + 9, py + 14, 7, 2, 0, 0, 7); c.fill(); c.fillStyle = '#6a3a1a'; c.beginPath(); c.ellipse(px + 8, py + 8, 7, 7, 0, 0, 7); c.fill(); c.fillStyle = '#8a5028'; c.beginPath(); c.ellipse(px + 8, py + 8, 5, 5, 0, 0, 7); c.fill(); c.strokeStyle = '#2a1a0a'; c.lineWidth = 1; c.beginPath(); c.arc(px + 8, py + 8, 6.5, 0, 7); c.stroke(); R(7, 7, 2, 2, '#c9a14a'); break;
+      case 'crates': for (let i = 0; i < p.w; i++) { R(i * T + 1, 3, 14, 12, '#a07040'); R(i * T + 1, 3, 14, 2, '#c09060'); R(i * T + 1, 8, 14, 1, '#6a4020'); R(i * T + 6, 4, 4, 2, '#3a2010'); } break;
+      case 'deskphone': R(1, 6, 14, 9, '#4a2a14'); R(1, 6, 14, 2, '#6a3e20'); R(4, 2, 8, 5, '#111'); R(3, 2, 10, 2, '#222'); R(6, 4, 4, 2, '#d8d0b8'); break;
+      case 'pooltable': { c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(px + 3, py + 4, w, hh); R(0, 0, w, hh, '#5a2e12'); R(3, 3, w - 6, hh - 6, '#1f7a44'); R(3, 3, w - 6, 1, 'rgba(255,255,255,.12)');
+        for (const [qx, qy] of [[3, 3], [w / 2, 2], [w - 3, 3], [3, hh - 3], [w / 2, hh - 2], [w - 3, hh - 3]]) { c.fillStyle = '#050505'; c.beginPath(); c.arc(px + qx, py + qy, 2.2, 0, 7); c.fill(); }
+        const balls = [['#ffffff', 14, 16], ['#e0453a', 40, 12], ['#ffd84a', 44, 15], ['#e0453a', 44, 9], ['#111', 48, 12], ['#ffd84a', 48, 18], ['#e0453a', 52, 14]];
+        for (const [col, bx, by] of balls) { c.fillStyle = col; c.beginPath(); c.arc(px + bx, py + by, 2, 0, 7); c.fill(); }
+        R(8, 24, 30, 1, '#d8b07a'); break; }
       case 'rug': c.fillStyle = 'rgba(201, 161, 74, .35)'; c.fillRect(px, py, w, hh); c.strokeStyle = 'rgba(201, 161, 74, .8)'; c.lineWidth = 2; c.strokeRect(px + 3, py + 3, w - 6, hh - 6); break;
       case 'table': for (const sx2 of [-4, w - 4]) { c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(px + sx2 + 1, py + hh / 2 - 1, 9, 9); R(sx2, hh / 2 - 6, 8, 3, '#4e2a1a'); R(sx2, hh / 2 - 3, 8, 7, '#7a3a24'); R(sx2 + 1, hh / 2 - 2, 6, 1, 'rgba(255,255,255,.15)'); } // a chair either side
         c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break;
@@ -316,7 +343,16 @@ const World = (() => {
     if (fn === 'salSafe') return SalQuest.safe();
     if (fn === 'clubBar') return SalQuest.bar();
     if (fn === 'watchcase') return Postcards.watchcase();
-    if (fn === 'cellar') return Postcards.cellar();
+    if (fn === 'office') return Office.door();
+    if (fn === 'officeLedger') return Office.ledger();
+    if (fn === 'officePhone') return Office.phone();
+    if (fn === 'vinnieErrand') return Office.vinnieErrand();
+    if (fn === 'cellarBins') return Postcards.cellar(true);
+    if (fn === 'cellarGlass') return Office.cellarGlass();
+    if (fn === 'cellarDelivery') return Office.delivery();
+    if (fn === 'spurWork') return Office.spurBoard();
+    if (fn === 'spurPool') return Office.pool();
+    if (fn === 'cellar') return Office.cellarDoor();
     if (fn === 'ice') {
       if (st.flags.iceDay === st.day) return UI.toast('The ice machine coughs. Come back tomorrow.', 'warn');
       st.flags.iceDay = st.day; st.thirst = Math.min(100, st.thirst + 15); Router.hud(); App.save(); UI.toast('🧊 A cup of ice water. 💧+15', 'good'); return;
@@ -848,7 +884,8 @@ const World = (() => {
         if (!openNow(door.room)) { stepOut(door); await UI.dialog([{ who: 'narrator', text: `The lights are off and the sign on the door says CLOSED. ${(ROOMS[door.room] || {}).name || 'It'} is open ${hoursText(door.room)}. It's ${clockText()}.` }]); return; }
         App.state.world.returnTo = door.out; await go('r:' + door.room); return;
       }
-      if (door.exit === 'club') { await go('v:spur', 15, 2, 'down'); return; } // back up the stairs, out from behind the longhorns
+      const SUB = { club: ['v:spur', 15, 2], office: ['r:pawn', 2, 2], cellar: ['r:steak', 2, 2] }; // rooms inside rooms: back the way you came
+      if (SUB[door.exit]) { await go(...SUB[door.exit], 'down'); return; }
       if (door.exit) {
         const town = getMap('town');
         const back = App.state.world.returnTo || Object.values(town.doors).find(d => d.venue === door.exit || d.room === door.exit).out;
@@ -1229,5 +1266,9 @@ const World = (() => {
     const where = t === G.GRASS || t === G.FLOWERS ? RNG.pick(['face-down in the grass', 'curled up in a flowerbed', 'on your back in the grass, staring at the sky']) : t === G.SAND ? 'half buried in sand on the riverbank' : t === G.PLANK ? 'on the planks of the dock, one shoe missing' : RNG.pick(['on the pavement', 'propped against a lamppost', 'in a doorway', 'flat on the sidewalk']);
     return { x, y, text: `${where}${near ? `${nd < 6 ? ' outside' : ' not far from'} ${near}` : ''}` };
   }
-  return { mount, unmount, townMap, wakeSomewhere, fragWhere, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
+  // put back what belongs on the current map now (a door a side job just opened), without leaving and coming back
+  function repopulate() { if (S && S.m) populate(S.m); }
+  const enter = (id, x, y, dir) => S ? go(id, x, y, dir) : null;
+  const freeze = on => { if (S) { S.busy = !!on; S.keys.clear(); } };
+  return { mount, unmount, townMap, wakeSomewhere, fragWhere, repopulate, enter, freeze, drawPerson, openNow, hoursText, refreshGoal: () => updateGoal(), roomName: k => (ROOMS[k] || {}).name || 'indoors', savePos, clock, isNight, clockText, where: () => S && { map: S.m.id, x: S.p.x, y: S.p.y, dir: S.p.dir }, _map: () => S && S.m };
 })();
