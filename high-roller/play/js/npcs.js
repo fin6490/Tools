@@ -441,6 +441,8 @@ const Cast = {
 
 /* ======================= chat with Claude ======================= */
 const AI_KEY = 'highroller.anthropicKey';
+// voice chat was removed: forget its settings and any OpenAI key a player pasted for it
+try { localStorage.removeItem('highroller.voice'); localStorage.removeItem('highroller.openaiKey'); } catch (e) { }
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.132.0/+esm';
 const Chat = {
   _sample: undefined, _sdk: null,
@@ -623,7 +625,7 @@ const Chat = {
     const bubble = (role, text) => { const b = h('div.cb.' + role, text); log.append(b); log.scrollTop = log.scrollHeight; return b; };
     const trim = () => { if (hist.length > 16) hist.splice(0, hist.length - 16); };
     // scripted beats (side jobs, the mystery) can speak for the character
-    const api = { say: text => { bubble('them', text); hist.push({ role: 'assistant', content: text }); trim(); App.save(); Voice.say(sp, text); }, close: () => pop.close() };
+    const api = { say: text => { bubble('them', text); hist.push({ role: 'assistant', content: text }); trim(); App.save(); }, close: () => pop.close() };
     Rel.visit(sp.id);
     const opener = (sp.handIn && sp.handIn()) || Mystery.opener(sp.id) || sp.opener();
     hist.push({ role: 'assistant', content: opener }); trim();
@@ -632,22 +634,9 @@ const Chat = {
     const input = h('input.field#chat-in', { placeholder: `Say something to ${sp.name.split(' ')[0].replace(/"/g, '')}…`, maxlength: 300, autocomplete: 'off' });
     const send = h('button.btn.primary', 'Send');
     const note = h('p.muted.small.chat-note');
-    let open = true, listening = false;
-    // 🎤 speak instead of typing; in hands-free mode the mic reopens after each reply
-    const mic = Voice.canListen() ? h('button.btn.mic', { type: 'button', title: 'Speak', 'aria-label': 'Speak', onclick: () => listening ? Voice.stopListening() : listen() }, '🎤') : null;
-    const listen = async () => {
-      if (!open || listening || input.disabled || ctl) return;
-      listening = true; mic.classList.add('on'); input.placeholder = 'Listening…';
-      try {
-        const said = await Voice.listen(t => { input.value = t; });
-        if (said && open) { input.value = said; form.requestSubmit(); }
-      } catch (e) { UI.toast(Voice.errorText(e), 'warn'); }
-      finally { listening = false; if (mic) mic.classList.remove('on'); input.placeholder = `Say something to ${sp.name.split(' ')[0].replace(/"/g, '')}…`; }
-    };
-    const speakToggle = Voice.canSpeak() ? h('button.btn.ghost.sm.spk', { type: 'button', title: 'Read replies aloud', onclick: () => { const v = Voice.prefs(); v.speak = !v.speak; Voice.save(v); speakToggle.textContent = v.speak ? '🔊' : '🔇'; if (!v.speak) Voice.stop(); } }, Voice.prefs().speak ? '🔊' : '🔇') : null;
-    const form = h('form.chat-form', mic, input, send);
+    let open = true;
+    const form = h('form.chat-form', input, send);
     const mode = await this.backend();
-    if (!mode && mic) mic.disabled = true;
     if (!mode) { input.disabled = send.disabled = true; note.append('To ask questions in your own words, connect Claude. ', h('button.btn.sm.primary', { type: 'button', onclick: () => { pop.close(); setTimeout(() => this.settings(), 50); } }, '💬 Set up AI chat')); }
     else note.textContent = mode === 'proxy' ? `Replies come from Claude, included with SpinDecks Premium${this.host().left != null ? ` (${this.host().left} left today)` : ''}.` : mode === 'sample' ? 'Replies come from Claude on your account.' : 'Replies come from Claude using your API key.';
     let ctl = null;
@@ -664,22 +653,20 @@ const Chat = {
         out.textContent = reply; out.classList.remove('typing');
         hist.push({ role: 'assistant', content: reply });
         Whispers.check(sp.id, text, raw);
-        Voice.say(sp, reply, () => { if (open && mic && Voice.prefs().handsFree && Voice.prefs().speak) setTimeout(listen, 250); });
       } catch (err) {
         const msg = this.errorText(err);
         out.textContent = msg || '…'; out.classList.remove('typing'); out.classList.add('err');
         hist.pop(); // drop the unanswered line so the next try starts clean
       } finally {
-        ctl = null; send.disabled = false; if (!listening) input.focus();
+        ctl = null; send.disabled = false; input.focus();
         trim(); App.save();
       }
     });
-    const body = h('div.chat', h('div.dialog', h('div.portrait', Portrait.el(sp)), h('div.d-text', h('div.d-name', sp.name), h('p.muted.small', sp.subtitle || '')), speakToggle), log, panels, form, note);
+    const body = h('div.chat', h('div.dialog', h('div.portrait', Portrait.el(sp)), h('div.d-text', h('div.d-name', sp.name), h('p.muted.small', sp.subtitle || ''))), log, panels, form, note);
     const pop = UI.modal({ title: null, body, cls: 'dlg' });
     setTimeout(() => { if (!input.disabled) input.focus(); log.scrollTop = log.scrollHeight; }, 50);
-    Voice.say(sp, opener, () => { if (open && mic && mode && Voice.prefs().handsFree && Voice.prefs().speak) setTimeout(listen, 250); });
     await pop;
-    open = false; Voice.stop(); Voice.stopListening();
+    open = false;
     if (ctl) ctl.abort();
     App.save();
   },
@@ -731,7 +718,6 @@ const Chat = {
       const host = this.host(), on = true;
       const body = h('div', h('p', on ? `AI chat is included with SpinDecks Premium: talk to anyone in town in your own words. ${host.left != null ? `${host.left} of ${host.cap || 100} chats left today.` : `Up to ${host.cap || 100} chats a day.`}` : 'AI chat is part of SpinDecks Premium. Upgrade from your SpinDecks account to talk to anyone in town in your own words.'),
         h('p.muted.small', 'What you type to characters, and anything you put in Your file, is sent to Claude (Anthropic) through SpinDecks to write their replies. It is not stored on SpinDecks.'));
-      body.append(Voice.settingsRows());
       await UI.modal({ title: '💬 AI chat', body, buttons: [{ label: 'Done', cls: 'primary' }] });
       return;
     }
@@ -755,7 +741,6 @@ const Chat = {
         guide,
         h('label.lbl', { for: 'ai-key' }, 'Your Anthropic API key'), key,
         h('p.muted.small', 'The key stays in this browser. It goes only to Anthropic: never to ' + (this.host() ? 'SpinDecks' : 'anyone else') + ', never into save files.'));
-    if (!opts.intro) body.append(Voice.settingsRows());
     const buttons = inSample ? [{ label: 'Done', cls: 'primary' }]
       : opts.intro ? [{ label: 'Skip', value: false, cls: 'ghost' }, { label: 'Save', value: 'save', cls: 'primary' }]
       : [{ label: 'Remove key', value: 'clear', cls: 'ghost' }, { label: 'Test', value: 'test' }, { label: 'Save', value: 'save', cls: 'primary' }];
