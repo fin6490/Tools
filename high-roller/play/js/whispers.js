@@ -214,7 +214,7 @@ const Whispers = {
     const L1 = WHISPERS.filter(w => !w.l2), found = L1.filter(w => this.got(w.id)), open = L1.filter(w => !this.got(w.id) && w.ready());
     const name = who => { const k = who.replace(/^staff:/, ''); return (CHARACTERS[k] || STAFF[k] || { name: k }).name; };
     return h('div',
-      h('p.muted.small', `Some people will only tell you something once they trust you. Bring it up in your own words, and expect a question back: the answer is usually somewhere in your case file. ${found.length} of ${L1.length} found. Whispers need AI chat; none are needed to finish the story.`),
+      h('p.muted.small', `Some people only talk once they trust you. Ask in your own words. ${found.length} of ${L1.length} found. Needs AI chat; optional.`),
       open.length ? h('div.whisper-leads', h('div.kicker', 'Someone is holding something back'), open.map(w => this.lead(w, name(w.who).replace(/,.*$/, '')))) : null,
       found.length ? h('div.shopgrid', found.map(w => h('div.item', h('div.item-i', w.icon), h('b', w.name), h('p', w.text)))) : h('p.muted', 'No whispers yet.'));
   },

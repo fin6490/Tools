@@ -126,8 +126,8 @@ const Screens = {
         : h('span.muted', 'Empty')),
       h('div.slot-btns',
         s ? h('button.btn.primary.sm', { onclick: () => { App.start(s, i); Router.go('world'); } }, 'Continue') : null,
-        s && (s.l2 || s.ending) ? h('button.btn.sm.l2-go', { onclick: () => { App.start(s, i); Router.go('reality'); } }, s.l2 ? 'Level 2' : 'Wake up') : null,
-        s ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); L3.begin(); }, title: s.l3 ? 'The bedsit' : 'For testing: go straight to Level 3' }, s.l3 ? 'Level 3' : '🧪 Level 3') : null, // testing: open to every save for now
+        s && (s.l2 || s.ending) ? h('button.btn.sm.l2-go', { onclick: () => { App.start(s, i); Router.go('reality'); } }, s.l2 ? 'Continue (2)' : '…') : null,
+        s && s.l3 ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); L3.begin(); } }, 'Continue (3)') : null,
         h('button.btn.sm', { onclick: () => Screens.newGame(i, 'career') }, 'New Career'),
         h('button.btn.ghost.sm', { onclick: () => Screens.newGame(i, 'free') }, 'Free Play'),
         s ? h('button.btn.ghost.sm.danger', { onclick: async () => { if (await UI.confirm('Delete save?', `Erase slot ${i} (${s.name})? This can't be undone.`, 'Delete')) { App.deleteSlot(i); Router.go('title'); } } }, 'Delete') : null));
@@ -165,8 +165,10 @@ const Screens = {
     Router.go('world');
     await Looks.edit(true);
     if (mode === 'career') {
+      await Chat.settings({ intro: true });
+      await Me.edit({ intro: true });
       const fin = Me.known().length ? [{ who: 'dolores', text: () => `And you're the one with the betting programs, aren't you, ${App.state.name}? Word gets around. Sal kept his systems on bar napkins. He'd have loved you.` }] : [];
-      await UI.dialog(CHAPTERS[0].intro.concat(fin, [{ who: 'narrator', text: 'Walk with the arrow keys or WASD (the on-screen pad on a phone). Press **Space** or **A** to talk, sit at a table or buy something. Hold **Shift** or **B** to run. Keep an eye on hunger 🍔, thirst 💧 and energy ⚡ at the top.' }]));
+      await UI.dialog(CHAPTERS[0].intro.concat(fin, [{ who: 'narrator', text: 'Walk with the arrow keys or WASD (the pad on a phone). **Space** or **A** to talk, sit or buy; hold **Shift** or **B** to run. 🗺️ shows the map: head for the **Rusty Spur**. 📖 shows your goal. Watch hunger 🍔, thirst 💧 and energy ⚡ at the top.' }]));
       Router.refresh();
     }
   },
@@ -191,7 +193,7 @@ const Screens = {
       h('section.locs',
         h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, '← Back to the map'), h('h2', 'Status')),
         h('div.grid',
-          h('button.loc', { onclick: () => Router.go('trophies') }, h('div.loc-i', '🏅'), h('div.loc-t', h('b', 'Trophy Room'), h('span', `${Object.keys(st.achievements).length}/${ACHIEVEMENTS.length} achievements`))),
+          h('button.loc', { onclick: () => Router.go('trophies') }, h('div.loc-i', '🏅'), h('div.loc-t', h('b', 'Trophy Room'), h('span', `${Object.keys(st.achievements).length}/${ACHIEVEMENTS.filter(a => st.achievements[a.id] || !/^l[23]/.test(a.id) || (/^l2/.test(a.id) ? st.l2 : st.l3)).length} achievements`))),
           h('button.loc', { onclick: () => Router.go('case') }, h('div.loc-i', '🔎'), h('div.loc-t', h('b', 'Case file'), h('span', App.state.ending ? 'Case closed' : `Act ${Mystery.act()} · ${Object.keys(Mystery.st().clues).length} pieces of evidence`))),
           h('button.loc', { onclick: () => Router.go('stats') }, h('div.loc-i', '📊'), h('div.loc-t', h('b', 'Stats'), h('span', `${st.stats.rounds.toLocaleString()} rounds played`))),
           !career ? h('button.loc', { onclick: () => { if (st.bank < 10000) { st.bank = 10000; App.save(); Router.refresh(); UI.toast('Bankroll refilled', 'good'); } else UI.toast('You already have $10,000+', 'warn'); } }, h('div.loc-i', '💵'), h('div.loc-t', h('b', 'Refill bankroll'), h('span', 'Top up to $10,000'))) : null),
@@ -349,7 +351,8 @@ const Screens = {
   trophies(main) {
     const st = App.state;
     main.append(h('div.trophies', h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, '← Map'), h('h2', '🏅 Trophy Room')),
-      h('div.shopgrid', ACHIEVEMENTS.map(a => h('div.item' + (st.achievements[a.id] ? '.owned' : '.dim'),
+      // what's ahead stays hidden: another level's achievements only show once you've been there
+      h('div.shopgrid', ACHIEVEMENTS.filter(a => st.achievements[a.id] || !/^l2/.test(a.id) || st.l2).filter(a => st.achievements[a.id] || !/^l3/.test(a.id) || st.l3).map(a => h('div.item' + (st.achievements[a.id] ? '.owned' : '.dim'),
         h('div.item-i', st.achievements[a.id] ? '🏅' : '🔒'), h('b', a.name), h('p', a.desc),
         h('div.tags', a.reward ? h('span', fmt(a.reward)) : null, a.swagger ? h('span', '★ +' + a.swagger) : null,
           st.achievements[a.id] ? h('span', 'Day ' + st.achievements[a.id]) : null))))));
@@ -388,7 +391,7 @@ const Screens = {
   slotLine(s) {
     if (!s) return 'Empty';
     const ago = s.saved ? Math.round((Date.now() - s.saved) / 60000) : null, when = ago == null ? '' : ago < 1 ? ' · just now' : ago < 60 ? ` · ${ago} min ago` : ago < 1440 ? ` · ${Math.round(ago / 60)} h ago` : ` · ${Math.round(ago / 1440)} d ago`;
-    return `${s.name} · ${s.mode === 'free' ? 'Free Play' : s.l3 ? 'Level 3' : s.l2 ? 'Level 2' : 'Career, ch. ' + (s.chapter + 1)} · Day ${s.day} · ${fmt(s.bank)}${s.flags && s.flags.gameOver ? ' · 💀' : ''}${s.copyOf ? ` · a copy of slot ${s.copyOf}` : ''}${when}`;
+    return `${s.name} · ${s.mode === 'free' ? 'Free Play' : 'Career, ch. ' + (s.chapter + 1)} · Day ${s.day} · ${fmt(s.bank)}${s.flags && s.flags.gameOver ? ' · 💀' : ''}${s.copyOf ? ` · a copy of slot ${s.copyOf}` : ''}${when}`;
   },
   // save a copy of this game to another slot (a checkpoint before something risky), or load another slot
   async saveSlots(mode) {
@@ -423,8 +426,9 @@ const Screens = {
       h('div.menu-btns',
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('status'); } }, '📋 Status, story & trophies'),
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('case'); } }, '🔎 Case file: The Seventeenth Card'),
-        st.ending || st.l2 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('reality'); } }, '👁️ Level 2: The Meridian') : null,
-        h('button.btn', { onclick: () => { box.close(); L3.begin(); } }, st.l3 ? '🪞 Level 3: The bedsit' : '🧪 Try Level 3 (testing)'), // testing: open to every save for now
+        st.ending || st.l2 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('reality'); } }, '👁️ Back to the other side') : null,
+        st.l3 ? h('button.btn', { onclick: () => { box.close(); L3.begin(); } }, '🪞 The room') : null,
+        Mystery.replayButton(() => box.close()),
         h('button.btn', { onclick: () => { box.close(); World.townMap(); } }, '🗺️ Town map'),
         h('button.btn', { onclick: () => { box.close(); Chat.settings(); } }, '💬 AI chat with characters'),
         h('button.btn', { onclick: () => { box.close(); Looks.edit(); } }, '🪞 Your look'),

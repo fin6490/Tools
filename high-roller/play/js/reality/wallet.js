@@ -192,7 +192,7 @@ const L2Money = (() => {
     const goal = (icon, name, price, got, where) => h('div.l2-clue' + (got ? '.got' : ''), h('b', `${got ? '✅' : icon} ${name} · ${fmt(price)}`), got ? null : h('div.l2-goal', h('i', { style: `width:${Math.min(100, cash() / price * 100)}%` })), h('p', got ? 'Done.' : where));
     return h('div',
       h('p.l2-obj2', `${fmt(cash())} in your wallet`),
-      h('p.l2-read', 'Awake, money is what it really is: what gets you through the night. The Meridian is still the only place in the city where it can turn into more. Floor games, the tables and the slots all use your real money.'),
+      h('p.l2-read', 'Awake, money is just money. The Meridian still takes it.'),
       goal('💍', 'Your wedding ring', RING, m.ring, 'At Sully\'s Pawn & Hardware on Harbour Road. It makes the craving come slower, and takes back one of the times the Barman got you.'),
       L2.state.clues.call || L2.state.clues.eddie ? goal('🪦', 'A headstone for Eddie Marsh', STONE, m.stone, 'At Greenhill, where he\'s buried under a number.') : null,
       h('div.l2-clue', h('b', '🎒 Kit'), h('p', kit.length ? kit.map(k => `${KIT[k].icon} ${KIT[k].name}`).join(' · ') + (owns('torch') ? ` · 🔋 ${Math.round(m.battery)}%` : '') : 'Nothing yet. Sully\'s sells torches, running shoes and raincoats.'), m.meds ? h('p', '💊 Naltrexone') : null),

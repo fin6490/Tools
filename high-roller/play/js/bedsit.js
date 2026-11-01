@@ -750,7 +750,7 @@ const L3 = (() => {
     },
     async letters() {
       mark('src_letters');
-      await say([{ text: 'A drift of envelopes nobody has opened since the spring. You open them now.' }, { text: 'VINNIE\'S LOANS LTD: £120,000. LUCKYSTRIKE.BET CREDIT: £88,400. KESSLER CAPITAL (debt purchase): £143,000. Three credit cards. The council. HMRC. A payday lender called Big Nico.' }, { text: 'At the bottom, in your own handwriting on the back of one: £500,000. Then a 17, underlined twice.' }, { text: 'Vinnie. Kessler. Nico. The dream gave them faces.' }]);
+      await say([{ text: 'A drift of envelopes nobody has opened since the spring. You open them now.' }, ...[Me.line('hometown', v => `One has a ${v} postmark and handwriting you know. You put that one back unopened.`)].filter(Boolean).map(text => ({ text })), { text: 'VINNIE\'S LOANS LTD: £120,000. LUCKYSTRIKE.BET CREDIT: £88,400. KESSLER CAPITAL (debt purchase): £143,000. Three credit cards. The council. HMRC. A payday lender called Big Nico.' }, { text: 'At the bottom, in your own handwriting on the back of one: £500,000. Then a 17, underlined twice.' }, { text: 'Vinnie. Kessler. Nico. The dream gave them faces.' }]);
     },
     async photo() {
       mark('src_photo');
@@ -897,11 +897,13 @@ const L3 = (() => {
       h('div.l3-end-box', h('small', E.kind), h('h2', E.title),
         h('p', kind === 'rehab' ? 'You cleared the debt, made the call, and walked out of the door.' : kind === 'collapse' ? 'The drink ran out before the money did.' : 'The money ran out before the drink did.'),
         h('p.muted', `True endings found: ${Object.keys(st.endings).length} of 3.`),
-        h('div.l3-end-btns', h('button.l3-btn', { onclick: () => { o.remove(); restart(); } }, 'Wake up in the bedsit again'), h('button.l3-btn.ghost', { onclick: () => { o.remove(); unmount(); Router.go('title'); } }, 'Back to the title'))));
+        kind === 'rehab' ? h('p.muted', 'This one is for keeps. There is no going back.') : null,
+        h('div.l3-end-btns', kind === 'rehab' ? null : h('button.l3-btn', { onclick: () => { o.remove(); restart(); } }, '↺ Wake up in the bedsit again'), h('button.l3-btn' + (kind === 'rehab' ? '' : '.ghost'), { onclick: () => { o.remove(); unmount(); Router.go('title'); } }, kind === 'rehab' ? 'The end' : 'Back to the title'))));
     document.body.append(o);
   }
   const collapse = () => ending('collapse');
-  function restart() { const keep = S(); App.state.l3 = fresh({ endings: keep.endings }); App.save(); unmount(); Router.go('bedsit'); }
+  function restart() { const keep = S(); if (keep.ended === 'rehab') return; // the good true ending is for keeps
+    App.state.l3 = fresh({ endings: keep.endings }); App.save(); unmount(); Router.go('bedsit'); }
   function checkEnd() { const st = S(); if (st.ended) return; if (st.cash >= GOAL) return ending('rehab'); if (st.cash < MIN_BET) return ending('broke'); }
 
   /* ---------- the screen ---------- */

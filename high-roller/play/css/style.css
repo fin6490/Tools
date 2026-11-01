@@ -527,6 +527,7 @@ ul.howto { color: var(--muted); font-size: .9rem; line-height: 1.5; padding-left
 .vrow span { display: grid; } .vrow small { font-size: .78rem; }
 .chat-note { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 ol.steps { margin: .4rem 0 .8rem; padding-left: 1.3rem; display: grid; gap: .3rem; } ol.steps a { color: var(--gold); }
+details.ai-guide { margin: .5rem 0 .7rem; padding: .5rem .7rem; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(255,255,255,.03); } details.ai-guide summary { cursor: pointer; color: var(--gold); font-weight: 600; } details.ai-guide[open] summary { margin-bottom: .3rem; }
 .job-card { background: linear-gradient(160deg, #2a2013, var(--panel2)); border: 1px solid var(--gold2); border-radius: 12px; padding: .7rem; display: grid; gap: .3rem; }
 .job-card p { margin: 0; }
 tr.me-row td { color: var(--gold); font-weight: 700; }

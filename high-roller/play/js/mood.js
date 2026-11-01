@@ -216,7 +216,7 @@ const Mood = {
       h('div.mood-row', h('span', '🍺 Buzz'), bar(s.buzz, 'buzz'), h('b', this.buzzLabel())),
       h('div.mood-row', h('span', '🎲 Degen'), bar(s.degen, 'degen'), h('b', `${Math.round(s.degen)} · ${this.degenTitle()}`)),
       top ? h('p.muted.small', 'Lately: ' + top) : null,
-      h('p.muted.small', 'Good nights in a real bed, restaurant meals, a drink or two and winning days lift your mood; debt, hangovers, going hungry and losing streaks wear it down. Happy players tire slower and throw steadier darts. The degen meter rises with big bets, chasing losses, borrowing to play, playing drunk or at dawn; sleep and time away cool it.'));
+      h('p.muted.small', 'Good sleep, good food and winning lift your mood; debt, hangovers and losing wear it down. Big bets and chasing losses push the degen meter up; rest cools it.'));
   },
 
   /* ---------- Lonnie's degen diary (side quest) ---------- */

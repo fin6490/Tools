@@ -48,22 +48,22 @@ const L3Promo = (() => {
   const offers = () => {
     const p = P(), bal = balance();
     return [
-      { id: 'welcome', icon: '🎉', name: 'Welcome back bonus', what: `100% of your balance, up to ${L3.money(C.welcomeMax)}. Paid out once you've wagered ${C.welcomeX}× the bonus.`,
+      { id: 'welcome', icon: '🎉', name: 'Welcome back bonus', what: `100% of your balance, up to ${L3.money(C.welcomeMax)}. Paid after ${C.welcomeX}× wagering.`,
         state: p.welcome ? 'used' : p.bonus ? 'busy' : bal < 1 ? 'none' : 'ready', btn: `Claim ${L3.money(Math.min(bal, C.welcomeMax))}`,
         claim: () => { const amt = r2(Math.min(balance(), C.welcomeMax)); p.welcome = 1; p.bonus = { name: 'Welcome bonus', amt, need: r2(amt * C.welcomeX), done: 0 }; } },
-      { id: 'reload', icon: '🔁', name: 'Reload bonus', what: `50% of your balance, up to ${L3.money(C.reloadMax)}, every 30 minutes. Paid out once you've wagered ${C.reloadX}× it.`,
+      { id: 'reload', icon: '🔁', name: 'Reload bonus', what: `50% of your balance, up to ${L3.money(C.reloadMax)}. Paid after ${C.reloadX}× wagering. Every 30 min.`,
         state: p.bonus ? 'busy' : !p.welcome ? 'after' : left(p.reloadAt) ? 'wait' : bal < 1 ? 'none' : 'ready', wait: left(p.reloadAt), btn: `Claim ${L3.money(Math.min(bal * C.reloadPct, C.reloadMax))}`,
         claim: () => { const amt = r2(Math.min(balance() * C.reloadPct, C.reloadMax)); p.reloadAt = now() + C.reloadEvery; p.bonus = { name: 'Reload bonus', amt, need: r2(amt * C.reloadX), done: 0 }; } },
-      { id: 'spins', icon: '🎰', name: `${C.spins} free spins`, what: `On any LuckyStrike slot, each paying up to ${L3.money(C.spinVal)} of your stake. Every 15 minutes.${p.spins ? ` You have ${p.spins} left.` : ''}`,
+      { id: 'spins', icon: '🎰', name: `${C.spins} free spins`, what: `Up to ${L3.money(C.spinVal)} a spin, any slot. Every 15 min.${p.spins ? ` ${p.spins} left.` : ''}`,
         state: left(p.spinsAt) ? 'wait' : 'ready', wait: left(p.spinsAt), btn: 'Claim the spins',
         claim: () => { p.spins += C.spins; p.spinsAt = now() + C.spinsEvery; } },
-      { id: 'cashback', icon: '💸', name: '20% cashback', what: `On what you've lost since your last claim (now ${L3.money(Math.max(0, -p.cbNet))}), up to ${L3.money(C.cbCap)}. Every 10 minutes.`,
+      { id: 'cashback', icon: '💸', name: '20% cashback', what: `Of your losses since the last claim (${L3.money(Math.max(0, -p.cbNet))}). Every 10 min.`,
         state: left(p.cbAt) ? 'wait' : p.cbNet < -.04 ? 'ready' : 'none', wait: left(p.cbAt), btn: `Claim ${L3.money(Math.min(-p.cbNet * C.cb, C.cbCap))}`,
         claim: () => { const v = Math.min(-p.cbNet * C.cb, C.cbCap); p.cbNet = 0; p.cbAt = now() + C.cbEvery; pay(v, 'Cashback'); } },
-      { id: 'rake', icon: '♻️', name: '2% rakeback', what: `On everything you wager, every game. ${L3.money(p.wagered)} wagered so far.`,
+      { id: 'rake', icon: '♻️', name: '2% rakeback', what: `Of everything you wager. ${L3.money(p.wagered)} so far.`,
         state: p.rake >= .5 ? 'ready' : 'none', btn: `Claim ${L3.money(p.rake)}`,
         claim: () => { const v = p.rake; p.rake = 0; pay(v, 'Rakeback'); } },
-      { id: 'boost', icon: '⚡', name: 'Originals Power Hour', what: 'For ten minutes every Originals win pays 3% more (Dice, Limbo, Crash, Plinko and Mines return 102%). Every 30 minutes.',
+      { id: 'boost', icon: '⚡', name: 'Originals Power Hour', what: 'Originals pay 3% more for 10 min. Every 30 min.',
         state: now() < p.boostUntil ? 'on' : left(p.boostAt) ? 'wait' : 'ready', wait: left(p.boostAt), on: left(p.boostUntil), btn: 'Start it',
         claim: () => { p.boostUntil = now() + C.boostLen; p.boostAt = now() + C.boostEvery; } },
     ];

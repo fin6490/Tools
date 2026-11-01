@@ -446,12 +446,13 @@ const Chat = {
   _sample: undefined, _sdk: null,
   apiKey() { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } },
   setKey(k) { try { k ? localStorage.setItem(AI_KEY, k.trim()) : localStorage.removeItem(AI_KEY); } catch (e) { } },
-  // which way can we reach Claude? 'sample' inside a claude.ai artifact, 'api' with the player's own key
-  // a host site (spindecks.app) can run chat through its own server: window.HR_HOST
+  // which way can we reach Claude? 'sample' inside a claude.ai artifact, 'api' with the player's own key.
+  // On a host site (spindecks.app, window.HR_HOST) players bring their own key too; only the site owner's
+  // account goes through the host's server.
   host() { return window.HR_HOST && window.HR_HOST.chatUrl ? window.HR_HOST : null; },
   async backend() {
     const host = this.host();
-    if (host) { if (host.ready) await host.ready; return host.premium ? 'proxy' : null; }
+    if (host) { if (host.ready) await host.ready; return host.owner && host.premium ? 'proxy' : this.apiKey() ? 'api' : null; }
     if (this._sample === undefined) {
       this._sample = null;
       if (window.claude && window.claude.use) { try { this._sample = await window.claude.use('sample'); } catch (e) { this._sample = null; } }
@@ -603,6 +604,7 @@ const Chat = {
     const code = e && (e.code || e.status);
     if (code === 'cap') return `You've used today's AI chats (${(this.host() && this.host().cap) || 100} a day). Characters are back to their usual lines until tomorrow.`;
     if (code === 'not_premium') return 'AI chat is part of SpinDecks Premium.';
+    if (code === 'own_key') return 'AI chat runs on your own Anthropic key now. Add one in ☰ → 💬 AI chat.';
     if (code === 'not_signed_in') return 'Sign in to SpinDecks again to keep chatting.';
     if (code === 'refused') return '(They change the subject.)';
     if (code === 'not_granted' || code === 'sampling_disabled') return 'Chat with Claude is turned off for this page.';
@@ -724,9 +726,9 @@ const Chat = {
   },
 
   /* ---------- settings ---------- */
-  async settings() {
-    if (this.host()) {
-      const host = this.host(), on = (await this.backend()) === 'proxy';
+  async settings(opts = {}) {
+    if (this.host() && (await this.backend()) === 'proxy') {
+      const host = this.host(), on = true;
       const body = h('div', h('p', on ? `AI chat is included with SpinDecks Premium: talk to anyone in town in your own words. ${host.left != null ? `${host.left} of ${host.cap || 100} chats left today.` : `Up to ${host.cap || 100} chats a day.`}` : 'AI chat is part of SpinDecks Premium. Upgrade from your SpinDecks account to talk to anyone in town in your own words.'),
         h('p.muted.small', 'What you type to characters, and anything you put in Your file, is sent to Claude (Anthropic) through SpinDecks to write their replies. It is not stored on SpinDecks.'));
       body.append(Voice.settingsRows());
@@ -734,32 +736,45 @@ const Chat = {
       return;
     }
     const inSample = (await this.backend()) === 'sample';
+    if (opts.intro && inSample) return;
     const key = h('input.field#ai-key', { type: 'password', placeholder: 'sk-ant-…', value: this.apiKey(), autocomplete: 'off' });
-    const status = h('p.small');
+    const guide = h('details.ai-guide', { open: opts.intro ? null : true }, h('summary', 'How to get a key (about 5 minutes)'),
+      h('ol.steps',
+        h('li', 'Go to ', h('a', { href: 'https://console.anthropic.com', target: '_blank', rel: 'noopener' }, 'console.anthropic.com'), ' and sign up or sign in.'),
+        h('li', 'Open ', h('b', 'Billing'), ', add a card and buy credits. $5 lasts a long time.'),
+        h('li', 'Open ', h('b', 'API Keys'), ', press ', h('b', 'Create Key'), ', name it (say, "The Meridian") and copy it. It starts with sk-ant-.'),
+        h('li', 'Paste it below and press ', h('b', opts.intro ? 'Save' : 'Test'), '. Dolores will say hello.')),
+      h('p.muted.small', 'You can set a monthly spend limit under Limits in the same console. Delete the key there any time to cut it off.'));
     const body = inSample
       ? h('div', h('p', 'This copy runs inside claude.ai, so characters reply using your Claude account. Claude asks your permission the first time.'))
       : h('div',
-        h('p', 'Talk to anyone in town in your own words: story characters, rivals, dealers, bar staff, shopkeepers, the regulars at the tables, even your darts and poker opponents. They reply with Claude, using your own Anthropic API key.'),
-        h('ol.steps',
-          h('li', 'Go to ', h('a', { href: 'https://console.anthropic.com', target: '_blank', rel: 'noopener' }, 'console.anthropic.com'), ' and sign in (or sign up).'),
-          h('li', 'Under ', h('b', 'Billing'), ', add a payment method and buy some credits ($5 lasts a long time).'),
-          h('li', 'Under ', h('b', 'API Keys'), ', press ', h('b', 'Create Key'), ' and copy it. It starts with sk-ant-.'),
-          h('li', 'Paste it below and press ', h('b', 'Test'), '. Dolores should answer.')),
-        h('label.lbl', { for: 'ai-key' }, 'Claude API key'), key,
-        h('p.muted.small', 'The key stays in this browser only: it is never put in save files or exports. Replies are billed to your Anthropic account, roughly 1 to 2 cents each. Each phone or browser needs the key pasted once. Playing inside claude.ai instead needs no key at all.'),
-        status);
-    body.append(Voice.settingsRows());
-    const choice = await UI.modal({ title: '💬 AI chat', body, buttons: inSample ? [{ label: 'Done', cls: 'primary' }] : [{ label: 'Remove key', value: 'clear', cls: 'ghost' }, { label: 'Test', value: 'test' }, { label: 'Save', value: 'save', cls: 'primary' }] });
+        h('p', opts.intro
+          ? 'The people in this town can talk back, in your own words, and some of the story only comes out in conversation. That needs Claude, on your own Anthropic API key.'
+          : 'Talk to anyone in town in your own words. Replies come from Claude, on your own Anthropic API key.'),
+        h('p.muted.small', 'You pay Anthropic directly, about 1 to 2 cents a reply. Skip it and characters use their written lines; the main story still works. ' + (opts.intro ? 'Set it up later from ☰ → 💬 AI chat.' : '')),
+        guide,
+        h('label.lbl', { for: 'ai-key' }, 'Your Anthropic API key'), key,
+        h('p.muted.small', 'The key stays in this browser. It goes only to Anthropic: never to ' + (this.host() ? 'SpinDecks' : 'anyone else') + ', never into save files.'));
+    if (!opts.intro) body.append(Voice.settingsRows());
+    const buttons = inSample ? [{ label: 'Done', cls: 'primary' }]
+      : opts.intro ? [{ label: 'Skip', value: false, cls: 'ghost' }, { label: 'Save', value: 'save', cls: 'primary' }]
+      : [{ label: 'Remove key', value: 'clear', cls: 'ghost' }, { label: 'Test', value: 'test' }, { label: 'Save', value: 'save', cls: 'primary' }];
+    const choice = await UI.modal({ title: opts.intro ? '💬 Talk to the town' : '💬 AI chat', body, buttons });
     if (choice === 'clear') { this.setKey(''); UI.toast('API key removed', 'good'); }
     if (choice === 'save' || choice === 'test') {
-      this.setKey(key.value);
-      if (choice === 'test') {
-        UI.toast('Asking Dolores…');
-        const h0 = this.history('dolores'); h0.push({ role: 'user', content: 'Hi Dolores, just checking you can hear me.' });
-        try { const t = await this.reply('dolores', () => { }); UI.toast('✅ Dolores: ' + t.slice(0, 120), 'good'); h0.push({ role: 'assistant', content: t }); }
-        catch (e) { h0.pop(); UI.toast(this.errorText(e) || 'Test cancelled', 'warn'); }
-      } else UI.toast(key.value ? 'API key saved' : 'API key cleared', 'good');
+      const v = key.value.trim();
+      if (v && !/^sk-ant-/.test(v)) UI.toast('That doesn\'t look like an Anthropic key (they start with sk-ant-)', 'warn');
+      this.setKey(v);
+      if (v && (choice === 'test' || opts.intro)) this.test();
+      else if (choice === 'save') UI.toast(v ? 'API key saved' : 'API key cleared', 'good');
     }
+  },
+  // one hello from Dolores, so a new key is checked straight away
+  async test() {
+    UI.toast('Asking Dolores…');
+    const h0 = this.history('dolores'); h0.push({ role: 'user', content: 'Hi Dolores, just checking you can hear me.' });
+    try { const t = await this.reply('dolores', () => { }); UI.toast('✅ Dolores: ' + t.slice(0, 120), 'good'); h0.push({ role: 'assistant', content: t }); }
+    catch (e) { h0.pop(); UI.toast(this.errorText(e) || 'Test cancelled', 'warn'); }
   },
 };
 

@@ -157,7 +157,7 @@ const L2Pub = (() => {
       const key = e => { if (e.key === 'Escape' && !st.rolling) finish(null); if (st.turn !== 'me' || st.rolling) return; if (e.key === 'ArrowLeft') st.aim -= e.shiftKey ? .05 : .006; if (e.key === 'ArrowRight') st.aim += e.shiftKey ? .05 : .006; if (e.key === 'ArrowUp') power.value = Math.min(100, +power.value + 5); if (e.key === 'ArrowDown') power.value = Math.max(5, +power.value - 5); if (e.key === ' ' && !e.repeat) { e.preventDefault(); fire(); } };
       const keyUp = () => { };
       document.addEventListener('keydown', key); document.addEventListener('keyup', keyUp);
-      info.textContent = 'Touch the table to aim (◀ ▶ for fine aim): the white line shows where the cue ball goes, the gold line where the ball it hits goes. Set the power with the slider, then Shoot (or Space).' + (shaky() ? ' Your hands aren\'t steady tonight.' : '');
+      info.textContent = 'Touch to aim, ◀ ▶ to fine-tune, set the power, Shoot.' + (shaky() ? ' Your hands aren\'t steady tonight.' : '');
       paintScore(); requestAnimationFrame(draw);
     });
   }
