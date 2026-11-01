@@ -516,15 +516,6 @@ ul.howto { color: var(--muted); font-size: .9rem; line-height: 1.5; padding-left
 .cb.err { color: var(--warn); font-size: .85rem; }
 .chat-form { display: flex; gap: .4rem; }
 .chat-form .field { flex: 1; min-width: 0; }
-.chat-form .mic { flex: none; width: 2.6rem; padding: 0; font-size: 1.1rem; }
-.chat-form .mic.on { background: #c0392b; color: #fff; border-color: #c0392b; animation: micpulse 1.1s ease-in-out infinite; }
-@keyframes micpulse { 50% { box-shadow: 0 0 0 6px rgba(192, 57, 43, .35); } }
-.chat .dialog .spk { margin-left: auto; align-self: flex-start; font-size: 1.1rem; }
-.vrows { border-top: 1px solid var(--line); margin-top: .8rem; padding-top: .6rem; display: grid; gap: .5rem; }
-.vrows h4 { margin: 0; }
-.vrow { display: flex; gap: .6rem; align-items: flex-start; cursor: pointer; }
-.vrow input { margin-top: .25rem; accent-color: var(--gold); }
-.vrow span { display: grid; } .vrow small { font-size: .78rem; }
 .chat-note { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 ol.steps { margin: .4rem 0 .8rem; padding-left: 1.3rem; display: grid; gap: .3rem; } ol.steps a { color: var(--gold); }
 details.ai-guide { margin: .5rem 0 .7rem; padding: .5rem .7rem; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(255,255,255,.03); } details.ai-guide summary { cursor: pointer; color: var(--gold); font-weight: 600; } details.ai-guide[open] summary { margin-bottom: .3rem; }

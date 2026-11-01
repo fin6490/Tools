@@ -453,11 +453,7 @@ UI.dialog = async function (lines, choices) {
       h('div.portrait', Portrait.el(ch === CHARACTERS.narrator ? 'narrator' : L.who)),
       h('div.d-text', h('div.d-name', ch.name), h('p', { html: UI.esc(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') })));
     const btns = last && choices ? choices.map(c => ({ label: c.label, value: c.value, cls: c.cls || 'primary' })) : [{ label: last ? 'Okay' : 'Next ›', cls: 'primary', value: 'next' }];
-    // story scenes are voiced when you've turned voices on (your own lines stay silent)
-    const vp = typeof Voice !== 'undefined' && Voice.prefs();
-    if (vp && vp.speak && vp.story !== false && L.who !== 'me') Voice.say({ id: ch === CHARACTERS.narrator ? 'narrator' : L.who, name: ch.name }, text);
     const v = await UI.modal({ body, buttons: btns, closable: false, cls: 'dlg' });
-    if (vp && vp.speak) Voice.stop();
     if (last && choices) return v;
   }
   return 'next';
