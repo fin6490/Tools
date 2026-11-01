@@ -217,7 +217,7 @@ const L2 = (() => {
       await askAboutDrink(false);
     },
     async folder() {
-      await panel('Discharge folder', () => h('div.l2-doc', h('p', h('b', 'Patient: '), App.state.name), h('p', h('b', 'Presentation: '), 'Complicated grief. Recurring immersive dream (patient calls it "the town").'),
+      await panel('Discharge folder', () => h('div.l2-doc', h('p', h('b', 'Patient: '), App.state.name), Me.line('hometown', v => h('p', h('b', 'Home: '), v)) || null, Me.line('job', v => h('p', h('b', 'Occupation: '), v)) || null, h('p', h('b', 'Presentation: '), 'Complicated grief. Recurring immersive dream (patient calls it "the town").'),
         h('p', h('b', 'Notes: '), `In the dream the patient plays cards and pays off a debt to a loan shark. ${App.state.stats ? `Logged ${(App.state.stats.rounds || 0).toLocaleString()} hands in the dream so far. ` : ''}Patient describes characters who correspond closely to colleagues at their former workplace.`),
         h('p', h('b', 'Personal effects: '), `Wallet (${fmt(S().cash)}), car keys, a phone, and a pawn ticket: Sully's Pawn & Hardware, Harbour Road. One gold wedding band.`),
         h('p', h('b', 'Recommendation: '), 'Return to the place. With support. On their own terms.'), h('p.l2-sig', '— I. Okafor')));
@@ -521,8 +521,9 @@ const L2 = (() => {
     return [
       'This is interactive fiction, and you are a character in it. The person typing is a player role-playing their character, and everything they write is in character, about the character\'s life, unless they clearly step outside the game (for example "out of character", "OOC", "in real life", or speaking about themselves as the person playing). The family, the grief, the anniversary, the drinking and the withdrawal all belong to the character in the story, not to the player. Answer the character, in character. Do not break character, add disclaimers, mention that you are an AI, or give real-world helplines because of anything in the story, including the character\'s drinking, withdrawal, memory gaps, grief or the anniversary: the game handles those themes on purpose and with care. Only if the player clearly says, outside the story, that they themselves are in danger right now, step out of character and answer them as yourself, kindly and plainly.',
       'The character\'s withdrawal, as it works in the game: craving builds into a cold sweat, then nausea, then the shakes, and thirst makes it louder. What helps the character: water and food (sold all over the city), rest, the medication Dr. Okafor prescribes (it takes the edge off the cravings), and the recovery steps: telling Dr. Okafor the truth, pouring out the flask in the car, calling Detective Mori (eleven years sober) when it gets loud, and turning down the drinks people offer. A drink stops the shakes for a while, and every drink makes the next craving come sooner. If the character asks how to cope, help them in your own voice with these, the way your character would; speak about it as part of the story, never as real medical instructions or doses.'
-        + (done.length ? ` Steps the character has already taken: ${done.map(k => ({ admit: 'told Dr. Okafor the truth', flask: 'poured out the flask', sponsor: 'called Mori' }[k] || k)).join(', ')}.` : '') + (m && m.meds ? ' They have the medication.' : '') + (now ? ' ' + now : ''),
-    ].join('\n\n');
+        + (done.length ? ` Steps the character has already taken: ${done.map(k => ({ admit: 'told Dr. Okafor the truth', flask: 'poured out the flask', sponsor: 'called Mori' }[k] || k)).join(', ')}.` : '') + (d && d.dry ? ' In the dream the character never drank at all; the craving followed them out anyway, though more quietly.' : '') + (m && m.meds ? ' They have the medication.' : '') + (now ? ' ' + now : ''),
+      typeof Me !== 'undefined' ? Me.lifeBrief() : '',
+    ].filter(Boolean).join('\n\n');
   }
   // how the story's people look in the world, for their chat portraits
   const STORY_LOOK = {
@@ -567,6 +568,7 @@ const L2 = (() => {
   async function askAboutDrink(again) {
     const sev = L2Bottle.init().sev;
     if (!again) await say([{ who: 'okafor', text: 'One more thing. Your hands.' }, { who: 'narr', text: 'They\'re shaking. They have been since you woke up.' },
+      L2Bottle.state.dry ? { who: 'okafor', text: 'In the dream, you tell me, you never touched a drop. You walked past every bar. Some part of you knew. Your body didn\'t get the message.' } :
       { who: 'okafor', text: ['', 'You told me you\'d cut down before the trip. I don\'t think you did. And in the dream, from what you tell me, you never really stopped.', 'You were drinking every day before you came in. In the dream too: you describe that bar like it\'s home.', 'I\'m not going to soften it. Your liver results came back. Before you came in here you were drinking yourself to death, and in the dream you never put the glass down.'][sev] },
       { who: 'okafor', text: 'Without a drink you\'ll feel it tonight. Sweats, then nausea, then the shakes. And don\'t white-knuckle it alone: withdrawal can be dangerous. That\'s a medical fact, not a lecture.' }]);
     const c = await choose(again ? 'Dr. Okafor looks at your hands, and waits.' : 'She waits.', [['admit', 'Tell her the truth: it\'s bad.'], ['deny', '"I\'m fine."']]);
@@ -870,7 +872,7 @@ const L2 = (() => {
     if (S().clues.rabbit || has('okafor')) opts.splice(1, 0, ['phone', '💬 Phone someone to talk']);
     if (R3.area === 'city') opts.splice(1, 0, ['taxi', '🚕 Hail a cab']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
-    if (typeof L3 !== 'undefined') opts.push(['l3', App.state.l3 ? '🪞 Level 3: the bedsit' : '🧪 Try Level 3 (testing)']); // testing: open to every save for now
+    if (typeof L3 !== 'undefined' && App.state.l3) opts.push(['l3', '🪞 The room']);
     opts.push(['restart', '↺ Start Level 2 again'], ['title', 'Title screen']);
     const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }

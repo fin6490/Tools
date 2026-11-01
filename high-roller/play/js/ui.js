@@ -448,6 +448,7 @@ UI.dialog = async function (lines, choices) {
     const L = lines[i], ch = CHARACTERS[L.who] || (typeof STAFF !== 'undefined' && STAFF[L.who]) || CHARACTERS.narrator;
     const last = i === lines.length - 1;
     const text = typeof L.text === 'function' ? L.text() : L.text;
+    if (!text && !(last && choices)) continue; // a personal line with nothing to say
     const body = h('div.dialog',
       h('div.portrait', Portrait.el(ch === CHARACTERS.narrator ? 'narrator' : L.who)),
       h('div.d-text', h('div.d-name', ch.name), h('p', { html: UI.esc(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') })));

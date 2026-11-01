@@ -21,12 +21,15 @@ const L2Bottle = (() => {
     const perDay = score / Math.max(3, s.day || 1);
     return perDay < 1 ? 1 : perDay < 4 ? 2 : 3;
   }
-  function init() { const d = st(); if (!d.path) d.sev = Math.max(d.sev || 0, severity()); return d; }
+  // never touched a drop in the dream: the bottle still follows you out, but it's at its quietest
+  const dreamScore = () => App.counter('drinks') + App.counter('gotTipsy') + App.counter('hangovers');
+  function init() { const d = st(); if (!d.path) { d.sev = Math.max(d.sev || 0, severity()); if (d.dry == null) d.dry = dreamScore() === 0; } return d; }
+  const quiet = () => { const d = st(); return !!d.dry && d.path !== 'gaveIn'; };
   const sober = () => st().path === 'sober';
   const stepsDone = () => { const d = st(); return ['admit', 'flask', 'sponsor'].filter(k => d.steps[k]).length; };
   const refusals = () => Object.keys(st().refused).length;
   // craving per second: severe ~6½ minutes to the shakes, mild ~14; every recovery step eases it
-  const rate = () => { const d = st(); return [0, 100 / 840, 100 / 560, 100 / 400][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul() * (typeof L2Life !== 'undefined' ? L2Life.craveMul() : 1); };
+  const rate = () => { const d = st(); return [0, 100 / 840, 100 / 560, 100 / 400][d.sev] * (1 - .15 * stepsDone()) * (d.path === 'gaveIn' ? 1.3 : 1) * (quiet() ? .65 : 1) * (1 + .04 * d.drinks) * (needs().thirst < 25 ? 1.4 : 1) * L2Money.craveMul() * (typeof L2Life !== 'undefined' ? L2Life.craveMul() : 1); };
 
   /* ---------- food, water and sleep: the same bars as in the dream, carried over ---------- */
   // Level 2 uses the dream's own hunger, thirst and energy, so you wake up as hungry as you went to
@@ -104,10 +107,10 @@ const L2Bottle = (() => {
     huntCool = Math.max(0, huntCool - 1); stalkCool = Math.max(0, stalkCool - 1);
     if (!d.glimpsed && d.crave >= 80) { d.glimpsed = 1; stalk(true); return; }
     // the bad hours: it watches you from the dark
-    if (!stalking && !stalkCool && (d.crave >= 65 || d.path === 'gaveIn') && Math.random() < (L2Money.torchOn() ? .02 : .04)) { stalkCool = 35 + Math.random() * 40; stalk(false); }
+    if (!stalking && !stalkCool && (d.crave >= 65 || d.path === 'gaveIn') && Math.random() < (L2Money.torchOn() ? .02 : .04) * (quiet() ? .5 : 1)) { stalkCool = (35 + Math.random() * 40) * (quiet() ? 1.6 : 1); stalk(false); }
     if (d.path === 'gaveIn') { d.hn = (d.hn == null ? 120 : d.hn) - 1; if (d.hn <= 0) { d.hn = (150 + Math.random() * 90) * (L2Money.owns('medal') ? 1.5 : 1); startHunt(); } return; }
     maxedFor = d.crave >= 95 ? maxedFor + 1 : 0;
-    if (maxedFor >= (L2Money.owns('medal') ? 40 : 25) && !huntCool) { maxedFor = 0; startHunt(); }
+    if (maxedFor >= (L2Money.owns('medal') ? 40 : 25) * (quiet() ? 1.6 : 1) && !huntCool) { maxedFor = 0; startHunt(); }
   }
   let actx = null;
   function thump(v) { // a heartbeat, louder as it gets closer
@@ -162,7 +165,7 @@ const L2Bottle = (() => {
     if (hunt || !R3.map) return;
     if (stalking) { L2Demon.remove(stalking.g); stalking = null; }
     const g = L2Demon.make(), d = st(); g.mode = 'vanish'; g.fade = 0; g.x = -99; g.y = -99;
-    const H = hunt = { g, area: R3.area, t: 0, beat: 0, dur: 38 + Math.random() * 14, phase: 'hidden', timer: 1.2, shows: 0 };
+    const H = hunt = { g, area: R3.area, t: 0, beat: 0, dur: (38 + Math.random() * 14) * (quiet() ? .7 : 1), phase: 'hidden', timer: 1.2, shows: 0 };
     document.body.classList.add('l2-hunted'); App.count('l2_hunted'); if (typeof L2Life !== 'undefined') L2Life.lift(-6, 'hunted');
     L2.toast(d.hunts ? '🍸 It\'s back. Keep moving. Stay in the light.' : `🍸 Something is hunting you. It comes out of the dark, round corners. Keep moving and stay in the light. (${R3.touch ? 'Tap 🏃 to run' : 'Hold Shift to run'}. Leaving this place, a cab or calling Mori ends it.)`);
     d.hunts = (d.hunts || 0) + 1;
@@ -192,7 +195,7 @@ const L2Bottle = (() => {
     });
   }
   function endHunt(how) {
-    const H = hunt; if (!H) return; hunt = null; huntCool = 90; L2Demon.quiet();
+    const H = hunt; if (!H) return; hunt = null; huntCool = quiet() ? 150 : 90; L2Demon.quiet();
     L2Demon.remove(H.g);
     document.body.classList.remove('l2-hunted');
     if (how === 'outran') { App.count('l2_outran'); Career.checkAchievements(); if (typeof L2Life !== 'undefined') L2Life.lift(4, 'you made it'); }
@@ -202,7 +205,7 @@ const L2Bottle = (() => {
   }
   async function caught() {
     if (typeof L2Life !== 'undefined') L2Life.lift(-15, 'it caught you');
-    const d = st(); endHunt('caught'); huntCool = 120; d.strikes = (d.strikes || 0) + 1; App.save();
+    const d = st(); endHunt('caught'); huntCool = quiet() ? 180 : 120; d.strikes = (d.strikes || 0) + 1; App.save();
     await L2Demon.scare(); apply();
     if (d.strikes >= 3) { await L2.death(); return; }
     await L2.ui.say(d.strikes === 1
@@ -268,5 +271,5 @@ const L2Bottle = (() => {
   const path = () => st().path;
   const ready = () => !!st().steps.sponsorOffered && !sober();
 
-  return { needs, feed, roundNeeds, _startHunt: startHunt, _stalk: stalk, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, get state() { return st(); }, SEV };
+  return { needs, feed, roundNeeds, _startHunt: startHunt, _stalk: stalk, get hunting() { return !!hunt; }, endHunt, init, start, stop, apply, drink, refuse, offer, step, callMori, panel, path, ready, severity, quiet, get state() { return st(); }, SEV };
 })();

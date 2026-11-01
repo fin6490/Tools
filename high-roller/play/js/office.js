@@ -31,7 +31,7 @@ const Office = (() => {
   async function runErrand({ who, pay, risk, lines = RNG.pick(ERRANDS), hours = 2, onWin }) {
     const [what, good, bad] = lines;
     const why = busy(); if (why) return UI.toast(why, 'warn');
-    const c = await UI.modal({ title: '💼 An errand', body: h('div', h('p', `"Take ${what}. Don't open anything. Don't be clever."`), h('p.muted.small', `About ${hours} hours. Pays about ${fmt(pay)}. ${risk > .3 ? 'It goes wrong more often than not-quite-never.' : 'It usually goes fine. Usually.'}`)),
+    const c = await UI.modal({ title: '💼 An errand', body: h('div', h('p', `"Take ${what}. Don't open anything."`), h('p.muted.small', `${hours} hours · about ${fmt(pay)} · ${risk > .25 ? 'risky' : risk > .15 ? 'usually fine' : 'safe enough'}`)),
       buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: 'Do it', value: true, cls: 'primary' }] });
     if (!c) return false;
     spend(hours);
@@ -64,7 +64,7 @@ const Office = (() => {
     const o = st();
     if (o.key) return World.enter('r:office');
     return say([{ who: 'narrator', text: 'You knock. The door opens four inches and fills with Nico.' }, { who: 'nico', text: 'Sign says leave.' },
-      { who: 'narrator', text: `Vinnie only gives that key to people who are useful to him. Ask him for an errand at the counter (${Math.min(o.errands, KEY_AT)} of ${KEY_AT} done).` }]);
+      { who: 'narrator', text: `Vinnie keeps the key for people who are useful to him. (Errands: ${Math.min(o.errands, KEY_AT)} of ${KEY_AT}.)` }]);
   }
   async function ledger() {
     const o = st();
@@ -104,7 +104,7 @@ const Office = (() => {
       await say([{ who: 'philippe', text: 'Monsieur has dined with us three times without once asking for ketchup. *He produces a key the size of a spoon.* The cellar. Touch nothing with a year on it before 1990.' }]);
       return World.enter('r:cellar');
     }
-    const c = await UI.modal({ title: '🍷 The wine cellar', body: h('div', h('p', '"The cellar is for our regulars, monsieur." Philippe guards the key like a state secret.'), h('p.muted.small', `Dine at Prime Cut (${meals} of 3), or offer him a consideration.`)),
+    const c = await UI.modal({ title: '🍷 The wine cellar', body: h('div', h('p', '"For our regulars, monsieur."'), h('p.muted.small', `Dinners here: ${meals} of 3. Or a consideration.`)),
       buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: 'A consideration ($250)', value: true, cls: 'primary' }] });
     if (!c) return;
     if (!App.debit(250)) return UI.toast('You don\'t have $250 to be considerate with.', 'warn');
@@ -142,8 +142,8 @@ const Office = (() => {
     const o = st(), d = App.state.day; if (o.shiftDay !== d) { o.shiftDay = d; o.shiftsToday = 0; }
     const r = rank(), nx = nextRank(), pay = shiftPay(r);
     const c = await UI.modal({ title: '📋 Staff wanted', body: h('div',
-      h('p', `Dolores has you down as: ${r.name}.`), h('p', `A shift is ${r.hours} hours for ${fmt(pay)}${r.tips ? ' plus tips' : ''}.`),
-      h('p.muted.small', `${o.shifts} shift${o.shifts === 1 ? '' : 's'} worked. ${nx ? `${nx.at - o.shifts} more and you're ${nx.name} (${fmt(shiftPay(nx))} a shift).` : 'You run the place at night now.'} Two shifts a day at most; pay rises with each chapter too.`)),
+      h('p', `${r.name}: ${r.hours} hours, ${fmt(pay)}${r.tips ? ' + tips' : ''}.`),
+      h('p.muted.small', nx ? `${nx.at - o.shifts} more shift${nx.at - o.shifts === 1 ? '' : 's'} to ${nx.name}. Two a day.` : 'You run the place at night. Two shifts a day.')),
       buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: o.shiftsToday >= 2 ? 'Done for today' : `Work a shift (${r.hours}h)`, value: true, cls: 'primary', disabled: o.shiftsToday >= 2 }] });
     if (!c) return;
     const why = busy(); if (why) return UI.toast(why, 'warn');
@@ -164,7 +164,7 @@ const Office = (() => {
   async function pool() {
     const why = busy(); if (why) return UI.toast(why, 'warn');
     const opts = SHARKS.filter(s => (s.ch || 0) <= ch());
-    const pick = await UI.modal({ title: '🎱 The pool table', body: h('div', h('p', 'Seven reds, seven yellows, the black last. Somebody\'s always waiting for a game.'), h('p.muted.small', 'Pot your colour and go again; pot the black last. The better the player, the bigger the stake.')),
+    const pick = await UI.modal({ title: '🎱 The pool table', body: h('p.muted.small', 'Reds and yellows, black last. Pick your opponent.'),
       buttons: [{ label: 'Not now', value: null, cls: 'ghost' }, ...opts.map((s, i) => ({ label: `${s.name} · ${fmt(s.stake)}`, value: i, disabled: App.state.bank < s.stake }))] });
     if (pick == null) return;
     const s = opts[pick];

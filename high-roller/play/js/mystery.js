@@ -342,6 +342,7 @@ const Mystery = {
     if (problems.length) { await UI.modal({ title: '🃏 Not tonight', body: h('ul.reqs', problems.map(p => h('li', p))) }); return; }
     const crew = Object.keys(m.crew).filter(k => m.crew[k] && CREW[k].ok());
     if (!await UI.confirm('The Salon Invitational', `Buy in for ${fmt(INVITE_BUYIN)} and sit across from Augustus Kessler. Your crew: ${crew.map(k => CREW[k].name).join(', ') || 'nobody'}. There is no backing out once the cards are in the air.`, 'Take your seat')) return;
+    this.checkpoint(); // the night is kept, so a finished story can be played to another ending
     App.debit(INVITE_BUYIN);
     const has = r => crew.some(k => CREW[k].role === r);
     await UI.dialog([
@@ -412,7 +413,7 @@ const Mystery = {
       await UI.dialog([{ who: 'kessler', text: 'A pity. You are banned from my Salon for a week. Do come back for the next Invitational. I so enjoy these little games.' }]);
       App.news('🚨 Alarm at the Monte Royale. Kessler banned a guest for a week.'); App.save(); Router.go('world'); return;
     }
-    st.ending = ending;
+    st.ending = ending; st.l1ends = st.l1ends || {}; st.l1ends[ending] = (st.l1ends[ending] || 0) + 1;
     if (ending === 'justice') {
       // parity with the takeover: a whistleblower's reward and an honest stake in Kessler's old house
       if (st.items.spurDeed) App.credit(1000000); else st.items.spurDeed = st.day;
@@ -428,6 +429,25 @@ const Mystery = {
     await Career.checkChapter();
     Router.go('case');
     if (!st.l2) setTimeout(() => L2.wakeUp(true), 1200); // the dream is over: you wake up
+  },
+
+  /* ---------- another ending ---------- */
+  // what survives going back: the waking world, trophies, history and settings
+  KEEP: ['l2', 'l3', 'l1cp', 'l1ends', 'achievements', 'stats', 'settings', 'chats'],
+  checkpoint() { const st = App.state, keep = {}; for (const k in st) if (!this.KEEP.includes(k)) keep[k] = st[k]; st.l1cp = JSON.parse(JSON.stringify(keep)); App.save(); },
+  canReplay() { const st = App.state; return !!(st.ending && st.l1cp); },
+  replayButton(after) {
+    if (!this.canReplay()) return null;
+    const n = Object.keys(App.state.l1ends || {}).length;
+    return h('button.btn', { onclick: async () => { if (after) after(); await this.replay(); } }, `↺ Back to the Invitational (${n} of 3 endings)`);
+  },
+  async replay() {
+    const st = App.state, cp = st.l1cp; if (!cp) return;
+    if (!await UI.confirm('Back to the Invitational?', 'Back to the night you sat down with Kessler, so you can play for a different ending. Everything in the dream since then is undone. Your trophies, the endings you\'ve found and the waking world are kept.', '↺ Go back')) return;
+    for (const k of Object.keys(st)) if (!this.KEEP.includes(k)) delete st[k];
+    Object.assign(st, JSON.parse(JSON.stringify(cp)), { ending: null });
+    App.save(); Router.go('world');
+    UI.toast('🃏 Invitational night. Kessler is waiting in the Salon.', 'award');
   },
 
   /* ---------- for Claude ---------- */
@@ -535,7 +555,7 @@ const Mystery = {
       if (tab === 'Board') {
         const acts = [['I', 'The Last Hand', this.has('oscar')], ['II', 'The Drowning', !!m.act2Solved], ['III', 'The Ledger', act >= 4], ['IV', 'The Invitational', !!st.ending]];
         content.append(h('div.acts', acts.map(([n, t, done], i) => h('div.act' + (done ? '.done' : i + 1 === Math.min(act, 4) ? '.now' : ''), h('small', 'Act ' + n), h('b', t), h('span', done ? '✔ solved' : i + 1 === Math.min(act, 4) ? 'in progress' : 'locked')))));
-        content.append(h('section.panel.story', h('div.kicker', st.ending ? 'Closed' : 'Next lead'), h('p', this.lead())));
+        content.append(h('section.panel.story', h('div.kicker', st.ending ? 'Closed' : 'Next lead'), h('p', this.lead()), this.replayButton()));
         if (act >= 3) content.append(h('div.vault-code', h('small', 'Vault code'), h('b', this.codeKnown())));
         const tools = h('div.ev-row');
         if (this.has('note') && !this.has('decoded')) tools.append(h('button.btn.primary', { onclick: async () => { await this.decoder(); render(); } }, '📜 Decode Sal\'s note'));

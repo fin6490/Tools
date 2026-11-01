@@ -1,7 +1,7 @@
-// highroller-chat — AI character chat for High Roller on spindecks.app.
+// highroller-chat — AI character chat for The Meridian (formerly High Roller) on spindecks.app.
 // The Anthropic key lives only here (secret ANTHROPIC_API_KEY). Every request must
-// carry a signed-in SpinDecks user's token; only premium accounts get replies, each
-// capped per day. verify_jwt is off so the browser's CORS preflight works; the user
+// carry a signed-in SpinDecks user's token. Players bring their own Anthropic key, so
+// only the owner's account gets replies from here, capped per day. verify_jwt is off so the browser's CORS preflight works; the user
 // is checked by hand below, like create-checkout.
 //
 // POST { kind: "status" }                      -> { premium, owner, left, cap }
@@ -17,6 +17,8 @@ const MODEL = "claude-haiku-5-5";
 const CAP = 100;          // chats per player per day
 const OWNER_CAP = 1000;   // the owner plays a lot
 const ORIGINS = ["https://spindecks.app", "https://www.spindecks.app", "http://localhost:8123"];
+// the game's name in its prompts: the new one, and the old one for pages still cached
+const GAME = ['in "The Meridian", a casino game', 'in "High Roller", a casino game'];
 
 const cors = (origin: string) => ({
   "Access-Control-Allow-Origin": ORIGINS.includes(origin) ? origin : ORIGINS[0],
@@ -27,7 +29,7 @@ const cors = (origin: string) => ({
 const json = (body: unknown, status: number, origin: string) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors(origin), "Content-Type": "application/json" } });
 
-// keep the endpoint a High Roller character voice, not a general-purpose proxy
+// keep the endpoint a character voice for this game, not a general-purpose proxy
 function validate(body: any): { system?: string; messages: { role: "user" | "assistant"; content: string }[] } | null {
   if (body.kind === "paper") {
     const p = body.prompt;
@@ -36,7 +38,7 @@ function validate(body: any): { system?: string; messages: { role: "user" | "ass
   }
   if (body.kind !== "chat") return null;
   const { system, messages } = body;
-  if (typeof system !== "string" || system.length > 20000 || !system.includes('in "High Roller", a casino game')) return null;
+  if (typeof system !== "string" || system.length > 20000 || !GAME.some((g) => system.includes(g))) return null;
   if (!Array.isArray(messages) || !messages.length || messages.length > 16) return null;
   const out = [];
   for (const m of messages) {
@@ -67,9 +69,11 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     if (body.kind === "status") {
       const { data: used } = await admin.rpc("hr_usage_today", { p_user: user.id });
-      return json({ premium, owner, cap, left: Math.max(0, cap - (used || 0)), chat: !!Deno.env.get("ANTHROPIC_API_KEY") }, 200, origin);
+      return json({ premium, owner, cap, left: Math.max(0, cap - (used || 0)), chat: owner && !!Deno.env.get("ANTHROPIC_API_KEY") }, 200, origin);
     }
     if (!premium) return json({ code: "not_premium" }, 403, origin);
+    // players bring their own Anthropic key and talk to it from the browser; only the owner's account uses this server
+    if (!owner) return json({ code: "own_key" }, 403, origin);
     const ask = validate(body);
     if (!ask) return json({ code: "bad_request" }, 400, origin);
     const key = Deno.env.get("ANTHROPIC_API_KEY");
