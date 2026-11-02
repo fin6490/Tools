@@ -805,7 +805,7 @@ const World = (() => {
   // story characters and rivals move around with the story and the day, so refresh them on entry
   function populate(m) { m.npcs = m.npcs.filter(n => !n.dyn).concat(Cast.forMap(m)); const fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m), SalQuest.spots(m)); m.caseSpots = fixed.concat(keepSpots(m, fixed)); }
   // a fragment hides on a fixed, out-of-the-way floor tile: the same one every visit
-  function keepSpots(m, fixed) {
+  function keepSpots(m, fixed, every = false) { // all: every fragment's spot, found or not (for directions)
     if (typeof Fragments === 'undefined' || App.state.mode !== 'career') return [];
     if (!m.fragCand) { // worked out once per map: floor you can actually walk to from the way in
       const floor = [G.WALK, G.GRASS, G.FLOWERS, G.PLANK, G.WOOD, G.CARPET, G.TILE, G.SAND];
@@ -822,9 +822,9 @@ const World = (() => {
     for (const k of all) {
       let best = seed, bd = -1;
       if (placed.length) for (let j = 0; j < cand.length; j += 3) { const c0 = cand[j], d = Math.min(...placed.map(([x, y]) => Math.abs(x - c0[0]) + Math.abs(y - c0[1]))) + hash(c0[0], c0[1], k.i) * 2; if (d > bd) { bd = d; best = c0; } }
-      placed.push(best || [1, 1]); if (!Fragments.has(k.i)) placed[placed.length - 1].k = k.i;
+      placed.push([...(best || [1, 1])]); if (every || !Fragments.has(k.i)) placed[placed.length - 1].k = k.i; // a copy: tagging the shared candidate kept a taken fragment glinting
     }
-    return placed.filter(p => p.k != null).map(([x, y, k]) => ({ x, y, id: 'keep', keep: placed.find(q => q[0] === x && q[1] === y).k, label: 'Something glints', hidden: true }));
+    return placed.filter(p => p.k != null).map(p => ({ x: p[0], y: p[1], id: 'keep', keep: p.k, label: 'Something glints', hidden: true }));
   }
   function npcAt(m, x, y) { return m.npcs.find(n => n.x === x && n.y === y); }
   function passable(m, x, y) { return !m.solid(x, y) && !npcAt(m, x, y); }
@@ -1262,7 +1262,7 @@ const World = (() => {
     const k = FRAGMENTS[i]; if (!k) return 'somewhere in town';
     if (k.map.startsWith('v:')) return 'somewhere inside ' + ((VENUES[k.map.slice(2)] || {}).name || 'one of the casinos');
     if (k.map.startsWith('r:')) return 'somewhere inside ' + ((ROOMS[k.map.slice(2)] || {}).name || 'one of the buildings');
-    const m = getMap('town'), fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m), SalQuest.spots(m)), sp = keepSpots(m, fixed).find(q => q.keep === i);
+    const m = getMap('town'), fixed = Mystery.spots(m).concat(Holdem.spots(m), Darts.spots(m), SalQuest.spots(m)), sp = keepSpots(m, fixed, true).find(q => q.keep === i);
     if (!sp) return 'out on the streets somewhere';
     let near = null, nd = 1e9;
     for (const d in m.doors) { const [dx, dy] = d.split(',').map(Number), dd = Math.hypot(dx - sp.x, dy - sp.y); if (dd < nd && m.doors[d].label) { nd = dd; near = m.doors[d].label; } }

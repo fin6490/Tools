@@ -222,7 +222,7 @@ const L2Life = (() => {
   const K = () => { const s = S(); if (!s.keeps) s.keeps = {}; return s.keeps; };
   // world.js calls this as it builds each place: a twinkle and something to look at, for what you haven't found
   function keeps(A, area) {
-    for (const k of KEEPS) { if (k.area !== area) continue; if (!K()[k.id]) A.prop('glint', k.x, k.y, { h: k.h, seed: k.x * 7 + k.y, solid: false }); A.use(k.ux, k.uy, K()[k.id] ? k.name : `🔎 ${k.label}`, () => find(k.id), { r: 1.2 }); }
+    for (const k of KEEPS) { if (k.area !== area) continue; if (!K()[k.id]) A.prop('glint', k.x, k.y, { h: k.h, seed: k.x * 7 + k.y, solid: false, gone: () => !!K()[k.id] }); A.use(k.ux, k.uy, K()[k.id] ? k.name : `🔎 ${k.label}`, () => find(k.id), { r: 1.2 }); }
   }
   async function find(id) {
     const k = KEEPS.find(q => q.id === id); if (!k) return;
