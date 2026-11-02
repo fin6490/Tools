@@ -76,7 +76,7 @@ const World = (() => {
     m.props.push({ type: 'fountain', x: 12, y: 36, w: 3, h: 3 }); m.blockRect(12, 36, 3, 3);
     m.rect(13, 36, 1, 3, G.GRASS);
     [[6, 36], [19, 36], [6, 38], [19, 38]].forEach(([x, y]) => { m.props.push({ type: 'bench', x, y }); m.blockRect(x, y, 1, 1); m.act(x, y, { sleep: ['bench'], label: 'Park bench' }); });
-    for (let x = 3; x < 46; x += 6) { m.props.push({ type: 'lamp', x, y: 17 }); m.props.push({ type: 'lamp', x, y: 30 }); }
+    for (let x0 = 3; x0 < 46; x0 += 6) { const x = x0 === 27 ? 25 : x0; m.props.push({ type: 'lamp', x, y: 17 }); m.props.push({ type: 'lamp', x, y: 30 }); } // not in the junctions: the one that would be goes on the corner before the crossing
     // street furniture
     const furn = (kind, x, y, w, hh, act) => { m.props.push({ type: 'furn', kind, x, y, w, h: hh }); m.blockRect(x, y, w, hh); if (act) for (let j = 0; j < hh; j++) for (let i = 0; i < w; i++) m.act(x + i, y + j, act); };
     furn('rack', 24, 16, 1, 1, { fn: 'paper', label: 'Newsstand: the morning paper' });
@@ -160,7 +160,7 @@ const World = (() => {
     m.decor = venueId;
     const n = I.npc, ch = CHARACTERS[n.who];
     m.npcs.push({ x: n.x, y: n.y, dir: n.bartender ? 'right' : 'down', look: { shirt: ch.color, pants: '#222', skin: n.who === 'kessler' ? '#e8c4a0' : '#f0c19a', hair: { dolores: '#a0522d', doc: '#ddd', margot: '#111', kessler: '#999' }[n.who], hat: n.who === 'kessler' }, who: n.who, name: ch.name, story: true });
-    m.labels.push({ x: W / 2, y: 0.9, text: v.name.toUpperCase(), neon: true });
+    m.labels.push({ x: venueId === 'spur' ? 11.8 : W / 2, y: 0.9, text: v.name.toUpperCase(), neon: true });
     m.start = [doorX, H - 2];
     return m;
   }
@@ -649,10 +649,21 @@ const World = (() => {
     const R = (x, y, w, h2, col) => { c.fillStyle = col; c.fillRect(x, y, w, h2); };
     const frame = (x, w, art) => { R(x, 6, w, 14, '#c9a14a'); R(x + 1, 7, w - 2, 12, '#2a1a10'); art(x + 2, 8, w - 4, 10); };
     if (v === 'spur') {
-      frame(5 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 7, y + 4, 8, 5, '#6b4a2a'); });
-      frame(9 * T, 22, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 6, y + 4, 10, 5, '#8a5a33'); });
-      const lx = 15 * T - 7; R(lx, 6, 30, 3, '#d8c8a8'); R(lx + 2, 3, 3, 6, '#d8c8a8'); R(lx + 25, 3, 3, 6, '#d8c8a8'); R(lx + 12, 8, 6, 8, '#6b4423'); // longhorns (Sal's lock is behind them)
-      c.font = 'bold 9px Georgia'; c.fillStyle = '#ff6b4d'; c.fillText('COLD BEER', 20 * T + 16, 14);
+      // left to right: the bar's shelves, the staff noticeboard (a prop, below), two old photos, the sign,
+      // the longhorns (Sal's lock is behind them), the dartboard under its lamp with the chalk scores,
+      // COLD BEER, and the ladder board over the pool table. Nothing overlaps.
+      frame(6.5 * T, 20, (x, y, w, h2) => { R(x, y, w, h2, '#e8d5a8'); R(x + 3, y + 1, w - 6, 2, '#5a3a22'); R(x + 6, y + 4, 6, 5, '#6b4a2a'); }); // Sal and Dolores, 1979
+      frame(8.2 * T, 20, (x, y, w, h2) => { R(x, y, w, h2, '#d9c79a'); R(x + 2, y + 6, w - 4, 3, '#7a5a33'); R(x + 5, y + 2, 6, 4, '#8a5a33'); }); // the Golden Arrow, 1984
+      const lx = 15 * T - 7; R(lx, 6, 30, 3, '#d8c8a8'); R(lx + 2, 3, 3, 6, '#d8c8a8'); R(lx + 25, 3, 3, 6, '#d8c8a8'); R(lx + 12, 8, 6, 8, '#6b4423');
+      // the dart lamp: an arm off the wall, a green shade, and its light falling on the board below
+      const dx = 17 * T + 8; R(dx - 1, 0, 2, 5, '#2a1a10'); c.fillStyle = '#1e5a3a'; c.beginPath(); c.moveTo(dx - 6, 9); c.lineTo(dx + 6, 9); c.lineTo(dx + 3, 4); c.lineTo(dx - 3, 4); c.closePath(); c.fill(); R(dx - 6, 9, 12, 1, '#c9a14a');
+      const lg = c.createRadialGradient(dx, 18, 1, dx, 22, 16); lg.addColorStop(0, 'rgba(255,230,160,.4)'); lg.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = lg; c.fillRect(dx - 16, 9, 32, 26);
+      // the chalk scoreboard beside it
+      R(18.4 * T, 8, 14, 18, '#5a3a22'); R(18.4 * T + 1, 9, 12, 16, '#1d2a22'); c.fillStyle = 'rgba(240,240,230,.75)'; for (let i = 0; i < 4; i++) { R(18.4 * T + 3, 11 + i * 3.6, 3 + (i % 2) * 3, 1, 'rgba(240,240,230,.7)'); R(18.4 * T + 9, 11 + i * 3.6, 2, 1, 'rgba(240,240,230,.6)'); }
+      c.font = 'bold 9px Georgia'; c.fillStyle = '#ff6b4d'; c.fillText('COLD BEER', 19.8 * T, 14);
+      // the Spur Ladder, chalked over the pool table
+      const px = 23.2 * T; R(px, 4, 26, 22, '#5a3a22'); R(px + 1, 5, 24, 20, '#1d2a22'); c.font = 'bold 4px sans-serif'; c.fillStyle = 'rgba(240,240,230,.85)'; c.fillText('LADDER', px + 4, 10);
+      for (let i = 0; i < 4; i++) R(px + 4, 12.5 + i * 3, 16 - i * 3, 1, 'rgba(240,240,230,.6)');
     }
     if (v === 'riverboat') for (let i = 0; i < 6; i++) { const x = (4 + i * 3.6) * T; c.fillStyle = '#c9a14a'; c.beginPath(); c.arc(x, 13, 7, 0, 7); c.fill(); c.fillStyle = '#1f4a6a'; c.beginPath(); c.arc(x, 13, 5, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x - 3, 10, 2, 2); }
     if (v === 'riverboat') { c.strokeStyle = '#8a5a33'; c.lineWidth = 2; c.beginPath(); c.arc(W * T - 3 * T, 14, 8, 0, 7); c.stroke(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; c.beginPath(); c.moveTo(W * T - 3 * T, 14); c.lineTo(W * T - 3 * T + Math.cos(a) * 11, 14 + Math.sin(a) * 11); c.stroke(); } }
@@ -1147,7 +1158,7 @@ const World = (() => {
         for (let i = 0; i < 20; i++) { c.fillStyle = i % 2 ? '#efe0bf' : '#1c1c1c'; c.beginPath(); c.moveTo(bx, by); c.arc(bx, by, 5.2 * u, i * Math.PI / 10, (i + 1) * Math.PI / 10); c.fill(); }
         c.strokeStyle = '#c8102e'; c.lineWidth = u; c.beginPath(); c.arc(bx, by, 4.8 * u, 0, 7); c.stroke(); c.strokeStyle = '#0b7a3b'; c.beginPath(); c.arc(bx, by, 2.8 * u, 0, 7); c.stroke();
         c.fillStyle = '#c8102e'; c.beginPath(); c.arc(bx, by, 1 * u, 0, 7); c.fill();
-        c.fillStyle = 'rgba(240, 210, 120, .7)'; c.fillRect(sx(c0.x) - 4 * u, sy(c0.y + 2) - u, 24 * u, 1.2 * u);
+        c.fillStyle = 'rgba(70, 48, 22, .85)'; c.fillRect(sx(c0.x) - 4 * u, sy(c0.y + 2.6) - u, 24 * u, 1.4 * u); c.fillStyle = 'rgba(160, 120, 60, .5)'; c.fillRect(sx(c0.x) - 4 * u, sy(c0.y + 2.6) - u, 24 * u, .4 * u); // the oche: a brass strip in the floorboards
         continue;
       }
       if (c0.door) { c.fillStyle = '#2a170a'; c.fillRect(sx(c0.x) + 2 * u, sy(c0.y) - 6 * u, 12 * u, 22 * u); c.fillStyle = '#c9a14a'; c.fillRect(sx(c0.x) + 11 * u, sy(c0.y) + 6 * u, 2 * u, 2 * u); c.fillStyle = '#ffe9a8'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText(c0.glyph || '♠', sx(c0.x + .5), sy(c0.y) + 2 * u); continue; }
