@@ -958,6 +958,7 @@ const World = (() => {
         const n = f.npc;
         const back = { up: 'down', down: 'up', left: 'right', right: 'left' }[S.p.dir];
         if (!n.dealer) n.dir = back;
+        if (n.errand) { await Office.handOver(); populate(S.m); return; }
         if (n.who) await Chat.open(n.who);
         else if (n.crowd) await Chat.open(n.crowd());
         else await UI.dialog([{ who: 'narrator', text: `**${n.name}:** "${n.line}"` }]);
@@ -1055,8 +1056,9 @@ const World = (() => {
     const e = App.state.event, ev = S.root.querySelector('.w-event');
     ev.textContent = e && e.day === App.state.day ? `🎉 ${EVENTS[e.id].name} · ${VENUES[e.venue].name}` : '';
     const st = App.state, ch = CHAPTERS[st.chapter], el = S.root.querySelector('.w-goal');
-    el.textContent = st.mode === 'career' && ch ? `📖 ${ch.title}` : '🎲 Free Play';
-    el.title = ch ? ch.goalText : '';
+    const ej = st.mode === 'career' && typeof Office !== 'undefined' && Office.job();
+    el.textContent = ej ? `💼 ${ej.contact}, ${ej.where}` : st.mode === 'career' && ch ? `📖 ${ch.title}` : '🎲 Free Play';
+    el.title = ej ? Office.label(ej) : ch ? ch.goalText : '';
   }
   function areaName() {
     const m = S.m, p = S.p;
@@ -1149,6 +1151,7 @@ const World = (() => {
       for (const [ox2, oy2] of [[-.6, 0], [.6, 0], [0, -.6], [0, .6]]) drawPerson(c, sx(q.fx) + ox2 * u, sy(q.fy) - 3 * u + oy2 * u, u, q.dir, q.fr, q.look, 'rgba(14,10,8,.75)');
       drawPerson(c, sx(q.fx), sy(q.fy) - 3 * u, u, q.dir, q.fr, q.look);
       if (q.rival) { c.fillStyle = '#ff6b6b'; c.font = `bold ${6 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('♦', sx(q.fx + .5), sy(q.fy) - 4 * u + Math.sin(now / 260) * u); }
+      if (q.errand) { c.font = `${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('💼', sx(q.fx + .5), sy(q.fy) - 4 * u + Math.sin(now / 220) * u); }
       if (q.story) { c.fillStyle = '#ffe066'; c.font = `bold ${7 * u}px sans-serif`; c.textAlign = 'center'; c.fillText('!', sx(q.fx + .5), sy(q.fy) - 4 * u + Math.sin(now / 200) * u); }
     }
     for (const c0 of m.caseSpots || []) { // something worth a closer look

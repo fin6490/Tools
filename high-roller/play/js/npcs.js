@@ -412,6 +412,9 @@ const Cast = {
       const spots = [[22, 17], [33, 33], [8, 33], [40, 20]];
       Object.keys(RIVALS).forEach((id, i) => { if (career && st.rivals && Rivals.where(id) === 'town') person(id, spots[i][0], spots[i][1], RIVALS[id].look, { wander: true, home: spots[i] }); });
     }
+    // whoever's waiting for your errand stands where Vinnie said, with a 💼 over their head
+    const ej = career && typeof Office !== 'undefined' && Office.job();
+    if (ej && ej.map === m.id) { const [ex, ey] = Office.spotIn(m, ej.at); out.push({ x: ex, y: ey, dir: 'down', name: ej.contact, look: ej.look, dyn: true, errand: true }); }
     // Vinnie leans on the safe at the end of his own counter
     if (m.id === 'r:pawn') person('vinnie', 11, 3, { shirt: '#1d1d1d', pants: '#1d1d1d', skin: '#e0ac69', hair: '#111', shades: true, chain: true }, { dir: 'down' });
     if (m.venue === 'spur') person('sparky', 22, 14, { shirt: '#d35400', pants: '#2c3e50', skin: '#e0ac69', hair: '#5a3a22', hat: true }, { dir: 'right' });
