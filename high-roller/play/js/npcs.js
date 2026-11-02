@@ -525,7 +525,7 @@ const Chat = {
       if (Rel.is(who)) box.append(Rel.chatRow(who, api));
       if (who === 'doc') box.append(Spotter.card(api));
       if (who === 'sparky') { const t = Postcards.sparkyPanel(api); if (t) box.append(t); }
-      if (who === 'vinnie' && App.state.mode === 'career' && typeof Office !== 'undefined') box.append(h('div.ev-row', h('span.muted.small', Office.st().key ? '🗝️ You have the back office key.' : `💼 Errands: ${Math.min(Office.st().errands, Office.KEY_AT)} of ${Office.KEY_AT} towards the back office key.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Office.vinnieErrand(), 50); } }, '💼 Ask for an errand')));
+      if (who === 'vinnie' && App.state.mode === 'career' && typeof Office !== 'undefined') box.append(h('div.ev-row', h('span.muted.small', Office.st().key ? '🗝️ You have the back office key.' : '💼 He might have work for you.'), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Office.vinnieErrand(), 50); } }, '💼 Ask for an errand')));
       if (who === 'dolores' && App.state.mode === 'career' && typeof Office !== 'undefined') box.append(h('div.ev-row', h('span.muted.small', `📋 You're her ${Office.rank().name.toLowerCase()}.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Office.spurBoard(), 50); } }, '📋 Work a shift')));
       if (who === 'mick') App.state.flags.metMick = 1;
       if (who === 'mick') box.append(h('div.ev-row', h('span.muted.small', `Your arm: ${Darts.armLabel(Darts.wobble())}.`), h('button.btn.sm', { onclick: () => { api.close(); setTimeout(() => Darts.lobby(), 50); } }, '🎯 Play darts')));
