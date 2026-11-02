@@ -123,8 +123,6 @@ const Me = {
       inputs[k] = h('input.field#' + id, { value: me[k] || '', placeholder: ph, maxlength: 80, autocomplete: 'off' });
       body.append(h('label.lbl', { for: id }, label), inputs[k]);
     }
-    const proj = h('input#me-projects', { type: 'checkbox', checked: me.projects !== false ? true : null });
-    if (!window.HR_HOST || window.HR_HOST.owner) body.append(h('label.lbl.me-check', { for: 'me-projects' }, proj, ' Let the town know about my betting-tool projects (the dice simulator, the Betfair bot and the Value & Reload Finder in this repo)'));
     // inside claude.ai, offer the viewer's own profile name
     if (window.claude && window.claude.use) {
       const btn = h('button.btn.sm.ghost', { type: 'button', hidden: true, onclick: async () => {
@@ -137,7 +135,6 @@ const Me = {
     if (ok === 'clear') { this.set({}); UI.toast('Your file is shredded', 'good'); }
     if (ok === 'save') {
       const v = {}; for (const [k] of this.FIELDS) { const t = inputs[k].value.trim(); if (t) v[k] = t; }
-      if (!proj.checked) v.projects = false;
       this.set(v); this.apply(); if (!opts.intro) UI.toast('🗂️ Filed. The town will remember.', 'good');
     }
   },

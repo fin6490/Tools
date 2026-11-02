@@ -14,12 +14,44 @@ const DEGEN_TITLES = [[0, 'Recreational'], [20, 'Regular'], [40, 'Grinder'], [60
 const BOOZE = { beer: 14, whiskey: 22, cocktail: 18, champagne: 16, martini: 24, wine: 16 };
 // how a plate of food feels, by place
 const TREAT = { steak: 12, lobster: 12, wagyu: 14, caviar: 14, buffet: 9, shrimp: 6, breakfast: 6, burger: 5, pie: 6, shake: 5, nachos: 3, sandwich: 1, candy: 1 };
-const DEGEN_TASKS = [
-  { k: 'chase', name: 'Chase it', desc: 'Be down $500 or more on the day, then claw your way back to even.' },
-  { k: 'beer', name: 'Hold my beer', desc: 'Win a hand while you\'re tipsy.' },
-  { k: 'dawn', name: 'Sunrise session', desc: 'Play a hand between 4 and 6 in the morning.' },
-  { k: 'allin', name: 'Send it', desc: 'Win a single hand where you bet half your bankroll or more.' },
+// Lonnie's diary has more than one page: each one harder, and the last one isn't what you'd expect
+const DEGEN_PAGES = [
+  { title: 'The Degen Diaries', pay: 2500, count: 'degenDiaries',
+    pitch: '"Every legend in this town has a page in my diary. Chased a loss and caught it. Won with a beer in hand. Played the sunrise. Sent half the roll on one hand. Do all four and you\'re in the book, champ."',
+    start: 'That\'s the spirit! Don\'t tell Mel I said that.',
+    paid: '*writes your name in gold pen* THE BOOK, champ. You\'re in it forever. Here, $2,500 from the Degen Fund. Spend it irresponsibly.',
+    tasks: [
+      { k: 'chase', name: 'Chase it', desc: 'Be down $500 on the day, then claw back to even.' },
+      { k: 'beer', name: 'Hold my beer', desc: 'Win a hand while tipsy.' },
+      { k: 'dawn', name: 'Sunrise session', desc: 'Play a hand between 4 and 6 AM.' },
+      { k: 'allin', name: 'Send it', desc: 'Win a hand betting half your bankroll or more.' }] },
+  { title: 'Page Two: The Night Shift', pay: 7500, count: 'degenNight',
+    pitch: '"Page one\'s for tourists. Page two\'s where the regulars live. Five in a row. A hand at the witching hour. One that pays twenty to one. And the big comeback."',
+    start: '*licks the pencil* Page two. I\'ve only got nine names on this one.',
+    paid: 'Page two, signed and sealed. $7,500. Dolores says I\'m a bad influence. Dolores is right.',
+    tasks: [
+      { k: 'five', name: 'Heater', desc: 'Win five hands in a row.' },
+      { k: 'witch', name: 'Witching hour', desc: 'Play a hand between midnight and 1 AM.' },
+      { k: 'twenty', name: 'Twenty to one', desc: 'Win 20 times your bet on a single hand.' },
+      { k: 'comeback', name: 'The comeback', desc: 'Be down $2,000 on the day, then finish a hand up on the day.' }] },
+  { title: 'Page Three: Legend', pay: 25000, count: 'degenLegend',
+    pitch: '"Nobody\'s finished page three. Sal got three out of four. A ten-grand hand. Fifty to one. The meter pinned at the top. And winning with nothing left."',
+    start: '*very quietly* Page three. You sure, champ?',
+    paid: '*doesn\'t write anything for a long time* ...You did it. All of it. $25,000. I don\'t feel how I thought I\'d feel.',
+    tasks: [
+      { k: 'tenk', name: 'Ten-grand hand', desc: 'Win a hand betting $10,000 or more.' },
+      { k: 'fifty', name: 'Fifty to one', desc: 'Win 50 times your bet on a single hand.' },
+      { k: 'pinned', name: 'Pinned', desc: 'Max out the degen meter.' },
+      { k: 'brink', name: 'From the brink', desc: 'Win a hand starting with under $100 to your name.' }] },
+  { title: 'The Last Page', pay: 10000, count: 'degenLastPage',
+    pitch: '"There\'s one more page. It\'s blank. Sal\'s idea, years back: the hardest thing in the book is walking away. Three clean nights in a row. A whole day without a bet. Then come and tell me about it."',
+    start: 'The last page. Funny. It\'s the only one I never filled in myself.',
+    paid: '*closes the book and slides it across to you* Keep it. $10,000, and I\'m out of the diary business. Maybe I\'ll try that last page myself.',
+    tasks: [
+      { k: 'clean3', name: 'Clean nights', desc: 'Three nights in a row with the degen meter under 15.' },
+      { k: 'dayoff', name: 'A day off', desc: 'Go a whole day without placing a bet.' }] },
 ];
+const DEGEN_TASKS = DEGEN_PAGES[0].tasks; // page one, as before
 
 const Mood = {
   on() { return App.state && App.state.mode === 'career' && !App.offStory(); },
@@ -137,6 +169,11 @@ const Mood = {
     s.degen = this.clamp(s.degen - (s.today.rounds ? 8 : 15) * (Rel.close('doc') ? 2 : 1));
     s.flags.cleanNights = s.degen < 15 ? (s.flags.cleanNights || 0) + 1 : 0;
     if (s.flags.cleanNights >= 7) App.count('cleanWeek');
+    const dq = s.degenQuest;
+    if (dq && dq.on && dq.page === 3 && !dq.paid) {
+      if (s.flags.cleanNights >= 3) this.diaryHit('clean3');
+      if (!s.today.rounds && dq.started !== s.day) this.diaryHit('dayoff');
+    }
     if (s.mood >= 90) App.count('livingWell');
     if (s.mood <= 5) App.count('rockBottom');
     lines.push([`Mood ${this.face()} ${Math.round(s.mood)} · Degen ${Math.round(s.degen)} (${this.degenTitle()})`, was > s.degen ? `−${Math.round(was - s.degen)} degen` : '']);
@@ -163,14 +200,32 @@ const Mood = {
     else if (r.net < 0) this.change(s.stats.streak <= -5 ? -2 : -.5, 'losses');
     // Lonnie's degen diary
     const q = s.degenQuest;
-    if (q && q.on) {
-      const hit = k => { if (!q.done[k]) { q.done[k] = s.day; UI.toast(`📓 Degen diary: ${DEGEN_TASKS.find(x => x.k === k).name}`, 'big'); } };
-      if (s.today.net <= -500) q.chaseLow = s.day;
-      if (q.chaseLow === s.day && s.today.net >= 0) hit('chase');
-      if (r.net > 0 && this.tipsy()) hit('beer');
-      if (t >= 240 && t < 360) hit('dawn');
-      if (r.net > 0 && share >= .5) hit('allin');
+    if (q && q.on && !q.paid) {
+      const page = q.page || 0, hit = k => this.diaryHit(k);
+      if (page === 0) {
+        if (s.today.net <= -500) q.chaseLow = s.day;
+        if (q.chaseLow === s.day && s.today.net >= 0) hit('chase');
+        if (r.net > 0 && this.tipsy()) hit('beer');
+        if (t >= 240 && t < 360) hit('dawn');
+        if (r.net > 0 && share >= .5) hit('allin');
+      } else if (page === 1) {
+        if (s.stats.streak >= 5) hit('five');
+        if (t < 60) hit('witch');
+        if (r.net >= r.wagered * 20) hit('twenty');
+        if (s.today.net <= -2000) q.chaseLow = s.day;
+        if (q.chaseLow === s.day && s.today.net > 0) hit('comeback');
+      } else if (page === 2) {
+        if (r.net > 0 && r.wagered >= 10000) hit('tenk');
+        if (r.net >= r.wagered * 50) hit('fifty');
+        if (s.degen >= 100) hit('pinned');
+        if (r.net > 0 && bankBefore < 100) hit('brink');
+      }
     }
+  },
+  diaryHit(k) {
+    const s = this.st(), q = s.degenQuest; if (!q || q.paid) return;
+    const T = DEGEN_PAGES[q.page || 0].tasks.find(x => x.k === k);
+    if (T && !q.done[k]) { q.done[k] = s.day; UI.toast(`📓 Degen diary: ${T.name}`, 'big'); }
   },
   // being drunk or wired makes the darts worse; a happy, merry thrower is a touch steadier
   wobbleMult() {
@@ -219,24 +274,29 @@ const Mood = {
       h('p.muted.small', 'Good sleep, good food and winning lift your mood; debt, hangovers and losing wear it down. Big bets and chasing losses push the degen meter up; rest cools it.'));
   },
 
-  /* ---------- Lonnie's degen diary (side quest) ---------- */
+  /* ---------- Lonnie's degen diary (side quest, four pages) ---------- */
   questPanel(api) {
     if (!this.on()) return null;
-    const s = this.st(), q = s.degenQuest;
-    const box = h('div.job-card', h('b', '📓 The Degen Diaries'));
+    const s = this.st(), q = s.degenQuest, P = DEGEN_PAGES[(q && q.page) || 0];
+    const box = h('div.job-card', h('b', '📓 ' + P.title));
+    const redraw = () => box.replaceWith(this.questPanel(api));
     if (!q) {
-      box.append(h('p.small', '"Every legend in this town has a page in my diary. Chased a loss and caught it. Won with a beer in hand. Played the sunrise. Sent half the roll on one hand. Do all four and you\'re in the book, champ."'),
-        h('button.btn.sm.primary', { onclick: () => { s.degenQuest = { on: true, done: {} }; App.save(); api.say('That\'s the spirit! Don\'t tell Mel I said that.'); box.replaceWith(this.questPanel(api)); } }, 'Start a page'));
+      box.append(h('p.small', P.pitch), h('button.btn.sm.primary', { onclick: () => { s.degenQuest = { on: true, page: 0, done: {}, started: s.day }; App.save(); api.say(P.start); redraw(); } }, 'Start a page'));
       return box;
     }
-    const done = DEGEN_TASKS.filter(t => q.done[t.k]).length;
-    box.append(h('ul.degen-list', DEGEN_TASKS.map(t => h('li' + (q.done[t.k] ? '.ok' : ''), (q.done[t.k] ? '✔ ' : '○ ') + t.name + ': ', h('span.muted', t.desc)))));
-    if (done === DEGEN_TASKS.length && !q.paid) box.append(h('button.btn.sm.primary', { onclick: () => {
-      q.paid = s.day; App.credit(2500); App.count('degenDiaries'); Career.checkAchievements(); App.save();
-      api.say('*writes your name in gold pen* THE BOOK, champ. You\'re in it forever. Here, $2,500 from the Degen Fund. Spend it irresponsibly.'); box.replaceWith(this.questPanel(api));
-    } }, 'Get in the book ($2,500)'));
-    else if (q.paid) box.append(h('p.muted.small', 'You\'re in the book. Lonnie salutes you every time you walk past.'));
-    else box.append(h('p.muted.small', `${done} of ${DEGEN_TASKS.length} done.`));
+    const done = P.tasks.filter(t => q.done[t.k]).length;
+    box.append(h('ul.degen-list', P.tasks.map(t => h('li' + (q.done[t.k] ? '.ok' : ''), (q.done[t.k] ? '✔ ' : '○ ') + t.name + ': ', h('span.muted', t.desc)))));
+    if (done === P.tasks.length && !q.paid) box.append(h('button.btn.sm.primary', { onclick: () => {
+      q.paid = s.day; App.credit(P.pay); App.count(P.count); Career.checkAchievements(); App.save(); api.say(P.paid); redraw();
+    } }, `Sign the page (${fmt(P.pay)})`));
+    else if (q.paid && DEGEN_PAGES[(q.page || 0) + 1]) {
+      const N = DEGEN_PAGES[(q.page || 0) + 1];
+      box.append(h('p.small', N.pitch), h('button.btn.sm.primary', { onclick: () => {
+        s.degenQuest = { on: true, page: (q.page || 0) + 1, done: {}, started: s.day }; App.save(); api.say(N.start); redraw();
+      } }, 'Turn the page'));
+    }
+    else if (q.paid) box.append(h('p.muted.small', 'The book is yours now. Lonnie doesn\'t keep a diary any more.'));
+    else box.append(h('p.muted.small', `${done} of ${P.tasks.length} done.`));
     return box;
   },
 };
