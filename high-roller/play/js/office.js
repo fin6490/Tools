@@ -5,7 +5,7 @@
    - Vinnie's back office (behind KNOCK. THEN LEAVE.): a secret room. His desk and his ledger (read it while he's out and
      you might learn what he did to Sal; get caught and it's a rudeness tax), the safe, the racehorse, and his phone: the
      big errands, once a day, for real money.
-   - Prime Cut's wine cellar: Philippe opens it to regulars (three dinners) or for a consideration. Inside: the bins (the
+   - Prime Cut's wine cellar: Philippe opens it to regulars (dinner there on three separate days; money won't do it). Inside: the bins (the
      postcard trail's bin is down here), a glass of the good stuff, and his deliveries (an errand, once a day).
    - The Rusty Spur pays for work (spurwork in this file): shifts behind the bar, a step up the ladder every few, and pool
      against the regulars for money. */
@@ -136,7 +136,7 @@ const Office = (() => {
       o.key = App.state.day; App.count('officeKey'); App.save(); Career.checkAchievements();
       await say([{ who: 'narrator', text: 'Back at the pawn shop, Vinnie slides a key across the counter on a ring with a tiny brass horse.' }, { who: 'vinnie', text: 'The back office. You\'ve earned a chair in there. Don\'t sit in mine.' },
         { who: 'narrator', text: '🗝️ Vinnie\'s back office is open to you now: the door behind the counter.' }]);
-    } else if (j.from === 'vinnie' && !o.key) UI.toast(`💼 Errands for Vinnie: ${Math.min(o.errands, KEY_AT)} of ${KEY_AT} towards the back office key`, 'good');
+    }
   }
   // a free tile for the contact to stand on, near where they like to be
   function spotIn(m, at) {
@@ -163,8 +163,7 @@ const Office = (() => {
   async function door() {
     const o = st();
     if (o.key) return World.enter('r:office');
-    return say([{ who: 'narrator', text: 'You knock. The door opens four inches and fills with Nico.' }, { who: 'nico', text: 'Sign says leave.' },
-      { who: 'narrator', text: `Vinnie keeps the key for people who are useful to him. (Errands: ${Math.min(o.errands, KEY_AT)} of ${KEY_AT}.)` }]);
+    return say([{ who: 'narrator', text: 'You knock. The door opens four inches and fills with Nico.' }, { who: 'nico', text: 'Sign says leave.' }, { who: 'narrator', text: 'The door closes.' }]);
   }
   async function ledger() {
     const o = st();
@@ -197,19 +196,14 @@ const Office = (() => {
   async function cellarDoor() {
     const o = st();
     if (o.cellar) return World.enter('r:cellar');
-    const meals = App.counter('steakMeals');
-    if (meals >= 3) {
+    // a regular: dinner here on three different days (no amount of money will do it)
+    const evenings = Object.keys(App.state.flags.steakDays || {}).length;
+    if (evenings >= 3) {
       o.cellar = App.state.day; App.count('cellarOpen'); App.save(); Career.checkAchievements();
-      await say([{ who: 'philippe', text: 'Monsieur has dined with us three times without once asking for ketchup. *He produces a key the size of a spoon.* The cellar. Touch nothing with a year on it before 1990.' }]);
+      await say([{ who: 'philippe', text: 'Three evenings, monsieur, and not once did you ask for ketchup. *He produces a key the size of a spoon.* The cellar. Touch nothing with a year on it before 1990.' }]);
       return World.enter('r:cellar');
     }
-    const c = await UI.modal({ title: '🍷 The wine cellar', body: h('div', h('p', '"For our regulars, monsieur."'), h('p.muted.small', `Dinners here: ${meals} of 3. Or a consideration.`)),
-      buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: 'A consideration ($250)', value: true, cls: 'primary' }] });
-    if (!c) return;
-    if (!App.debit(250)) return UI.toast('You don\'t have $250 to be considerate with.', 'warn');
-    o.cellar = App.state.day; App.count('cellarOpen'); App.save(); Router.hud(); Career.checkAchievements();
-    await say([{ who: 'philippe', text: '*The note vanishes. A key appears.* How generous. Mind the third step. It has opinions.' }]);
-    return World.enter('r:cellar');
+    return say([{ who: 'philippe', text: RNG.pick(['*He steps, very politely, between you and the door.* The cellar is for our regulars, monsieur.', 'Our regulars, monsieur. Only our regulars.', '*He does not look at the door, so neither should you.* May I bring monsieur the menu?']) }]);
   }
   async function cellarGlass() {
     if (!App.debit(40)) return UI.toast('A glass of the good stuff is $40.', 'warn');

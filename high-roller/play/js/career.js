@@ -564,7 +564,7 @@ const Career = {
     }
     SFX.cash(); UI.toast(`${m.icon} ${m.name}${free ? ' (comped)' : ''}`, 'good');
     Mood.consume(id, m);
-    if (placeId === 'steak') App.count('steakMeals'); // three and Philippe calls you a regular (the cellar)
+    if (placeId === 'steak') { App.count('steakMeals'); const f = App.state.flags; f.steakDays = f.steakDays || {}; f.steakDays[App.state.day] = 1; } // dine on three separate days and Philippe calls you a regular (the cellar)
     App.save(); Router.hud(); return true;
   },
   happyHour(venue) { const t = (App.state.clock || 540) % 1440; return venue === 'spur' && t >= 1020 && t < 1140; },
