@@ -212,8 +212,8 @@ const World = (() => {
       f: [['rug', 3, 3, 6, 4], ['frame', 4, 1, 2, 1, { talk: 'A racehorse called Seventeen Hands. It came last at Saratoga in 1979 with a thousand of Vinnie\'s dollars on its nose. He keeps the painting so he never forgets.', label: 'The racehorse' }],
         ['photo', 8, 1, 2, 1, { talk: 'A photo, curled at the corners: Vinnie and Sal, young, outside the Spur, arms round each other\'s shoulders. Somebody has drawn a tiny 17 on Sal\'s jacket in biro.', label: 'A photo on the wall' }], ['clock', 2, 1, 1, 1],
         ['desk', 4, 3, 3, 1, { fn: 'officeLedger', label: 'Vinnie\'s desk and the ledger' }], ['deskphone', 7, 3, 1, 1, { fn: 'officePhone', label: 'The phone: the big errands' }],
-        ['safe', 10, 2, 1, 1, { talk: 'The safe. Vinnie leans on its little brother in the shop. Nobody knows this combination but Vinnie, and Nico can\'t count that high.', label: 'The big safe' }],
-        ['shelf', 1, 2, 2, 1], ['sofa', 1, 6, 2, 1, null, { col: '#5a2a1a' }], ['lamp', 9, 6, 1, 1], ['plant', 10, 6, 1, 1]],
+        ['safe', 10, 2, 1, 1, { fn: 'officeSafe', label: 'The big safe' }], ['board', 6, 1, 2, 1, { fn: 'officeBook', label: '📋 Vinnie\'s book' }],
+        ['shelf', 1, 2, 2, 1, { fn: 'officeCigar', label: '🚬 The humidor' }], ['table', 9, 4, 2, 2, { fn: 'officeHiLo', label: '🃏 Hi-Lo with Nico' }, { col: '#1d5a3a', cards: true }], ['sofa', 1, 6, 2, 1, null, { col: '#5a2a1a' }], ['lamp', 9, 6, 1, 1], ['plant', 10, 6, 1, 1]],
       folk: [] },
     // under Prime Cut, down the stairs behind Philippe's desk (office.js)
     cellar: { name: 'The Wine Cellar', W: 12, H: 9, floor: 'tile', theme: { wall: '#3a2c20', trim: '#1a120c', tileA: '#4a3a2a', tileB: '#3a2c20' }, staff: null,
@@ -303,7 +303,8 @@ const World = (() => {
         R(8, 24, 30, 1, '#d8b07a'); break; }
       case 'rug': c.fillStyle = 'rgba(201, 161, 74, .35)'; c.fillRect(px, py, w, hh); c.strokeStyle = 'rgba(201, 161, 74, .8)'; c.lineWidth = 2; c.strokeRect(px + 3, py + 3, w - 6, hh - 6); break;
       case 'table': for (const sx2 of [-4, w - 4]) { c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(px + sx2 + 1, py + hh / 2 - 1, 9, 9); R(sx2, hh / 2 - 6, 8, 3, '#4e2a1a'); R(sx2, hh / 2 - 3, 8, 7, '#7a3a24'); R(sx2 + 1, hh / 2 - 2, 6, 1, 'rgba(255,255,255,.15)'); } // a chair either side
-        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break;
+        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + w / 2 + 2, py + hh / 2 + 3, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill(); c.fillStyle = p.col || '#f5f5f5'; c.beginPath(); c.ellipse(px + w / 2, py + hh / 2, w / 2 - 2, hh / 2 - 4, 0, 0, 7); c.fill();
+        if (p.cards) { R(w / 2 - 7, hh / 2 - 4, 5, 7, '#f5f0e0'); R(w / 2 + 1, hh / 2 - 3, 5, 7, '#f5f0e0'); R(w / 2 - 6, hh / 2 - 2, 1, 2, '#c8102e'); R(w / 2 + 2, hh / 2 - 1, 1, 2, '#111'); } else R(w / 2 - 1, hh / 2 - 6, 2, 6, '#ffd54f'); break; // a card table has felt and cards, a dining table a cloth and a candle
       case 'tank': R(0, 2, w, hh - 2, '#263238'); R(2, 3, w - 4, hh - 6, 'rgba(79, 195, 247, .7)'); R(8, 8, 5, 3, '#e53935'); R(18, 6, 5, 3, '#e53935'); break;
       case 'bar2': R(0, 2, w, hh - 2, '#4a1f10'); R(0, 0, w, 5, '#7a3a1c'); R(0, 4, w, 1, '#c9a14a'); R(0, hh - 2, w, 2, '#c9a14a'); for (let i = 0; i < p.w; i++) R(i * T + 6, 7, 4, 6, '#2a0f06'); break;
       case 'faro': c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(px + 3, py + 4, w - 2, hh - 2); R(0, 0, w, hh - 2, '#4a2a14'); R(2, 2, w - 4, hh - 6, '#1d5a3a'); for (let i = 0; i < 13; i++) { const cx = 5 + (i % 7) * 7, cy = i < 7 ? 5 : 16; R(cx, cy, 5, 8, '#f5f0e0'); R(cx + 2, cy + 3, 1, 2, '#111'); } R(w - 10, 5, 6, 18, '#c9a14a'); R(w - 9, 6, 4, 16, '#8a1d1d'); break;
@@ -352,6 +353,10 @@ const World = (() => {
     if (fn === 'office') return Office.door();
     if (fn === 'officeLedger') return Office.ledger();
     if (fn === 'officePhone') return Office.phone();
+    if (fn === 'officeSafe') return Office.safe();
+    if (fn === 'officeBook') return Office.book();
+    if (fn === 'officeCigar') return Office.cigar();
+    if (fn === 'officeHiLo') return Office.hiLo();
     if (fn === 'vinnieErrand') return Office.vinnieErrand();
     if (fn === 'cellarBins') return Postcards.cellar(true);
     if (fn === 'cellarGlass') return Office.cellarGlass();
