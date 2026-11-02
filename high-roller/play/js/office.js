@@ -61,12 +61,38 @@ const Office = (() => {
       good: 'He looks at it through his eyeglass for a long time and pays without a word.', bad: 'The watch is a fake. Somebody has to cover the difference, and it isn\'t Vinnie.' },
     { what: 'a parcel "for the back"', contact: 'Raj\'s brother', where: 'in the Quik-Stop', map: 'r:store', at: [9, 6], look: { shirt: '#16a085', pants: '#2d3436', skin: '#a0673f', hair: '#111' },
       good: 'He doesn\'t look in it. Neither do you. Everybody\'s happy.', bad: 'His cousin is in the shop. His cousin is a cop. You leave the parcel and a little more besides.' },
+    { what: 'a folded racing paper', contact: 'The man in the back booth', where: 'at Mel\'s Diner', map: 'r:diner', at: [12, 8], look: { shirt: '#7f8c8d', pants: '#2d3436', skin: '#f0c19a', hair: '#888', hat: true },
+      good: 'He reads the paper, finds what\'s folded inside it, and leaves Mel a very large tip.', bad: 'Mel sees what falls out of the paper. Mel wants it gone, and wants paying for her trouble.' },
+    { what: 'a bolt of cloth that\'s heavier than cloth', contact: 'The tailor', where: 'at Lucky Strike Outfitters', map: 'r:shop', at: [12, 6], look: { shirt: '#f4f4f4', vest: '#6b4a2a', pants: '#2d3436', skin: '#c68863', hair: '#3a2a1e', glasses: true },
+      good: 'He measures it, nods, and pays you from the till like it was a hem.', bad: 'Rosa comes in early. The tailor hands it back to you, loudly. You buy something on the way out to make it go away.' },
+    { what: 'a birthday card with something thick in it', contact: 'The woman in 2B', where: 'at the Downtown Apartments', map: 'r:apts', at: [6, 6], look: { shirt: '#e84393', pants: '#2d3436', skin: '#8d5524', hair: '#111' },
+      good: 'She opens it on the landing, counts it, and wishes you a happy birthday too.', bad: 'Her husband is home. He has questions about the card. You answer them with money.' },
+    { what: 'a bottle wrapped in newspaper', contact: 'Rémy the waiter', where: 'at Prime Cut', map: 'r:steak', at: [11, 7], look: { shirt: '#f4f4f4', vest: '#111', pants: '#111', skin: '#f0c19a', hair: '#3a2a1e', bow: true },
+      good: 'Rémy takes it through the kitchen door and comes back with an envelope on a silver tray.', bad: 'Philippe takes it before Rémy can. "Monsieur. In my restaurant?" You pay for the insult.' },
+    { what: 'a deck still in its cellophane', contact: 'A croupier on her break', where: 'at the Gilded Palace', map: 'v:palace', at: [3, 10], look: { shirt: '#f4f4f4', vest: '#5e1430', pants: '#111', skin: '#e0ac69', hair: '#7a2e1a' },
+      good: 'She slips it into her apron without looking at it and hands you a chip she\'s cashed for you.', bad: 'Margot\'s floor man sees the cellophane. Margot sends you a bill for "the inconvenience".' },
+    { what: 'an envelope for the regular at the end of the bar', contact: 'The man at the end of the bar', where: 'at the Rusty Spur', map: 'v:spur', at: [3, 12], look: { shirt: '#5d4037', pants: '#2d3436', skin: '#f0c19a', hair: '#555', hat: true },
+      good: 'He tucks it in his hat. Dolores pretends not to see, and pours him another.', bad: 'Nico\'s there, drinking. He takes the envelope and a little extra for his memory.' },
+    { what: 'a key on a red ribbon', contact: 'A woman in a red scarf', where: 'by the phone booth on River Road', map: 'town', at: [10, 29], look: { shirt: '#c0392b', pants: '#2d3436', skin: '#f0c19a', hair: '#111' },
+      good: 'She takes it without a word, steps into the phone booth and dials. Your money\'s under the phone.', bad: 'The phone in the booth rings. It\'s for you. It\'s expensive.' },
+    { what: 'a rolled newspaper with no news in it', contact: 'The newsstand kid', where: 'at the newsstand on Main Street', map: 'town', at: [23, 16], look: { shirt: '#f39c12', pants: '#2c3e50', skin: '#c68863', hair: '#3a2a1e', hat: true },
+      good: 'The kid swaps it for an identical paper with your money in it. Smooth.', bad: 'The kid\'s mum runs the stand today. She knows what that paper is. So does her purse, now.' },
+    { what: 'a bag of bread for the ducks', contact: 'An old man by the duck pond', where: 'in Lucky Park', map: 'town', at: [19, 38], look: { shirt: '#6d4c41', pants: '#3e2723', skin: '#f0c19a', hair: '#eee', hat: true },
+      good: 'He feeds the ducks one slice and puts the rest, and what was under it, in his coat.', bad: 'A duck takes the bag. You have to buy it back from a park keeper who saw everything.' },
+    { what: 'a set of motel keys', contact: 'A trucker by the motel sign', where: 'outside the Starlite Motel', map: 'town', at: [4, 30], look: { shirt: '#2980b9', pants: '#34495e', skin: '#e0ac69', hair: '#7a4a1e', hat: true },
+      good: 'He tosses you a roll of bills and climbs back into his cab.', bad: 'The keys are for the wrong room. Darlene charges for the door he kicks in.' },
+    { what: 'a pair of opera tickets', contact: 'A valet off duty', where: 'on the Strip, by the Monte Royale', map: 'town', at: [41, 17], look: { shirt: '#c9a14a', vest: '#1d1a14', pants: '#111', skin: '#8d5524', hair: '#111' },
+      good: 'He smiles, slips the tickets in his jacket and pays in crisp Monte Royale cash.', bad: 'Kessler\'s doorman watches the whole thing. Your name is in a book now, and it cost you to get it out.' },
   ];
   const BIG = [
     { what: 'a briefcase', contact: 'A man in a long coat', where: 'down on the dock', map: 'town', at: [46, 23], look: { shirt: '#1d1d1d', pants: '#1d1d1d', skin: '#f0c19a', hair: '#333', hat: true },
       good: 'Nobody follows you. Nobody is ever there. Vinnie counts it twice.', bad: 'Kessler\'s men were waiting at the dock. You get away. The money doesn\'t.' },
     { what: 'a set of car keys', contact: 'A driver who doesn\'t give a name', where: 'by the dusty sedan on the east side', map: 'town', at: [43, 27], look: { shirt: '#34495e', pants: '#1d1d1d', skin: '#8d5524', hair: '#111', shades: true },
       good: 'He takes the keys and drives off without checking the mirrors. You get paid.', bad: 'The sedan has a broken tail light and a cop behind it before it\'s left the kerb. It costs you to walk away.' },
+    { what: 'a locked document case', contact: 'A man on the far park bench', where: 'in Lucky Park', map: 'town', at: [20, 38], look: { shirt: '#2c3e50', pants: '#1d1d1d', skin: '#f0c19a', hair: '#bbb', glasses: true },
+      good: 'He opens it on his knee, reads one page, closes it, and hands you more money than you\'ve ever held in a park.', bad: 'The bench is empty. The man is behind you. He takes the case and leaves you a bruise and a bill.' },
+    { what: 'a sports bag that clinks', contact: 'Two men in the alley', where: 'behind the Quik-Stop', map: 'town', at: [24, 13], look: { shirt: '#1d1d1d', pants: '#1d1d1d', skin: '#c68863', hair: '#111', shades: true },
+      good: 'One counts, one watches the street. Then they\'re gone, and you\'re richer.', bad: 'A squad car turns into the alley. Everybody runs. You run slowest, and it costs you.' },
   ];
   // the errand in hand, if any (it lapses when the day ends)
   function job() {
@@ -83,7 +109,7 @@ const Office = (() => {
   }
   async function offer({ from, list, pay, risk }) {
     const why = busy(); if (why) { UI.toast(why, 'warn'); return false; }
-    const open = list.filter(r => r.map === 'town' || !World.openNow || World.openNow(r.map.slice(2))); // only somewhere you can get into right now
+    const open = list.filter(r => r.map === 'town' || ((!r.map.startsWith('v:') || !Career.venueOpen || Career.venueOpen(r.map.slice(2))) && (!World.openNow || World.openNow(r.map.slice(2))))); // only somewhere you can get into right now
     const r = RNG.pick(open.length ? open : list.filter(r => r.map === 'town'));
     const c = await UI.modal({ title: '💼 An errand', body: h('div', h('p', `"Take ${r.what} to ${lc(r.contact)}, ${r.where}. Today. Don't open anything."`), h('p.muted.small', `About ${fmt(pay)} on delivery · ${risk > .25 ? 'risky' : risk > .15 ? 'usually fine' : 'safe enough'}`)),
       buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: 'Take it', value: true, cls: 'primary' }] });

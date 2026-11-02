@@ -1142,7 +1142,7 @@ const World = (() => {
     const people = m.npcs.map(n => {
       let fx = n.x, fy = n.y, fr = 0;
       if (n.moving) { const k = Math.min(1, (now - n.moving.t0) / 260); fx = n.moving.fx + (n.x - n.moving.fx) * k; fy = n.moving.fy + (n.y - n.moving.fy) * k; fr = Math.floor(now / 130); }
-      return { fx, fy, dir: n.dir, fr, look: n.look, story: n.story, rival: n.rival };
+      return { fx, fy, dir: n.dir, fr, look: n.look, story: n.story, rival: n.rival, errand: n.errand };
     });
     people.push({ fx: p.fx, fy: p.fy, dir: p.dir, fr: p.moving ? p.frame : 0, look: playerLook(), me: true });
     people.sort((a, b) => a.fy - b.fy);
