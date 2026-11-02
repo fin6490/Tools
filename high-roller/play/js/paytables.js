@@ -1,6 +1,7 @@
-/* Paytables for every side bet and progressive. These are deliberately generous:
-   most side bets are tuned to ~99-101% return, and progressives start a little
-   under break-even and go positive as their meters climb.
+/* Paytables for every main bet, side bet and progressive. These are deliberately generous:
+   the main bets are tuned to return 100% or a little more with good play, most side bets
+   to ~99-101%, and progressives start a little under break-even and go positive as their
+   meters climb.
    `rtp` values are produced by tools/odds.js (run: node casino/tools/odds.js). */
 (function (root) {
   const PAY = {
@@ -41,10 +42,10 @@
       blind: [
         { key: 'royal', name: 'Royal Flush', pays: 500 },
         { key: 'sf', name: 'Straight Flush', pays: 50 },
-        { key: 'quads', name: 'Four of a Kind', pays: 10 },
+        { key: 'quads', name: 'Four of a Kind', pays: 12 },
         { key: 'fh', name: 'Full House', pays: 3 },
-        { key: 'flush', name: 'Flush', pays: 1.5 },
-        { key: 'straight', name: 'Straight', pays: 1 },
+        { key: 'flush', name: 'Flush', pays: 2 },
+        { key: 'straight', name: 'Straight', pays: 1.5 },
       ],
       pocket: [
         { key: 'AA', name: 'Pocket Aces', pays: 35 },
@@ -68,7 +69,8 @@
       },
     },
     bac: {
-      main: { player: 1, banker: 0.95, tie: 9 },
+      // Player wins on a two-card 9 pay 6:5; Banker pays less a 2.5% commission (venues may set their own)
+      main: { player: 1, playerNat9: 1.2, banker: 0.975, tie: 9.5 },
       pair: [
         { key: 'suited', name: 'Suited Pair', pays: 17 },
         { key: 'pair', name: 'Pair', pays: 11 },
@@ -96,18 +98,18 @@
         { pts: 4, name: '4 Points', pays: 30 },
       ],
       ats: { small: 37, tall: 37, all: 189 },
-      // one-roll and hardway props at true odds: zero house edge
+      // one-roll and hardway props, and place bets, at true odds: zero house edge
       props: { hard4: 8, hard6: 10, any7: 5, anyCraps: 8, yo: 17, aceDeuce: 17, aces: 35, boxcars: 35 },
-      place: { 4: 9 / 5, 5: 7 / 5, 6: 7 / 6, 8: 7 / 6, 9: 7 / 5, 10: 9 / 5 },
+      place: { 4: 2, 5: 3 / 2, 6: 6 / 5, 8: 6 / 5, 9: 3 / 2, 10: 2 },
     },
     ms: {
       main: [
         { key: 'royal', name: 'Royal Flush', pays: 500 },
         { key: 'sf', name: 'Straight Flush', pays: 100 },
         { key: 'quads', name: 'Four of a Kind', pays: 40 },
-        { key: 'fh', name: 'Full House', pays: 10 },
-        { key: 'flush', name: 'Flush', pays: 6 },
-        { key: 'straight', name: 'Straight', pays: 4 },
+        { key: 'fh', name: 'Full House', pays: 12 },
+        { key: 'flush', name: 'Flush', pays: 8 },
+        { key: 'straight', name: 'Straight', pays: 6 },
         { key: 'trips', name: 'Three of a Kind', pays: 3 },
         { key: 'twopair', name: 'Two Pair', pays: 2 },
         { key: 'highpair', name: 'Pair of Jacks or Better', pays: 1 },
@@ -136,9 +138,9 @@
     },
     tcp: {
       anteBonus: [
-        { key: 'sf', name: 'Straight Flush', pays: 5 },
-        { key: 'trips', name: 'Three of a Kind', pays: 4 },
-        { key: 'straight', name: 'Straight', pays: 1 },
+        { key: 'sf', name: 'Straight Flush', pays: 6 },
+        { key: 'trips', name: 'Three of a Kind', pays: 5 },
+        { key: 'straight', name: 'Straight', pays: 2 },
       ],
       pairPlus: [
         { key: 'mini', name: 'Mini Royal', pays: 200 },
@@ -176,8 +178,8 @@
         { key: 'aces4', name: 'Four Aces', pays: 200 },
         { key: 'sf', name: 'Straight Flush', pays: 50 },
         { key: 'quads', name: 'Four of a Kind', pays: 40 },
-        { key: 'flush', name: 'Flush', pays: 2 },
-        { key: 'straight', name: 'Straight', pays: 1 },
+        { key: 'flush', name: 'Flush', pays: 2.5 },
+        { key: 'straight', name: 'Straight', pays: 1.5 },
       ],
       queensUp: [
         { key: 'quads', name: 'Four of a Kind', pays: 50 },
@@ -196,8 +198,8 @@
         { key: 'quads', name: 'Four of a Kind', pays: 50 },
         { key: 'fh', name: 'Full House', pays: 11 },
         { key: 'flush', name: 'Flush', pays: 8 },
-        { key: 'straight', name: 'Straight', pays: 5 },
-        { key: 'trips', name: 'Three of a Kind', pays: 3 },
+        { key: 'straight', name: 'Straight', pays: 6 },
+        { key: 'trips', name: 'Three of a Kind', pays: 4 },
         { key: 'twopair', name: 'Two Pair', pays: 2 },
         { key: 'tens', name: 'Pair of 10s or Better', pays: 1 },
       ],
@@ -212,6 +214,7 @@
     },
     war: {
       tie: 12, suitedTie: 14,
+      warWin: 1, // winning a war pays the original bet too (not just the raise)
     },
   };
   root.PAY = PAY;

@@ -72,7 +72,7 @@ GAMES.roulette = (() => {
     t.body.append(h('div.roulette' + (vert ? '.vert' : ''),
       h('div.rl-top',
         h('div.wheel-wrap', h('div.pointer'), h('div.wheel#rl-wheel', { html: wheelSVG() }), h('div.wheel-center#rl-res', '')),
-        h('div.rl-info', h('div.area-l', `${wheel === 'american' ? 'Double-zero' : wheel === 'french' ? 'French single-zero · La Partage: half back on even-money bets when 0 hits' : 'Single-zero'} wheel`),
+        h('div.rl-info', h('div.area-l', `${wheel === 'american' ? 'Double-zero' : wheel === 'french' ? 'French single-zero' : 'Single-zero'} wheel · House Zero: when a zero hits, every losing bet comes back`),
           h('div.rl-hist#rl-hist'), h('p.muted.small', vert ? 'Tap a number for a straight-up bet. Tap the lines between numbers for splits and corners, the outer edge for streets and six lines. Long-press a bet to take a chip back.' : 'Click a number for a straight-up bet. Click the lines between numbers for splits, corners, streets (bottom edge) and six lines. Right-click a bet to take a chip back.'))),
       grid));
     $('#rl-wheel').style.transform = `rotate(${angle}deg)`;
@@ -129,21 +129,21 @@ GAMES.roulette = (() => {
     for (const b of bets) {
       if (!b.spot.amount) continue;
       if (b.nums.includes(n)) b.spot.win(b.pays);
-      else if (zero && b.even && wheel === 'french') b.spot.refund(round2(b.spot.amount / 2), 'La Partage');
+      else if (zero) b.spot.push('House Zero'); // the house rule: a zero never takes your bet
       else b.spot.lose();
     }
     t.finishRound();
     idle(); t.msg(`${n} ${colorOf(n).toUpperCase()}${zero ? '' : ` · ${n % 2 ? 'odd' : 'even'} · ${n <= 18 ? 'low' : 'high'}`}`);
   }
   return {
-    id: 'roulette', name: 'Roulette', icon: '🎡', blurb: 'The wheel. Find a single-zero table, or better, La Partage.',
+    id: 'roulette', name: 'Roulette', icon: '🎡', blurb: 'The wheel, with the House Zero rule: a zero never takes your bet.',
     mount,
     info(c) {
       const w = (c.rules && c.rules.wheel) || 'american', N = w === 'american' ? 38 : 37;
       return [
-        { title: 'Wheel', text: w === 'american' ? 'Double zero (0 and 00): every bet except the 5-number basket has a 5.26% house edge.' : w === 'french' ? 'Single zero with La Partage: even-money bets lose only half when zero hits (1.35% edge); everything else 2.70%.' : 'Single zero: 2.70% house edge on every bet.' },
-        { title: 'Payouts', rows: [['Straight up', '35 to 1'], ['Split', '17 to 1'], ['Street', '11 to 1'], ['Corner', '8 to 1'], ['Six line', '5 to 1'], ['Dozen / Column', '2 to 1'], ['Red/Black, Odd/Even, 1-18/19-36', '1 to 1']],
-          rtp: w === 'french' ? 1 - 1 / 74 : 36 / N },
+        { title: 'Wheel', text: (w === 'american' ? 'Double zero (0 and 00).' : 'Single zero.') + ' House Zero rule: when the ball lands on a zero, every bet that would have lost is returned to you instead. That makes every bet off the zeros a dead-even 100% bet. Bets on the zeros themselves still carry a small edge (' + pctStr(1 / N) + ').' },
+        { title: 'Payouts (any bet that misses the zeros)', rows: [['Straight up', '35 to 1'], ['Split', '17 to 1'], ['Street', '11 to 1'], ['Corner', '8 to 1'], ['Six line', '5 to 1'], ['Dozen / Column', '2 to 1'], ['Red/Black, Odd/Even, 1-18/19-36', '1 to 1']],
+          rtp: 1 },
       ];
     },
   };

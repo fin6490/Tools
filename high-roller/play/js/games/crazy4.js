@@ -85,7 +85,7 @@ GAMES.c4 = (() => {
       if (sb) { sp.sb.win(sb.pays, sb.name); if (sb.pays >= 25) App.count('bigSide'); }
       else cmp >= 0 ? sp.sb.push() : sp.sb.lose();
       text = cmp > 0 ? `You win with ${me.name}${qualifies ? '' : ' (dealer didn\'t qualify: Ante pushes)'}.` : cmp < 0 ? `Dealer wins with ${dl.name}.` : 'Tie: push.';
-      if (sb) text += ` Super Bonus: ${sb.name} pays ${sb.pays} to 1!`;
+      if (sb) text += ` Super Bonus: ${sb.name} pays ${UI.ratio(sb.pays)}!`;
     }
     t.finishRound();
     betPhase(); t.msg(text);
@@ -94,7 +94,7 @@ GAMES.c4 = (() => {
     id: 'c4', name: 'Crazy 4 Poker', icon: '4️⃣', blurb: 'Five cards, best four play. Raise 3x with aces, and a Super Bonus up to 200:1.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'Bet the Ante; an equal Super Bonus bet goes out with it. You and the dealer get five cards each and the best four count. Fold, play 1x your Ante, or play 3x with a pair of aces or better. The dealer needs king high to qualify: if not, the Ante pushes and the Play bet still goes against the dealer\'s hand. Four of a kind beats a straight flush in Crazy 4.' },
+      { title: 'How to play', text: 'Bet the Ante; an equal Super Bonus bet goes out with it. You and the dealer get five cards each and the best four count. Fold, play 1x your Ante, or play 3x with a pair of aces or better. The dealer needs king high to qualify: if not, the Ante pushes and the Play bet still goes against the dealer\'s hand. Four of a kind beats a straight flush in Crazy 4.', rtp: RTP['c4.main'] },
       { title: 'Super Bonus (straight or better pays whatever the dealer has; otherwise it pushes if you beat or tie the dealer)', rows: UI.payRows(PAY.c4.superBonus) },
       { title: 'Queens Up (your best four cards)', rows: UI.payRows(PAY.c4.queensUp), rtp: RTP['c4.queensUp'] },
       { title: 'Strategy', text: 'Play 3x with a pair of aces or better, 1x with any other pair or K-Q-8-4 and up, and fold the rest.' },

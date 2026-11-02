@@ -192,7 +192,7 @@ GAMES.uth = (() => {
     id: 'uth', name: "Ultimate Texas Hold'em", icon: '🤠', blurb: 'Heads-up hold\'em against the dealer. Raise big early, or wait for the river.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'Bet equal Ante and Blind. After your two cards: raise 3x or 4x the ante, or check. After the flop: raise 2x or check. After the river: raise 1x or fold. You may only raise once. The dealer needs a pair to qualify; if not, the Ante pushes. The Blind pays on a winning straight or better and otherwise pushes on a win.' },
+      { title: 'How to play', text: 'Bet equal Ante and Blind. After your two cards: raise 3x or 4x the ante, or check. After the flop: raise 2x or check. After the river: raise 1x or fold. You may only raise once. The dealer needs a pair to qualify; if not, the Ante pushes. The Blind pays on a winning straight or better and otherwise pushes on a win.', rtp: RTP['uth.main'] },
       { title: 'Blind paytable', rows: UI.payRows(PAY.uth.blind) },
       { title: 'Trips (your best 7-card hand, win or lose)', rows: UI.payRows(PAY.uth.trips), rtp: RTP['uth.trips'] },
       { title: 'Pocket Bonus (your two hole cards)', rows: UI.payRows(PAY.uth.pocket), rtp: RTP['uth.pocket'] },

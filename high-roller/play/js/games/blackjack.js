@@ -53,15 +53,19 @@ GAMES.bj = (() => {
   }
 
   function sideMax() { return Math.max(25, ctx.limits.max / 4); }
+  // 2 -> '2 TO 1', 1.5 -> '3 TO 2', 1.2 -> '6 TO 5'
+  function payWords(x, sep) { for (let d = 1; d <= 5; d++) if (Math.abs(x * d - Math.round(x * d)) < 1e-9) return Math.round(x * d) + sep + d; return x + sep + 1; }
+  // return with basic strategy, 6 decks: the usual rule-by-rule effects on a 3:2 game, plus 2.26% for each extra unit a blackjack pays
+  function mainRtp(r) { return 1 - 0.0054 - (r.h17 ? 0.0022 : 0) + (r.das ? 0.0014 : 0) + (r.surrender ? 0.0008 : 0) + (r.rsa ? 0.0008 : 0) + (r.bjPays - 1.5) * 0.0452; }
 
   function mount(table, c) {
     t = table; ctx = c;
-    R = Object.assign({ bjPays: 1.5, h17: true, das: true, surrender: false, maxHands: 4, rsa: false }, ctx.rules);
+    R = Object.assign({ bjPays: 2, h17: true, das: true, surrender: false, maxHands: 4, rsa: false }, ctx.rules);
     shoe = shoes[ctx.venueId] || (shoes[ctx.venueId] = new Shoe(6, 0.75));
     const prog = PAY.bj.prog;
     t.body.append(h('div.bj',
       h('div.dealer-area', h('div.area-l', 'Dealer ', h('span.tot#bj-dtot')), h('div.cards#bj-dealer')),
-      h('div.felt-arc', `BLACKJACK PAYS ${R.bjPays === 1.5 ? '3 TO 2' : '6 TO 5'} · DEALER ${R.h17 ? 'HITS' : 'STANDS ON'} SOFT 17 · INSURANCE PAYS 2 TO 1`),
+      h('div.felt-arc', `BLACKJACK PAYS ${payWords(R.bjPays, ' TO ')} · DEALER ${R.h17 ? 'HITS' : 'STANDS ON'} SOFT 17 · INSURANCE PAYS 2 TO 1`),
       h('div.hands#bj-hands'),
       h('div.spots-row#bj-spots')));
     dealer = new UI.CardRow($('#bj-dealer'));
@@ -129,7 +133,7 @@ GAMES.bj = (() => {
     // insurance / even money
     const mainTotal = hands.reduce((a, hd) => a + hd.spot.amount, 0);
     if (up.r === 14 && App.bank >= mainTotal / 2 - 1e-9) {
-      const single = hands.length === 1 && isBJ(h0.cards);
+      const single = R.bjPays === 1.5 && hands.length === 1 && isBJ(h0.cards); // "even money" only means that when naturals pay 3:2
       const take = await choice(single ? 'Dealer shows an Ace. Even money?' : `Dealer shows an Ace. Insurance${hands.length > 1 ? ' on all your hands' : ''}?`,
         [{ label: single ? 'Even Money' : 'Insurance', key: 'i', v: true, cls: 'primary' }, { label: 'No thanks', key: 'n', v: false }]);
       if (take) { insSpot.force(round2(mainTotal / 2)); $('#bj-spots').prepend(insSpot.el); }
@@ -292,9 +296,9 @@ GAMES.bj = (() => {
     id: 'bj', name: 'Blackjack', icon: '🂡', blurb: 'Beat the dealer to 21. Perfect Pairs, 21+3 and a Blazing 7s jackpot.',
     mount, strategy, total,
     info(c) {
-      const r = Object.assign({ bjPays: 1.5, h17: true, das: true, surrender: false, maxHands: 4 }, c.rules);
+      const r = Object.assign({ bjPays: 2, h17: true, das: true, surrender: false, maxHands: 4 }, c.rules);
       return [
-        { title: 'Table rules', text: `6 decks, cut card at 75%. Blackjack pays ${r.bjPays === 1.5 ? '3:2' : '6:5'}. Dealer ${r.h17 ? 'hits' : 'stands on'} soft 17 and peeks for blackjack. Split up to ${r.maxHands} hands${r.das ? ', double after split allowed' : ''}. Split aces get one card${r.rsa ? ' (resplit aces allowed)' : ''}. ${r.surrender ? 'Late surrender offered.' : ''} Insurance pays 2:1.` },
+        { title: 'Table rules', text: `6 decks, cut card at 75%. Blackjack pays ${payWords(r.bjPays, ':')}. Dealer ${r.h17 ? 'hits' : 'stands on'} soft 17 and peeks for blackjack. Split up to ${r.maxHands} hands${r.das ? ', double after split allowed' : ''}. Split aces get one card${r.rsa ? ' (resplit aces allowed)' : ''}. ${r.surrender ? 'Late surrender offered.' : ''} Insurance pays 2:1.`, rtp: mainRtp(r) },
         { title: 'Perfect Pairs (your first two cards)', rows: UI.payRows(PAY.bj.perfectPairs), rtp: RTP['bj.perfectPairs'] },
         { title: '21+3 (your two cards + dealer up card, as a poker hand)', rows: UI.payRows(PAY.bj.plus3), rtp: RTP['bj.plus3'] },
         { title: `Blazing 7s Jackpot (${fmt(PAY.bj.prog.cost)})`, text: 'Judged on your first two cards and the dealer\'s up card. Percent tiers pay from the meter.', rows: PAY.bj.prog.tiers.map(x => [x.name, x.pct ? (x.pct * 100) + '% of meter' : fmt(x.amt)]), rtp: Progressives.rtp('bj') },

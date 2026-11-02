@@ -7,7 +7,7 @@ const POSTCARDS = [
   { n: 1, front: '📮 A jukebox, glowing in the dark', place: "Mel's Diner",
     back: 'Some songs only play once a night. Ours lives where the pie is honest. Pick it, and tell Mel I sent you. — 17' },
   { n: 2, front: '📮 A pawn shop window, rain on the glass', place: "Vinnie's Pawn & Loan",
-    back: 'My watch is in hock with a friend who isn\'t one. The ticket number is what a natural pays on a $10 bet at an honest table, times the decks in a crooked shoe. Four digits, zeros first. — 17' },
+    back: 'My watch is in hock with a friend who isn\'t one. The ticket number is what a natural pays on a $10 bet in this town, times the decks in the shoe. Four digits, zeros first. — 17' },
   { n: 3, front: '📮 A cellar door, a single candle', place: 'Prime Cut Steakhouse',
     back: 'Philippe keeps a bottle of mine in his cellar. The bin: the hard eight\'s dice side by side, then the hard ten\'s. Ask him nicely; he likes that. — 17' },
   { n: 4, front: '📮 A grand piano under a chandelier', place: 'The Grand Hotel',
@@ -66,12 +66,12 @@ const Postcards = {
     const inp = h('input.field#pc-ticket', { inputmode: 'numeric', maxlength: 4, placeholder: '0000', autocomplete: 'off' });
     const ok = await UI.modal({ title: '🎟️ Redeem a pawn ticket', body: h('div', h('p', 'Vinnie leans on the safe. "Ticket number, kid. No ticket, no watch."'), h('label.lbl', { for: 'pc-ticket' }, 'Ticket number'), inp), buttons: [{ label: 'Never mind', value: false, cls: 'ghost' }, { label: 'Hand it over', value: true, cls: 'primary' }] });
     if (!ok) return;
-    if (inp.value.trim() === '0090') {
+    if (['0120', '0090'].includes(inp.value.trim())) { // 2:1 x 6 decks (0090 was the answer when naturals paid 3:2)
       await this.solve(2, 'watch', [
-        { who: 'vinnie', text: 'Ticket ninety. *long look* Sal\'s watch. He hocked it the week he lost the Spur and never came back for it. Take it. And if you tell anybody I\'m sentimental, I\'ll deny it.' },
+        { who: 'vinnie', text: 'Ticket one-twenty. *long look* Sal\'s watch. He hocked it the week he lost the Spur and never came back for it. Take it. And if you tell anybody I\'m sentimental, I\'ll deny it.' },
         { who: 'narrator', text: 'The watch stopped at 2:10. When you pry open the case back, a postcard folded small as a stamp falls into your palm.' },
       ], 'Folded inside the case back of the watch.');
-    } else await UI.dialog([{ who: 'vinnie', text: RNG.pick(['That ticket\'s for a saxophone. You don\'t look like a sax guy.', 'Nope. Do the math again, kid. Honest table, crooked shoe.', 'Wrong ticket. Natural pays three to two, last I checked.']) }]);
+    } else await UI.dialog([{ who: 'vinnie', text: RNG.pick(['That ticket\'s for a saxophone. You don\'t look like a sax guy.', 'Nope. Do the math again, kid. A natural, times the shoe.', 'Wrong ticket. Naturals pay two to one round here, last I checked.']) }]);
   },
   async cellar(inside) {
     if (this.active() !== 3) { await UI.dialog([{ who: 'narrator', text: inside ? 'The bin book: every bottle down here, by its number, in Philippe\'s copperplate. Nothing in it is asking for you. Yet.' : 'The wine cellar. Philippe guards the key like a state secret.' }]); return; }
@@ -175,7 +175,7 @@ const Postcards = {
   /* ---------- the case file tab ---------- */
   panel() {
     const p = this.st(), out = h('div.postcards');
-    const hint = { 1: 'Mel\'s Diner has a jukebox.', 2: 'A blackjack natural pays 3 to 2. The Paytables button at any blackjack table says how many decks are in a shoe.', 3: 'The hard ways are pairs: hard eight is 4 and 4. The craps paytables list them.', 4: 'What did Sal order at the Spur at 1:28 AM? Dolores\'s receipt knows. The piano only has keys A to G.' }[this.active()];
+    const hint = { 1: 'Mel\'s Diner has a jukebox.', 2: 'A blackjack natural pays 2 to 1 at every table in town. The Paytables button at any blackjack table says how many decks are in a shoe.', 3: 'The hard ways are pairs: hard eight is 4 and 4. The craps paytables list them.', 4: 'What did Sal order at the Spur at 1:28 AM? Dolores\'s receipt knows. The piano only has keys A to G.' }[this.active()];
     if (this.active()) out.append(h('section.panel.story', h('div.kicker', 'Current postcard'), h('p', POSTCARDS[this.active() - 1].back), h('details', h('summary', 'Need a nudge?'), h('p.small', hint))));
     else if (p.solved >= 4 && !p.heard) out.append(h('section.panel.story', h('div.kicker', 'The tape'), h('p', this.st().fixDay ? (this.tapeReady() ? 'Sparky fixed the tape. It\'s on your laptop in Room 12 at the Starlite, or ask Sparky at the Spur to play it.' : 'Sparky is splicing the tape overnight.') : 'The cassette is chewed. Sparky, at the Spur, fixes anything with wires.')));
     else if (p.heard) out.append(h('section.panel.story', h('div.kicker', 'The tape'), h('p', 'You\'ve heard Sal\'s message.'), h('button.btn.sm', { onclick: () => this.playTape() }, '📼 Play it again')));

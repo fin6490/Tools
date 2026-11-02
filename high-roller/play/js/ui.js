@@ -362,7 +362,9 @@ UI.rtpBadge = function (rtp) {
   const cls = rtp >= 1 ? 'good' : rtp >= 0.98 ? 'ok' : 'bad';
   return h('p.rtp.' + cls, `Return to player ${pctStr(rtp)} · ${edge > 0 ? 'house edge ' + pctStr(edge) : 'player edge ' + pctStr(-edge)}`);
 };
-UI.payRows = (table, suffix = ' to 1') => table.map(t => [t.name, (t.pays === 0 ? 'Push' : t.pays + suffix)]);
+// 2 -> '2 to 1', 1.5 -> '3 to 2', 2.5 -> '5 to 2', 1.2 -> '6 to 5'
+UI.ratio = x => { for (let d = 1; d <= 5; d++) if (Math.abs(x * d - Math.round(x * d)) < 1e-9) return Math.round(x * d) + ' to ' + d; return x + ' to 1'; };
+UI.payRows = (table, suffix = ' to 1') => table.map(t => [t.name, (t.pays === 0 ? 'Push' : suffix === ' to 1' ? UI.ratio(t.pays) : t.pays + suffix)]);
 
 /* ---------- Progressive meter ---------- */
 UI.meter = function (key, label) {

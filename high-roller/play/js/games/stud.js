@@ -162,7 +162,7 @@ GAMES.ms = (() => {
     id: 'ms', name: 'Mississippi Stud', icon: '🛶', blurb: 'Five-card stud with no dealer hand. Raise up to 3x on every street.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'Bet the Ante and get two cards; three community cards are dealt face down. Before each one is turned, raise 1x, 2x or 3x the ante, or fold. Your final five-card hand pays every bet on the layout.' },
+      { title: 'How to play', text: 'Bet the Ante and get two cards; three community cards are dealt face down. Before each one is turned, raise 1x, 2x or 3x the ante, or fold. Your final five-card hand pays every bet on the layout.', rtp: RTP['ms.main'] },
       { title: 'Paytable (all bets)', rows: UI.payRows(PAY.ms.main) },
       { title: '3-Card Bonus (your two cards + the first community card)', rows: UI.payRows(PAY.ms.bonus3), rtp: RTP['ms.bonus3'] },
       { title: `Stud Jackpot (${fmt(PAY.ms.prog.cost)}): your final five cards`, rows: PAY.ms.prog.tiers.map(x => [x.name, x.pct ? (x.pct * 100) + '% of meter' : fmt(x.amt)]), rtp: Progressives.rtp('ms') },
@@ -257,7 +257,7 @@ GAMES.tcp = (() => {
     id: 'tcp', name: 'Three Card Poker', icon: '🃏', blurb: 'Fast three-card hands. Pair Plus up to 200:1 and a 6-Card Bonus.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'Bet the Ante and you get three cards. Play (bet equal to the Ante) or fold. Dealer needs Queen high to qualify; if not, the Ante pays 1:1 and Play pushes. Note: in three-card poker a straight beats a flush.' },
+      { title: 'How to play', text: 'Bet the Ante and you get three cards. Play (bet equal to the Ante) or fold. Dealer needs Queen high to qualify; if not, the Ante pays 1:1 and Play pushes. Note: in three-card poker a straight beats a flush.', rtp: RTP['tcp.main'] },
       { title: 'Ante Bonus (paid whenever you play)', rows: UI.payRows(PAY.tcp.anteBonus) },
       { title: 'Pair Plus (your three cards)', rows: UI.payRows(PAY.tcp.pairPlus), rtp: RTP['tcp.pairPlus'] },
       { title: '6-Card Bonus (best 5 of your 3 + dealer\'s 3)', rows: UI.payRows(PAY.tcp.six), rtp: RTP['tcp.six'] },
@@ -355,7 +355,7 @@ GAMES.lir = (() => {
     id: 'lir', name: 'Let It Ride', icon: '🎠', blurb: 'Three bets, two chances to pull them back. Royals pay 1000:1.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'Make three equal bets. You get three cards, and two community cards are face down. After seeing your cards you may pull back bet 1; after the first community card, bet 2. The $ bet always rides. Your five-card hand pays every bet still up.' },
+      { title: 'How to play', text: 'Make three equal bets. You get three cards, and two community cards are face down. After seeing your cards you may pull back bet 1; after the first community card, bet 2. The $ bet always rides. Your five-card hand pays every bet still up.', rtp: RTP['lir.main'] },
       { title: 'Paytable', rows: UI.payRows(PAY.lir.main) },
       { title: '3-Card Bonus (your three cards)', rows: UI.payRows(PAY.lir.bonus3), rtp: RTP['lir.bonus3'] },
     ],
@@ -417,10 +417,10 @@ GAMES.war = (() => {
     for (let i = 0; i < 3; i++) shoe.draw(); // burn three
     const p = shoe.draw(), d = shoe.draw();
     await rows.p.add(p); await rows.d.add(d);
-    if (p.r >= d.r) { // win or tie in war: raise wins, original pushes (tie: both win)
+    if (p.r >= d.r) { // win or tie in war: both bets win (most casinos only pay the raise)
       sp.raise.win(1);
-      p.r === d.r ? sp.bet.win(1, 'Tie at war bonus') : sp.bet.push();
-      done(p.r === d.r ? 'Tie at war! Both bets win.' : 'You win the war!');
+      p.r === d.r ? sp.bet.win(1, 'Tie at war bonus') : sp.bet.win(PAY.war.warWin, 'War won');
+      done(p.r === d.r ? 'Tie at war! Both bets win.' : 'You win the war! Both bets pay.');
     } else { sp.raise.lose(); sp.bet.lose(); done('Dealer wins the war.'); }
   }
   function done(text) { t.finishRound(); betPhase(); t.msg(text); }
@@ -428,7 +428,7 @@ GAMES.war = (() => {
     id: 'war', name: 'Casino War', icon: '⚔️', blurb: 'The simplest game in the house. High card wins.',
     mount,
     info: () => [
-      { title: 'How to play', text: 'You and the dealer each get one card; high card wins 1:1 (aces high). On a tie you can surrender half your bet, or go to war: match your bet, three cards are burned and one more is dealt to each. Win or tie the war and your raise wins 1:1 (a tie at war pays the original bet too); lose and both bets lose.' },
+      { title: 'How to play', text: 'You and the dealer each get one card; high card wins 1:1 (aces high). On a tie you can surrender half your bet, or go to war: match your bet, three cards are burned and one more is dealt to each. Win or tie the war and both your bets win 1:1 (most casinos only pay the raise); lose and both bets lose. Always go to war: it is the best play.', rtp: 1 + 2 * (23 / 311) ** 2 },
       { title: 'Tie bet', rows: [['Suited Tie', PAY.war.suitedTie + ' to 1'], ['Tie', PAY.war.tie + ' to 1']], rtp: RTP['war.tie'] },
     ],
   };
