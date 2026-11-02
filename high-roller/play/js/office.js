@@ -20,32 +20,7 @@ const Office = (() => {
   // work takes time and wears you out like everything else (four minutes a 'round')
   const spend = hours => Career.drain('round', hours * 15);
 
-  /* ---------- errands: Vinnie's, the phone's, Philippe's ---------- */
-  const ERRANDS = [
-    ['a shoebox to the Riverboat\'s purser', 'The purser counts it twice and gives you a cigar you don\'t smoke.', 'The purser isn\'t there. Lou is. Lou has questions, and so, it turns out, do the river police.'],
-    ['an envelope to a man in the Grand Hotel bar', 'He tips you like you\'re the bellhop. You take it.', 'He isn\'t the man. The man was the one watching from the lobby. You lose the envelope, and then some.'],
-    ['a word with Tex Calhoun about what he owes', 'Tex pays, mostly to stop you talking. Vinnie takes his cut and gives you yours.', 'Tex talks louder than you do, and his friends are bigger. It costs you to get out of the parking lot.'],
-    ['a sealed crate from the motel to the pawn shop\'s back door', 'Heavy, clinking, none of your business. Delivered.', 'The crate breaks on the motel stairs. Darlene saw. Darlene wants paying.'],
-    ['a watch to a jeweller who doesn\'t keep a shop', 'He looks at it through his eyeglass for a long time and pays without a word.', 'The watch is a fake. Somebody has to cover the difference, and it isn\'t Vinnie.'],
-    ['a parcel to the Quik-Stop, for Raj, "for the back"', 'Raj doesn\'t look in it. Neither do you. Everybody\'s happy.', 'Raj\'s cousin is in the shop. Raj\'s cousin is a cop. You leave the parcel and a little more besides.'],
-  ];
-  async function runErrand({ who, pay, risk, lines = RNG.pick(ERRANDS), hours = 2, onWin }) {
-    const [what, good, bad] = lines;
-    const why = busy(); if (why) return UI.toast(why, 'warn');
-    const c = await UI.modal({ title: '💼 An errand', body: h('div', h('p', `"Take ${what}. Don't open anything."`), h('p.muted.small', `${hours} hours · about ${fmt(pay)} · ${risk > .25 ? 'risky' : risk > .15 ? 'usually fine' : 'safe enough'}`)),
-      buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: 'Do it', value: true, cls: 'primary' }] });
-    if (!c) return false;
-    spend(hours);
-    if (RNG.chance(1 - risk)) {
-      App.credit(pay); App.count('errandsDone'); SFX.cash(); if (onWin) onWin();
-      await say([{ who: 'narrator', text: good }, { who, text: RNG.pick([`${fmt(pay)}. You didn't open anything. I can tell.`, `${fmt(pay)}. Same time tomorrow, maybe.`, `There. ${fmt(pay)}. Don't spend it all at the Spur.`]) }]);
-    } else {
-      const lost = r2(Math.min(App.state.bank * .12, 400 + 800 * ch())); App.state.bank = Math.max(0, r2(App.state.bank - lost)); App.count('errandsBad'); if (typeof Mood !== 'undefined') Mood.change(-4, 'an errand gone wrong'); SFX.lose();
-      await say([{ who: 'narrator', text: bad }, { who: 'narrator', text: lost ? `It costs you ${fmt(lost)}.` : 'You get out with nothing but a story.' }, { who, text: 'That\'s why it pays.' }]);
-    }
-    App.save(); Router.hud(); Career.checkAchievements(); return true;
-  }
-  /* ---------- errands you go out and do: Vinnie's, and the big ones off his phone ----------
+  /* ---------- errands you go out and do: Vinnie's, the big ones off his phone, and Philippe's wine ----------
      Take it, walk it to the person waiting somewhere in town (they stand there with a 💼 until the
      day ends), hand it over. That's when it pays, or goes wrong. */
   const RUNS = [
@@ -94,6 +69,18 @@ const Office = (() => {
     { what: 'a sports bag that clinks', contact: 'Two men in the alley', where: 'behind the Quik-Stop', map: 'town', at: [24, 13], look: { shirt: '#1d1d1d', pants: '#1d1d1d', skin: '#c68863', hair: '#111', shades: true },
       good: 'One counts, one watches the street. Then they\'re gone, and you\'re richer.', bad: 'A squad car turns into the alley. Everybody runs. You run slowest, and it costs you.' },
   ];
+  const WINE = [
+    { what: 'a case of the 2005', contact: 'Margot\'s assistant', where: 'at the Gilded Palace', map: 'v:palace', at: [6, 13], look: { shirt: '#f4f4f4', vest: '#5e1430', pants: '#111', skin: '#f0c19a', hair: '#3a2a1e' },
+      good: 'She signs for it without looking up, and tips like a duchess.', bad: 'A bottle breaks on the Palace steps. The doorman charges for the smell. Philippe charges for the bottle.' },
+    { what: 'six bottles of the \'96', contact: 'Mr. Pemberton\'s butler', where: 'at the Grand Hotel', map: 'r:grand', at: [13, 6], look: { shirt: '#111', vest: '#111', pants: '#111', skin: '#e0ac69', hair: '#bbb', bow: true },
+      good: 'He takes them up in the lift personally and comes back with an envelope he pretends not to have.', bad: 'The penthouse guest was expecting champagne. He makes his disappointment financial.' },
+    { what: 'a bottle of "cooking sherry" that is nothing of the kind', contact: 'Mel\'s cook', where: 'at Mel\'s Diner', map: 'r:diner', at: [4, 7], look: { shirt: '#f4f4f4', pants: '#2d3436', skin: '#c68863', hair: '#111' },
+      good: 'He pours a thimble into the gravy and the rest into a teacup. Pays in cash and pie.', bad: 'Mel finds it. Mel does not hold with wine in her kitchen. You pay for her principles.' },
+    { what: 'a bottle of champagne on ice', contact: 'A couple celebrating', where: 'on the Riverboat', map: 'v:riverboat', at: [10, 6], look: { shirt: '#f4f4f4', vest: '#c9a14a', pants: '#111', skin: '#8d5524', hair: '#111', bow: true },
+      good: 'They pop it before you\'re out of earshot. The tip is very generous and slightly damp.', bad: 'The ice melted, the label slid off, and the groom thinks you\'re a fraud. You refund him.' },
+    { what: 'a magnum for a party upstairs', contact: 'The doorman', where: 'at the Downtown Apartments', map: 'r:apts', at: [6, 7], look: { shirt: '#2c3e50', pants: '#2c3e50', skin: '#f0c19a', hair: '#555', hat: true },
+      good: 'He carries it up himself, like a baby. Philippe\'s envelope is waiting with him.', bad: 'The party was last night. The host is not in the mood, and you pay to make the magnum go away.' },
+  ];
   // the errand in hand, if any (it lapses when the day ends)
   function job() {
     const o = st(), j = o.job; if (!j) return null;
@@ -102,9 +89,11 @@ const Office = (() => {
   }
   const label = j => `💼 ${j.what} → ${j.contact}, ${j.where}`;
   const lc = c => /^(A|The) /.test(c) ? c.charAt(0).toLowerCase() + c.slice(1) : c; // 'a man in a grey suit', but 'Tex\'s cousin Earl'
-  async function lapsed() {
-    const o = st(), j = o.lapsed; if (!j) return; o.lapsed = null; App.save();
+  // whoever gave you the errand mentions it the next time you see them
+  async function lapsed(by = 'vinnie') {
+    const o = st(), j = o.lapsed; if (!j || (j.from === 'philippe') !== (by === 'philippe')) return; o.lapsed = null; App.save();
     if (typeof Mood !== 'undefined') Mood.change(-2, 'a no-show');
+    if (j.from === 'philippe') return say([{ who: 'philippe', text: `${j.contact} waited ${j.where} all evening, monsieur. *He takes ${j.what} back without a word, which is worse than any word.*` }]);
     await say([{ who: 'vinnie', text: `${j.contact} waited ${j.where} all day. You never showed. *He takes ${j.what} back.* Don't make me look stupid twice.` }]);
   }
   async function offer({ from, list, pay, risk }) {
@@ -126,7 +115,7 @@ const Office = (() => {
     if (RNG.chance(1 - j.risk)) {
       App.credit(j.pay); App.count('errandsDone'); SFX.cash();
       if (j.from === 'vinnie') o.errands++;
-      await say([{ who: 'narrator', text: `You hand ${lc(j.contact)} ${j.what}. ${j.good}` }, { who: 'narrator', text: `${fmt(j.pay)}, Vinnie's cut already taken.` }]);
+      await say([{ who: 'narrator', text: `You hand ${lc(j.contact)} ${j.what}. ${j.good}` }, { who: 'narrator', text: j.from === 'philippe' ? `${fmt(j.pay)}, in Philippe's envelope.` : `${fmt(j.pay)}, Vinnie's cut already taken.` }]);
     } else {
       const lost = r2(Math.min(App.state.bank * .12, 400 + 800 * ch())); App.state.bank = Math.max(0, r2(App.state.bank - lost)); App.count('errandsBad'); if (typeof Mood !== 'undefined') Mood.change(-4, 'an errand gone wrong'); SFX.lose();
       await say([{ who: 'narrator', text: j.bad }, { who: 'narrator', text: lost ? `It costs you ${fmt(lost)}.` : 'You get out with nothing but a story.' }]);
@@ -214,9 +203,9 @@ const Office = (() => {
   async function delivery() {
     const o = st();
     if (o.deliveryDay === App.state.day) return say([{ who: 'philippe', text: 'One delivery a day, monsieur. The wine needs its rest. So do I.' }]);
-    const lines = RNG.pick([['a case of the 2005 to Madame Laval at the Palace', 'Margot signs for it without looking up, and tips like a duchess.', 'A bottle breaks in the cab. The driver charges for the smell. Philippe charges for the bottle.'],
-      ['six bottles to the Grand Hotel\'s penthouse', 'Mr. Pemberton takes them personally and gives you an envelope he pretends not to have.', 'The penthouse guest was expecting champagne. He makes his disappointment financial.']]);
-    const done = await runErrand({ who: 'philippe', pay: Math.round((180 + 300 * ch()) * (1 + RNG.float() * .4)), risk: .12, lines, hours: 2 });
+    await lapsed('philippe');
+    const j = job(); if (j) return say([{ who: 'philippe', text: j.from === 'philippe' ? `${j.contact} is still waiting ${j.where}, monsieur. The wine does not improve in your hands.` : 'Monsieur is already carrying something for someone. One thing at a time.' }]);
+    const done = await offer({ from: 'philippe', list: WINE, pay: Math.round((180 + 300 * ch()) * (1 + RNG.float() * .4)), risk: .12 });
     if (done) { o.deliveryDay = App.state.day; App.save(); }
   }
 
@@ -306,5 +295,5 @@ const Office = (() => {
     return say([{ who: 'narrator', text: res === 'win' ? `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` : res ? `${s.name} pockets your ${fmt(s.stake)}. "Rack 'em again whenever you like."` : 'You lay your cue down. It counts as a loss.' }]);
   }
 
-  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG };
+  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE };
 })();
