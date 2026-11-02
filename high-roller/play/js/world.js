@@ -69,6 +69,9 @@ const World = (() => {
     B('grand', 'Grand Hotel', 31, 22, 7, 8, 3, 'grand', { room: 'grand' });
     B('apts', 'Downtown Apartments', 39, 23, 5, 7, 2, 'apts', { room: 'apts' });
     B('steak', 'Prime Cut', 31, 35, 6, 5, 2, 'steak', { room: 'steak' });
+    // Prime Cut's chalkboard: tonight's specials, and the only word anywhere on how to get into the cellar
+    m.props.push({ type: 'aboard', x: 37, y: 39 }); m.blockRect(37, 39, 1, 1);
+    m.act(37, 39, { talk: 'A chalkboard on an easel by Prime Cut\'s door. TONIGHT: the Tomahawk. The lobster. A Bordeaux Philippe will not discuss. Underneath, smaller, in a neat French hand: "Le cellier est pour les amis de la maison. A friend of the house is a face we have seen at our tables on three different evenings."', label: 'Prime Cut\'s chalkboard' });
     // the riverboat moored at the dock; the gangplank is its door
     m.props.push({ type: 'boat', x: 48, y: 14, w: 7, h: 10 });
     m.doors['47,19'] = { venue: 'riverboat', out: [46, 19], label: "Lucky Lou's Riverboat" };
@@ -568,6 +571,10 @@ const World = (() => {
     } else if (p.type === 'lamp') {
       c.fillStyle = '#2d2d2d'; c.fillRect(px + 7, py + 2, 2, 12); c.fillRect(px + 5, py + 13, 6, 2);
       c.fillStyle = '#ffe08a'; c.fillRect(px + 5, py, 6, 4);
+    } else if (p.type === 'aboard') { // a chalk easel: two legs, a black slate, a few lines of chalk
+      c.fillStyle = '#5a3a22'; c.fillRect(px + 3, py + 4, 2, 12); c.fillRect(px + 11, py + 4, 2, 12);
+      c.fillStyle = '#6b4423'; c.fillRect(px + 2, py + 1, 12, 12); c.fillStyle = '#1d2420'; c.fillRect(px + 3, py + 2, 10, 10);
+      c.fillStyle = 'rgba(240,236,224,.85)'; c.fillRect(px + 4, py + 3, 8, 1); c.fillRect(px + 4, py + 5, 6, 1); c.fillRect(px + 4, py + 7, 7, 1); c.fillStyle = 'rgba(240,236,224,.5)'; c.fillRect(px + 4, py + 9, 5, 1); c.fillRect(px + 4, py + 10, 7, 1);
     } else if (p.type === 'sign') {
       c.fillStyle = '#6b4423'; c.fillRect(px + 7, py + 8, 2, 8);
       c.fillStyle = '#a0522d'; c.fillRect(px + 1, py + 2, 14, 8); c.fillStyle = '#f3e0b5'; c.fillRect(px + 3, py + 4, 10, 1); c.fillRect(px + 3, py + 7, 8, 1);
