@@ -218,8 +218,8 @@ const World = (() => {
     // under Prime Cut, down the stairs behind Philippe's desk (office.js)
     cellar: { name: 'The Wine Cellar', W: 12, H: 9, floor: 'tile', theme: { wall: '#3a2c20', trim: '#1a120c', tileA: '#4a3a2a', tileB: '#3a2c20' }, staff: null,
       f: [['wine', 1, 1, 4, 1], ['wine', 7, 1, 4, 1], ['sconce', 6, 1, 1, 1], ['barrel', 1, 3, 1, 1], ['barrel', 1, 4, 1, 1], ['barrel', 10, 3, 1, 1], ['barrel', 10, 4, 1, 1],
-        ['table', 5, 3, 2, 2, { fn: 'cellarGlass', label: 'The tasting table: a glass of the good stuff ($40)' }], ['desk', 8, 6, 2, 1, { fn: 'cellarBins', label: 'The bin book: every bottle by its bin number' }],
-        ['crates', 2, 6, 2, 1, { fn: 'cellarDelivery', label: 'Philippe\'s deliveries (an errand)' }]],
+        ['table', 5, 3, 2, 2, { fn: 'cellarGlass', label: '🍷 Tasting table' }], ['desk', 8, 6, 2, 1, { fn: 'cellarBins', label: '📖 The bin book' }],
+        ['crates', 2, 6, 2, 1, { fn: 'cellarDelivery', label: '📦 Philippe\'s deliveries' }]],
       folk: [] },
     // behind the longhorns at the Spur, down a flight of stairs: Sal's secret, after the story (salquest.js)
     club: { name: 'The Seventeen Club', W: 16, H: 11, floor: 'carpet', theme: { wall: '#1e3a2f', trim: '#c9a14a', carpet: '#3a1414' }, staff: null,
@@ -844,7 +844,7 @@ const World = (() => {
     if (S.turnAt && now - S.turnAt < 70) return;
     const [dx, dy] = DIRS[held], nx = p.x + dx, ny = p.y + dy;
     if (!passable(S.m, nx, ny)) return;
-    p.moving = { fx: p.x, fy: p.y, tx: nx, ty: ny, t0: now, dur: S.run ? 95 : 165 };
+    p.moving = { fx: p.x, fy: p.y, tx: nx, ty: ny, t0: now, dur: (S.run ? 95 : 165) * (typeof Office !== 'undefined' && Office.fleet() ? .7 : 1) }; // after a tasting: light on your feet
     p.x = nx; p.y = ny;
   }
 
