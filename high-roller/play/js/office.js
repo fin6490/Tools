@@ -144,6 +144,7 @@ const Office = (() => {
     const o = st(), d = App.state.day, j = job();
     if (o.errandDay !== d) { o.errandDay = d; o.errandsToday = 0; }
     if (j) return say([{ who: 'vinnie', text: `Why are you still here? ${j.contact} is waiting ${j.where}.` }]);
+    if (iced()) return say([{ who: 'vinnie', text: 'Somebody\'s been in my safe. Until I know who, nobody works for me. Nobody.' }]);
     if (o.errandsToday >= 2) return say([{ who: 'vinnie', text: 'Two\'s plenty. Come back tomorrow. People notice a face that keeps coming back.' }]);
     if (await offer({ from: 'vinnie', list: RUNS, pay: Math.round((250 + 450 * ch()) * (1 + RNG.float() * .6)), risk: .22 })) { o.errandsToday++; App.save(); }
   }
@@ -216,6 +217,78 @@ const Office = (() => {
     UI.toast('🍷 Light on your feet for the next three hours', 'good');
     return say([{ who: 'philippe', text: RNG.pick(['A Burgundy for the soul, a Rioja for the legs, and a little Sauternes so you remember me fondly. Go, monsieur. The night is young.', 'Five glasses, five regions, one very good evening. You walk out of here like you own the place, which, for tonight, you might as well.']) }]);
   }
+  /* ---------- more to do in Vinnie's back office ---------- */
+  // Hi-Lo with Nico: a card, higher or lower, the pot grows with every right call. Cash out whenever. Three games a day.
+  const CARD = r => ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' }[r] || String(r));
+  async function hiLo() {
+    const f = App.state.flags; if (f.hiloDay !== App.state.day) { f.hiloDay = App.state.day; f.hiloGames = 0; }
+    if (f.hiloGames >= 3) return say([{ who: 'nico', text: 'Three\'s enough. Vinnie says I get a headache when I lose.' }]);
+    const stakes = [50, 100, 250].filter(n => n <= App.state.bank);
+    if (!stakes.length) return say([{ who: 'nico', text: 'Fifty to sit down. You haven\'t got fifty.' }]);
+    const stake = await UI.modal({ title: '🃏 Hi-Lo with Nico', body: h('div', h('p', 'Nico turns a card. You call the next one higher or lower. A tie goes to Nico.'), h('p.muted.small', 'Every right call grows the pot. Cash out whenever you like; five calls is the most he\'ll let you run.')),
+      buttons: [{ label: 'Not now', value: null, cls: 'ghost' }, ...stakes.map(n => ({ label: fmt(n), value: n }))] });
+    if (!stake || !App.debit(stake)) return;
+    f.hiloGames++; App.save(); Router.hud();
+    let card = 2 + RNG.int(13), pot = stake, calls = 0;
+    for (;;) {
+      const pUp = (14 - card) / 13, pDown = (card - 2) / 13, mUp = pUp > 0 ? .95 / pUp : 0, mDown = pDown > 0 ? .95 / pDown : 0;
+      const pick = await UI.modal({ title: `🃏 ${CARD(card)} · pot ${fmt(pot)}`, closable: false, body: h('p', calls ? `${calls} right so far.` : 'Nico flips the first card.'),
+        buttons: [{ label: `Cash out ${fmt(pot)}`, value: 'out', cls: 'ghost', disabled: !calls }, { label: `Higher (×${mUp.toFixed(2)})`, value: 'up', disabled: !pUp || calls >= 5 }, { label: `Lower (×${mDown.toFixed(2)})`, value: 'down', disabled: !pDown || calls >= 5 }] });
+      if (pick === 'out' || calls >= 5) { App.credit(pot); App.count('hiloWins'); SFX.cash && SFX.cash(); App.save(); Router.hud(); Career.checkAchievements(); return say([{ who: 'nico', text: `${fmt(pot)}. *He counts it out slowly, like each one hurts.*` }]); }
+      const next = 2 + RNG.int(13), right = pick === 'up' ? next > card : next < card;
+      if (!right) { App.save(); return say([{ who: 'narrator', text: `${CARD(next)}. ${next === card ? 'A tie. Nico\'s.' : 'Wrong way.'}` }, { who: 'nico', text: RNG.pick(['House wins. Vinnie\'s house, anyway.', 'Unlucky. Same again?', '*He doesn\'t smile. He doesn\'t need to.*']) }]); }
+      pot = r2(pot * (pick === 'up' ? mUp : mDown)); calls++; card = next;
+    }
+  }
+  // Vinnie's book: today's races. Back a horse; the result comes in on the wire by tomorrow.
+  const HORSES = [['Lucky Strike', .40], ['Gin Rummy', .27], ['Second Mortgage', .20], ['Seventeen Hands II', .13]];
+  async function book() {
+    const f = App.state.flags, b = f.vinBet;
+    if (b && App.state.day > b.day) {
+      f.vinBet = null; let r = RNG.float(), win = HORSES[HORSES.length - 1][0]; for (const [nm, p] of HORSES) { if (r < p) { win = nm; break; } r -= p; }
+      const odds = .85 / HORSES.find(h2 => h2[0] === b.horse)[1], paid = win === b.horse ? r2(b.stake * odds) : 0;
+      if (paid) { App.credit(paid); App.count('bookWins'); SFX.cash && SFX.cash(); }
+      App.save(); Router.hud(); Career.checkAchievements();
+      await say([{ who: 'narrator', text: `The wire came in overnight. ${win} by a length.` }, { who: 'vinnie', text: paid ? `${b.horse}. Don't get used to it. ${fmt(paid)}.` : `${b.horse} is still running, I hear. Better luck next time, kid.` }]);
+    }
+    if (f.vinBet) return say([{ who: 'vinnie', text: `${f.vinBet.horse}, ${fmt(f.vinBet.stake)}. They race tonight. Come back tomorrow.` }]);
+    const horse = await UI.modal({ title: '📋 Vinnie\'s book', body: h('div', h('p', 'Tonight at Saratoga, chalked on the board in Vinnie\'s small, careful hand.'), h('p.muted.small', 'The result comes in on the wire overnight. Come back tomorrow to collect.')),
+      buttons: [{ label: 'Not tonight', value: null, cls: 'ghost' }, ...HORSES.map(([nm, p]) => ({ label: `${nm} · ${(.85 / p).toFixed(1)} to 1`, value: nm }))] });
+    if (!horse) return;
+    const stakes = [50, 100, 250, 500].filter(n => n <= App.state.bank); if (!stakes.length) return UI.toast('Vinnie takes $50 or more.', 'warn');
+    const stake = await UI.modal({ title: `📋 ${horse}`, body: h('p', 'How much?'), buttons: [{ label: 'Never mind', value: null, cls: 'ghost' }, ...stakes.map(n => ({ label: fmt(n), value: n }))] });
+    if (!stake || !App.debit(stake)) return;
+    f.vinBet = { day: App.state.day, horse, stake }; App.save(); Router.hud();
+    return say([{ who: 'vinnie', text: `${horse}, ${fmt(stake)}. *He writes it in the book.* Tomorrow.` }]);
+  }
+  // the big safe: the code is somewhere in this room, if you look. What's inside is Vinnie's.
+  const SAFE_CODE = '1979';
+  async function safe() {
+    const f = App.state.flags;
+    if (f.safeOpen) return say([{ who: 'narrator', text: f.safeTook ? 'The safe. Lighter than it used to be. Vinnie checks it twice a day now.' : 'The safe, shut, exactly as you left it. You know what\'s in it. That\'s enough.' }]);
+    if (f.safeTries === App.state.day) return say([{ who: 'narrator', text: 'Nico is in the doorway, watching you look at the safe. Not today.' }]);
+    const input = h('input.field', { maxlength: 4, inputmode: 'numeric', placeholder: '· · · ·', autocomplete: 'off' });
+    const c = await UI.modal({ title: '🔒 The big safe', body: h('div', h('p', 'Four dials. Vinnie is out front, on the phone.'), input), buttons: [{ label: 'Leave it', value: false, cls: 'ghost' }, { label: 'Try it', value: true, cls: 'primary' }] });
+    if (!c) return;
+    if (input.value.trim() !== SAFE_CODE) { f.wrongSafe = (f.wrongSafe || 0) + 1; if (f.wrongSafe % 3 === 0) f.safeTries = App.state.day; App.save(); return say([{ who: 'narrator', text: 'Nothing. The dials spin back to zero with a little click that sounds very loud.' }]); }
+    f.safeOpen = App.state.day; App.count('officeSafe'); Career.checkAchievements();
+    await say([{ who: 'narrator', text: 'Click. Inside: a stack of old bills, and a yellowed betting slip. "Seventeen Hands, Saratoga, 1979. $1,000 to win." He never cashed it in. There was nothing to cash.' }]);
+    const t = await UI.modal({ title: '🔒 The big safe', closable: false, body: h('p', 'About two thousand dollars, in old notes.'), buttons: [{ label: 'Close it', value: 'leave', cls: 'ghost' }, { label: 'Take the money', value: 'take', cls: 'primary' }] });
+    if (t === 'take') { f.safeTook = App.state.day; App.credit(2000); App.save(); Router.hud(); return say([{ who: 'narrator', text: '$2,000 in your pocket. You spin the dials back. Your hands aren\'t quite steady.' }]); }
+    App.save(); return say([{ who: 'narrator', text: 'You put the slip back on top of the money and close it. Some things are just a man\'s business.' }]);
+  }
+  const iced = () => { const t = App.state.flags.safeTook; return t && App.state.day > t && App.state.day - t <= 3; };
+  // the humidor: one of Vinnie's cigars, once a day
+  async function cigar() {
+    const f = App.state.flags;
+    if (f.cigarDay === App.state.day) return say([{ who: 'narrator', text: 'One a day. Vinnie counts them.' }]);
+    if (App.state.bank < 30) return UI.toast('A cigar is $30. Vinnie counts those too.', 'warn');
+    const c = await UI.modal({ title: '🚬 The humidor', body: h('p', 'Cedar-lined, and better stocked than the shop. $30 in the jar on the shelf.'), buttons: [{ label: 'Leave them', value: false, cls: 'ghost' }, { label: 'Take one ($30)', value: true, cls: 'primary' }] });
+    if (!c || !App.debit(30)) return;
+    f.cigarDay = App.state.day; if (typeof Mood !== 'undefined') Mood.change(5, 'one of Vinnie\'s cigars'); App.save(); Router.hud();
+    return say([{ who: 'narrator', text: RNG.pick(['You sit in Vinnie\'s chair for exactly as long as it takes to smoke it. Nobody says anything.', 'Nico lights it for you without being asked, which is the nicest thing he\'s ever done.']) }]);
+  }
+
   /* ---------- more to do in the cellar ---------- */
   // blind tasting: Philippe pours, gives you three clues, you name the region. Once a day, $25 a go.
   const BLIND = [
@@ -382,5 +455,5 @@ const Office = (() => {
     return say([{ who: 'narrator', text: res === 'win' ? `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` : res ? `${s.name} pockets your ${fmt(s.stake)}. "Rack 'em again whenever you like."` : 'You lay your cue down. It counts as a loss.' }]);
   }
 
-  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE, fleet, TASTING, blindTasting, invest, gramophone, brick, BLIND };
+  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE, fleet, TASTING, blindTasting, invest, gramophone, brick, BLIND, hiLo, book, safe, cigar, HORSES, SAFE_CODE };
 })();
