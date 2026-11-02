@@ -194,11 +194,26 @@ const Office = (() => {
     }
     return say([{ who: 'philippe', text: RNG.pick(['*He steps, very politely, between you and the door.* The cellar is for our regulars, monsieur.', 'Our regulars, monsieur. Only our regulars.', '*He does not look at the door, so neither should you.* May I bring monsieur the menu?']) }]);
   }
+  // the tasting table: once a day, for a price, Philippe sets you right. A lift in mood, your needs topped up to a good
+  // level, and light on your feet (faster walking and running) for three hours.
+  const TASTING = 150, FLEET_MIN = 180;
+  const nowMin = () => (App.state.day || 1) * 1440 + (App.state.clock || 0);
+  const fleet = () => nowMin() < (App.state.flags.fleetUntil || 0);
   async function cellarGlass() {
-    if (!App.debit(40)) return UI.toast('A glass of the good stuff is $40.', 'warn');
-    if (typeof Mood !== 'undefined') Mood.consume('wine', { drink: true });
-    Router.hud(); App.save();
-    return say([{ who: 'narrator', text: RNG.pick(['Something red and old, poured from a bottle with no label. It tastes like a good decision.', 'Philippe pours exactly one glass and watches you drink it, the way a man watches a dog with his slippers.']) }]);
+    const f = App.state.flags;
+    if (f.tastingDay === App.state.day) return say([{ who: 'philippe', text: 'One tasting a day, monsieur. Tomorrow there will be something else open.' }]);
+    const c = await UI.modal({ title: '🍷 The tasting table', body: h('div', h('p', 'Five small glasses, a plate of bread and cheese, and Philippe explaining each one.'), h('p.muted.small', `${fmt(TASTING)} · lifts your mood, sets you up for the evening and puts a spring in your step`)),
+      buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: `Sit down (${fmt(TASTING)})`, value: true, cls: 'primary', disabled: App.state.bank < TASTING }] });
+    if (!c) return;
+    if (!App.debit(TASTING)) return UI.toast(`The tasting is ${fmt(TASTING)}.`, 'warn');
+    const s = App.state, good = 85;
+    s.hunger = Math.max(s.hunger, good); s.thirst = Math.max(s.thirst, good);
+    s.stamina = Math.max(s.stamina, Math.min(Career.energyCap ? Career.energyCap() : 100, good * (Career.energyMax ? Career.energyMax() : 100) / 100));
+    if (typeof Mood !== 'undefined') { Mood.consume('wine', { drink: true }); Mood.change(12, 'a tasting at Prime Cut'); }
+    f.tastingDay = s.day; f.fleetUntil = nowMin() + FLEET_MIN; App.count('tastings');
+    SFX.cash && SFX.cash(); Router.hud(); App.save();
+    UI.toast('🍷 Light on your feet for the next three hours', 'good');
+    return say([{ who: 'philippe', text: RNG.pick(['A Burgundy for the soul, a Rioja for the legs, and a little Sauternes so you remember me fondly. Go, monsieur. The night is young.', 'Five glasses, five regions, one very good evening. You walk out of here like you own the place, which, for tonight, you might as well.']) }]);
   }
   async function delivery() {
     const o = st();
@@ -295,5 +310,5 @@ const Office = (() => {
     return say([{ who: 'narrator', text: res === 'win' ? `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` : res ? `${s.name} pockets your ${fmt(s.stake)}. "Rack 'em again whenever you like."` : 'You lay your cue down. It counts as a loss.' }]);
   }
 
-  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE };
+  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE, fleet, TASTING };
 })();
