@@ -161,22 +161,57 @@ const Office = (() => {
     { name: 'Dutch', stake: 250, err: .038, ch: 1, line: 'Two-fifty. I don\'t play for less, and I don\'t lose.' },
     { name: 'The Professor', stake: 500, err: .028, ch: 2, line: 'Five hundred. Angles, my friend, are just geometry with consequences.' },
   ];
+  // the Spur Ladder: four challenges chalked on the board by the table
+  const LADDER = [
+    { title: 'The Ladder', desc: 'Beat Hank, Lola and Moose.', pay: 300, count: 'spurLadder',
+      prog: q => `${['Hank the trucker', 'Lola', 'Moose'].filter(n => q.beat[n]).length} of 3`, done: q => ['Hank the trucker', 'Lola', 'Moose'].every(n => q.beat[n]),
+      paid: 'Dolores reaches under the bar and comes up with a cue in a battered case. "Sal\'s. Straightest stick in town. Your hands stay steady with it, even after a drink." And $300 off the ladder.' },
+    { title: 'Clean Sheet', desc: 'Win a game without a foul, and win one with your opponent still on 5 or more balls.', pay: 750,
+      prog: q => `${(q.clean ? 1 : 0) + (q.white ? 1 : 0)} of 2`, done: q => q.clean && q.white,
+      paid: 'Lola chalks your name above hers on the board. "Don\'t get used to it." $750 from the regulars\' kitty.' },
+    { title: 'Dutch\'s Grudge', ch: 1, desc: 'Beat Dutch twice.', pay: 1500,
+      prog: q => `${Math.min(2, q.dutch || 0)} of 2`, done: q => (q.dutch || 0) >= 2,
+      paid: 'Dutch puts $1,500 on the rail and his hat on top of it. "I don\'t lose. I\'m going to need a new line."' },
+    { title: 'The Professor\'s Lesson', ch: 2, desc: 'Beat The Professor without a foul.', pay: 5000, count: 'spurPoolChamp',
+      prog: q => q.prof ? 'done' : 'not yet', done: q => !!q.prof,
+      paid: 'The Professor shakes your hand. "Geometry with consequences. The consequence is $5,000." Your name goes at the top of the board, in Sal\'s old spot.' },
+  ];
+  const ladder = () => { const o = st(); if (!o.poolQ) o.poolQ = { stage: 0, beat: {} }; return o.poolQ; };
+  function ladderCard() {
+    const q = ladder(), L = LADDER[q.stage];
+    if (!L) return h('div.job-card', h('b', '🎱 The Spur Ladder'), h('p.muted.small', 'Top of the board. Nobody\'s left to beat.'));
+    const locked = (L.ch || 0) > ch();
+    return h('div.job-card', h('b', `🎱 Ladder ${q.stage + 1} of ${LADDER.length}: ${L.title}`), h('p.small', L.desc), h('p.muted.small', locked ? 'Not here yet. Come back later in the story.' : `${L.prog(q)} · ${fmt(L.pay)}`));
+  }
+  async function ladderAfter(s, res) {
+    const q = ladder(), L = LADDER[q.stage], g = L2Pub.last || {};
+    if (!L || (L.ch || 0) > ch() || res !== 'win') return;
+    if (q.stage === 0) q.beat[s.name] = (q.beat[s.name] || 0) + 1;
+    if (q.stage === 1) { if (!g.fouls) q.clean = 1; if (g.hisLeft >= 5) q.white = 1; }
+    if (q.stage === 2 && s.name === 'Dutch') q.dutch = (q.dutch || 0) + 1;
+    if (q.stage === 3 && s.name === 'The Professor' && !g.fouls) q.prof = 1;
+    if (!L.done(q)) return;
+    q.stage++; App.credit(L.pay); if (L.count) App.count(L.count); if (q.stage === 1) App.state.flags.salCue = App.state.day;
+    App.save(); Router.hud(); Career.checkAchievements(); SFX.big();
+    await say([{ who: 'dolores', text: L.paid }]);
+  }
   async function pool() {
     const why = busy(); if (why) return UI.toast(why, 'warn');
     const opts = SHARKS.filter(s => (s.ch || 0) <= ch());
-    const pick = await UI.modal({ title: '🎱 The pool table', body: h('p.muted.small', 'Reds and yellows, black last. Pick your opponent.'),
+    const pick = await UI.modal({ title: '🎱 The pool table', body: h('div', h('p.muted.small', 'Reds and yellows, black last. Pick your opponent.'), ladderCard()),
       buttons: [{ label: 'Not now', value: null, cls: 'ghost' }, ...opts.map((s, i) => ({ label: `${s.name} · ${fmt(s.stake)}`, value: i, disabled: App.state.bank < s.stake }))] });
     if (pick == null) return;
     const s = opts[pick];
     await say([{ who: 'narrator', text: `${s.name}: "${s.line}"` }]);
     if (!App.debit(s.stake)) return UI.toast('Not enough cash for the stake.', 'warn');
     App.count('spurPool'); Router.hud();
-    const res = await L2Pub.table({ first: s.name.split(' ')[0], n: s.stake, cash: () => fmt(App.state.bank), shaky: () => (typeof Mood !== 'undefined' && Mood.st().buzz > 45 ? .5 : 0), freeze: on => World.freeze && World.freeze(on), err: s.err });
+    const res = await L2Pub.table({ first: s.name.split(' ')[0], n: s.stake, cash: () => fmt(App.state.bank), shaky: () => (App.state.flags.salCue ? 0 : typeof Mood !== 'undefined' && Mood.st().buzz > 45 ? .5 : 0), freeze: on => World.freeze && World.freeze(on), err: s.err });
     spend(.75);
     if (res === 'win') { App.credit(s.stake * 2); App.count('spurPoolWin'); SFX.big(); Career.checkAchievements(); }
     App.save(); Router.hud();
+    if (res === 'win') { await say([{ who: 'narrator', text: `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` }]); return ladderAfter(s, res); }
     return say([{ who: 'narrator', text: res === 'win' ? `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` : res ? `${s.name} pockets your ${fmt(s.stake)}. "Rack 'em again whenever you like."` : 'You lay your cue down. It counts as a loss.' }]);
   }
 
-  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, st, KEY_AT };
+  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT };
 })();

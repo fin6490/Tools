@@ -74,10 +74,18 @@ const L2Pub = (() => {
   async function pool(id) {
     const P = L2People.PEOPLE[id], first = P.name.split(' ')[0], n = await stake(P.name, 'Pub rules. Reds and yellows, black last. You break.'); if (!n) return;
     L2Money.pay(n); App.count('l2_pool');
-    const res = await table({ first, n, cash: () => fmt(S().cash), shaky, freeze: on => R3.freeze(on), err: .03 });
-    if (res === 'win') { L2Money.earn(n * 2); App.count('l2_poolwin'); Career.checkAchievements(); return say([{ name: P.name, who: 'x', text: RNG.pick(['Well, well. A shark in the Low Tide. Take it, take it.', 'Beginner\'s luck. That\'s what I\'m telling everyone.', 'Rematch. Not tonight. My ego needs a lie down.']) }, { who: 'narr', text: `*${fmt(n * 2)} back in your pocket.*` }]); }
+    const res = await L2Pub.table({ first, n, cash: () => fmt(S().cash), shaky, freeze: on => R3.freeze(on), err: .03 });
+    if (res === 'win') {
+      L2Money.earn(n * 2); App.count('l2_poolwin');
+      const q = S().poolQ = S().poolQ || { wins: 0 }; q.wins++;
+      const done = q.wins >= 3 && !q.paid; if (done) { q.paid = 1; L2Money.earn(300); App.count('l2_poolhustle'); }
+      Career.checkAchievements(); App.save();
+      if (done) return say([{ name: P.name, who: 'x', text: 'Three. Three games off me in one night. *takes a twenty off the wall behind the bar, an old bet, pinned there years ago* That was for the next person who did that. Thought it\'d be me, one day.' }, { who: 'narr', text: `*${fmt(n * 2)} back, and $300 from Lou's wall.*` }]);
+      return say([{ name: P.name, who: 'x', text: RNG.pick(['Well, well. A shark in the Low Tide. Take it, take it.', 'Beginner\'s luck. That\'s what I\'m telling everyone.', 'Rematch. Not tonight. My ego needs a lie down.']) + (q.wins < 3 ? ` That's ${q.wins} of 3. Nobody takes three off me.` : '') }, { who: 'narr', text: `*${fmt(n * 2)} back in your pocket.*` }]);
+    }
     return say([{ name: P.name, who: 'x', text: res ? RNG.pick(['Unlucky, friend. Rack \'em again?', 'The black\'s a cruel ball. Pay up.', 'Nice try. Really. I mean it. Mostly.']) : 'Walking away? I\'ll take that as a win.' }]);
   }
+  let last = null; // how the last game went: { res, fouls, hisShots, hisLeft }
   // the game itself: { first: their name, n: the stake, cash(): your money as text, shaky(): 0..1+, freeze(on), err: their aim }
   // resolves 'win', 'lose' or null (conceded)
   function table({ first, n, cash = () => '', shaky = () => 0, freeze = () => { }, err = .03 }) {
@@ -88,10 +96,10 @@ const L2Pub = (() => {
       const nudge = d => h('button.l2-btn.nudge', { 'aria-label': d < 0 ? 'Aim left' : 'Aim right', onpointerdown: e => { e.preventDefault(); const go = () => { if (st.turn === 'me' && !st.rolling && !st.over) st.aim += d; }; go(); clearInterval(o._nt); o._nt = setInterval(go, 60); }, onpointerup: () => clearInterval(o._nt), onpointerleave: () => clearInterval(o._nt) }, d < 0 ? '◀' : '▶');
       const shootBtn = h('button.l2-btn.go', 'Shoot'), foot = h('div.l2-game', info, h('div.l2-gfoot', nudge(-.006), nudge(.006), h('label.l2-ppw', h('small', 'Power'), power), shootBtn));
       const slot = h('div.l2-gstage', cv); o.append(head, score, slot, foot);
-      const B = rack(), st = { turn: 'me', mine: null, rolling: false, firstHit: null, over: false, aim: -Math.PI / 2, power: 0, charging: null, aiAim: null };
+      const B = rack(), st = { turn: 'me', mine: null, rolling: false, firstHit: null, over: false, aim: -Math.PI / 2, power: 0, charging: null, aiAim: null, fouls: 0, hisShots: 0 };
       const COL = { w: ['#ffffff', '#c8c8c8'], r: ['#e0453a', '#7a1410'], y: ['#ffd84a', '#a87a08'], k: ['#3a3a3a', '#050505'] };
       const hisCol = () => st.mine ? (st.mine === 'r' ? 'y' : 'r') : null, left = c => B.filter(b => b.c === c && !b.in).length;
-      const finish = r2 => { if (st.over === 'done') return; st.over = 'done'; o.classList.add('out'); setTimeout(() => o.remove(), 300); setTimeout(() => freeze(false), 400); document.removeEventListener('keydown', key); document.removeEventListener('keyup', keyUp); done(r2); };
+      const finish = r2 => { if (st.over === 'done') return; st.over = 'done'; last = { res: r2, fouls: st.fouls, hisShots: st.hisShots, hisLeft: hisCol() ? left(hisCol()) : 7 }; o.classList.add('out'); setTimeout(() => o.remove(), 300); setTimeout(() => freeze(false), 400); document.removeEventListener('keydown', key); document.removeEventListener('keyup', keyUp); done(r2); };
       head.querySelector('.l2-x').onclick = () => { if (!st.rolling) finish(null); };
       // the table on the screen: upright on a phone, on its side on a wide screen
       let L = { s: 100, ox: 0, oy: 0, rot: false, cw: 300, ch: 400 }, dpr = Math.min(2, devicePixelRatio || 1);
@@ -135,12 +143,14 @@ const L2Pub = (() => {
         const me = who === 'me', cueIn = B[0].in, black = pots.find(b => b.c === 'k'), own = me ? st.mine : hisCol();
         if (!st.mine) { const f = pots.find(b => b.c === 'r' || b.c === 'y'); if (f && !cueIn) { st.mine = me ? f.c : (f.c === 'r' ? 'y' : 'r'); info.textContent = `${me ? 'You\'re' : `${first}'s`} on ${f.c === 'r' ? 'reds' : 'yellows'}.`; } }
         if (black) { const ownLeft = own ? left(own) : 1, win = ownLeft === 0 && !cueIn; info.textContent = win ? (me ? 'The black goes down. Game!' : `${first} sinks the black.`) : (me ? 'The black, too early. That\'s the game.' : `${first} pots the black early! You win.`); paintScore(); setTimeout(() => finish((win && me) || (!win && !me) ? 'win' : 'lose'), 1400); st.over = true; return; }
+        if (me && (cueIn || !st.firstHit)) st.fouls++;
         if (cueIn) { B[0].in = false; B[0].x = .5; B[0].y = 1.55; B[0].vx = B[0].vy = 0; info.textContent = me ? 'In-off. Foul: his shot.' : `${first}'s gone in-off! Your shot.`; st.turn = me ? 'him' : 'me'; }
         else if (!st.firstHit) { info.textContent = me ? 'Missed everything. Foul: his shot.' : `${first} missed everything. Your shot.`; st.turn = me ? 'him' : 'me'; }
         else { const potOwn = pots.some(b => (st.mine ? b.c === own : (b.c === 'r' || b.c === 'y'))); if (!potOwn) { st.turn = me ? 'him' : 'me'; info.textContent = me ? 'Nothing down. His shot.' : `Nothing for ${first}. Your shot.`; } else info.textContent = me ? 'Down! Go again.' : `${first} pots one. Still on.`; }
         paintScore();
         if (st.turn === 'him' && !st.over) {
           await new Promise(r2 => setTimeout(r2, 700)); if (!o.isConnected) return;
+          st.hisShots++;
           const s2 = aiShot(B, b => st.mine ? b.c === hisCol() || (left(hisCol()) === 0 && b.c === 'k') : b.c !== 'k', err);
           const from = st.aim; for (let i = 1; i <= 20; i++) { st.aiAim = from + (((s2.a - from + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * i / 20; await new Promise(r2 => setTimeout(r2, 35)); } await new Promise(r2 => setTimeout(r2, 350));
           st.aiAim = null; const pots2 = await shoot(s2.a, s2.p); await after(pots2, 'him');
@@ -161,5 +171,5 @@ const L2Pub = (() => {
       paintScore(); requestAnimationFrame(draw);
     });
   }
-  return { darts, pool, table, _rack: rack, _sim: simulate, _ai: aiShot };
+  return { darts, pool, table, get last() { return last; }, _rack: rack, _sim: simulate, _ai: aiShot };
 })();
