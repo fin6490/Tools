@@ -10,16 +10,21 @@ window.RTP = {
  "lir.bonus3": 0.98769,
  "war.tie": 0.99357,
  "c4.queensUp": 0.9989,
- "bac.player": 0.98765,
- "bac.banker": 0.98942,
- "bac.bankerEZ": 0.98982,
- "bac.tie": 0.95156,
+ "bac.player": 1.00484,
+ "bac.banker": 1.00089,
+ "bac.bankerEZ": 1.00108,
+ "bac.tie": 0.99914,
  "bac.pair": 0.99759,
  "bac.dragon7": 0.99149,
  "bac.panda8": 1.00175,
  "craps.fire": 0.99393,
  "craps.small": 1.00145,
  "craps.tall": 1.00145,
- "craps.all": 0.99896
+ "craps.all": 0.99896,
+ "uth.main": 1.0126,
+ "ms.main": 1.0079,
+ "lir.main": 1.0127,
+ "c4.main": 1.0148,
+ "tcp.main": 1.0034
 };
 window.PROG_ODDS = {"bj":{"fixed":3.954649,"jp":[[0.00001595749,1],[0.000387767,0.1]]},"uth":{"fixed":4.869363,"jp":[[0.000001539077,1],[0.00001385169,0.1]]},"ms":{"fixed":4.869363,"jp":[[0.000001539077,1],[0.00001385169,0.1]]},"tcp":{"fixed":4.160724,"jp":[[0.00004524887,1],[0.0001357466,0.1]]},"bac":{"fixed":4.798274,"jp":[[0.000002959517,1]]}};

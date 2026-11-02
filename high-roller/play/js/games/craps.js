@@ -11,14 +11,14 @@ GAMES.craps = (() => {
   const persist = {}; // shooter state survives leaving and coming back during a session
 
   function mount(table, c) {
-    t = table; ctx = c; R = Object.assign({ odds: 2, field2: 2, field12: 2 }, ctx.rules);
+    t = table; ctx = c; R = Object.assign({ odds: 2, field2: 3, field12: 3 }, ctx.rules);
     st = persist[ctx.venueId] || (persist[ctx.venueId] = { point: null, shooterRolls: 0, firePts: [], ats: [], history: [] });
     t.shoe.style.display = 'none';
     const P = PAY.craps;
     sp = {
-      pass: t.spot({ key: 'pass', label: 'PASS LINE', cls: 'cr-pass', max: ctx.limits.max, onChange: () => sync(), onLockedClick: () => UI.toast('Pass line is a contract bet once a point is set', 'warn') }),
+      pass: t.spot({ key: 'pass', label: 'PASS LINE', sub: '12 pushes', cls: 'cr-pass', max: ctx.limits.max, onChange: () => sync(), onLockedClick: () => UI.toast('Pass line is a contract bet once a point is set', 'warn') }),
       passOdds: t.spot({ noComp: true, key: 'passOdds', label: 'Odds', sub: 'behind the line', cls: 'cr-odds', onChange: () => sync(), onLockedClick: () => UI.toast(st.point ? 'Put a bet on the pass line first' : 'Odds open once the shooter sets a point', 'warn'), max: () => st.point && sp.pass.amount ? sp.pass.amount * takeMult(st.point) : 0 }),
-      dp: t.spot({ key: 'dp', label: "DON'T PASS BAR 12", cls: 'cr-dp', max: ctx.limits.max }),
+      dp: t.spot({ key: 'dp', label: "DON'T PASS", sub: '2 · 3 · 12 win', cls: 'cr-dp', max: ctx.limits.max }),
       dpOdds: t.spot({ noComp: true, key: 'dpOdds', label: 'Lay', cls: 'cr-odds', max: () => st.point && sp.dp.amount ? round2(sp.dp.amount * takeMult(st.point) / (1 / TRUE_ODDS[st.point])) : 0 }),
       come: t.spot({ key: 'come', label: 'COME', cls: 'cr-come', max: ctx.limits.max }),
       field: t.spot({ key: 'field', label: 'FIELD', sub: `2·3·4·9·10·11·12 — 2 pays ${R.field2}x, 12 pays ${R.field12}x`, cls: 'cr-field', max: ctx.limits.max }),
@@ -59,7 +59,7 @@ GAMES.craps = (() => {
     setDie($('#d1'), 3); setDie($('#d2'), 4);
     sync(); idle();
   }
-  const placeLabel = n => ({ 4: '9:5', 5: '7:5', 6: '7:6', 8: '7:6', 9: '7:5', 10: '9:5' })[n];
+  const placeLabel = n => ({ 4: '2:1', 5: '3:2', 6: '6:5', 8: '6:5', 9: '3:2', 10: '2:1' })[n]; // true odds
 
   function setDie(el, v) {
     const pips = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] }[v];
@@ -93,7 +93,7 @@ GAMES.craps = (() => {
     $('#cr-oddsnote').textContent = on && sp.pass.amount ? `Pays ${({ 4: '2:1', 10: '2:1', 5: '3:2', 9: '3:2', 6: '6:5', 8: '6:5' })[st.point]}, no house edge · up to ${fmt(oddsMax)}` : 'Odds go behind the line once a point is set';
     const g = $('#cr-guide');
     g.textContent = !on
-      ? (sp.pass.amount || sp.dp.amount ? 'Come-out roll: 7 or 11 wins the pass line, 2, 3 or 12 loses; anything else becomes the point. Roll!' : 'Come-out roll: put chips on the PASS LINE, then roll.')
+      ? (sp.pass.amount || sp.dp.amount ? 'Come-out roll: 7 or 11 wins the pass line, 2 or 3 loses, 12 pushes; anything else becomes the point. Roll!' : 'Come-out roll: put chips on the PASS LINE, then roll.')
       : invite ? `The point is ${st.point}. Back your pass line with ODDS (tap the Odds spot behind it): it pays true odds, the best bet in the house.`
       : `The point is ${st.point}: roll ${st.point === 8 ? 'an' : 'a'} ${st.point} before a 7 to win the pass line. Come bets work like a new pass line; place bets pick a number.`;
     const more = ['any7', 'anyCraps', 'yo', 'aceDeuce', 'aces', 'boxcars', 'fire', 'small', 'tall', 'all'].filter(k => sp[k].amount).length + [4, 6, 8, 10].filter(n => hard[n].amount).length;
@@ -178,15 +178,17 @@ GAMES.craps = (() => {
     // new come bet travels
     if (sp.come.amount && !comeOut) {
       if (n === 7 || n === 11) sp.come.win(1);
-      else if (n === 2 || n === 3 || n === 12) sp.come.lose();
+      else if (n === 12) sp.come.push('12 pushes');
+      else if (n === 2 || n === 3) sp.come.lose();
       else { const amt = sp.come.amount; sp.come.amount = 0; sp.come.history = []; sp.come.render(); come[n].flat.amount = round2(come[n].flat.amount + amt); come[n].flat.history = [come[n].flat.amount]; come[n].flat.render(); }
     }
     // line bets and the point
     if (comeOut) {
       if (n === 7 || n === 11) { sp.pass.amount && sp.pass.win(1); sp.dp.amount && sp.dp.lose(); msgs.push(n + '! Front-line winner.'); }
       else if (n === 2 || n === 3 || n === 12) {
-        sp.pass.amount && sp.pass.lose();
-        if (sp.dp.amount) n === 12 ? sp.dp.push('Bar 12') : sp.dp.win(1);
+        // house rule: a come-out 12 only pushes the pass line, and it wins for don't pass
+        if (sp.pass.amount) n === 12 ? sp.pass.push('12 pushes') : sp.pass.lose();
+        sp.dp.amount && sp.dp.win(1);
         msgs.push(`Craps ${n}.`);
       } else { st.point = n; msgs.push(`The point is ${n}.`); }
     } else if (n === st.point) {
@@ -224,10 +226,10 @@ GAMES.craps = (() => {
       return null;
     },
     info(c) {
-      const r = Object.assign({ odds: 2, field2: 2, field12: 2 }, c.rules), P = PAY.craps;
+      const r = Object.assign({ odds: 2, field2: 3, field12: 3 }, c.rules), P = PAY.craps;
       return [
-        { title: 'Line bets', text: `Pass Line wins on a come-out 7 or 11 and loses on 2, 3 or 12; any other number becomes the point, and Pass wins if the point repeats before a 7. Don't Pass is the reverse (12 pushes). Come and Don't-style odds work the same once a point is on. Odds pay true odds with no house edge; this table allows ${r.odds === 345 ? '3-4-5x' : r.odds + 'x'} odds.` },
-        { title: 'Place bets (off on the come-out)', rows: [['4 or 10', '9 to 5'], ['5 or 9', '7 to 5'], ['6 or 8', '7 to 6']], rtp: null },
+        { title: 'Line bets', text: `Pass Line wins on a come-out 7 or 11 and loses on 2 or 3; a come-out 12 just pushes (a house rule in your favour). Any other number becomes the point, and Pass wins if the point repeats before a 7. Don't Pass is the reverse, and wins on 2, 3 and 12. Come bets work like Pass once a point is on. Odds pay true odds with no house edge; this table allows ${r.odds === 345 ? '3-4-5x' : r.odds + 'x'} odds.`, rows: [['Pass Line / Come', '1 to 1 · return ' + pctStr(1 + 3 / 220)], ["Don't Pass", '1 to 1 · return ' + pctStr(1 + 7 / 495)]], rtp: 1 + 3 / 220 },
+        { title: 'Place bets (off on the come-out, paid at true odds)', rows: [['4 or 10', '2 to 1'], ['5 or 9', '3 to 2'], ['6 or 8', '6 to 5']], rtp: 1 },
         { title: 'Field (one roll)', rows: [['3, 4, 9, 10, 11', '1 to 1'], ['2', r.field2 + ' to 1'], ['12', r.field12 + ' to 1']], rtp: (28 + r.field2 + 1 + r.field12 + 1) / 36 },
         { title: 'Hardways & props (true odds, zero edge)', rows: [['Hard 4 / Hard 10', P.props.hard4 + ' to 1'], ['Hard 6 / Hard 8', P.props.hard6 + ' to 1'], ['Any 7', P.props.any7 + ' to 1'], ['Any Craps', P.props.anyCraps + ' to 1'], ['Yo 11 / Ace-Deuce', P.props.yo + ' to 1'], ['Aces / Boxcars', P.props.aces + ' to 1']], rtp: 1 },
         { title: 'Fire Bet: unique points made by one shooter', text: 'Place before a new shooter\'s first roll. Pays when the shooter sevens out (or immediately at 6 points).', rows: P.fire.map(f => [f.name, f.pays + ' to 1']), rtp: RTP['craps.fire'] },

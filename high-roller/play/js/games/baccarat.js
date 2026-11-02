@@ -5,6 +5,7 @@ GAMES.bac = (() => {
   let t, ctx, R, shoe, sp, rows, road;
   const val = c => (c.r >= 10 && c.r <= 13 ? 0 : c.r === 14 ? 1 : c.r);
   const tot = cs => cs.reduce((a, c) => a + val(c), 0) % 10;
+  const pct = x => +(x * 100).toFixed(1) + "%"; // 0.025 -> "2.5%"
   function bankerDraws(b, third) {
     if (third == null) return b <= 5;
     const t3 = val(third);
@@ -18,7 +19,7 @@ GAMES.bac = (() => {
   const sideMax = () => Math.max(25, ctx.limits.max / 4);
 
   function mount(table, c) {
-    t = table; ctx = c; R = Object.assign({ ez: false, commission: 0.05 }, ctx.rules);
+    t = table; ctx = c; R = Object.assign({ ez: false, commission: 0.025 }, ctx.rules);
     shoe = shoes[ctx.venueId] || (shoes[ctx.venueId] = new Shoe(8, 0.9));
     road = roads[ctx.venueId] || (roads[ctx.venueId] = []);
     const m = PAY.bac;
@@ -26,7 +27,7 @@ GAMES.bac = (() => {
       h('div.bac-hands',
         h('div.bac-hand.player', h('div.area-l', 'PLAYER ', h('span.tot#b-pt')), h('div.cards#b-player')),
         h('div.bac-hand.banker', h('div.area-l', 'BANKER ', h('span.tot#b-bt')), h('div.cards#b-banker'))),
-      h('div.felt-arc', R.ez ? 'EZ BACCARAT · NO COMMISSION · BANKER THREE-CARD 7 PUSHES' : `BANKER PAYS 1 TO 1 LESS ${Math.round(R.commission * 100)}% COMMISSION · TIE PAYS ${m.main.tie} TO 1`),
+      h('div.felt-arc', R.ez ? `EZ BACCARAT · NO COMMISSION · BANKER THREE-CARD 7 PAYS HALF · PLAYER NATURAL 9 PAYS 6 TO 5` : `BANKER PAYS 1 TO 1 LESS ${pct(R.commission)} COMMISSION · PLAYER NATURAL 9 PAYS 6 TO 5 · TIE PAYS ${m.main.tie} TO 1`),
       h('div.spots-row.bac-spots#b-spots'),
       h('div.road-wrap', h('div.area-l', 'Bead plate'), h('div.road#b-road'))));
     rows = { p: new UI.CardRow($('#b-player')), b: new UI.CardRow($('#b-banker')) };
@@ -37,7 +38,7 @@ GAMES.bac = (() => {
       ppair: t.spot({ key: 'ppair', label: 'P Pair', sub: `${m.pair[1].pays}:1`, cls: 'side', max: sideMax }),
       player: t.spot({ key: 'player', label: 'PLAYER', sub: '1:1', cls: 'main blue', max: ctx.limits.max, onChange: one }),
       tie: t.spot({ key: 'tie', label: 'TIE', sub: `${m.main.tie}:1`, cls: 'side green', max: sideMax }),
-      banker: t.spot({ key: 'banker', label: 'BANKER', sub: R.ez ? '1:1*' : `0.${100 - Math.round(R.commission * 100)}:1`, cls: 'main red', max: ctx.limits.max, onChange: one }),
+      banker: t.spot({ key: 'banker', label: 'BANKER', sub: R.ez ? '1:1*' : `${+(1 - R.commission).toFixed(3)}:1`, cls: 'main red', max: ctx.limits.max, onChange: one }),
       bpair: t.spot({ key: 'bpair', label: 'B Pair', sub: `${m.pair[1].pays}:1`, cls: 'side', max: sideMax }),
       dragon: t.spot({ key: 'dragon', label: 'Dragon 7', sub: `${m.dragon7}:1`, cls: 'side', max: sideMax }),
       panda: t.spot({ key: 'panda', label: 'Panda 8', sub: `${m.panda8}:1`, cls: 'side', max: sideMax }),
@@ -83,9 +84,9 @@ GAMES.bac = (() => {
     const pt = tot(P), bt = tot(B), w = pt > bt ? 'p' : bt > pt ? 'b' : 't';
     const natural = (P.length === 2 && pt >= 8) || (B.length === 2 && bt >= 8);
     // main bets
-    if (w === 'p') { sp.player.win(PAY.bac.main.player); sp.banker.lose(); sp.tie.lose(); }
+    if (w === 'p') { P.length === 2 && pt === 9 ? sp.player.win(PAY.bac.main.playerNat9, 'Natural 9 pays 6:5') : sp.player.win(PAY.bac.main.player); sp.banker.lose(); sp.tie.lose(); }
     else if (w === 'b') {
-      if (R.ez) { B.length === 3 && bt === 7 ? sp.banker.push('Banker 3-card 7') : sp.banker.win(1); }
+      if (R.ez) { B.length === 3 && bt === 7 ? sp.banker.win(0.5, 'Banker 3-card 7 pays half') : sp.banker.win(1); }
       else sp.banker.win(1 - R.commission);
       sp.player.lose(); sp.tie.lose();
     } else { sp.player.push(); sp.banker.push(); sp.tie.win(PAY.bac.main.tie, 'Tie!'); }
@@ -121,12 +122,12 @@ GAMES.bac = (() => {
     id: 'bac', name: 'Baccarat', icon: '🎴', blurb: 'Player or Banker, closest to 9. Pairs, Dragon 7, Panda 8.',
     mount,
     info(c) {
-      const r = Object.assign({ ez: false, commission: 0.05 }, c.rules), m = PAY.bac;
+      const r = Object.assign({ ez: false, commission: 0.025 }, c.rules), m = PAY.bac;
       return [
-        { title: 'How to play', text: 'Bet on Player, Banker or Tie. Cards count face value, tens and faces count 0, and only the last digit of the total matters. Third cards follow the fixed tableau; you never make a decision. ' + (r.ez ? 'EZ rules: Banker pays 1:1 with no commission, but a Banker win with a three-card 7 pushes.' : `Banker wins pay 1:1 less ${Math.round(r.commission * 100)}% commission.`) },
-        { title: 'Player', rows: [['Player wins', '1 to 1']], rtp: RTP['bac.player'] },
-        { title: 'Banker', rows: [['Banker wins', r.ez ? '1 to 1 (3-card 7 pushes)' : (1 - r.commission) + ' to 1']],
-          rtp: r.ez ? RTP['bac.bankerEZ'] : (RTP['bac.banker'] - 0.4586 * (r.commission - 0.05)) },
+        { title: 'How to play', text: 'Bet on Player, Banker or Tie. Cards count face value, tens and faces count 0, and only the last digit of the total matters. Third cards follow the fixed tableau; you never make a decision. ' + (r.ez ? 'EZ rules: Banker pays 1:1 with no commission, but a Banker win with a three-card 7 pays half.' : `Banker wins pay 1:1 less ${pct(r.commission)} commission.`) + ' A Player win on a two-card 9 (a natural 9) pays 6:5.' },
+        { title: 'Player', rows: [['Natural 9 (two cards)', '6 to 5'], ['Any other Player win', '1 to 1']], rtp: RTP['bac.player'] },
+        { title: 'Banker', rows: [['Banker wins', r.ez ? '1 to 1 (3-card 7 pays 1 to 2)' : +(1 - r.commission).toFixed(3) + ' to 1']],
+          rtp: r.ez ? RTP['bac.bankerEZ'] : (RTP['bac.banker'] - 0.4586 * (r.commission - (1 - m.main.banker))) },
         { title: 'Player Pair / Banker Pair (first two cards)', rows: UI.payRows(m.pair), rtp: RTP['bac.pair'] },
         { title: 'Dragon 7: Banker wins with a three-card 7', rows: [['Dragon 7', m.dragon7 + ' to 1']], rtp: RTP['bac.dragon7'] },
         { title: 'Panda 8: Player wins with a three-card 8', rows: [['Panda 8', m.panda8 + ' to 1']], rtp: RTP['bac.panda8'] },

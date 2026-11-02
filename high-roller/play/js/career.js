@@ -18,8 +18,8 @@ const VENUES = {
     limits: { min: 5, max: 250 }, chips: [1, 5, 25, 100],
     games: ['bj', 'tcp', 'war', 'roulette', 'craps'],
     rules: {
-      bj: { bjPays: 1.5, h17: true, das: false, surrender: false, maxHands: 3 },
-      craps: { odds: 2, field2: 2, field12: 2 },
+      bj: { bjPays: 2, h17: true, das: false, surrender: false, maxHands: 3 },
+      craps: { odds: 2, field2: 3, field12: 3 },
       roulette: { wheel: 'american' },
     },
     unlock: null,
@@ -29,10 +29,10 @@ const VENUES = {
     limits: { min: 10, max: 2000 }, chips: [5, 25, 100, 500],
     games: ['bj', 'uth', 'ms', 'tcp', 'lir', 'bac', 'craps', 'roulette', 'war'],
     rules: {
-      bj: { bjPays: 1.5, h17: true, das: true, surrender: false, maxHands: 4 },
-      craps: { odds: 345, field2: 2, field12: 3 },
+      bj: { bjPays: 2, h17: true, das: true, surrender: false, maxHands: 4 },
+      craps: { odds: 345, field2: 3, field12: 3 },
       roulette: { wheel: 'american' },
-      bac: { ez: false, commission: 0.05 },
+      bac: { ez: false, commission: 0.025 },
     },
     unlock: { chapter: 1, item: 'suit', bank: 3000, text: 'Make Vinnie\'s first payment on Sal\'s marker, own a Decent Suit and carry $3,000.' },
   },
@@ -41,7 +41,7 @@ const VENUES = {
     limits: { min: 25, max: 10000 }, chips: [25, 100, 500, 1000, 5000],
     games: ['bj', 'uth', 'ms', 'tcp', 'lir', 'bac', 'craps', 'roulette', 'war'],
     rules: {
-      bj: { bjPays: 1.5, h17: false, das: true, surrender: true, maxHands: 4 },
+      bj: { bjPays: 2, h17: false, das: true, surrender: true, maxHands: 4 },
       craps: { odds: 10, field2: 3, field12: 3 },
       roulette: { wheel: 'european' },
       bac: { ez: true },
@@ -53,10 +53,10 @@ const VENUES = {
     limits: { min: 100, max: 100000 }, chips: [100, 500, 1000, 5000, 25000],
     games: ['bj', 'uth', 'ms', 'tcp', 'lir', 'bac', 'craps', 'roulette', 'c4'], // Crazy 4 only plays in the Salon
     rules: {
-      bj: { bjPays: 1.5, h17: false, das: true, surrender: true, maxHands: 4, rsa: true },
+      bj: { bjPays: 2, h17: false, das: true, surrender: true, maxHands: 4, rsa: true },
       craps: { odds: 100, field2: 3, field12: 3 },
       roulette: { wheel: 'french' },
-      bac: { ez: false, commission: 0.04 },
+      bac: { ez: false, commission: 0.02 },
     },
     unlock: { chapter: 3, item: 'platinum', bank: 250000, swagger: 60, text: 'Reach chapter 4, hold a Platinum Players Card, 60 swagger, carry $250,000.' },
   },
