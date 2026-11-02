@@ -201,6 +201,7 @@ const Office = (() => {
   const fleet = () => nowMin() < (App.state.flags.fleetUntil || 0);
   async function cellarGlass() {
     const f = App.state.flags;
+    if (frosty()) return say([{ who: 'philippe', text: '*He doesn\'t pour.* The brick, monsieur. I counted.' }]);
     if (f.tastingDay === App.state.day) return say([{ who: 'philippe', text: 'One tasting a day, monsieur. Tomorrow there will be something else open.' }]);
     const c = await UI.modal({ title: '🍷 The tasting table', body: h('div', h('p', 'Five small glasses, a plate of bread and cheese, and Philippe explaining each one.'), h('p.muted.small', `${fmt(TASTING)} · lifts your mood, sets you up for the evening and puts a spring in your step`)),
       buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: `Sit down (${fmt(TASTING)})`, value: true, cls: 'primary', disabled: App.state.bank < TASTING }] });
@@ -215,6 +216,77 @@ const Office = (() => {
     UI.toast('🍷 Light on your feet for the next three hours', 'good');
     return say([{ who: 'philippe', text: RNG.pick(['A Burgundy for the soul, a Rioja for the legs, and a little Sauternes so you remember me fondly. Go, monsieur. The night is young.', 'Five glasses, five regions, one very good evening. You walk out of here like you own the place, which, for tonight, you might as well.']) }]);
   }
+  /* ---------- more to do in the cellar ---------- */
+  // blind tasting: Philippe pours, gives you three clues, you name the region. Once a day, $25 a go.
+  const BLIND = [
+    ['Inky purple. Blackcurrant, cedar, a little pencil shaving. Firm, and in no hurry.', 'Bordeaux', ['Rioja', 'Barossa']],
+    ['Pale ruby, almost see-through. Cherries and wet leaves. It whispers.', 'Burgundy', ['Chianti', 'Napa']],
+    ['Deep and dark. Vanilla, dill, old leather. American oak, if monsieur is paying attention.', 'Rioja', ['Bordeaux', 'Burgundy']],
+    ['Golden. Honey, apricot, a hint of marmalade. Sweet, but it doesn\'t cloy.', 'Sauternes', ['Champagne', 'Mosel']],
+    ['Tiny bubbles, toast, green apple, something like brioche.', 'Champagne', ['Sauternes', 'Mosel']],
+    ['Black as ink and twice as loud. Plums, pepper, a eucalyptus breeze.', 'Barossa', ['Rioja', 'Burgundy']],
+    ['Sour cherry, tomato leaf, a dry finish that wants pasta.', 'Chianti', ['Burgundy', 'Rioja']],
+    ['Pale gold, low alcohol. Lime, slate, a whiff of petrol in a good way.', 'Mosel', ['Champagne', 'Sauternes']],
+  ];
+  const BLIND_STAKE = 25, BLIND_WIN = 100;
+  const frosty = () => { const t = App.state.flags.brickTook; return t && App.state.day - t < 3; };
+  async function blindTasting() {
+    const f = App.state.flags;
+    if (frosty()) return say([{ who: 'philippe', text: '*He doesn\'t pour.* The brick, monsieur. I counted.' }]);
+    if (f.blindDay === App.state.day) return say([{ who: 'philippe', text: 'Your palate has had enough excitement for one day.' }]);
+    const [nose, answer, wrong] = RNG.pick(BLIND), opts = RNG.shuffle ? RNG.shuffle([answer, ...wrong]) : [answer, ...wrong].sort(() => Math.random() - .5);
+    const go = await UI.modal({ title: '🍷 Blind tasting', body: h('div', h('p', 'Philippe pours from a bottle wrapped in a napkin.'), h('p', `"${nose}"`), h('p.muted.small', `${fmt(BLIND_STAKE)} to play · name it and win ${fmt(BLIND_WIN)}`)),
+      buttons: [{ label: 'Not today', value: null, cls: 'ghost' }, ...opts.map(o => ({ label: o, value: o, disabled: App.state.bank < BLIND_STAKE }))] });
+    if (!go) return;
+    if (!App.debit(BLIND_STAKE)) return;
+    f.blindDay = App.state.day;
+    if (go === answer) {
+      App.credit(BLIND_WIN); App.count('blindRight'); SFX.cash && SFX.cash(); if (typeof Mood !== 'undefined') Mood.change(3, 'a good nose');
+      await say([{ who: 'philippe', text: RNG.pick([`${answer}. *He unwraps the napkin.* Monsieur has a nose. ${fmt(BLIND_WIN)}.`, `*A very small bow.* ${answer}, exactly. I may have to stop liking you.`]) }]);
+    } else await say([{ who: 'philippe', text: `${answer}, monsieur. *He unwraps the napkin, slowly.* ${go}? I will pretend I did not hear that.` }]);
+    App.save(); Router.hud(); Career.checkAchievements();
+  }
+  // the investment rack: put a case down, let it age, sell it back to Philippe. Some cases go corked.
+  async function invest() {
+    const f = App.state.flags, k = f.wineCase, price = 400 + 400 * ch();
+    if (!k) {
+      const c = await UI.modal({ title: '🍾 The investment rack', body: h('div', h('p', 'Philippe lays down cases for people who can wait. He\'ll buy them back when you can\'t.'), h('p.muted.small', `A case is ${fmt(price)} today. It gains a little every day it rests. Every now and then one turns.`)),
+        buttons: [{ label: 'Not now', value: false, cls: 'ghost' }, { label: `Lay down a case (${fmt(price)})`, value: true, cls: 'primary', disabled: App.state.bank < price }] });
+      if (!c || !App.debit(price)) return;
+      f.wineCase = { paid: price, day: App.state.day, rate: .03 + RNG.float() * .05 }; App.save(); Router.hud();
+      return say([{ who: 'philippe', text: 'Your name on the label, monsieur. Patience is the only ingredient you supply.' }]);
+    }
+    const days = App.state.day - k.day, value = r2(k.paid * Math.min(2.5, 1 + k.rate * days));
+    const c = await UI.modal({ title: '🍾 Your case', body: h('div', h('p', `Laid down ${days ? `${days} day${days === 1 ? '' : 's'} ago` : 'today'} for ${fmt(k.paid)}.`), h('p', `Philippe would give you ${fmt(value)} for it today.`)),
+      buttons: [{ label: 'Let it rest', value: false, cls: 'ghost' }, { label: `Sell it back (${fmt(value)})`, value: true, cls: 'primary' }] });
+    if (!c) return;
+    f.wineCase = null;
+    if (days >= 1 && RNG.chance(.12)) {
+      const v = r2(value * .4); App.credit(v); App.save(); Router.hud();
+      return say([{ who: 'philippe', text: `*He pulls a cork and sniffs it, and his face falls.* Corked. Wet cardboard. I can give you ${fmt(v)} for the rest, and my condolences.` }]);
+    }
+    App.credit(value); if (value >= k.paid * 1.5) App.count('cellarInvest'); SFX.cash && SFX.cash(); App.save(); Router.hud(); Career.checkAchievements();
+    return say([{ who: 'philippe', text: value > k.paid ? `${fmt(value)}. The wine did the work; you did the waiting. A partnership.` : `${fmt(value)}. You did not wait very long, monsieur. Neither did the wine.` }]);
+  }
+  // the gramophone: a record, a better mood, once a day
+  const RECORDS = ['Édith Piaf, "La Vie en rose"', 'Django Reinhardt, "Minor Swing"', 'Billie Holiday, "The Very Thought of You"', 'Chet Baker, "My Funny Valentine"', 'Sal\'s own 78 of "Seventeen", which Philippe says he has never heard of'];
+  async function gramophone() {
+    const f = App.state.flags;
+    if (f.gramDay === App.state.day) return say([{ who: 'narrator', text: 'The record is still turning, crackling gently. Philippe hums along when he thinks nobody can hear.' }]);
+    f.gramDay = App.state.day; if (typeof Mood !== 'undefined') Mood.change(5, 'a record in the cellar'); App.save(); Router.hud();
+    return say([{ who: 'narrator', text: `You wind the handle and drop the needle: ${RNG.pick(RECORDS)}. For three minutes, nothing in the world is owed to anyone.` }]);
+  }
+  // a loose brick in the wall, with something behind it. Take it, or put it back.
+  async function brick() {
+    const f = App.state.flags;
+    if (f.brickTook || f.brickLeft) return say([{ who: 'narrator', text: f.brickTook ? 'The brick sits a little proud of the wall now. Anyone who looks would know.' : 'The brick, back where it was. Nobody will ever know you looked. You will.' }]);
+    await say([{ who: 'narrator', text: 'One brick is loose. Behind it, a tobacco tin, and in the tin a roll of old banknotes and a cork with "P. — for a rainy day" written on it.' }]);
+    const c = await UI.modal({ title: 'A loose brick', body: h('p', 'About three hundred dollars, by the feel of it. Philippe\'s rainy-day money.'), buttons: [{ label: 'Put it back', value: 'back', cls: 'ghost' }, { label: 'Take it', value: 'take', cls: 'primary' }], closable: false });
+    if (c === 'take') { f.brickTook = App.state.day; App.credit(300); App.save(); Router.hud(); return say([{ who: 'narrator', text: '$300 in your pocket. The brick doesn\'t go back quite flush.' }]); }
+    f.brickLeft = App.state.day; if (typeof Mood !== 'undefined') Mood.change(3, 'the right thing'); App.count('brickHonest'); App.save(); Career.checkAchievements();
+    return say([{ who: 'narrator', text: 'You put the tin back and the brick after it, exactly as it was.' }]);
+  }
+
   async function delivery() {
     const o = st();
     if (o.deliveryDay === App.state.day) return say([{ who: 'philippe', text: 'One delivery a day, monsieur. The wine needs its rest. So do I.' }]);
@@ -310,5 +382,5 @@ const Office = (() => {
     return say([{ who: 'narrator', text: res === 'win' ? `${s.name} pays up. ${RNG.pick(['"Again tomorrow. I want my money back."', '"Lucky. Nobody\'s that good."', 'Dolores slides you a beer on the house.'])}` : res ? `${s.name} pockets your ${fmt(s.stake)}. "Rack 'em again whenever you like."` : 'You lay your cue down. It counts as a loss.' }]);
   }
 
-  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE, fleet, TASTING };
+  return { vinnieErrand, door, ledger, phone, cellarDoor, cellarGlass, delivery, spurBoard, pool, rank, RANKS, SHARKS, LADDER, ladder, st, KEY_AT, job, handOver, spotIn, lapsed, label, RUNS, BIG, WINE, fleet, TASTING, blindTasting, invest, gramophone, brick, BLIND };
 })();

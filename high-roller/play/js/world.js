@@ -217,7 +217,8 @@ const World = (() => {
       folk: [] },
     // under Prime Cut, down the stairs behind Philippe's desk (office.js)
     cellar: { name: 'The Wine Cellar', W: 12, H: 9, floor: 'tile', theme: { wall: '#3a2c20', trim: '#1a120c', tileA: '#4a3a2a', tileB: '#3a2c20' }, staff: null,
-      f: [['wine', 1, 1, 4, 1], ['wine', 7, 1, 4, 1], ['sconce', 6, 1, 1, 1], ['barrel', 1, 3, 1, 1], ['barrel', 1, 4, 1, 1], ['barrel', 10, 3, 1, 1], ['barrel', 10, 4, 1, 1],
+      f: [['wine', 1, 1, 4, 1], ['wine', 7, 1, 4, 1, { fn: 'cellarInvest', label: '🍾 The investment rack' }], ['sconce', 6, 1, 1, 1], ['barrel', 1, 3, 1, 1], ['barrel', 1, 4, 1, 1], ['barrel', 10, 3, 1, 1, { fn: 'cellarBlind', label: '🍷 Blind tasting' }], ['barrel', 10, 4, 1, 1, { fn: 'cellarBlind', label: '🍷 Blind tasting' }],
+        ['gramophone', 10, 6, 1, 1, { fn: 'cellarGramophone', label: '🎶 The gramophone' }], ['brick', 0, 5, 1, 1, { fn: 'cellarBrick', label: 'A loose brick' }],
         ['table', 5, 3, 2, 2, { fn: 'cellarGlass', label: '🍷 Tasting table' }], ['desk', 8, 6, 2, 1, { fn: 'cellarBins', label: '📖 The bin book' }],
         ['crates', 2, 6, 2, 1, { fn: 'cellarDelivery', label: '📦 Philippe\'s deliveries' }]],
       folk: [] },
@@ -290,6 +291,8 @@ const World = (() => {
       case 'stool': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + 9, py + 13, 4, 2, 0, 0, 7); c.fill(); R(7, 7, 2, 7, '#9e9e9e'); R(5, 13, 6, 1, '#757575'); c.fillStyle = p.col || '#c62828'; c.beginPath(); c.ellipse(px + 8, py + 6, 5, 3, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(px + 5, py + 4, 4, 1); break;
       case 'lamp': { const g = c.createRadialGradient(px + 8, py + 3, 1, px + 8, py + 3, 16); g.addColorStop(0, 'rgba(255,214,140,.45)'); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.fillRect(px - 10, py - 12, 36, 34); R(7, 5, 2, 9, '#5d4037'); R(4, 13, 8, 2, '#3e2723'); R(4, 0, 8, 6, '#f3e0b5'); R(4, 5, 8, 1, '#c9a14a'); break; }
       case 'bench': c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(px + 2, py + 11, w - 2, 3); R(0, 3, w, 3, '#8d6e63'); R(0, 7, w, 4, '#a1887f'); R(0, 7, w, 1, 'rgba(255,255,255,.15)'); R(2, 11, 2, 4, '#4e342e'); R(w - 4, 11, 2, 4, '#4e342e'); break;
+      case 'gramophone': R(3, 9, 10, 6, '#5a3a22'); R(4, 10, 8, 1, '#7a5a3a'); R(5, 7, 6, 2, '#2a1a10'); R(7, 6, 2, 1, '#c9a14a'); c.fillStyle = '#c9a14a'; c.beginPath(); c.moveTo(px + 8, py + 7); c.lineTo(px + 2, py - 2); c.lineTo(px + 14, py - 2); c.closePath(); c.fill(); c.fillStyle = '#8a6a2a'; c.beginPath(); c.ellipse(px + 8, py - 1.5, 6, 1.8, 0, 0, 7); c.fill(); c.fillStyle = '#1a120c'; c.beginPath(); c.ellipse(px + 8, py - 1.5, 3, .9, 0, 0, 7); c.fill(); break;
+      case 'brick': R(2, 8, 12, 5, '#6b4423'); R(3, 9, 10, 3, '#7a5030'); R(2, 13, 12, 1, '#2a1a10'); break;
       case 'barrel': c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(px + 9, py + 14, 7, 2, 0, 0, 7); c.fill(); c.fillStyle = '#6a3a1a'; c.beginPath(); c.ellipse(px + 8, py + 8, 7, 7, 0, 0, 7); c.fill(); c.fillStyle = '#8a5028'; c.beginPath(); c.ellipse(px + 8, py + 8, 5, 5, 0, 0, 7); c.fill(); c.strokeStyle = '#2a1a0a'; c.lineWidth = 1; c.beginPath(); c.arc(px + 8, py + 8, 6.5, 0, 7); c.stroke(); R(7, 7, 2, 2, '#c9a14a'); break;
       case 'crates': for (let i = 0; i < p.w; i++) { R(i * T + 1, 3, 14, 12, '#a07040'); R(i * T + 1, 3, 14, 2, '#c09060'); R(i * T + 1, 8, 14, 1, '#6a4020'); R(i * T + 6, 4, 4, 2, '#3a2010'); } break;
       case 'deskphone': R(1, 6, 14, 9, '#4a2a14'); R(1, 6, 14, 2, '#6a3e20'); R(4, 2, 8, 5, '#111'); R(3, 2, 10, 2, '#222'); R(6, 4, 4, 2, '#d8d0b8'); break;
@@ -353,6 +356,10 @@ const World = (() => {
     if (fn === 'cellarBins') return Postcards.cellar(true);
     if (fn === 'cellarGlass') return Office.cellarGlass();
     if (fn === 'cellarDelivery') return Office.delivery();
+    if (fn === 'cellarBlind') return Office.blindTasting();
+    if (fn === 'cellarInvest') return Office.invest();
+    if (fn === 'cellarGramophone') return Office.gramophone();
+    if (fn === 'cellarBrick') return Office.brick();
     if (fn === 'spurWork') return Office.spurBoard();
     if (fn === 'spurPool') return Office.pool();
     if (fn === 'cellar') return Office.cellarDoor();
