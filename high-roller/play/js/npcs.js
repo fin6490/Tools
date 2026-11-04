@@ -447,8 +447,21 @@ const AI_KEY = 'highroller.anthropicKey';
 // voice chat was removed: forget its settings and any OpenAI key a player pasted for it
 try { localStorage.removeItem('highroller.voice'); localStorage.removeItem('highroller.openaiKey'); } catch (e) { }
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.132.0/+esm';
+const AI_USAGE = 'highroller.aiUsage';
 const Chat = {
   _sample: undefined, _sdk: null,
+  DAILY: 100, // AI replies a day on a player's own key (the site owner's server has its own cap)
+  // today's count, kept in this browser and reset at local midnight
+  usage() {
+    const d = new Date(), day = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    let u = null; try { u = JSON.parse(localStorage.getItem(AI_USAGE) || 'null'); } catch (e) { }
+    return u && u.day === day && u.n >= 0 ? u : { day, n: 0 };
+  },
+  left() { return Math.max(0, this.DAILY - this.usage().n); },
+  spend() { // count one reply, or refuse once today's are used up
+    const u = this.usage(); if (u.n >= this.DAILY) throw { code: 'cap' };
+    u.n++; try { localStorage.setItem(AI_USAGE, JSON.stringify(u)); } catch (e) { }
+  },
   apiKey() { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } },
   setKey(k) { try { k ? localStorage.setItem(AI_KEY, k.trim()) : localStorage.removeItem(AI_KEY); } catch (e) { } },
   // which way can we reach Claude? 'sample' inside a claude.ai artifact, 'api' with the player's own key.
@@ -570,6 +583,7 @@ const Chat = {
       const { text } = await this._sample(turns, { modelTier: 'quick', cache: false, signal, onText: u => onText(u.text) });
       return text;
     }
+    this.spend();
     const { client } = await this.client();
     const stream = client.beta.messages.stream({
       model: 'claude-opus-5-5',
@@ -607,7 +621,7 @@ const Chat = {
   },
   errorText(e) {
     const code = e && (e.code || e.status);
-    if (code === 'cap') return `You've used today's AI chats (${(this.host() && this.host().cap) || 100} a day). Characters are back to their usual lines until tomorrow.`;
+    if (code === 'cap') return `You've used today's AI chats (${(this.host() && this.host().owner && this.host().cap) || this.DAILY} a day). Characters are back to their usual lines until tomorrow.`;
     if (code === 'not_premium') return 'AI chat is part of SpinDecks Premium.';
     if (code === 'own_key') return 'AI chat runs on your own Anthropic key now. Add one in ☰ → 💬 AI chat.';
     if (code === 'not_signed_in') return 'Sign in to SpinDecks again to keep chatting.';
@@ -641,7 +655,7 @@ const Chat = {
     const form = h('form.chat-form', input, send);
     const mode = await this.backend();
     if (!mode) { input.disabled = send.disabled = true; note.append('To ask questions in your own words, connect Claude. ', h('button.btn.sm.primary', { type: 'button', onclick: () => { pop.close(); setTimeout(() => this.settings(), 50); } }, '💬 Set up AI chat')); }
-    else note.textContent = mode === 'proxy' ? `Replies come from Claude, included with SpinDecks Premium${this.host().left != null ? ` (${this.host().left} left today)` : ''}.` : mode === 'sample' ? 'Replies come from Claude on your account.' : 'Replies come from Claude using your API key.';
+    else note.textContent = mode === 'proxy' ? `Replies come from Claude, included with SpinDecks Premium${this.host().left != null ? ` (${this.host().left} left today)` : ''}.` : mode === 'sample' ? 'Replies come from Claude on your account.' : `Replies come from Claude using your API key (${this.left()} of ${this.DAILY} left today).`;
     let ctl = null;
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -662,6 +676,7 @@ const Chat = {
         hist.pop(); // drop the unanswered line so the next try starts clean
       } finally {
         ctl = null; send.disabled = false; input.focus();
+        if (mode === 'api') note.textContent = `Replies come from Claude using your API key (${this.left()} of ${this.DAILY} left today).`;
         trim(); App.save();
       }
     });
@@ -740,7 +755,7 @@ const Chat = {
         h('p', opts.intro
           ? 'The people in this town can talk back, in your own words, and some of the story only comes out in conversation. That needs Claude, on your own Anthropic API key.'
           : 'Talk to anyone in town in your own words. Replies come from Claude, on your own Anthropic API key.'),
-        h('p.muted.small', 'You pay Anthropic directly, about 1 to 2 cents a reply. Skip it and characters use their written lines; the main story still works. ' + (opts.intro ? 'Set it up later from ☰ → 💬 AI chat.' : '')),
+        h('p.muted.small', `You pay Anthropic directly, about 1 to 2 cents a reply, and the game sends at most ${this.DAILY} replies a day${opts.intro ? '' : ` (${this.left()} left today)`}. Skip it and characters use their written lines; the main story still works. ` + (opts.intro ? 'Set it up later from ☰ → 💬 AI chat.' : '')),
         guide,
         h('label.lbl', { for: 'ai-key' }, 'Your Anthropic API key'), key,
         h('p.muted.small', 'The key stays in this browser. It goes only to Anthropic: never to ' + (this.host() ? 'SpinDecks' : 'anyone else') + ', never into save files.'));

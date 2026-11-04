@@ -146,6 +146,9 @@ const App = {
   news(text) { this.state.news.unshift({ day: this.state.day, text }); this.state.news.length = Math.min(this.state.news.length, 40); },
 
   /* ---------- after every settled round ---------- */
+  // the game's owner: on a host site, the account the server says is the owner; anywhere else (the private
+  // claude.ai artifact, a local copy) it's whoever is playing
+  isOwner() { const host = window.HR_HOST; return host ? !!host.owner : true; },
   inReality() { return !!(this.state && this.state.l2 && this.state.l2.atTable); },
   inLaptop() { return !!(this.state && this.state.l3 && this.state.l3.atTable); }, // a game on the laptop in Level 3
   offStory() { return this.inReality() || this.inLaptop(); }, // no Level 1 quests, needs or mood at these tables

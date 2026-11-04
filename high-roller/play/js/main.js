@@ -413,6 +413,18 @@ const Screens = {
       App.start(target, pick); Router.go(target.l3 && target.l3.atTable ? 'bedsit' : 'world'); UI.toast(`📂 Slot ${pick}: ${target.name}, day ${target.day}`, 'good');
     }
   },
+  // owner-only demos of the later levels. They play in a scratch copy of this game, kept out of the
+  // save slots, so the real saves are never touched; load a slot to go back.
+  demo(level) {
+    if (!App.isOwner()) return;
+    if (World.savePos) World.savePos(); App.save();
+    if (Router.screen === 'world') World.unmount();
+    const copy = JSON.parse(JSON.stringify(App.state));
+    delete copy.l2; delete copy.l3; delete copy.copyOf; copy.demo = level;
+    App.start(copy, 'demo');
+    UI.toast(`🧪 Level ${level} demo, in a scratch copy. Your saves are untouched: load a slot to go back.`, 'good');
+    level === 2 ? Router.go('reality') : L3.begin();
+  },
   menu() {
     const st = App.state;
     const sel = (key, opts) => h('select.field.sm', { onchange: e => { st.settings[key] = e.target.value === 'true' ? true : e.target.value === 'false' ? false : e.target.value; App.save(); } },
@@ -433,12 +445,15 @@ const Screens = {
         h('button.btn', { onclick: () => { box.close(); Chat.settings(); } }, '💬 AI chat with characters'),
         h('button.btn', { onclick: () => { box.close(); Looks.edit(); } }, '🪞 Your look'),
         h('button.btn', { onclick: () => { box.close(); Me.edit(); } }, '🗂️ Your file (make it personal)'),
-        h('button.btn', { onclick: () => { App.save(); UI.toast('Saved to slot ' + App.slot, 'good'); } }, '💾 Save now'),
+        h('button.btn', { onclick: () => { App.save(); UI.toast(App.slot === 'demo' ? 'Saved (demo copy)' : 'Saved to slot ' + App.slot, 'good'); } }, '💾 Save now'),
         h('button.btn', { onclick: () => { box.close(); Screens.saveSlots('copy'); } }, '🗂️ Save a copy to another slot'),
         h('button.btn', { onclick: () => { box.close(); Screens.saveSlots('load'); } }, '📂 Load another slot'),
         h('button.btn', { onclick: () => App.exportSave() }, '⤓ Export save file'),
         h('button.btn.ghost', { onclick: () => { box.close(); App.save(); Router.safeGo('title'); } }, '⏏ Quit to title')),
-      h('p.muted.small', `Slot ${App.slot} · autosaves after every round`));
+      App.isOwner() ? h('div.menu-btns.menu-demo', h('p.muted.small', 'Owner only: try the later levels in a scratch copy (your saves are untouched).'),
+        h('button.btn', { onclick: () => { box.close(); Screens.demo(2); } }, '🧪 Level 2 demo'),
+        h('button.btn', { onclick: () => { box.close(); Screens.demo(3); } }, '🧪 Level 3 demo')) : null,
+      h('p.muted.small', App.slot === 'demo' ? 'Demo copy · load a slot to go back to your saves' : `Slot ${App.slot} · autosaves after every round`));
     const box = UI.modal({ title: 'Menu', body });
   },
 };
