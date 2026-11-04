@@ -464,13 +464,13 @@ const Chat = {
   },
   apiKey() { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } },
   setKey(k) { try { k ? localStorage.setItem(AI_KEY, k.trim()) : localStorage.removeItem(AI_KEY); } catch (e) { } },
-  // which way can we reach Claude? 'sample' inside a claude.ai artifact, 'api' with the player's own key.
-  // On a host site (spindecks.app, window.HR_HOST) players bring their own key too; only the site owner's
-  // account goes through the host's server.
+  // which way can we reach Claude? 'sample' inside a claude.ai artifact, 'api' with the player's own key,
+  // 'proxy' through the host site's server (spindecks.app, window.HR_HOST), which answers premium players
+  // on the owner's key, 100 replies a day each.
   host() { return window.HR_HOST && window.HR_HOST.chatUrl ? window.HR_HOST : null; },
   async backend() {
     const host = this.host();
-    if (host) { if (host.ready) await host.ready; return host.owner && host.premium ? 'proxy' : this.apiKey() ? 'api' : null; }
+    if (host) { if (host.ready) await host.ready; return host.premium ? 'proxy' : this.apiKey() ? 'api' : null; }
     if (this._sample === undefined) {
       this._sample = null;
       if (window.claude && window.claude.use) { try { this._sample = await window.claude.use('sample'); } catch (e) { this._sample = null; } }
@@ -621,7 +621,7 @@ const Chat = {
   },
   errorText(e) {
     const code = e && (e.code || e.status);
-    if (code === 'cap') return `You've used today's AI chats (${(this.host() && this.host().owner && this.host().cap) || this.DAILY} a day). Characters are back to their usual lines until tomorrow.`;
+    if (code === 'cap') return `You've used today's AI chats (${(this.host() && this.host().cap) || this.DAILY} a day). Characters are back to their usual lines until tomorrow.`;
     if (code === 'not_premium') return 'AI chat is part of SpinDecks Premium.';
     if (code === 'own_key') return 'AI chat runs on your own Anthropic key now. Add one in ☰ → 💬 AI chat.';
     if (code === 'not_signed_in') return 'Sign in to SpinDecks again to keep chatting.';

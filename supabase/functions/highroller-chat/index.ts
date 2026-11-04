@@ -1,7 +1,7 @@
 // highroller-chat — AI character chat for The Meridian (formerly High Roller) on spindecks.app.
 // The Anthropic key lives only here (secret ANTHROPIC_API_KEY). Every request must
-// carry a signed-in SpinDecks user's token. Players bring their own Anthropic key, so
-// only the owner's account gets replies from here, capped per day. verify_jwt is off so the browser's CORS preflight works; the user
+// carry a signed-in SpinDecks user's token. Premium players get replies on the owner's
+// key, capped at CAP a day each (the owner gets OWNER_CAP). verify_jwt is off so the browser's CORS preflight works; the user
 // is checked by hand below, like create-checkout.
 //
 // POST { kind: "status" }                      -> { premium, owner, left, cap }
@@ -69,11 +69,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     if (body.kind === "status") {
       const { data: used } = await admin.rpc("hr_usage_today", { p_user: user.id });
-      return json({ premium, owner, cap, left: Math.max(0, cap - (used || 0)), chat: owner && !!Deno.env.get("ANTHROPIC_API_KEY") }, 200, origin);
+      return json({ premium, owner, cap, left: Math.max(0, cap - (used || 0)), chat: !!Deno.env.get("ANTHROPIC_API_KEY") }, 200, origin);
     }
     if (!premium) return json({ code: "not_premium" }, 403, origin);
-    // players bring their own Anthropic key and talk to it from the browser; only the owner's account uses this server
-    if (!owner) return json({ code: "own_key" }, 403, origin);
     const ask = validate(body);
     if (!ask) return json({ code: "bad_request" }, 400, origin);
     const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -108,7 +106,7 @@ Deno.serve(async (req) => {
         } finally {
           ctl.close();
         }
-      },
+      }
     });
     return new Response(out, { headers: { ...cors(origin), "Content-Type": "application/x-ndjson", "Cache-Control": "no-store" } });
   } catch (e) {
