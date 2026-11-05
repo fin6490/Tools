@@ -1,0 +1,14 @@
+{
+  "name": "Lobster Pots",
+  "short_name": "Lobster Pots",
+  "description": "Risk it offshore or play it safe? Out-fish four rival skippers and take on the world in the Daily Catch.",
+  "start_url": "/lobster-pots/play/",
+  "scope": "/lobster-pots/play/",
+  "display": "fullscreen",
+  "background_color": "#0b3d5c",
+  "theme_color": "#0b3d5c",
+  "icons": [
+    { "src": "/lobster-pots/play/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/lobster-pots/play/icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

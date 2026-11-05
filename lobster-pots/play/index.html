@@ -24,6 +24,12 @@
 
 <link rel="icon" type="image/png" href="/lobster-pots/play/icon.png" />
 <link rel="apple-touch-icon" href="/lobster-pots/play/icon.png" />
+<!-- Add to Home Screen opens the game full screen, with no browser bars. -->
+<link rel="manifest" href="/lobster-pots/play/manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Lobster Pots" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -40,38 +46,55 @@
 }
 </script>
 <style>
-  /* A phone-shaped frame for the game: full screen on a phone, centred with
-     sea-coloured margins on a wider screen. The game itself runs in game/. */
-  :root { --sea: #0b3d5c; --deep: #072a40; --ink: #eaf4fa; --gold: #f2b134; }
+  /* Phones get the game full screen. Wider screens get a slim bar and the game
+     fills the rest of the window: it lays itself out in columns when wide. */
+  :root { --sea: #0b3d5c; --deep: #072a40; --ink: #eaf4fa; --muted: #a9c6d8; --gold: #f2b134; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: radial-gradient(ellipse at 50% 20%, #12547c, var(--deep) 70%); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
-  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .frame { width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); background: var(--sea); position: relative; }
+  html, body { margin: 0; height: 100%; background: radial-gradient(ellipse at 50% 0%, #12547c, var(--deep) 75%); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; overscroll-behavior: none; }
+  .wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 0 16px 16px; }
+  .bar { width: min(100%, 1600px); height: 52px; flex: none; display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .bar a, .bar button { color: var(--ink); text-decoration: none; font: inherit; padding: 7px 12px; border-radius: 10px; background: rgba(0, 0, 0, .25); border: 0; cursor: pointer; }
+  .bar a:hover, .bar button:hover { background: rgba(0, 0, 0, .4); }
+  .bar strong { font-size: 16px; }
+  .bar .hint { color: var(--muted); margin-left: auto; }
+  .frame { width: min(100%, 1600px); flex: 1; min-height: 0; background: var(--sea); position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, .35); touch-action: none; }
   .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
-  .back { position: fixed; top: 14px; left: 16px; color: var(--ink); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: rgba(0, 0, 0, .25); }
-  .back:hover { background: rgba(0, 0, 0, .4); }
-  .side { position: fixed; bottom: 16px; left: 16px; max-width: calc((100vw - 100dvh * 9 / 16) / 2 - 32px); font-size: 13px; line-height: 1.5; opacity: .8; }
-  .side a { color: var(--gold); }
-  /* On a phone (or any screen without room beside the frame) the game gets every pixel. */
-  @media (max-aspect-ratio: 4/5) { .back, .side { display: none; } .frame { width: 100vw; height: 100dvh; } }
-  @media (max-width: 860px) { .side { display: none; } }
+  .frame:fullscreen { border-radius: 0; }
+  /* Phones (portrait, or short landscape screens): every pixel goes to the game. */
+  @media (max-aspect-ratio: 4/5), (max-height: 520px) {
+    .wrap { padding: 0; }
+    .bar { display: none; }
+    .frame { width: 100%; border-radius: 0; box-shadow: none; }
+  }
+  @media (max-width: 760px) { .bar .hint { display: none; } }
   noscript { display: block; padding: 24px; text-align: center; }
 </style>
 </head>
 <body>
-<a class="back" href="/lobster-pots/">&larr; SpinDecks</a>
-<div class="stage">
-  <div class="frame">
+<div class="wrap">
+  <nav class="bar" aria-label="Lobster Pots">
+    <a href="/lobster-pots/">&larr; SpinDecks</a>
+    <strong>Lobster Pots</strong>
+    <span class="hint">Free, no sign-up &middot; Space or Enter to roll and set sail &middot; Saved in this browser</span>
+    <button type="button" id="full" hidden>Full screen</button>
+  </nav>
+  <div class="frame" id="frame">
     <iframe src="game/index.html" title="Lobster Pots" allow="clipboard-write; autoplay; fullscreen"></iframe>
   </div>
 </div>
-<p class="side">Free to play, no sign-up. Your progress is saved in this browser. Daily Catch scores go on the worldwide board with just your nickname. Want to run it with a class? Try the <a href="/lobster-pots/">print-and-play version</a>.</p>
 <noscript>Lobster Pots needs JavaScript and WebGL to run.</noscript>
 <script>
-  // Give the game keyboard focus as soon as it loads, so typing a nickname works
-  // straight away on a computer.
+  // Give the game keyboard focus as soon as it loads (and after any click on
+  // the bar), so the keys and typing a nickname work straight away.
   const f = document.querySelector("iframe");
-  f.addEventListener("load", () => { try { f.contentWindow.focus(); } catch (e) {} });
+  const focusGame = () => { try { f.contentWindow.focus(); } catch (e) {} };
+  f.addEventListener("load", focusGame);
+  const full = document.getElementById("full");
+  const frame = document.getElementById("frame");
+  if (frame.requestFullscreen) {
+    full.hidden = false;
+    full.addEventListener("click", () => { frame.requestFullscreen().then(focusGame).catch(() => {}); });
+  }
 </script>
 </body>
 </html>
