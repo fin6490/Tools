@@ -38,6 +38,9 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // let cross-origin pass through
+  // The Lobster Pots game engine is ~38 MB: leave it to the browser's own cache
+  // rather than copying it into this one on every visit.
+  if (url.pathname.startsWith("/lobster-pots/play/game/")) return;
 
   event.respondWith(
     fetch(req)

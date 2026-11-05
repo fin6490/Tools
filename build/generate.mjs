@@ -639,6 +639,14 @@ const PANELS = String.raw`  <!-- WHEEL -->
   </main>
   <!-- LOBSTER POTS (print-and-play business game; lobster.js builds the screens) -->
   <main class="view view-lobster" data-view-panel="lobster" hidden>
+    <a class="lp-play" href="/lobster-pots/play/">
+      <img src="/lobster-pots/play/icon.png" alt="" width="64" height="64" />
+      <span class="lp-play-text">
+        <span class="lp-play-title">Play Lobster Pots online</span>
+        <span class="lp-play-desc">The full game: beat four rival skippers, play the Daily Catch and climb the worldwide leaderboard. Free, no sign-up.</span>
+      </span>
+      <span class="btn primary lp-play-btn">Play now</span>
+    </a>
     <section class="panel lobster-panel" aria-label="Lobster Pots print-and-play business game"></section>
   </main>
   <!-- THE GREAT ELF GAME (print-and-play Christmas business game; elf.js builds the screens) -->
@@ -798,7 +806,7 @@ ${SW_REG}
 function hubPage() {
   const cards = TOOLS.map((t) => `      <a class="hub-card" href="/${t.slug}/">
         <span class="hub-card-title">${t.h1.replace(/ —.*/, "")}</span>
-        <span class="hub-card-desc">${t.intro.split(". ")[0]}.</span>
+        <span class="hub-card-desc">${t.hubDesc || t.intro.split(". ")[0] + "."}</span>
       </a>`).join("\n");
   const ld = {
     "@context": "https://schema.org",
@@ -822,6 +830,11 @@ ${simpleHeader()}
     <span class="hr-badge">Premium</span>
     <span class="hub-card-title">High Roller — a casino story game</span>
     <span class="hub-card-desc">Walk a neon town, play nine table games, slots, darts and poker, and solve the mystery of Sal's last hand. Every character talks back with AI.</span>
+  </a>
+  <a class="hub-card hr-feature lp-feature" href="/lobster-pots/play/">
+    <span class="hr-badge lp-badge">Free game</span>
+    <span class="hub-card-title">Lobster Pots — the fishing game</span>
+    <span class="hub-card-desc">Out-fish four rival skippers, then take on the world in the Daily Catch: one go a day, a worldwide leaderboard and a monthly league.</span>
   </a>
   <div class="hub-grid">
 ${cards}
@@ -957,7 +970,7 @@ ${SW_REG}
 /* ---------- sitemap / robots ---------- */
 
 function sitemap() {
-  const urls = ["/", "/high-roller/", ...TOOLS.map((t) => "/" + t.slug + "/"), "/about/", "/privacy/", "/terms/"];
+  const urls = ["/", "/high-roller/", ...TOOLS.flatMap((t) => ["/" + t.slug + "/", ...(t.extraPaths || [])]), "/about/", "/privacy/", "/terms/"];
   const body = urls
     .map((u) => `  <url>\n    <loc>${SITE.origin}${u}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`)
     .join("\n");

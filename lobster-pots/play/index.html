@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Lobster Pots — Free Online Fishing Game with a Daily Leaderboard | SpinDecks</title>
+<meta name="description" content="Risk it offshore or play it safe? Out-fish four rival skippers over a 14-day season, then take on the world in the Daily Catch: one go a day, the same weather for everyone, a worldwide leaderboard and a monthly league. Free, no sign-up." />
+<meta name="author" content="SpinDecks" />
+<meta name="theme-color" content="#0b3d5c" />
+<link rel="canonical" href="https://spindecks.app/lobster-pots/play/" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SpinDecks" />
+<meta property="og:title" content="Lobster Pots — Free Online Fishing Game | SpinDecks" />
+<meta property="og:description" content="Out-fish four rival skippers, then take on the world in the Daily Catch. Free, no sign-up." />
+<meta property="og:url" content="https://spindecks.app/lobster-pots/play/" />
+<meta property="og:image" content="https://spindecks.app/lobster-pots/play/og.png" />
+<meta property="og:image:width" content="1024" />
+<meta property="og:image:height" content="500" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Lobster Pots — Free Online Fishing Game | SpinDecks" />
+<meta name="twitter:description" content="Out-fish four rival skippers, then take on the world in the Daily Catch. Free, no sign-up." />
+<meta name="twitter:image" content="https://spindecks.app/lobster-pots/play/og.png" />
+
+<link rel="icon" type="image/png" href="/lobster-pots/play/icon.png" />
+<link rel="apple-touch-icon" href="/lobster-pots/play/icon.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Lobster Pots",
+  "url": "https://spindecks.app/lobster-pots/play/",
+  "description": "A fishing-business game: split your pots between the inshore, midwater and offshore grounds, beat four rival skippers, and play the Daily Catch against the world.",
+  "genre": ["Strategy", "Casual"],
+  "gamePlatform": "Web browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+  "publisher": { "@type": "Organization", "name": "SpinDecks", "url": "https://spindecks.app/" }
+}
+</script>
+<style>
+  /* A phone-shaped frame for the game: full screen on a phone, centred with
+     sea-coloured margins on a wider screen. The game itself runs in game/. */
+  :root { --sea: #0b3d5c; --deep: #072a40; --ink: #eaf4fa; --gold: #f2b134; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: radial-gradient(ellipse at 50% 20%, #12547c, var(--deep) 70%); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .frame { width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); background: var(--sea); position: relative; }
+  .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+  .back { position: fixed; top: 14px; left: 16px; color: var(--ink); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: rgba(0, 0, 0, .25); }
+  .back:hover { background: rgba(0, 0, 0, .4); }
+  .side { position: fixed; bottom: 16px; left: 16px; max-width: calc((100vw - 100dvh * 9 / 16) / 2 - 32px); font-size: 13px; line-height: 1.5; opacity: .8; }
+  .side a { color: var(--gold); }
+  /* On a phone (or any screen without room beside the frame) the game gets every pixel. */
+  @media (max-aspect-ratio: 4/5) { .back, .side { display: none; } .frame { width: 100vw; height: 100dvh; } }
+  @media (max-width: 860px) { .side { display: none; } }
+  noscript { display: block; padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<a class="back" href="/lobster-pots/">&larr; SpinDecks</a>
+<div class="stage">
+  <div class="frame">
+    <iframe src="game/index.html" title="Lobster Pots" allow="clipboard-write; autoplay; fullscreen"></iframe>
+  </div>
+</div>
+<p class="side">Free to play, no sign-up. Your progress is saved in this browser. Daily Catch scores go on the worldwide board with just your nickname. Want to run it with a class? Try the <a href="/lobster-pots/">print-and-play version</a>.</p>
+<noscript>Lobster Pots needs JavaScript and WebGL to run.</noscript>
+<script>
+  // Give the game keyboard focus as soon as it loads, so typing a nickname works
+  // straight away on a computer.
+  const f = document.querySelector("iframe");
+  f.addEventListener("load", () => { try { f.contentWindow.focus(); } catch (e) {} });
+</script>
+</body>
+</html>
