@@ -2016,3 +2016,14 @@ a.tab { display: block; }
 .hr-list li { margin-bottom: 8px; }
 .hr-feature .hr-badge { align-self: flex-start; }
 .hr-shots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+/* Lobster Pots online game (/lobster-pots/play/): hub feature card and the play banner */
+.lp-feature { border-color: #2b8fc4; background: linear-gradient(135deg, var(--panel), rgba(43, 143, 196, .14)); }
+.lp-badge { background: linear-gradient(90deg, #7fd3f5, #2b8fc4); color: #06253a; }
+.lp-play { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 16px; border: 2px solid #2b8fc4; background: linear-gradient(135deg, var(--panel), rgba(43, 143, 196, .16)); color: inherit; text-decoration: none; }
+.lp-play img { width: 64px; height: 64px; border-radius: 14px; flex: none; }
+.lp-play-text { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.lp-play-title { font-weight: 800; font-size: 18px; }
+.lp-play-desc { color: var(--muted); font-size: 14px; }
+.lp-play-btn { flex: none; }
+@media (max-width: 560px) { .lp-play { flex-wrap: wrap; } .lp-play-btn { width: 100%; text-align: center; } }

@@ -710,6 +710,10 @@ export const TOOLS = [
     description:
       "A print-and-play business maths game. Each fisher runs a lobster business over a run of days: split pots between the safe inshore and risky offshore, survive the weather, buy pots and bank cash. The teacher rolls the weather and draws event cards. Free, no sign-up, works offline.",
     h1: "Lobster Pots — print-and-play business game",
+    // The full game also runs online at /lobster-pots/play/ (a Godot web export
+    // of the Lobster Pots app, sharing its Daily Catch leaderboard).
+    hubDesc: "Play the fishing game online, or print and play it with a class.",
+    extraPaths: ["/lobster-pots/play/"],
     intro:
       "Run a lobster-fishing business and end with the biggest balance. Every fisher gets a printed log sheet and, each day, splits their pots between the safe inshore (low catch) and the risky offshore (big catch — unless a storm destroys it). The teacher rolls the daily weather and draws event cards — loans from Biscoes Bank, cheap pots from Dodgy Dave, the Inspector's fines and more. A great context for money, multiplication and a bit of nerve.",
     steps: [
