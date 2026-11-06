@@ -872,7 +872,7 @@ const L2 = (() => {
     if (S().clues.rabbit || has('okafor')) opts.splice(1, 0, ['phone', '💬 Phone someone to talk']);
     if (R3.area === 'city') opts.splice(1, 0, ['taxi', '🚕 Hail a cab']);
     if (Object.keys(found()).length) opts.push(['roof', '↺ Back to the roof: choose again']);
-    if (typeof L3 !== 'undefined' && App.state.l3) opts.push(['l3', '🪞 The room']);
+    if (typeof L3 !== 'undefined' && App.reachedL3()) opts.push(['l3', '🪞 The room']);
     opts.push(['restart', '↺ Start Level 2 again'], ['title', 'Title screen']);
     const c = await choose('Menu', opts);
     if (c === 'sound') { App.state.settings.sound = App.state.settings.sound === false; App.save(); }
