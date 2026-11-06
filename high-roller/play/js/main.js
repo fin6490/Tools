@@ -127,7 +127,7 @@ const Screens = {
       h('div.slot-btns',
         s ? h('button.btn.primary.sm', { onclick: () => { App.start(s, i); Router.go('world'); } }, 'Continue') : null,
         s && (s.l2 || s.ending) ? h('button.btn.sm.l2-go', { onclick: () => { App.start(s, i); Router.go('reality'); } }, s.l2 ? 'Continue (2)' : '…') : null,
-        s && s.l3 ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); L3.begin(); } }, 'Continue (3)') : null,
+        App.reachedL3(s) ? h('button.btn.sm.l3-go', { onclick: () => { App.start(s, i); L3.begin(); } }, 'Continue (3)') : null,
         h('button.btn.sm', { onclick: () => Screens.newGame(i, 'career') }, 'New Career'),
         h('button.btn.ghost.sm', { onclick: () => Screens.newGame(i, 'free') }, 'Free Play'),
         s ? h('button.btn.ghost.sm.danger', { onclick: async () => { if (await UI.confirm('Delete save?', `Erase slot ${i} (${s.name})? This can't be undone.`, 'Delete')) { App.deleteSlot(i); Router.go('title'); } } }, 'Delete') : null));
@@ -352,7 +352,7 @@ const Screens = {
     const st = App.state;
     main.append(h('div.trophies', h('div.lobby-h', h('button.btn.ghost.sm', { onclick: () => Router.go('world') }, '← Map'), h('h2', '🏅 Trophy Room')),
       // what's ahead stays hidden: another level's achievements only show once you've been there
-      h('div.shopgrid', ACHIEVEMENTS.filter(a => st.achievements[a.id] || !/^l2/.test(a.id) || st.l2).filter(a => st.achievements[a.id] || !/^l3/.test(a.id) || st.l3).map(a => h('div.item' + (st.achievements[a.id] ? '.owned' : '.dim'),
+      h('div.shopgrid', ACHIEVEMENTS.filter(a => st.achievements[a.id] || !/^l2/.test(a.id) || st.l2).filter(a => st.achievements[a.id] || !/^l3/.test(a.id) || App.reachedL3()).map(a => h('div.item' + (st.achievements[a.id] ? '.owned' : '.dim'),
         h('div.item-i', st.achievements[a.id] ? '🏅' : '🔒'), h('b', a.name), h('p', a.desc),
         h('div.tags', a.reward ? h('span', fmt(a.reward)) : null, a.swagger ? h('span', '★ +' + a.swagger) : null,
           st.achievements[a.id] ? h('span', 'Day ' + st.achievements[a.id]) : null))))));
@@ -439,7 +439,7 @@ const Screens = {
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('status'); } }, '📋 Status, story & trophies'),
         h('button.btn', { onclick: () => { box.close(); Router.safeGo('case'); } }, '🔎 Case file: The Seventeenth Card'),
         st.ending || st.l2 ? h('button.btn', { onclick: () => { box.close(); Router.safeGo('reality'); } }, '👁️ Back to the other side') : null,
-        st.l3 ? h('button.btn', { onclick: () => { box.close(); L3.begin(); } }, '🪞 The room') : null,
+        App.reachedL3() ? h('button.btn', { onclick: () => { box.close(); L3.begin(); } }, '🪞 The room') : null,
         Mystery.replayButton(() => box.close()),
         h('button.btn', { onclick: () => { box.close(); World.townMap(); } }, '🗺️ Town map'),
         h('button.btn', { onclick: () => { box.close(); Chat.settings(); } }, '💬 AI chat with characters'),

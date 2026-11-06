@@ -87,6 +87,9 @@ const App = {
     for (const k in d.stats) if (s.stats[k] === undefined) s.stats[k] = d.stats[k];
     for (const k in d.settings) if (s.settings[k] === undefined) s.settings[k] = d.settings[k];
     if (!s.world || !s.world.map) s.world = d.world;
+    // Level 3 is only reached through the mirror door at the end of Level 2. Trophy checks used to create an
+    // empty Level 3 for every save (which put "The room" in everyone's menu): drop it where it wasn't earned
+    if (s.l3 && !s.demo && !(s.stats.counters.l2_mirror > 0)) delete s.l3;
     for (const k of Progressives.KEYS) if (!(s.progressives[k] > 0)) s.progressives[k] = PAY[k].prog.seed;
     // the Justice ending used to pay far less than the takeover: top up finished games once
     if (s.ending === 'justice' && !s.flags.justiceReward) { s.flags.justiceReward = true; s.bank += 5000000; s.items.trustee = s.day; s.news = [{ day: s.day, text: '⚖️ The Gaming Commission paid your $5,000,000 whistleblower reward and named you trustee of the Monte Royale.' }].concat(s.news || []); }
@@ -148,6 +151,8 @@ const App = {
   /* ---------- after every settled round ---------- */
   // the game's owner: on a host site, the account the server says is the owner; anywhere else (the private
   // claude.ai artifact, a local copy) it's whoever is playing
+  // has this save earned Level 3 (through the mirror door, or it's the owner's Level 3 demo)?
+  reachedL3(s = this.state) { return !!(s && s.l3 && (s.demo || (s.stats && s.stats.counters && s.stats.counters.l2_mirror > 0))); },
   isOwner() { const host = window.HR_HOST; return host ? !!host.owner : true; },
   inReality() { return !!(this.state && this.state.l2 && this.state.l2.atTable); },
   inLaptop() { return !!(this.state && this.state.l3 && this.state.l3.atTable); }, // a game on the laptop in Level 3

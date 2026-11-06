@@ -225,7 +225,7 @@ const ACHIEVEMENTS = [
   { id: 'l3mick', name: 'Mick Never Turns Up', desc: 'Level 3: beat Mick, who isn\'t there, at darts', test: () => App.counter('l3_dartswin') > 0, reward: 0, swagger: 5 },
   { id: 'l3x100', name: 'Hundredfold', desc: 'Level 3: win a hundred times your stake on one bet on the laptop', test: () => App.counter('l3_x100') > 0, reward: 0, swagger: 10 },
   { id: 'l3call', name: 'Somebody Answered', desc: 'Level 3: ring the number on the leaflet and tell them your name', test: () => App.counter('l3_called') > 0, reward: 0, swagger: 15 },
-  { id: 'l3list', name: 'Every Line Crossed Out', desc: 'Level 3: cross off everything on the list on the fridge', test: () => typeof L3 !== 'undefined' && L3.goalsDone() === L3.GOALS.length, reward: 0, swagger: 30 },
+  { id: 'l3list', name: 'Every Line Crossed Out', desc: 'Level 3: cross off everything on the list on the fridge', test: () => typeof L3 !== 'undefined' && !!App.state.l3 && L3.goalsDone() === L3.GOALS.length, reward: 0, swagger: 30 },
   { id: 'l3auto', name: 'Set and Forget', desc: 'Level 3: let an autobet run fifty bets on the laptop', test: () => App.counter('l3_auto50') > 0, reward: 0, swagger: 5 },
   { id: 'l3mirror', name: 'It\'s You', desc: 'Level 3: look in the mirror in the bedsit', test: () => App.counter('l3_mirror') > 0, reward: 0, swagger: 10 },
   { id: 'l3bad', name: 'Last Orders', desc: 'Level 3: reach a bad true ending', test: () => App.counter('l3_end_collapse') + App.counter('l3_end_broke') > 0, reward: 0, swagger: 10 },
