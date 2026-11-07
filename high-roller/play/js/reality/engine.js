@@ -110,6 +110,9 @@ const R3 = (() => {
       boxes.push({ d, th, b });
     }
     points.push({ d: P.x + P.y, me: true, x: P.x, y: P.y });
+    // something resting on a counter, table or shelf (raised with o.z) draws just after what it sits on
+    for (const e of boxes) { const th = e.th; if (!th || !(th.o && th.o.z > 0) || th.o.depth != null) continue;
+      for (const s2 of boxes) { const b = s2.b; if (s2 === e || !b || (s2.th && s2.th.o && s2.th.o.z > 0)) continue; if (th.x >= b[0] - .05 && th.x <= b[2] + .05 && th.y >= b[1] - .05 && th.y <= b[3] + .05) e.d = Math.max(e.d, s2.d + .01); } }
     boxes.sort((a, b) => a.d - b.d);
     const list = boxes.slice();
     points.sort((a, b) => a.d - b.d);

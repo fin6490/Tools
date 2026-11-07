@@ -38,7 +38,12 @@ const L2World = (() => {
     const S2 = Object.create(A), rect = (x, y, w, h) => { const x0 = STi(x), y0 = STi(y); return [x0, y0, STi(x + w) - x0, STi(y + h) - y0]; };
     S2.floor = (x, y, w, h, kind) => A.floor(...rect(x, y, w, h), kind);
     S2.solid = (x, y, w = 1, h = 1) => A.solid(...rect(x, y, w, h));
-    S2.block = (x, y, w, h, o = {}) => A.block(...rect(x, y, w, h), o.door ? { ...o, door: [STi(o.door[0]), STi(o.door[1]), o.door[2]] } : o);
+    // a door stretches along its wall, but always stays on the face it opens from (stretching can push the
+    // front row of a building out by a tile, which used to leave its door inside, unseen)
+    S2.block = (x, y, w, h, o = {}) => { const R = rect(x, y, w, h); if (!o.door) return A.block(...R, o);
+      const [d0, d1, side] = o.door, cl = (v, a, n) => Math.max(a, Math.min(a + n - 1, v));
+      const dx = side === 'e' ? R[0] + R[2] - 1 : side === 'w' ? R[0] : cl(STi(d0), R[0], R[2]), dy = side === 's' ? R[1] + R[3] - 1 : side === 'n' ? R[1] : cl(STi(d1), R[1], R[3]);
+      return A.block(...R, { ...o, door: [dx, dy, side] }); };
     S2.decal = (x, y, draw) => A.decal(ST(x), ST(y), draw);
     S2.prop = (kind, x, y, o = {}) => { const o2 = { ...o }; if (o.len) o2.len = ST(x + o.len) - ST(x); if (kind === 'tape') { o2.x1 = ST(x + o.x1) - ST(x); o2.y1 = ST(y + o.y1) - ST(y); } return A.prop(kind, ST(x), ST(y), o2); };
     S2.use = (x, y, label, fn, o) => A.use(ST(x), ST(y), label, fn, o);
@@ -46,6 +51,23 @@ const L2World = (() => {
     S2.light = (x, y, o) => A.light(ST(x), ST(y), o);
     S2.sign = (x, y, text, o = {}) => A.sign(ST(x), ST(y), text, o.depth != null ? { ...o, depth: o.depth + ST(x) - x + ST(y) - y } : o);
     return S2;
+  }
+  // The stretch can push a building's front out past whatever stood just in front of it on the plan (a bin, a
+  // smoker, the bus shelter), which then got drawn half inside the wall. Step anything like that back out onto
+  // the pavement, and drop puddles that fell inside a building.
+  function clearOfBuildings(M) {
+    const inB = (f) => { for (let y = Math.floor(f[1]); y <= Math.floor(f[3] - 1e-6); y++) for (let x = Math.floor(f[0]); x <= Math.floor(f[2] - 1e-6); x++) if (M.cubes.has(x + ',' + y)) return true; return false; };
+    for (const t of M.things) {
+      if (['wall', 'sign', 'tape', 'canopy', 'fence', 'car', 'bus'].includes(t.kind)) continue;
+      const f = t.box || t.foot || (t.kind === 'person' ? [t.x - .25, t.y - .25, t.x + .25, t.y + .25] : [t.x - .2, t.y - .2, t.x + .2, t.y + .2]);
+      if (!inB(f)) continue;
+      if (t.kind === 'puddle') { t.hidden = true; continue; }
+      let best = null;
+      for (let d = .05; d <= 2.5 && !best; d += .05) for (const [ux, uy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) { const m = [ux * (d + .08), uy * (d + .08)]; if (!inB([f[0] + m[0], f[1] + m[1], f[2] + m[0], f[3] + m[1]])) { best = m; break; } }
+      if (!best) continue;
+      t.x += best[0]; t.y += best[1]; if (t.o && t.kind === 'person') { t.o.x = t.x; t.o.y = t.y; }
+      for (const k of ['box', 'foot']) if (t[k]) t[k] = [t[k][0] + best[0], t[k][1] + best[1], t[k][2] + best[0], t[k][3] + best[1]];
+    }
   }
   function city(A0, mk) {
     const A = stretched(A0), P2 = pts => pts.map(([x, y]) => [ST(x), ST(y)]);
@@ -160,6 +182,7 @@ const L2World = (() => {
     A.prop('mailbox', 27.6, 33.5); A.prop('stopsign', 28.6, 34.6); A.prop('trafficlight', 23.6, 24.4); A.prop('trafficlight', 53.6, 24.4); A.prop('trafficlight', 27.6, 50.4); A.prop('trafficlight', 50.4, 53.4);
     traffic(A0, ST);
     // the dark: a little light from windows, more from the streetlamps
+    clearOfBuildings(A0.root);
     return { spawn: [ST(12.5), ST(23.6), 0], entries: { hospital: [ST(12.5), ST(23.6), 0], casino: [ST(39.5), ST(23.7), 0], garage: [ST(32.5), ST(23.7), 0], hotel: [ST(46.5), ST(23.7), 0], police: [ST(62.5), ST(22.6), 0], house: [ST(24), ST(35.5), 0], lowtide: [ST(33.5), ST(50.7), 0], pawn: [ST(33.5), ST(38.8), 0], diner: [ST(40.5), ST(50.7), 0], shop: [ST(47.5), ST(50.7), 0], chapel: [ST(62.5), ST(46.7), 0], cemetery: [ST(12.5), ST(53.4), 0] },
       rain: true, dark: .62, bg: '#05070c', name: 'the city' };
   }
@@ -239,7 +262,7 @@ const L2World = (() => {
     // yours, bay 17, under a year of dust
     A.prop('car', 17.5, 2.6, { color: '#1c2733', plate: 'MRD 17', lights: true });
     A.use(17.5, 5, 'Open the boot', act('trunk'), { r: 1.5 }); A.use(16.3, 3, 'Sit in your car', act('driverSeat'), { r: 1.3 }); A.use(18.6, 3, 'The glovebox', act('glovebox'), { r: 1.2 });
-    for (let i = 0; i < 5; i++) A.prop('car', 2.5 + i * 3.4, 12, { color: ['#1d1d1d', '#3a4252', '#5a4a2a', '#2b3a55', '#6a1e1e'][i] });
+    for (let i = 0; i < 5; i++) A.prop('car', 2.5 + i * 3.4, 11.85, { color: ['#1d1d1d', '#3a4252', '#5a4a2a', '#2b3a55', '#6a1e1e'][i] });
     A.prop('vending', 19, 7.5); A.use(18.2, 7.5, 'A vending machine', act('vending'), { r: 1.4 });
     A.use(2.5, .8, 'Take the lift up to the casino', act('toFloor', 'garage'), { r: 1.6 });
     A.prop('counter', 1.4, 9.4, { w: 1.2, d: .9, color: '#3a4250', top: '#5a6270' }); place(A, 'stan', 2, 9, { sit: true, face: 1, r: 1.4 });
@@ -368,7 +391,7 @@ const L2World = (() => {
     if (horror) for (let i = 0; i < 9; i++) A.use(.8, 2.5 + i * 3, 'Room 1717', act('horrorDoor'), { r: 1.2 });
     else A.use(.8, 2.5 + 8 * 3, 'Room 1717', act('room1717'), { r: 1.4 });
     A.prop('rug', 1.4, 3, { w: 2.2, d: 24, color: horror ? '#3a0606' : '#5a1a22' });
-    if (!horror) { A.prop('plant', 4.3, 3.6); A.prop('plant', 4.3, 21.5); A.prop('vending', 4.1, 17.5); A.prop('radiator', 4.5, 8); }
+    if (!horror) { A.prop('plant', 4.3, 3.6); A.prop('plant', 4.3, 21.5); A.prop('vending', 4.1, 17.5); A.prop('radiator', 3.7, .1); } // on the end wall, beside the roof door
     if (!horror) { place(A, 'lupe', 3.4, 14, { face: -1 }); A.prop('trolley', 4.1, 12.8); A.use(4.2, 12, 'Lupe\'s trolley', async () => { await L2.ui.say([{ who: 'narr', text: '*Towels, little soaps, and a box of the mints they leave on pillows. You take one. Lupe pretends not to see.*' }]); L2Bottle.state.crave = Math.max(0, L2Bottle.state.crave - 3); L2Bottle.apply(); }, { r: 1.1 }); for (const y of [4.5, 20, 27]) A.prop('plant', 4.4, y); }
     exit(A, 2, 29, horror ? 'The lift' : 'Lift down to the casino', horror ? act('horrorLift') : act('toFloor', 'lift'));
     const ls = []; for (let i = 0; i < 6; i++) ls.push(A.light(2.5, 2 + i * 5, { r: 4.5, color: horror ? '#ff2a2a' : '#ffd9a0', i: .9, flicker: horror ? .9 : 0 }));
@@ -545,7 +568,7 @@ const L2World = (() => {
     A.prop('backbar', 1, .3, { w: 8 }); A.prop('bottles', 6.6, 2, { n: 3 }); A.prop('glass', 3.2, 2.1); A.prop('glass', 8, 2.2);
     A.prop('bar', 1, 1.6, { w: 8, d: 1 }); for (let i = 0; i < 6; i++) A.prop('stool', 2 + i * 1.3, 3.2);
     for (const [tx, ty] of [[2.2, 6.2], [8.6, 6.4]]) { A.prop('cafetable', tx, ty); A.prop('chair', tx + .9, ty); A.prop('chair', tx - .9, ty + .1); }
-    A.prop('booth', 9.4, 8.4, { w: 1.6, color: '#5a2a1a' }); A.prop('coatrack', .7, 8.6); A.prop('plant', 11.2, 4.6); A.prop('floorlamp', .8, 4.6);
+    A.prop('booth', 9.4, 8.3, { w: 1.6, color: '#5a2a1a' }); A.prop('coatrack', .7, 8.6); A.prop('plant', 11.2, 4.6); A.prop('floorlamp', .8, 4.6);
     A.person({ x: 5, y: .9, face: 1, skin: (typeof Looks !== 'undefined' ? Looks.get().skin : '#e0b090'), hair: '#999', coat: '#5a3a22', pants: '#2a2a2a', shirt: '#e8e2d4' });
     A.use(5, 3.2, 'The man behind the bar', act('sal'), { r: 1.8 });
     A.prop('jukebox', 10.6, 2.4); A.use(10, 3, 'The jukebox', act('spurJukebox'), { r: 1.4 });

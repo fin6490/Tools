@@ -69,6 +69,14 @@ const ISOART = (() => {
     const showS = !same(c.x, c.y + 1), showE = !same(c.x + 1, c.y);
     const ox = sx - (c.x - c.y) * hw, oy = sy - (c.x + c.y) * hh; // where the world's origin is on screen, so textures line up
     const T = tex(ctx, c.style);
+    // a striped awning, out over the pavement, along one tile of a shop front
+    const awning = (lerp, side) => {
+      const out = side === 's' ? [0, 1] : [1, 0], A0 = lerp(0, 2.75), A1 = lerp(1, 2.75), dx = (out[0] - out[1]) * hw * .75, dy = (out[0] + out[1]) * hh * .75 + .55 * V * z;
+      const B0 = [A0[0] + dx, A0[1] + dy], B1 = [A1[0] + dx, A1[1] + dy];
+      for (let i = 0; i < 6; i++) { const u0 = i / 6, u1 = (i + 1) / 6, m = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u]; poly([m(A0, A1, u0), m(A0, A1, u1), m(B0, B1, u1), m(B0, B1, u0)], i % 2 ? c.o.awning : '#e8e2d4'); }
+      ctx.strokeStyle = INK; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(...A0); ctx.lineTo(...B0); ctx.lineTo(...B1); ctx.lineTo(...A1); ctx.stroke();
+      for (let i = 0; i < 6; i++) { const p = [B0[0] + (B1[0] - B0[0]) * (i + .5) / 6, B0[1] + (B1[1] - B0[1]) * (i + .5) / 6]; ctx.fillStyle = i % 2 ? c.o.awning : '#e8e2d4'; ctx.beginPath(); ctx.arc(p[0], p[1], 3.2 * z, 0, Math.PI); ctx.fill(); }
+    };
     // a face: its corners, then windows across each storey
     const face = (a, b, col, side) => {
       poly([a, b, up(b), up(a)], col);
@@ -82,10 +90,16 @@ const ISOART = (() => {
       if (door) { // a doorway, lit from inside, with a step and a lamp over it
         const q = [lerp(.2, .05), lerp(.8, .05), lerp(.8, 2.3), lerp(.2, 2.3)]; poly(q, c.o.doorColor || '#ffcf8a');
         const g = ctx.createLinearGradient(0, q[3][1], 0, q[0][1]); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); poly(q, g);
+        // the door itself in the opening: glass in a dark frame on a shop, solid wood with a little window on a pub or house
+        const shopDoor = c.o.shop && side === c.o.shop && c.o.shopKind !== 'pub', leaf = [lerp(.26, .1), lerp(.74, .1), lerp(.74, 2.22), lerp(.26, 2.22)];
+        if (shopDoor) { poly(leaf, '#23272c'); poly([lerp(.31, .55), lerp(.69, .55), lerp(.69, 2.1), lerp(.31, 2.1)], c.o.shopColor || c.o.doorColor || '#ffcf8a'); poly([lerp(.31, .55), lerp(.45, .55), lerp(.6, 2.1), lerp(.31, 2.1)], 'rgba(255,255,255,.18)'); line(lerp(.62, 1.05), lerp(.62, 1.45), '#d8dde2', 2.2); }
+        else { poly(leaf, c.o.doorWood || '#4a2a16'); poly([lerp(.34, 1.45), lerp(.66, 1.45), lerp(.66, 2.0), lerp(.34, 2.0)], c.o.doorColor || '#ffcf8a'); for (const v of [.35, .85]) { ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(...lerp(.34, v)); ctx.lineTo(...lerp(.66, v)); ctx.lineTo(...lerp(.66, v + .4)); ctx.lineTo(...lerp(.34, v + .4)); ctx.closePath(); ctx.stroke(); } const hd = lerp(.64, 1.05); ctx.fillStyle = '#e0c070'; ctx.beginPath(); ctx.arc(hd[0], hd[1], 1.8 * z, 0, 7); ctx.fill(); }
+        poly([lerp(.26, .1), lerp(.74, .1), lerp(.74, .32), lerp(.26, .32)], 'rgba(0,0,0,.3)'); // a kick plate
         ctx.strokeStyle = shade(S.trim, .8); ctx.lineWidth = 3 * z; ctx.beginPath(); ctx.moveTo(...q[0]); ctx.lineTo(...q[3]); ctx.lineTo(...q[2]); ctx.lineTo(...q[1]); ctx.stroke();
         poly([lerp(.12, 0), lerp(.88, 0), lerp(.88, .1), lerp(.12, .1)], shade(S.trim, 1.4));
         const l = lerp(.5, 2.6); ctx.fillStyle = '#ffe2a8'; ctx.beginPath(); ctx.arc(l[0], l[1], 2.4 * z, 0, 7); ctx.fill();
       }
+      if (door && c.o.shop && side === c.o.shop && c.o.awning) awning(lerp, side); // unbroken over the door
       if (S.win && c.h >= 2.5) for (let f = 0; f < floors; f++) {
         if (door && f === 0) continue;
         if (f === 0 && c.o.shop && side === c.o.shop) { // a shop window: lit, with shelves and stock inside
@@ -98,13 +112,7 @@ const ISOART = (() => {
           } else for (let r = 0; r < 3; r++) { line(lerp(.08, .9 + r * .5), lerp(.92, .9 + r * .5), 'rgba(60,40,20,.45)', 1.5); for (let i = 0; i < 6; i++) { const p = lerp(.12 + i * .13 + hash(c.x, r, i) * .04, .95 + r * .5); ctx.fillStyle = ['#c0392b', '#2471a3', '#e8e8e8', '#1e8449', '#d4a017'][(i + r + c.x) % 5]; ctx.fillRect(p[0] - 1.5 * z, p[1] - 4 * z, 3 * z, 4 * z); } }
           poly([q[0], lerp(.3, .45), lerp(.55, 2.3), q[3]], 'rgba(255,255,255,.1)');
           ctx.strokeStyle = shade(S.trim, .7); ctx.lineWidth = 2.5 * z; ctx.beginPath(); ctx.moveTo(...q[0]); for (const p of q.slice(1)) ctx.lineTo(...p); ctx.closePath(); ctx.stroke();
-          if (c.o.awning) { // a striped awning, out over the pavement
-            const out = side === 's' ? [0, 1] : [1, 0], A0 = lerp(0, 2.75), A1 = lerp(1, 2.75), dx = (out[0] - out[1]) * hw * .75, dy = (out[0] + out[1]) * hh * .75 + .55 * V * z;
-            const B0 = [A0[0] + dx, A0[1] + dy], B1 = [A1[0] + dx, A1[1] + dy];
-            for (let i = 0; i < 6; i++) { const u0 = i / 6, u1 = (i + 1) / 6, m = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u]; poly([m(A0, A1, u0), m(A0, A1, u1), m(B0, B1, u1), m(B0, B1, u0)], i % 2 ? c.o.awning : '#e8e2d4'); }
-            ctx.strokeStyle = INK; ctx.lineWidth = 1 * z; ctx.beginPath(); ctx.moveTo(...A0); ctx.lineTo(...B0); ctx.lineTo(...B1); ctx.lineTo(...A1); ctx.stroke();
-            for (let i = 0; i < 6; i++) { const p = [B0[0] + (B1[0] - B0[0]) * (i + .5) / 6, B0[1] + (B1[1] - B0[1]) * (i + .5) / 6]; ctx.fillStyle = i % 2 ? c.o.awning : '#e8e2d4'; ctx.beginPath(); ctx.arc(p[0], p[1], 3.2 * z, 0, Math.PI); ctx.fill(); }
-          }
+          if (c.o.awning) awning(lerp, side);
           continue;
         }
         const k = hash(c.x * 3 + (side === 'e' ? 1 : 0), c.y * 5 + f, 11), lit = k < (c.o.lit != null ? c.o.lit : .45);
@@ -498,7 +506,10 @@ const ISOART = (() => {
       case 'cafetable': { cyl(0, 0, 0, .06, .72, '#222'); cyl(0, 0, .72, .38, .05, col || '#e8e0d0'); if (o.cup) { cyl(.1, 0, .77, .05, .07, '#f4f4f4'); } break; }
       case 'booth': { const c2 = col || '#a31a2a', w = o.w || 1.6; box(0, 0, 0, w, .5, .45, c2); box(0, 0, .45, w, .18, .55, shade(c2, .9)); box(0, .55, 0, w, .6, .74, '#c8c0b0', '#e8e0d0'); box(0, 1.2, 0, w, .5, .45, c2); box(0, 1.52, .45, w, .18, .55, shade(c2, .9)); break; }
       case 'newsstand': { box(-.6, -.3, 0, 1.2, .6, 1, '#1e3a5a', '#2a4a6a'); box(-.65, -.35, 1.9, 1.3, .7, .08, '#1a2a3a'); for (const x of [-.55, .55]) cyl(x, .25, 1, .03, .9, '#111'); for (let i = 0; i < 4; i++) poly([pj(-.5 + i * .27, .31, .45), pj(-.28 + i * .27, .31, .45), pj(-.28 + i * .27, .31, .85), pj(-.5 + i * .27, .31, .85)], ['#e8e2d4', '#d8c040', '#e8e2d4', '#c04030'][i], false); text(0, .31, 1.6, 'NEWS', '#e8e2d4', 7, 's'); break; }
-      case 'hotdog': { box(-.6, -.35, .3, 1.2, .7, .7, '#c8c8c8', '#d8d8d8'); for (const x of [-.4, .4]) cyl(x, .35, 0, .15, .1, '#111'); box(-.65, -.4, 1.9, 1.3, .8, .06, '#c0392b'); for (const x of [-.6, .6]) cyl(x, -.35, 1, .03, .9, '#888'); text(0, .36, .75, 'HOT DOGS', '#c0392b', 6, 's'); const [sx2, sy2] = pj(0, 0, 1.2); ctx.fillStyle = 'rgba(230,230,240,.2)'; ctx.beginPath(); ctx.arc(sx2 + Math.sin(t * 1.5) * 4 * z, sy2 - (t * 12 % 16) * z, 6 * z, 0, 7); ctx.fill(); glowAt(0, 0, 1.6, '#ffd0a0', 30); break; }
+      case 'hotdog': { box(-.6, -.35, .3, 1.2, .7, .7, '#c8c8c8', '#d8d8d8');
+        // two wheels standing upright on the side facing the street, an axle's width apart, with hubs
+        for (const x of [-.36, .36]) { const ring = (r, col, fill) => { ctx.beginPath(); for (let i = 0; i <= 18; i++) { const a = i / 18 * 6.283, p = pj(x + Math.cos(a) * r, .37, .17 + Math.sin(a) * r); i ? ctx.lineTo(...p) : ctx.moveTo(...p); } ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); if (col) { ctx.strokeStyle = col; ctx.lineWidth = 1 * z; ctx.stroke(); } };
+          ring(.17, INK, '#141414'); ring(.07, null, '#9a9a9a'); } box(-.65, -.4, 1.9, 1.3, .8, .06, '#c0392b'); for (const x of [-.6, .6]) cyl(x, -.35, 1, .03, .9, '#888'); text(0, .36, .75, 'HOT DOGS', '#c0392b', 6, 's'); const [sx2, sy2] = pj(0, 0, 1.2); ctx.fillStyle = 'rgba(230,230,240,.2)'; ctx.beginPath(); ctx.arc(sx2 + Math.sin(t * 1.5) * 4 * z, sy2 - (t * 12 % 16) * z, 6 * z, 0, 7); ctx.fill(); glowAt(0, 0, 1.6, '#ffd0a0', 30); break; }
       case 'candles': { box(-.4, -.2, 0, .8, .4, .9, '#3a2a1a', '#4a3a2a'); for (let i = 0; i < 12; i++) { const lit = (o.lit || 4) > i; const [cx, cy] = pj(-.32 + (i % 6) * .13, -.1 + (i / 6 | 0) * .2, .92); ctx.fillStyle = '#e8e2d4'; ctx.fillRect(cx - 1.5 * z, cy - 5 * z, 3 * z, 5 * z); if (lit) { ctx.fillStyle = Math.sin(t * 9 + i) > 0 ? '#ffd27a' : '#ffb04a'; ctx.beginPath(); ctx.ellipse(cx, cy - 7 * z, 1.4 * z, 2.4 * z, 0, 0, 7); ctx.fill(); } } glowAt(0, 0, 1.1, '#ffc070', 36); break; }
       case 'display': { box(0, 0, 0, o.w || 1.6, .6, .9, '#3a2a1a', '#c8d8e0'); box(.05, .05, .9, (o.w || 1.6) - .1, .5, .05, 'rgba(200,230,255,.35)', 'rgba(220,240,255,.3)'); for (let i = 0; i < (o.w || 1.6) * 4; i++) { const [gx, gy] = pj(.12 + i * .22, .3, .92); ctx.fillStyle = ['#d4af37', '#c0c0c0', '#d4af37', '#e8e8e8'][i % 4]; ctx.beginPath(); ctx.arc(gx, gy, 2.2 * z, 0, 7); ctx.fill(); } break; }
       case 'safe': box(-.35, -.35, 0, .7, .7, 1, '#2a2e34', '#3a3e44'); { const [cx, cy] = pj(0, .36, .55); ctx.strokeStyle = '#c9a14a'; ctx.lineWidth = 1.5 * z; ctx.beginPath(); ctx.arc(cx, cy, 5 * z, 0, 7); ctx.stroke(); } break;
