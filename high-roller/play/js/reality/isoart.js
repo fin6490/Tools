@@ -82,7 +82,24 @@ const ISOART = (() => {
       poly([a, b, up(b), up(a)], col);
       if (T) { T.setTransform(new DOMMatrix([z, side === 's' ? .5 * z : -.5 * z, 0, z, ox, oy])); ctx.save(); ctx.globalAlpha = .9; poly([a, b, up(b), up(a)], T); ctx.restore(); }
       const lerp = (u, v) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u - v * V * z];
-      const floors = Math.max(1, Math.floor(c.h / 3)), door = c.o.door && c.o.door[0] === c.x && c.o.door[1] === c.y && c.o.door[2] === side;
+      const floors = Math.max(1, Math.floor(c.h / 3));
+      // a door here? the main one (o.door, o.doorW tiles wide, o.doorKind), or one of o.doors: [x, y, side, width, kind]
+      const dl = [...(c.o.door ? [[...c.o.door.slice(0, 3), c.o.doorW || 1, c.o.doorKind]] : []), ...(c.o.doors || [])], dm = dl.find(d => d[2] === side && d[1] === c.y && c.x >= d[0] && c.x < d[0] + (d[3] || 1));
+      const door = !!dm && !dm[4], wide = dm && dm[4] ? { kind: dm[4], i: c.x - dm[0], n: dm[3] || 1 } : null;
+      if (wide) { // the Meridian's entrances: a gold-and-glass main door, the car-park ramp, the hotel door
+        const first = wide.i === 0, last = wide.i === wide.n - 1, x0 = first ? .08 : 0, x1 = last ? .92 : 1;
+        if (wide.kind === 'garage') { const hgt = 2.5, q = [lerp(x0, 0), lerp(x1, 0), lerp(x1, hgt), lerp(x0, hgt)]; poly(q, '#0a0b0d');
+          for (let k = 0; k < 6; k++) poly([lerp(x0, 1.55 + k * .16), lerp(x1, 1.55 + k * .16), lerp(x1, 1.68 + k * .16), lerp(x0, 1.68 + k * .16)], k % 2 ? '#6a6f76' : '#7f858c'); // the shutter, half up
+          for (let k = 0; k < 8; k++) poly([lerp(x0 + (x1 - x0) * k / 8, hgt), lerp(x0 + (x1 - x0) * (k + 1) / 8, hgt), lerp(x0 + (x1 - x0) * (k + 1) / 8, hgt + .22), lerp(x0 + (x1 - x0) * k / 8, hgt + .22)], k % 2 ? '#111' : '#e8c020');
+          poly([lerp(x0, 0), lerp(x1, 0), lerp(x1, .5), lerp(x0, .5)], 'rgba(255,200,120,.08)'); }
+        else { const grand = wide.kind === 'grand', hgt = grand ? 2.9 : 2.4, gold = grand ? '#d9b45a' : '#b8925a', q = [lerp(x0, .05), lerp(x1, .05), lerp(x1, hgt), lerp(x0, hgt)];
+          poly(q, c.o.doorColor || '#ffd98a'); const g = ctx.createLinearGradient(0, q[3][1], 0, q[0][1]); g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(90,50,10,.3)'); poly(q, g);
+          if (grand && wide.i === (wide.n - 1) / 2) { const m = lerp(.5, 1.3); ctx.strokeStyle = 'rgba(120,80,20,.6)'; ctx.lineWidth = 1.5 * z; ctx.beginPath(); ctx.ellipse(m[0], m[1], 14 * z, 7 * z, 0, 0, 7); ctx.stroke(); } // the revolving door's sweep
+          for (const u of [x0, (x0 + x1) / 2, x1]) line(lerp(u, .05), lerp(u, hgt), gold, u === (x0 + x1) / 2 ? 2 : 3.2);
+          line(lerp(x0, hgt), lerp(x1, hgt), gold, 3.2); line(lerp(x0, .05), lerp(x1, .05), gold, 2.5);
+          for (const u of [(x0 + x1) / 2 - .08, (x0 + x1) / 2 + .08]) line(lerp(u, .95), lerp(u, 1.45), '#f4e0a0', 2); // push handles
+          poly([lerp(x0 - .02, 0), lerp(x1 + .02, 0), lerp(x1 + .02, .06), lerp(x0 - .02, .06)], shade(S.trim, 1.4)); }
+      }
       // a darker plinth at the foot, a ledge at every storey, a cornice at the top
       poly([lerp(0, 0), lerp(1, 0), lerp(1, .35), lerp(0, .35)], 'rgba(0,0,0,.22)');
       for (let f = 1; f < floors; f++) { line(lerp(0, f * 3), lerp(1, f * 3), 'rgba(255,255,255,.08)', 2); line(lerp(0, f * 3 - .06), lerp(1, f * 3 - .06), 'rgba(0,0,0,.25)', 1); }
@@ -101,7 +118,7 @@ const ISOART = (() => {
       }
       if (door && c.o.shop && side === c.o.shop && c.o.awning) awning(lerp, side); // unbroken over the door
       if (S.win && c.h >= 2.5) for (let f = 0; f < floors; f++) {
-        if (door && f === 0) continue;
+        if ((door || wide) && f === 0) continue;
         if (f === 0 && c.o.shop && side === c.o.shop) { // a shop window: lit, with shelves and stock inside
           const q = [lerp(.06, .45), lerp(.94, .45), lerp(.94, 2.3), lerp(.06, 2.3)]; poly(q, c.o.shopColor || '#e8c87a');
           if (c.o.shopKind === 'pub' || c.o.shopKind === 'diner') { // warm light, people at tables, a hanging lamp
@@ -318,7 +335,7 @@ const ISOART = (() => {
   };
   const solidProp = k => !!FOOT[k] || !!SIZED[k];
   // furniture with a size (a long bar, a shelf unit) takes up all of it
-  const SIZED = { bookcase: [1.2, .4], kitchen: [2.4, .6], wardrobe: [1, .6], radiator: [1, .14], piecase: [1, .6], display: [1.6, .6], booth: [1.6, 1.7], counter: [1, 1], bar: [1, 1], desk: [1.4, .7], shelf: [2, .6], fridge: [1, .7], cage: [1, 1], screens: [3, .4], sofa: [2, .8], piano: [1.6, .8], pew: [2.4, .5], backbar: [3, .5], pool: [2.4, 1.3] };
+  const SIZED = { canopy: [6, 1.6], bookcase: [1.2, .4], kitchen: [2.4, .6], wardrobe: [1, .6], radiator: [1, .14], piecase: [1, .6], display: [1.6, .6], booth: [1.6, 1.7], counter: [1, 1], bar: [1, 1], desk: [1.4, .7], shelf: [2, .6], fridge: [1, .7], cage: [1, 1], screens: [3, .4], sofa: [2, .8], piano: [1.6, .8], pew: [2.4, .5], backbar: [3, .5], pool: [2.4, 1.3] };
   const foot = (k, x, y, o = {}) => { if (SIZED[k]) { const [w, d] = SIZED[k]; return [x, y, x + (o.w || w), y + (o.d || d)]; } const f = (o.rot && FOOT[k + 'x']) || FOOT[k]; return [x + f[0], y + f[1], x + f[2], y + f[3]]; };
   function prop(ctx, kind, sx, sy, z, o, t, TW, TH, V, th) {
     const B = boxer(ctx, sx, sy, z, TW, TH, V), { pj, poly, box, cyl, glowAt, text } = B;
