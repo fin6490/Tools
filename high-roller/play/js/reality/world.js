@@ -40,10 +40,9 @@ const L2World = (() => {
     S2.solid = (x, y, w = 1, h = 1) => A.solid(...rect(x, y, w, h));
     // a door stretches along its wall, but always stays on the face it opens from (stretching can push the
     // front row of a building out by a tile, which used to leave its door inside, unseen)
-    S2.block = (x, y, w, h, o = {}) => { const R = rect(x, y, w, h); if (!o.door) return A.block(...R, o);
-      const [d0, d1, side] = o.door, cl = (v, a, n) => Math.max(a, Math.min(a + n - 1, v));
-      const dx = side === 'e' ? R[0] + R[2] - 1 : side === 'w' ? R[0] : cl(STi(d0), R[0], R[2]), dy = side === 's' ? R[1] + R[3] - 1 : side === 'n' ? R[1] : cl(STi(d1), R[1], R[3]);
-      return A.block(...R, { ...o, door: [dx, dy, side] }); };
+    S2.block = (x, y, w, h, o = {}) => { const R = rect(x, y, w, h), cl = (v, a, n) => Math.max(a, Math.min(a + n - 1, v));
+      const snap = ([d0, d1, side, ...rest]) => [side === 'e' ? R[0] + R[2] - 1 : side === 'w' ? R[0] : cl(STi(d0), R[0], R[2]), side === 's' ? R[1] + R[3] - 1 : side === 'n' ? R[1] : cl(STi(d1), R[1], R[3]), side, ...rest];
+      return A.block(...R, { ...o, ...(o.door ? { door: snap(o.door) } : {}), ...(o.doors ? { doors: o.doors.map(snap) } : {}) }); };
     S2.decal = (x, y, draw) => A.decal(ST(x), ST(y), draw);
     S2.prop = (kind, x, y, o = {}) => { const o2 = { ...o }; if (o.len) o2.len = ST(x + o.len) - ST(x); if (kind === 'tape') { o2.x1 = ST(x + o.x1) - ST(x); o2.y1 = ST(y + o.y1) - ST(y); } return A.prop(kind, ST(x), ST(y), o2); };
     S2.use = (x, y, label, fn, o) => A.use(ST(x), ST(y), label, fn, o);
@@ -95,16 +94,17 @@ const L2World = (() => {
     A.prop('bench', 7, 23.4); A.prop('bin', 17.5, 23.5);
     // --- the Meridian: casino, hotel tower and car park, top middle
     A.floor(28, 1, 22, 22, 'marble');
-    A.block(30, 3, 19, 19, { height: 15, style: 'casino', door: [39, 21, 's'], lit: .55, doorColor: '#ffd98a', id: 'meridian' });
+    // three entrances on the Meridian's front: the gold-and-glass main doors under the canopy, the car-park ramp, the hotel
+    A.block(30, 3, 19, 19, { height: 15, style: 'casino', door: [38, 21, 's'], doorW: 3, doorKind: 'grand', doors: [[32, 21, 's', 2, 'garage'], [46, 21, 's', 1, 'hotel']], lit: .55, doorColor: '#ffd98a', id: 'meridian' });
     A.sign(39.5, 22, 'MERIDIAN', { color: '#ffcf6a', z: 4.6, size: 30, font: '600', depth: 70.7 });
     A.sign(39.5, 22, 'CASINO · HOTEL', { color: '#ff5a8a', z: 3.4, size: 10, depth: 70.7 });
     A.use(39.5, 23, 'The Meridian casino', act('toFloor', 'street'), { r: 1.8 });
-    A.sign(32, 22, 'CAR PARK ↓', { color: '#9fd3ff', z: 2.6, size: 9, depth: 70.7 });
-    A.use(32.5, 23, 'The Meridian car park', act('toGarage', 'street'), { r: 1.6 });
+    A.sign(33, 22, 'CAR PARK ↓', { color: '#9fd3ff', z: 3.1, size: 9, depth: 70.7 });
+    A.use(33, 23, 'The Meridian car park', act('toGarage', 'street'), { r: 1.6 });
     A.sign(46.5, 22, 'HOTEL', { color: '#e8d7a8', z: 2.8, size: 10, depth: 70.7 });
     A.use(46.5, 23, 'The hotel entrance', act('hotelLift'), { r: 1.6 });
     for (const x of [29, 34, 45, 48]) A.prop('column', x + .5, 22.6, { h: 3.4 });
-    A.prop('canopy', 36.5, 21.9, { w: 6, d: 1.5, h: 3 });
+    A.prop('canopy', 36.5, 22, { w: 6, d: 1.5, h: 3.2, solid: false }); // out from the facade over the main doors; you walk under it
     lamp(A, 34, 23.4, '#ffcf8a'); lamp(A, 44, 23.4, '#ffcf8a');
     A.prop('car', 37, 26, { color: '#111', rot: true }); // a limousine at the kerb
     // --- the police station, top right
@@ -282,34 +282,40 @@ const L2World = (() => {
     A.use(20, .8, 'The Salon (high limit)', act('salonDoor'), { r: 1.6 });
     A.use(.8, 3.8, 'Lift down to the car park', act('toGarage'), { r: 1.4 });
     A.use(.8, 12.8, 'The hotel lift', act('hotelLift'), { r: 1.4 });
-    // the tables: blackjack, roulette, Crazy 4, baccarat, and Tommy watching the pit
-    const T = [['bj', 6, 5, 'Sit down at blackjack'], ['bj', 6, 9, 'Sit down at blackjack'], ['roulette', 11, 5, 'Sit down at roulette'], ['c4', 11, 9, 'Sit down at Crazy 4 Poker'], ['bac', 16, 5, 'Sit down at baccarat'],
-      ['craps', 20.5, 5, 'Step up to the craps table'], ['uth', 10.5, 13, 'Sit down at Ultimate Texas Hold\'em'], ['tcp', 16.5, 13, 'Sit down at Three Card Poker'], ['lir', 21, 12, 'Sit down at Let It Ride']];
+    // The floor is laid out the way a real one is: everything with a backboard or a sign (the cashier's cage,
+    // the Rewards screens, the Big Six wheel, the coin pushers) stands against the back wall, the tables sit in
+    // two pits either side of a central aisle that runs up from the door, and the slots are a bank by the door.
+    // back wall, left to right: staff door (2), the cage, Vale's portrait (10), Rewards, the wheel, the Salon (19), the pushers
+    A.prop('cage', 4.4, 1, { w: 3, d: 1.4 }); A.person({ x: 5.9, y: .55, face: 1, skin: '#c48a64', hair: '#111', coat: '#111', pants: '#111', shirt: '#f4f4f4', tie: '#c9a14a' });
+    A.use(5.9, 3.1, 'The cashier', act('cashier'), { r: 1.6 });
+    // Meridian Rewards: tonight's promotions on the screens, and a host at the desk to pay the bounties
+    A.prop('screens', 13.1, .05, { w: 2.6 }); A.prop('counter', 13.2, 1.3, { w: 2.4, d: .8, color: '#3a1020', top: '#c9a14a' }); place(A, 'tiff', 14.4, .9, { face: 1, r: 1 });
+    A.use(14.4, 2.8, 'Meridian Rewards: tonight\'s promotions', act('rewards'), { r: 1.6 });
+    A.prop('wheel', 17.4, .45); A.use(17.4, 1.6, 'Big Six money wheel', act('wheel'), { r: 1.4 });
+    A.prop('pusher', 22.4, .7, { label: 'HIGH TIDE' }); A.use(22.4, 1.9, 'High Tide coin pusher', act('pusher', 'a'), { r: 1.2 });
+    A.prop('pusher', 24.6, .7, { label: 'LOW TIDE' }); A.use(24.6, 1.9, 'Low Tide coin pusher', act('pusher', 'b'), { r: 1.2 });
+    // the pits: two rows of tables either side of the aisle, a dealer behind each, facing the floor
+    const T = [['bj', 5, 6, 'Sit down at blackjack'], ['roulette', 9.5, 6, 'Sit down at roulette'], ['bj', 5, 10, 'Sit down at blackjack'], ['c4', 9.5, 10, 'Sit down at Crazy 4 Poker'],
+      ['bac', 16.5, 6, 'Sit down at baccarat'], ['craps', 21, 6, 'Step up to the craps table'], ['uth', 16.5, 10, 'Sit down at Ultimate Texas Hold\'em'], ['tcp', 21, 10, 'Sit down at Three Card Poker'],
+      ['lir', 16.5, 14, 'Sit down at Let It Ride']];
     for (const [g, x, y, label] of T) { A.prop(g === 'roulette' || g === 'craps' ? g : 'bj', x, y); A.person(dealer(x, y - 1, 1)); A.use(x, y + 1.1, label, act('table', g), { r: 1.4 }); }
-    A.person({ x: 8.5, y: 7, face: 1, skin: '#e8b58f', hair: '#5a3a22', coat: '#26262c', pants: '#1a1a1e', shirt: '#dcdcdc', tie: '#203a6b', build: 'broad' });
-    A.use(8.5, 7, 'Tommy Quinn, pit boss', act('tommy'), { r: 1.6 });
-    // the floor games, the slots and the cashier
-    A.prop('wheel', 20, 9); A.use(20, 10, 'Big Six money wheel', act('wheel'), { r: 1.5 });
-    A.prop('sicbo', 16, 9.5); A.use(16, 10.6, 'Sic Bo', act('sicbo'), { r: 1.5 });
-    A.prop('pusher', 23.5, 4, { label: 'HIGH TIDE' }); A.use(23.5, 5, 'High Tide coin pusher', act('pusher', 'a'), { r: 1.3 });
-    A.prop('pusher', 23.5, 7, { label: 'LOW TIDE' }); A.use(23.5, 8, 'Low Tide coin pusher', act('pusher', 'b'), { r: 1.3 });
+    A.prop('sicbo', 21, 14); A.use(21, 15.1, 'Sic Bo', act('sicbo'), { r: 1.5 });
+    A.person({ x: 7.25, y: 8, face: 1, skin: '#e8b58f', hair: '#5a3a22', coat: '#26262c', pants: '#1a1a1e', shirt: '#dcdcdc', tie: '#203a6b', build: 'broad' });
+    A.use(7.25, 8, 'Tommy Quinn, pit boss', act('tommy'), { r: 1.6 });
+    // the slots, a bank of two rows by the door
     for (let i = 0; i < 6; i++) { A.prop('slot', 3 + i * 1.1, 15.6, { hot: i === 2, label: ['777', 'BAR', '$$$', '777', 'BAR', '777'][i] }); }
     for (let i = 0; i < 6; i++) A.prop('slot', 3 + i * 1.1, 17.6, { label: ['$$$', '777', 'BAR', '$$$', '777', 'BAR'][i] });
     A.use(5.5, 16.6, 'The slots', act('slots'), { r: 2.2 });
-    A.prop('cage', 20, 14, { w: 3, d: 1.4 }); A.person({ x: 21.5, y: 14.6, face: 1, skin: '#c48a64', hair: '#111', coat: '#111', pants: '#111', shirt: '#f4f4f4', tie: '#c9a14a' });
-    A.use(21.5, 16, 'The cashier', act('cashier'), { r: 1.6 });
-    for (const [x, y] of [[13, 13], [7, 13]]) A.prop('column', x, y, { h: 3.6 });
-    // Meridian Rewards: tonight's promotions, and a host to pay the bounties
-    A.prop('counter', 15.6, 17.4, { w: 2.4, d: .8, color: '#3a1020', top: '#c9a14a' }); place(A, 'tiff', 16.8, 16.9, { face: 1, r: 1 });
-    A.prop('screens', 15.4, 16.6, { w: 2.6 });
-    A.use(16.8, 16.6, 'Meridian Rewards: tonight\'s promotions', act('rewards'), { r: 1.6 });
-    A.person({ x: 14, y: 16, face: -1, skin: '#d9a07a', hair: '#141010', coat: '#4a1030', pants: '#1a0a12', longHair: true, skirt: true, hold: 'glass' }); // punters
-    place(A, 'glenda', 4.15, 16.5, { sit: true, back: true, r: 1.2 }); place(A, 'hollis', 18.2, 2.4, { face: 1, r: 1.3 });
-    place(A, 'bree', 9.5, 11, { walk: [[9.5, 11], [14, 11], [14, 7.2], [9.5, 7.2]], speed: .9 });
-    A.person({ x: 6, y: 6.2, face: 1, back: true, skin: '#f0c9a8', hair: '#3a2a1e', coat: '#2a3a5a', sit: true }); A.person({ x: 11.6, y: 6.2, face: -1, back: true, skin: '#8a5a3a', hair: '#111', coat: '#5a2a2a', sit: true, style: 'long' });
-    A.person({ x: 18.6, y: 10.8, face: 1, skin: '#f0d0b0', hair: '#ddd', coat: '#222', pants: '#111', shirt: '#eee', tie: '#7a0f1e' });
+    // columns down the aisle
+    for (const [x, y] of [[11.3, 8], [14.2, 8], [11.3, 12.4], [14.2, 12.4]]) A.prop('column', x, y, { h: 3.6 });
+    // punters, and the people you know
+    A.person({ x: 10.6, y: 17, face: -1, skin: '#d9a07a', hair: '#141010', coat: '#4a1030', pants: '#1a0a12', longHair: true, skirt: true, hold: 'glass' });
+    place(A, 'glenda', 4.15, 16.5, { sit: true, back: true, r: 1.2 }); place(A, 'hollis', 18.6, 2.7, { face: 1, r: 1.3 });
+    place(A, 'bree', 12.2, 16, { walk: [[12.2, 16], [12.2, 3.6], [13.4, 3.6], [13.4, 16]], speed: .9 });
+    A.person({ x: 5, y: 7.2, face: 1, back: true, skin: '#f0c9a8', hair: '#3a2a1e', coat: '#2a3a5a', sit: true }); A.person({ x: 10.1, y: 7.2, face: -1, back: true, skin: '#8a5a3a', hair: '#111', coat: '#5a2a2a', sit: true, style: 'long' });
+    A.person({ x: 18.75, y: 12, face: 1, skin: '#f0d0b0', hair: '#ddd', coat: '#222', pants: '#111', shirt: '#eee', tie: '#7a0f1e' });
     exit(A, 12, 19, 'Out to Meridian Avenue', act('toStreet', 'casino'));
-    for (const [x, y] of [[6, 7], [12, 7], [18, 7], [6, 15], [14, 15], [21, 11]]) A.light(x, y, { r: 6, color: '#ffd9a0', i: .9 });
+    for (const [x, y] of [[5, 8], [9.5, 8], [16.5, 8], [21, 8], [12.7, 13], [5, 16.5], [19, 14], [14.4, 3], [22, 2.5]]) A.light(x, y, { r: 6, color: '#ffd9a0', i: .9 });
     return { spawn: [12.5, 18, 0], entries: { street: [12.5, 18, 0], garage: [1.6, 3.8, 0], lift: [1.6, 12.8, 0], eye: [2.7, 1.8, 0], salon: [20, 1.8, 0] }, dark: .32, bg: '#0a0604', soft: true, name: 'the Meridian' };
   }
   // Augustin Vale in oils, painted once off screen, then laid onto the wall's slant
