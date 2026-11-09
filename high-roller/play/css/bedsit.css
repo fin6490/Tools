@@ -176,6 +176,8 @@ body[data-screen="originals"] { background: #0b1a24; }
 .orig-auto select.orig-in { flex: 1 1 auto; width: auto; min-width: 0; }
 .hud-l3 .hs.drink b { color: #f0c060; font-size: 13px; }
 .hud-l3 .hs.drink.low b { color: #ff6a5a; animation: l3-pulse 1.2s ease-in-out infinite; }
+.hud-l3 .hs.drink { display: flex; align-items: center; gap: 8px; }
+.hud-l3 #hud-can { padding: 2px 8px; font-size: 12px; }
 
 /* the list on the fridge */
 .l3-listbg { position: fixed; inset: 0; z-index: 58; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 0, 0, .6); }
@@ -205,3 +207,18 @@ body[data-screen="originals"] { background: #0b1a24; }
 .l3-pi { font-size: 24px; text-align: center; }
 .l3-bonus { display: grid; gap: 4px; padding: 8px 10px; border-radius: 9px; border: 1px solid #5aff9a; background: #0f2418; } .l3-bonus b { color: #5aff9a; font-size: 14px; }
 @media (max-width: 520px) { .l3-promo { grid-template-columns: 28px 1fr; } .l3-promo > :last-child { grid-column: 1 / -1; justify-self: end; } }
+
+/* the good ending, played out in the room: letterbox bars, timed lines, fades, the days */
+.l3.cut .l3-hud, .l3.cut .l3-use, .l3.cut .l3-prompt, .l3.cut .l3-cross, .l3.cut .l3-menu, .l3.cut .l3-stick, .l3.cut .l3-hint { display: none; }
+.l3-bars::before, .l3-bars::after { content: ''; position: fixed; left: 0; right: 0; height: 0; background: #000; z-index: 50; transition: height 1.6s ease; }
+.l3-bars::before { top: 0; } .l3-bars::after { bottom: 0; }
+.l3-bars.on::before, .l3-bars.on::after { height: 11vh; }
+.l3-say.cue { background: none; transition: opacity .35s; padding-bottom: calc(11vh + 14px); }
+.l3-say.cue.out { opacity: 0; pointer-events: none; }
+.l3-say.cue .l3-line { background: rgba(10, 8, 6, .8); border-color: rgba(232, 184, 90, .22); text-align: center; }
+.l3-say.cue > small { bottom: calc(11vh + 2px); }
+.l3-fade { position: fixed; inset: 0; z-index: 55; background: #000; opacity: 0; pointer-events: none; }
+.l3-days { position: fixed; inset: 0; z-index: 58; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; font-family: Georgia, serif; color: #2a2420; }
+.l3-days b { font-size: clamp(44px, 9vw, 92px); font-weight: 400; letter-spacing: .04em; }
+.l3-days.tick b { animation: l3-day .9s ease-out; }
+@keyframes l3-day { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
