@@ -30,7 +30,7 @@ const DEFAULTS = () => ({
   scorepad: { games: [], activeId: null },
   chessclock: { count: 2, baseMin: 5, incSec: 0 },
   bracket: { format: "knockout", entrants: "", seed: "order", groupCount: 2, qualify: 2, points: { win: 3, draw: 1, loss: 0 }, competitors: [], ko: {}, league: {}, groups: {} },
-  dojo: { activeSetId: null, lives: 3, sets: [], rosterWheelId: null, leaderboards: {} },
+  dojo: { activeSetId: null, lives: 3, powersPerRound: 1, sets: [], rosterWheelId: null, leaderboards: {} },
   reveal: { activeSetId: null, shuffle: true },
   pairs: { activeSetId: null, count: 8, mode: "solo" },
   bingo: { activeSetId: null, size: 3, printCount: 6 },

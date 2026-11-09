@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261024a",
+  token: "20261109a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -389,7 +389,8 @@ export const TOOLS = [
       ["Is it just for maths?", "No — it works for any subject. It ships with maths sets (times tables, fractions, BIDMAS…) plus a capital-cities example, and you can add your own set on any topic in the editor."],
       ["How do I make my own question set?", "Open the editor and type one question per line as <code>question | answer | wrong answers</code>. Wrong answers are optional — the board fills the rest from the other answers in your set. You can also import a set as JSON."],
       ["Can it show maths properly?", "Yes — a light markup renders fractions (<code>\\frac{3}{4}</code>), powers (<code>x^2</code>), roots and symbols like <code>\\times</code> and <code>\\div</code>, with no plugins to install."],
-      ["What are the powerups?", "Each round a player can use a Smoke bomb (removes four wrong answers from their own board), Heal (restores a life), and sometimes Block (freezes the opponent's board for three seconds)."],
+      ["What are the powerups?", "Each round both players are dealt three power-ups at random from a set of eleven: 50:50, Heal, Shield, Steal, Freeze, Poison, Jumble, Time bomb, Mirror, Focus and Trap. By default you may use one of your three each round, so there's a choice to make — but you can raise that to two or three with the “Power-ups a turn” option in the lobby for a more chaotic game."],
+      ["Can players use more than one power-up a turn?", "Yes — set “Power-ups a turn” in the lobby to 1, 2 or 3. It's 1 by default (a single tactical choice from your three); bump it up for faster, more combo-heavy duels where a player might, say, Freeze and then Time-bomb their opponent in the same round."],
       ["How does ranking work?", "The champion builds a streak by staying on, and every student's wins and best streak are tracked in a leaderboard you can display at the end of the session."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your question sets and leaderboard stay in your browser. It works offline once loaded."],
     ],
