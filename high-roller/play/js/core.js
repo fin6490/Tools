@@ -144,6 +144,11 @@ const SFX = (() => {
     latch() { tone(1500, 0.04, 'square', 0.03); noise(0.04, 2400, 3, 0.25); },
     pills() { for (let i = 0; i < 7; i++) setTimeout(() => noise(0.03, 3200 + Math.random() * 1500, 6, 0.25), i * 45 + Math.random() * 20); },
     reelStop() { tone(110, 0.09, 'sine', 0.12); noise(0.05, 900, 1.5, 0.25); },
+    // Level 3's own: a microwave's beep and hum, a kettle coming to the boil, a telephone ringing out (the British double ring)
+    beep(n = 1) { for (let i = 0; i < n; i++) tone(2100, 0.09, 'square', 0.04, i * 0.17); },
+    hum(dur = 30) { wash(dur, 90, 110, 0.035, 0.4, 'lowpass', 1.2); },
+    kettle(dur = 4) { wash(dur, 320, 2400, 0.09, dur * 0.6, 'bandpass', 1.1); wash(0.9, 1200, 500, 0.07, 0.05, 'lowpass', 0.7, dur - 0.3); tone(1700, 0.08, 'square', 0.03, dur); },
+    ring() { for (const w of [0, 0.4]) { tone(400, 0.35, 'sine', 0.045, w); tone(450, 0.35, 'sine', 0.045, w); } },
   };
 })();
 

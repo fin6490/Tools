@@ -16,7 +16,9 @@
      called The Seventeenth Card), the dartboard and the friend who isn't there to throw against, the
      stock photo in the frame, the letters by the door, the fridge postcards, the radio. */
 const L3 = (() => {
-  const GOAL = 500000, MIN_BET = 1, START = 850, DRAIN = 100 / 420; // the drink, per second: about seven minutes from full
+  const GOAL = 500000, MIN_BET = 1, START = 850, DRAIN = 100 / 720; // the drink, per second: twelve minutes from full in the room
+  // at the laptop it goes a third as fast (you're absorbed), and a sixth while a tournament seat or an autobet is running, so neither is cut short
+  const lapK = () => ((typeof Holdem !== 'undefined' && Holdem.active && Holdem.active()) || (typeof Originals !== 'undefined' && Originals.busy && Originals.busy())) ? 1 / 6 : 1 / 3;
   // did you stay off the drink in both dreams (no drinks in the town, none when you woke in the city)? Then the dreams were
   // the part of you that knows, telling you to deal with it: you wake in the same room with the same problem, told a little differently
   const dryDreams = () => typeof App !== 'undefined' && App.counter('drinks') === 0 && App.counter('l2_drinks') === 0;
@@ -111,6 +113,7 @@ const L3 = (() => {
     for (let y = 0; y < hh; y += 3) { g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, y, w, 1); } // scanlines
   }
   function drawLaptop(g, w, hh, t) {
+    if (G && G.lapScene) return drawPay(g, w, hh, G.lapScene);
     g.fillStyle = '#0c1424'; g.fillRect(0, 0, w, hh); g.fillStyle = '#ffd34d'; g.font = 'bold 26px Georgia'; g.textAlign = 'center'; g.fillText('LuckyStrike.bet', w / 2, 46);
     g.fillStyle = '#9ab'; g.font = '14px sans-serif'; g.fillText('Welcome back. You have been playing for 412 days.', w / 2, 74);
     const names = ['Blackjack', 'Roulette', 'Craps', 'Slots', 'Poker', 'Baccarat']; names.forEach((n, i) => { const x = 40 + (i % 3) * 150, y = 100 + Math.floor(i / 3) * 70; g.fillStyle = i === Math.floor(t * .7) % 6 ? '#2a4a7a' : '#16233a'; g.fillRect(x, y, 130, 54); g.fillStyle = '#e8eef8'; g.font = 'bold 15px sans-serif'; g.fillText(n, x + 65, y + 33); });
@@ -264,7 +267,7 @@ const L3 = (() => {
     host.append(renderer.domElement);
     const scene = new THREE.Scene(); scene.background = new THREE.Color(0x030302); scene.fog = new THREE.Fog(0x050403, 6, 15);
     const camera = new THREE.PerspectiveCamera(70, 1, .05, 40);
-    G = { renderer, scene, camera, uses: [], solids: [], busy: 0, t0: performance.now(), yaw: .35, pitch: -.12, x: 3.4, z: 2.3, keys: new Set(), stick: null, look: null, tvTex: null, lapTex: null, stare: 0 };
+    G = { renderer, scene, camera, uses: [], solids: [], mess: [], slats: [], fx: [], eye: 1.6, busy: 0, t0: performance.now(), yaw: .35, pitch: -.12, x: 3.4, z: 2.3, keys: new Set(), stick: null, look: null, tvTex: null, lapTex: null, stare: 0 };
     const st = S(); if (st.pos) { G.x = st.pos.x; G.z = st.pos.z; G.yaw = st.pos.yaw; }
     const M = o => new THREE.MeshStandardMaterial({ roughness: .85, metalness: 0, ...o });
     const add = (geo, mat, x, y, z, ry = 0, par = scene) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = !low; par.add(m); return m; };
@@ -297,20 +300,22 @@ const L3 = (() => {
     scene.add(new THREE.HemisphereLight(0x8a7a6a, 0x1a1410, .28));
     const bulb = new THREE.PointLight(0xffd59a, 1.25, 10, 2); bulb.position.set(3, 2.12, 2.2); scene.add(bulb); G.bulb = bulb;
     if (!low) { bulb.castShadow = true; bulb.shadow.mapSize.set(1024, 1024); bulb.shadow.bias = -.004; bulb.shadow.radius = 3; bulb.shadow.camera.near = .1; bulb.shadow.camera.far = 9; }
-    add(new THREE.SphereGeometry(.045, 14, 10), new THREE.MeshBasicMaterial({ color: 0xfff0c8 }), 3, 2.1, 2.2).castShadow = false;
+    G.bulbMesh = add(new THREE.SphereGeometry(.045, 14, 10), new THREE.MeshBasicMaterial({ color: 0xfff0c8 }), 3, 2.1, 2.2); G.bulbMesh.castShadow = false;
     cyl(.018, .018, .05, chrome, 3, 2.14, 2.2).castShadow = false; cyl(.004, .004, .3, black, 3, 2.19, 2.2).castShadow = false; cyl(.05, .05, .02, white, 3, 2.48, 2.2);
     cyl(.06, .06, .03, white, 4.6, 2.47, 3.4); add(new THREE.BoxGeometry(.02, .025, .008), M({ color: 0x8a3a1a }), 4.6, 2.43, 3.45); // the smoke alarm, open, its battery hanging
 
     // --- the front door: painted panels, a chain, a spyhole, the letters on the mat
     const doorM = M({ color: 0xb8aa8a, roughness: .55 });
-    const door = box(.88, 2.04, .05, doorM, 5.05, 0, RD - .03);
-    for (const y of [.25, 1.15]) for (const x of [4.85, 5.25]) soft(.3, .75, .02, doorM, x, y, RD - .06, 0, .008); // the panels
+    // the door hangs on a hinge at its left edge, so it can swing (it does, once, at the very end)
+    const doorG = new THREE.Group(); doorG.position.set(4.61, 0, RD - .03); scene.add(doorG); G.frontDoor = doorG;
+    const door = add(new THREE.BoxGeometry(.88, 2.04, .05), doorM, .44, 1.02, 0, 0, doorG);
+    for (const y of [.25, 1.15]) for (const x of [.24, .64]) add(softGeo(.3, .75, .02, .008), doorM, x, y + .375, -.03, 0, doorG); // the panels
     for (const [w, hh, x, y] of [[.07, 2.12, 4.575, 0], [.07, 2.12, 5.525, 0], [1.02, .07, 5.05, 2.05]]) box(w, hh, .06, M({ color: 0xe0d8c8, roughness: .5 }), x, y, RD - .03);
-    box(.12, .02, .04, chrome, 4.72, 1.0, RD - .08); box(.03, .06, .02, chrome, 4.67, .97, RD - .07); // the lever handle
-    box(.25, .05, .015, chrome, 5.05, .85, RD - .065); // the letterbox
-    add(new THREE.CylinderGeometry(.01, .01, .02, 10), black, 5.05, 1.55, RD - .065).rotation.x = Math.PI / 2; // spyhole
+    add(new THREE.BoxGeometry(.12, .02, .04), chrome, .11, 1.01, -.05, 0, doorG); add(new THREE.BoxGeometry(.03, .06, .02), chrome, .06, 1.0, -.04, 0, doorG); // the lever handle
+    add(new THREE.BoxGeometry(.25, .05, .015), chrome, .44, .875, -.035, 0, doorG); // the letterbox
+    add(new THREE.CylinderGeometry(.01, .01, .02, 10), black, .44, 1.55, -.035, 0, doorG).rotation.x = Math.PI / 2; // spyhole
     box(.8, .012, .5, M({ color: 0x5a4a2a, roughness: 1 }), 5.05, 0, RD - .35); // the doormat
-    const lt = add(new THREE.PlaneGeometry(1.0, .5), new THREE.MeshStandardMaterial({ map: TEX.letters(), transparent: true, roughness: 1 }), 5.0, .016, RD - .4); lt.rotation.x = -Math.PI / 2; lt.castShadow = false;
+    const lt = add(new THREE.PlaneGeometry(1.0, .5), new THREE.MeshStandardMaterial({ map: TEX.letters(), transparent: true, roughness: 1 }), 5.0, .016, RD - .4); lt.rotation.x = -Math.PI / 2; lt.castShadow = false; G.letters = lt;
     use(door, 'The front door', () => A.door()); use(lt, 'The letters by the door', () => A.letters());
     for (const [y, c, x, hood] of [[1.74, 0x2a2a30, 3.82, 0], [1.72, 0x2e3442, 4.0, 1]]) { // the coats on the hook nobody wears: hung by their loops
       const cM = M({ color: c, roughness: 1, side: THREE.DoubleSide }), prof = [[.19, 0], [.185, .25], [.165, .5], [.17, .66], [.16, .74], [.1, .8], [.04, .83], [.015, .85]].map(([r, h2]) => new THREE.Vector2(r, h2));
@@ -334,11 +339,11 @@ const L3 = (() => {
     cyl(.012, .012, .22, chrome, RW - .08, .92, .5); box(.15, .015, .015, chrome, RW - .15, 1.12, .5); // the tap
     for (let i = 0; i < 4; i++) { const pl = cyl(.1, .09, .012, M({ color: 0xe8e4da, roughness: .3 }), RW - .3, .934 + i * .014, .48 + i * .01); pl.castShadow = false; } // the plates, waiting
     for (const z of [1.08, 1.4]) { cyl(.1, .1, .012, black, RW - .3, .92, z, 24); add(new THREE.TorusGeometry(.065, .006, 6, 24), M({ color: 0x2a2a2a }), RW - .3, .935, z).rotation.x = Math.PI / 2; }
-    cyl(.07, .08, .2, M({ color: 0xd8d4cc, roughness: .3 }), RW - .45, .92, .9); box(.08, .04, .02, black, RW - .45, 1.08, .97); // the kettle
+    const kettle = cyl(.07, .08, .2, M({ color: 0xd8d4cc, roughness: .3 }), RW - .45, .92, .9); box(.08, .04, .02, black, RW - .45, 1.08, .97); use(kettle, 'The kettle', () => A.kettle()); // the kettle
     // what's left of last night along the back of the worktop
     [[RW - .14, .15, 0], [RW - .2, .22, 1], [RW - .12, .3, 2], [RW - .5, 1.25, 0], [RW - .14, 1.58, 3], [RW - .22, 1.6, 1]].forEach(([x, z, c]) => can(x, .92, z, CANS[c]));
     can(RW - .42, .92, 1.55, CANS[2], true); can(RW - .5, .92, .2, CANS[0], false, true);
-    const vodka = cyl(.04, .04, .26, M({ color: 0xd8e8f0, roughness: .05, transparent: true, opacity: .45 }), RW - .2, .92, .72); cyl(.015, .015, .05, M({ color: 0xc0392b }), RW - .2, 1.18, .72); // a bottle, nearly empty
+    const vodka = cyl(.04, .04, .26, M({ color: 0xd8e8f0, roughness: .05, transparent: true, opacity: .45 }), RW - .2, .92, .72); const vcap = cyl(.015, .015, .05, M({ color: 0xc0392b }), RW - .2, 1.18, .72); G.mess.push(vodka, vcap); // a bottle, nearly empty
     { const sp = TEX.splash(); sp.wrapS = sp.wrapT = THREE.RepeatWrapping; sp.repeat.set(1.65 / 1.6, 1); const m = add(new THREE.PlaneGeometry(1.65, .4), M({ map: sp, roughness: .35 }), RW - .004, 1.12, .855, -Math.PI / 2); m.castShadow = false; } // tiles behind the worktop, splashed
     // the wall cupboard
     box(.34, .62, 1.5, unitM, RW - .17, 1.48, .85); for (let i = 0; i < 2; i++) box(.02, .58, .72, M({ color: 0xa89878, roughness: .6 }), RW - .345, 1.5, .48 + i * .75); for (const z of [.82, .88]) box(.02, .1, .015, chrome, RW - .36, 1.55, z);
@@ -349,7 +354,17 @@ const L3 = (() => {
     const noteC = document.createElement('canvas'); noteC.width = 128; noteC.height = 176; { const g = noteC.getContext('2d'); g.fillStyle = '#f4ea9a'; g.fillRect(0, 0, 128, 176); g.strokeStyle = 'rgba(80,120,200,.35)'; for (let y = 36; y < 176; y += 14) { g.beginPath(); g.moveTo(6, y); g.lineTo(122, y); g.stroke(); } g.fillStyle = '#2a2a6a'; g.font = 'bold 18px "Bradley Hand", "Segoe Print", cursive'; g.fillText('TO DO', 30, 26); g.strokeStyle = '#2a2a6a'; g.lineWidth = 1.6; for (let i = 0; i < 9; i++) { const y = 33 + i * 14; g.beginPath(); g.moveTo(14, y); for (let x = 14; x < 50 + rnd() * 60; x += 6) g.lineTo(x, y - 2 - rnd() * 4); g.stroke(); } g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(44, -4, 40, 14); }
     const note = add(new THREE.PlaneGeometry(.16, .22), M({ map: new THREE.CanvasTexture(noteC), roughness: .9 }), RW - .6345, 1.3, 2.24, -Math.PI / 2); note.castShadow = false; note.rotation.z = .05;
     use(note, 'The list on the fridge', () => A.list()); use(fridge, 'The fridge', () => A.fridge()); solid(RW - .66, 1.72, RW, 2.38);
-    const mw = box(.5, .3, .36, M({ color: 0x2a2a2e, roughness: .4 }), RW - .3, 1.6, 2.05); box(.005, .2, .26, M({ color: 0x0a0c0e, roughness: .1, metalness: .4 }), RW - .552, 1.65, 2.0); box(.005, .03, .06, M({ color: 0x40ff80, emissive: 0x20a040, emissiveIntensity: 1 }), RW - .553, 1.82, 2.18); // the microwave, 12:00 blinking
+    // the microwave on the fridge: its door across the front (it used to be built sideways, and read as half a microwave), a panel with the clock
+    const mwX = RW - .38, mwM = M({ color: 0x2a2a2e, roughness: .4 });
+    const mw = box(.36, .3, .5, mwM, mwX, 1.6, 2.05);
+    box(.006, .26, .33, M({ color: 0x3a3a40, roughness: .5 }), mwX - .183, 1.62, 1.975); // the door
+    G.mwGlass = box(.004, .2, .27, M({ color: 0x0a0c0e, roughness: .1, metalness: .4, emissive: 0xffc860, emissiveIntensity: 0 }), mwX - .187, 1.65, 1.975); // its window, lit when it runs
+    box(.012, .14, .012, chrome, mwX - .196, 1.68, 2.125); // the handle
+    box(.006, .26, .12, M({ color: 0x1a1a1e, roughness: .6 }), mwX - .183, 1.62, 2.22); // the panel
+    const mwC = document.createElement('canvas'); mwC.width = 96; mwC.height = 32; G.mwCtx = mwC.getContext('2d'); G.mwTex = new THREE.CanvasTexture(mwC); G.mwTex.encoding = THREE.sRGBEncoding;
+    const mwD = add(new THREE.PlaneGeometry(.09, .03), new THREE.MeshBasicMaterial({ map: G.mwTex }), mwX - .1875, 1.83, 2.22, -Math.PI / 2); mwD.castShadow = false;
+    for (let i = 0; i < 6; i++) box(.004, .018, .018, M({ color: 0x4a4a50 }), mwX - .188, 1.66 + (i % 3) * .035, 2.195 + Math.floor(i / 3) * .045); // the buttons
+    use(mw, 'The microwave', () => A.microwave()); use(mwD, 'The microwave', () => A.microwave());
 
     // --- the bed, unmade, against the left wall: a frame, a mattress, a rumpled duvet, one flat pillow
     const frameM = M({ map: wood, color: 0x8a6a4a });
@@ -379,7 +394,7 @@ const L3 = (() => {
     add(new THREE.BoxGeometry(.36, .24, .012), M({ color: 0x8a9098, metalness: .6, roughness: .35 }), 0, .12, -.006, 0, lid);
     const scr = add(new THREE.PlaneGeometry(.33, .205), new THREE.MeshBasicMaterial({ map: G.lapTex }), 0, .122, .001, 0, lid); scr.castShadow = false;
     use(scr, 'The laptop', () => A.laptop()); use(base, 'The laptop', () => A.laptop());
-    const lapLight = new THREE.PointLight(0x8ab4ff, .6, 2.6, 2); lapLight.position.set(2.7, .95, .55); scene.add(lapLight);
+    const lapLight = new THREE.PointLight(0x8ab4ff, .6, 2.6, 2); lapLight.position.set(2.7, .95, .55); scene.add(lapLight); G.lapLight = lapLight;
     cyl(.04, .035, .09, M({ color: 0xe8e0d0, roughness: .4 }), 2.3, .755, .38); cyl(.055, .05, .02, M({ color: 0x8a8a88, metalness: .4 }), 2.42, .755, .2); for (let i = 0; i < 4; i++) cyl(.004, .004, .03, M({ color: 0xe8dcc0 }), 2.4 + i * .012, .77, .2 + (i % 2) * .01); // a mug; an ashtray full
     const frame = box(.16, .2, .02, M({ color: 0x3a2a1a }), 3.15, .755, .16); frame.rotation.x = -.15;
     const ph = add(new THREE.PlaneGeometry(.13, .1), new THREE.MeshBasicMaterial({ map: TEX.photo() }), 3.15, .86, .174); ph.rotation.x = -.15; ph.castShadow = false;
@@ -408,14 +423,14 @@ const L3 = (() => {
 
     // --- the window: a frame, a sill, the blinds (one slat bent), the night and the bookmaker's sign beyond; a radiator under it, curtains either side
     const outC = document.createElement('canvas'); outC.width = 256; outC.height = 256; { const g = outC.getContext('2d'), sky = g.createLinearGradient(0, 0, 0, 256); sky.addColorStop(0, '#0a1020'); sky.addColorStop(1, '#1a2040'); g.fillStyle = sky; g.fillRect(0, 0, 256, 256); g.fillStyle = '#05070c'; g.fillRect(0, 120, 256, 136); for (let i = 0; i < 30; i++) { g.fillStyle = rnd() < .5 ? '#e0b060' : '#6080c0'; g.fillRect(rnd() * 256, 130 + rnd() * 120, 6, 8); } const r = g.createRadialGradient(128, 110, 4, 128, 110, 90); r.addColorStop(0, 'rgba(255,40,40,.8)'); r.addColorStop(1, 'rgba(255,40,40,0)'); g.fillStyle = r; g.fillRect(0, 0, 256, 256); g.fillStyle = '#ff5050'; g.font = 'bold 22px Georgia'; g.textAlign = 'center'; g.fillText('MERIDIAN BETS', 128, 118); }
-    const outT = new THREE.CanvasTexture(outC); outT.encoding = THREE.sRGBEncoding;
+    const outT = new THREE.CanvasTexture(outC); outT.encoding = THREE.sRGBEncoding; G.outC = outC; G.outTex = outT;
     add(new THREE.PlaneGeometry(1.1, 1.0), new THREE.MeshBasicMaterial({ map: outT }), .002, 1.55, 3.3, Math.PI / 2).castShadow = false;
     const wfM = M({ color: 0xe8e2d4, roughness: .5 });
     for (const [hh, w, y, z] of [[.06, 1.22, 2.08, 3.3], [.06, 1.22, 1.02, 3.3], [1.12, .06, 1.55, 2.72], [1.12, .06, 1.55, 3.88], [.04, 1.1, 1.55, 3.3]]) box(.06, hh, w, wfM, .03, y - hh / 2, z);
     box(.16, .04, 1.3, wfM, .08, .98, 3.3); // the sill
     can(.1, 1.02, 3.0, CANS[1]); cyl(.03, .03, .1, M({ color: 0x5a3a1a, roughness: .9 }), .09, 1.02, 3.6); // a can on the sill, a dead plant
-    for (let i = 0; i < 18; i++) { const sl = box(.004, .045, 1.06, M({ color: 0xc8c0a8, roughness: .6 }), .09, 1.07 + i * .054, 3.3); sl.rotation.z = 1.1; if (i === 9) { sl.rotation.x = .25; sl.position.x += .02; } }
-    box(.01, 1.0, .01, white, .09, 1.05, 3.0); // the blind's cord
+    for (let i = 0; i < 18; i++) { const sl = box(.004, .045, 1.06, M({ color: 0xc8c0a8, roughness: .6 }), .09, 1.07 + i * .054, 3.3); G.slats.push(sl); sl.rotation.z = 1.1; if (i === 9) { sl.rotation.x = .25; sl.position.x += .02; } }
+    G.cord = box(.01, 1.0, .01, white, .09, 1.05, 3.0); // the blind's cord
     const win = hit(.08, 1.0, 1.1, .08, 1.05, 3.3, 'The window', () => A.window());
     const outside = new THREE.PointLight(0xff6060, .3, 3, 2); outside.position.set(.5, 1.6, 3.3); scene.add(outside); G.outside = outside;
     const curtM = M({ color: 0x8a6a2a, roughness: 1, side: THREE.DoubleSide });
@@ -445,11 +460,11 @@ const L3 = (() => {
     hit(.8, .9, .8, 1.3, 0, 2.9, 'The armchair', () => A.chair()); solid(.88, 2.48, 1.72, 3.3); blob(1.3, 2.9, 1.1, 1.1, .5);
     // --- the floor: a bin bag, a tower of empties, a pizza box, a pile of clothes, cans where they fell
     const bag = add(new THREE.SphereGeometry(.24, 16, 12), M({ color: 0x0c0c10, roughness: .25, metalness: .1 }), 4.9, .2, .45); { const p = bag.geometry.attributes.position; for (let i = 0; i < p.count; i++) { const k = 1 + Math.sin(p.getX(i) * 30) * .06 + Math.cos(p.getZ(i) * 25) * .05; p.setXYZ(i, p.getX(i) * k, Math.max(-.2, p.getY(i) * k), p.getZ(i) * k); } bag.geometry.computeVertexNormals(); }
-    cyl(.02, .03, .1, M({ color: 0x0c0c10, roughness: .3 }), 4.9, .42, .45); solid(4.68, .25, 5.12, .66); blob(4.9, .45, .7, .6, .5);
+    const tie = cyl(.02, .03, .1, M({ color: 0x0c0c10, roughness: .3 }), 4.9, .42, .45); G.mess.push(bag, tie); solid(4.68, .25, 5.12, .66); blob(4.9, .45, .7, .6, .5);
     for (let i = 0; i < 10; i++) can(4.35 + (i % 4) * .07, Math.floor(i / 4) * .12, 3.0 + (i % 2) * .03, CANS[i % 4]); // the tower
     for (const [x, z] of [[3.3, 2.0], [2.2, 1.6], [4.0, 3.9], [1.9, 3.7], [3.0, 3.3]]) can(x, 0, z, CANS[Math.floor(rnd() * 4)], true);
-    const pz = box(.4, .045, .4, M({ color: 0xb08a5a, roughness: 1 }), 3.6, 0, 3.6); pz.rotation.y = .3; const lidp = box(.4, .01, .4, M({ color: 0xc09a6a, roughness: 1 }), 3.6, .2, 3.4); lidp.rotation.set(-1.1, .3, 0); // the box, open
-    for (let i = 0; i < 4; i++) { const c = add(new THREE.SphereGeometry(.18, 10, 8), M({ color: [0x3a4a6a, 0x5a5a5a, 0x7a3a2a, 0x2a2a2a][i], roughness: 1 }), .55 + i * .12, .05, 2.45 + (i % 2) * .12); c.scale.set(1.2, .3, .9); c.rotation.y = i; } // the clothes
+    const pz = box(.4, .045, .4, M({ color: 0xb08a5a, roughness: 1 }), 3.6, 0, 3.6); pz.rotation.y = .3; const lidp = box(.4, .01, .4, M({ color: 0xc09a6a, roughness: 1 }), 3.6, .2, 3.4); lidp.rotation.set(-1.1, .3, 0); G.mess.push(pz, lidp); // the box, open
+    for (let i = 0; i < 4; i++) { const c = add(new THREE.SphereGeometry(.18, 10, 8), M({ color: [0x3a4a6a, 0x5a5a5a, 0x7a3a2a, 0x2a2a2a][i], roughness: 1 }), .55 + i * .12, .05, 2.45 + (i % 2) * .12); c.scale.set(1.2, .3, .9); c.rotation.y = i; G.mess.push(c); } // the clothes
     blob(3.6, 3.6, .7, .7, .35);
     // --- the bathroom, through the door in the right-hand wall; the mirror is on its far wall, straight across from the door
     function bathroom() {
@@ -546,6 +561,8 @@ const L3 = (() => {
     // you, in the mirror
     G.you = you(); scene.add(G.you); G.head = G.you.userData.head; G.jaw = G.you.userData.jaw;
     if (!low) renderer.shadowMap.needsUpdate = true;
+    scene.traverse(m => { if (m.isMesh && m.geometry && m.geometry.type === 'CylinderGeometry' && Math.abs(m.geometry.parameters.radiusTop - .033) < 1e-6) G.mess.push(m); }); // every can in the place
+    drawClock('');
     resize(); window.addEventListener('resize', resize);
   }
   function resize() { if (!G) return; const host = G.renderer.domElement.parentNode; if (!host) return; const w = host.clientWidth || innerWidth, hh = host.clientHeight || innerHeight; G.renderer.setSize(w, hh); G.camera.aspect = w / hh; G.camera.updateProjectionMatrix(); }
@@ -562,7 +579,7 @@ const L3 = (() => {
   function step(dt) {
     let fx = 0, fz = 0; const k = G.keys;
     if (k.has('w') || k.has('arrowup')) fz += 1; if (k.has('s') || k.has('arrowdown')) fz -= 1; if (k.has('a')) fx -= 1; if (k.has('d')) fx += 1;
-    if (k.has('arrowleft')) G.yaw += dt * 1.8; if (k.has('arrowright')) G.yaw -= dt * 1.8;
+    if (!G.cut) { if (k.has('arrowleft')) G.yaw += dt * 1.8; if (k.has('arrowright')) G.yaw -= dt * 1.8; }
     if (G.stick) { fx += G.stick.x; fz += -G.stick.y; }
     const len = Math.hypot(fx, fz); if (len > 1) { fx /= len; fz /= len; }
     if (len > .05 && !G.busy) {
@@ -587,13 +604,13 @@ const L3 = (() => {
     addEventListener('keydown', G.kd); addEventListener('keyup', G.ku);
     const pts = new Map();
     cv.addEventListener('pointerdown', e => {
-      e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_) { }
+      e.preventDefault(); if (G.cut) return; try { cv.setPointerCapture(e.pointerId); } catch (_) { }
       const left = e.pointerType === 'touch' && e.clientX < innerWidth * .4 && e.clientY > innerHeight * .35;
       pts.set(e.pointerId, { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, stick: left, t0: performance.now(), look: e.pointerType !== 'touch' });
       if (left) { G.stickEl.style.display = 'block'; G.stickEl.style.left = e.clientX - 50 + 'px'; G.stickEl.style.top = e.clientY - 50 + 'px'; }
     });
     cv.addEventListener('pointermove', e => {
-      const p = pts.get(e.pointerId); if (!p) return;
+      const p = pts.get(e.pointerId); if (!p || G.cut) return;
       if (!p.look && !p.stick) { if (Math.hypot(e.clientX - p.x0, e.clientY - p.y0) < 9) return; p.look = true; } // a finger wobbles: don't turn the view until it's really dragging
       const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
       if (p.stick) { const sx = (p.x - p.x0) / 50, sy = (p.y - p.y0) / 50, l = Math.hypot(sx, sy); G.stick = { x: l > 1 ? sx / l : sx, y: l > 1 ? sy / l : sy }; G.stickEl.firstChild.style.transform = `translate(${G.stick.x * 32}px, ${G.stick.y * 32}px)`; }
@@ -633,7 +650,7 @@ const L3 = (() => {
   function lapTick() {
     if (!App.state || !App.inLaptop()) return lapStop();
     if (document.hidden) return;
-    const st = S(); st.drink = Math.max(0, st.drink - DRAIN * calmK()); calmTick(1); lapHud(); notePeak(App.state.bank);
+    const st = S(); st.drink = Math.max(0, st.drink - DRAIN * calmK() * lapK()); calmTick(1); lapHud(); notePeak(App.state.bank);
     if (st.drink < 35 && st.drink > 0 && Date.now() - lastThought > 40000) { lastThought = Date.now(); UI.toast('🍺 ' + THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)], 'warn'); }
     if (st.drink > 0) return;
     // empty: let the hand in play finish (stop an autobet), then back to the room, where you go down
@@ -642,7 +659,14 @@ const L3 = (() => {
     if ((scr === 'table' && Router.table && Router.table.busy) || (scr === 'slots' && typeof Slots !== 'undefined' && Slots.busy()) || (scr === 'pokertable' && typeof Holdem !== 'undefined' && Holdem.active()) || (scr === 'darts' && typeof Darts !== 'undefined' && Darts.active())) return;
     lapStop(); Router.go('bedsit');
   }
-  function lapHud() { const e = document.getElementById('hud-drink'); if (!e) return; const v = S().drink; e.textContent = `${Math.round(v)}% · ${stateOf(v)}${S().calm > 0 ? ' · 💊' : ''}`; e.parentElement.classList.toggle('low', v < 35); }
+  // the laptop's top bar: the drink, and a can from the fridge without getting up (it's two steps away)
+  function lapHud() {
+    const e = document.getElementById('hud-drink'); if (!e) return; const st = S(), v = st.drink; e.textContent = `${Math.round(v)}% · ${stateOf(v)}${st.calm > 0 ? ' · 💊' : ''}`; e.parentElement.classList.toggle('low', v < 35);
+    let b = document.getElementById('hud-can'); if (!b) { b = h('button#hud-can.btn.sm', { onclick: () => { if (drinkCan()) UI.toast(pickOne(['*Ssssk.* Warm before it\'s halfway down. Your hands stop.', 'You reach for the fridge without looking. You don\'t need to look.', 'One more. Your head stops. For a bit.']), 'good'); } }); e.parentElement.append(b); }
+    b.textContent = `🍺 ${st.cans}`; b.title = st.cans ? 'Drink a can from the fridge (+30)' : 'No cans left'; b.disabled = !st.cans; b.style.display = st.cans || st.order ? '' : 'none';
+  }
+  // a can from the fridge: it buys you thirty
+  function drinkCan() { const st = S(); if (st.cans < 1) return false; st.cans--; st.drink = Math.min(100, st.drink + 30); App.count('l3_cans'); App.save(); hud(); lapHud(); if (!st.cans && !st.order) toast('🍺 That was the last one. The laptop can order more.'); return true; }
 
   /* ---------- the loop ---------- */
   function frame(now) {
@@ -650,30 +674,37 @@ const L3 = (() => {
     const dt = Math.min(.05, (now - (G.last || now)) / 1000); G.last = now; const t = (now - G.t0) / 1000;
     step(dt);
     if (!G.busy && !document.hidden) { G.acc = (G.acc || 0) + dt; if (G.acc >= 1) { drain(G.acc); G.acc = 0; hud(); } }
-    const v = level(), shake = (v < 35 ? (35 - v) / 35 : 0) * (S().calm > 0 ? .3 : 1) + (G.jolt || 0), bob = Math.sin(G.walk || 0) * .025;
+    const v = level(), shake = G.cut ? 0 : (v < 35 ? (35 - v) / 35 : 0) * (S().calm > 0 ? .3 : 1) + (G.jolt || 0), bob = G.cut ? 0 : Math.sin(G.walk || 0) * .025;
     if (G.jolt) G.jolt = Math.max(0, G.jolt - dt * 1.2);
     // the doors: the bathroom's, the cabinet's, the toilet lid; eased, and the room's shadows redrawn while the big one moves
     for (const [d, open] of [[G.door, DOOR_OPEN], [G.cab, 1.6], [G.lid, 1.72]]) { if (!d || d.t === d.to) continue; d.t = d.to > d.t ? Math.min(d.to, d.t + dt * 1.4) : Math.max(d.to, d.t - dt * 1.8); const e = d.t * d.t * (3 - 2 * d.t); if (d === G.lid) d.grp.rotation.x = open * e; else d.grp.rotation.y = open * e; if (d === G.door && G.renderer.shadowMap.enabled) G.renderer.shadowMap.needsUpdate = true; }
     // leaning in over the basin to the mirror (when you use it): where you are and where you look, eased
     G.lean = (G.lean || 0) + ((G.leanT || 0) - (G.lean || 0)) * Math.min(1, dt * 2.5); const ln = G.lean;
     const ex = G.x + (MX - G.x) * ln, ez = G.z + (MZ - G.z) * ln, dy = ((-Math.PI / 2 - G.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI, eyaw = G.yaw + dy * ln, epitch = G.pitch * (1 - ln);
-    const cam = G.camera; cam.position.set(ex + (Math.random() - .5) * shake * .012, 1.6 + bob + (Math.random() - .5) * shake * .01, ez);
+    const cam = G.camera; cam.position.set(ex + (Math.random() - .5) * shake * .012, G.eye + bob + (Math.random() - .5) * shake * .01, ez);
     const fov = 70 - 30 * ln; if (Math.abs(cam.fov - fov) > .05) { cam.fov = fov; cam.updateProjectionMatrix(); } // and your eyes narrow on it
     cam.rotation.order = 'YXZ'; cam.rotation.set(epitch + Math.sin(t * 1.3) * shake * .03, eyaw + Math.sin(t * .9) * shake * .025, Math.sin(t * .7) * shake * .02);
     // the bulb flickers; the TV and the laptop move
-    G.bulb.intensity = 1.15 + (Math.random() < .02 ? -.6 : 0) + Math.sin(t * 50) * .01;
-    if (G.tvCtx && Math.floor(t * 12) !== G.tvT) { G.tvT = Math.floor(t * 12); drawTV(G.tvCtx, 512, 300, t); G.tvTex.needsUpdate = true; const c = CHANNELS[S().tv % CHANNELS.length].col[1]; G.tvLight.color.set(c); G.tvLight.intensity = .5 + Math.random() * .15; }
-    if (G.lapCtx && Math.floor(t * 4) !== G.lapT) { G.lapT = Math.floor(t * 4); drawLaptop(G.lapCtx, 512, 320, t); G.lapTex.needsUpdate = true; }
+    if (!G.day) G.bulb.intensity = 1.15 + (Math.random() < .02 ? -.6 : 0) + Math.sin(t * 50) * .01;
+    if (G.tvCtx && !G.tvOff && Math.floor(t * 12) !== G.tvT) { G.tvT = Math.floor(t * 12); drawTV(G.tvCtx, 512, 300, t); G.tvTex.needsUpdate = true; const c = CHANNELS[S().tv % CHANNELS.length].col[1]; G.tvLight.color.set(c); G.tvLight.intensity = .5 + Math.random() * .15; }
+    if (G.lapCtx && (G.lapScene || Math.floor(t * 4) !== G.lapT)) { G.lapT = Math.floor(t * 4); drawLaptop(G.lapCtx, 512, 320, t); G.lapTex.needsUpdate = true; }
     // you: where you stand, the way you face, hunched and breathing
-    const Y = G.you; Y.position.set(ex, 1.6 + bob, ez); Y.rotation.y = eyaw + Math.PI;
+    const Y = G.you; Y.position.set(ex, G.eye + bob, ez); Y.rotation.y = eyaw + Math.PI;
     G.head.rotation.set(-epitch + Math.sin(t * 13) * shake * .03, Math.sin(t * 9) * shake * .03, Math.sin(t * .8) * .03);
     Y.userData.body.position.y = Math.sin(t * 1.7) * .004; Y.userData.body.rotation.z = Math.sin(t * 11) * shake * .006;
     // look into the mirror too long and your reflection's mouth starts to open
-    const staring = -Math.sin(eyaw) > .85 && Math.abs(ez - MZ) < .8 && BX1 - ex < 2.6 && (ex > BX0 || doorOpen()) && Math.abs(epitch) < .5 && (!G.busy || ln > .5);
+    const staring = !G.cut && -Math.sin(eyaw) > .85 && Math.abs(ez - MZ) < .8 && BX1 - ex < 2.6 && (ex > BX0 || doorOpen()) && Math.abs(epitch) < .5 && (!G.busy || ln > .5);
     G.stare = staring ? G.stare + dt : Math.max(0, G.stare - dt * 3);
     const open = Math.min(1, Math.max(0, (G.stare - 2.5) / 1.4)); G.jaw.position.y = Y.userData.jawY - open * .013; G.jaw.rotation.x = open * .1; // only a little: the painted mouth stays a black hole
     if (open >= 1 && !G.stung) { G.stung = 1; if (typeof L2Demon !== 'undefined' && L2Demon.sting) try { L2Demon.sting(); } catch (_) { } toast('🪞 Don\'t look at it for too long.'); }
     if (!G.stare) G.stung = 0;
+    // the microwave's clock, steam and the like, the letters going (at the end)
+    if (G.mwCtx && Math.floor(t * 2) !== G.mwT) { G.mwT = Math.floor(t * 2);
+      if (G.mwRun) { const left = Math.max(0, Math.ceil((G.mwRun - now) / 1000)); drawClock(left ? '0:' + String(left).padStart(2, '0') : 'End'); if (!left) { G.mwRun = 0; G.mwGlass.material.emissiveIntensity = 0; SFX.beep(3); } }
+      else if (S().flags.clock) { const d = new Date(); drawClock(d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0')); }
+      else drawClock(G.mwT % 2 ? '12:00' : ''); }
+    if (G.fx.length) G.fx = G.fx.filter(f => { const p = (now - f.t0) / f.dur; if (p >= 1) { G.scene.remove(f.m); return false; } f.fn(p); return true; });
+    if (G.lettersGone && G.letters) { const p = Math.min(1, (now - G.lettersGone) / 2500); G.letters.material.opacity = 1 - p; if (p >= 1) { G.letters.visible = false; G.lettersGone = 0; } }
     // focus
     if (Math.floor(t * 8) !== G.ft) { G.ft = Math.floor(t * 8); const u = G.busy ? null : pick(); const pr = G.root.querySelector('.l3-prompt'); pr.textContent = u ? u.label : ''; pr.classList.toggle('on', !!u); }
     G.root.style.setProperty('--blur', v < 15 ? ((15 - v) / 15 * 1.6).toFixed(2) + 'px' : '0px'); G.root.classList.toggle('sick', v < 35);
@@ -682,7 +713,7 @@ const L3 = (() => {
   }
   function hud() {
     if (!G) return; const st = S(), v = st.drink, r = G.root;
-    r.querySelector('.l3-drink i').style.width = Math.round(v) + '%'; r.querySelector('.l3-drink em').textContent = stateOf(v) + (st.calm > 0 ? ' · 💊 calmer' : ''); r.querySelector('.l3-drink').classList.toggle('low', v < 35);
+    r.querySelector('.l3-drink i').style.width = Math.round(v) + '%'; r.querySelector('.l3-drink em').textContent = stateOf(v) + (st.calm > 0 ? (st.calmBy === 'tea' ? ' · ☕ steadier' : ' · 💊 calmer') : ''); r.querySelector('.l3-drink').classList.toggle('low', v < 35);
     r.querySelector('.l3-cash').textContent = money(st.cash); r.querySelector('.l3-goal i').style.width = Math.min(100, st.cash / GOAL * 100) + '%';
     r.querySelector('.l3-cans').textContent = `🍺 ${st.cans} in the fridge${st.order ? ' · a delivery is coming' : ''}`;
   }
@@ -692,7 +723,7 @@ const L3 = (() => {
     async fridge() {
       const st = S();
       const c = await choose(`The fridge. ${st.cans ? `${st.cans} can${st.cans > 1 ? 's' : ''} of the cheap lager on the shelf, and nothing else but a lemon gone grey.` : 'Empty, apart from a lemon gone grey. The light inside is the warmest thing in the room.'} Postcards on the door, and a leaflet.`, [...(st.cans ? [['drink', '🍺 Drink a can (the drink +30)']] : []), ['leaflet', '📄 Read the leaflet on the door'], ['cards', '🖼️ Look at the postcards'], ['list', '📝 Read the list stuck to the door'], ['no', 'Close it']]);
-      if (c === 'drink') { st.cans--; st.drink = Math.min(100, st.drink + 30); App.count('l3_cans'); App.save(); hud(); await say([{ text: pickOne(['*Ssssk.* Warm before it\'s halfway down. Your hands stop. Your head stops. Everything stops, for a bit.', 'You drink it standing at the open fridge, in its light, like a man at a shrine.', 'It doesn\'t taste of anything any more. That isn\'t why you drink it.']) }]); if (!st.cans && !st.order) toast('🍺 That was the last one. The laptop can order more.'); }
+      if (c === 'drink') { drinkCan(); await say([{ text: pickOne(['*Ssssk.* Warm before it\'s halfway down. Your hands stop. Your head stops. Everything stops, for a bit.', 'You drink it standing at the open fridge, in its light, like a man at a shrine.', 'It doesn\'t taste of anything any more. That isn\'t why you drink it.']) }]); }
       if (c === 'leaflet') await say([{ text: 'ST JUDE\'S RECOVERY CENTRE. Alcohol and gambling. "You don\'t have to do this alone." 0800 17 17 17.' }, { text: 'St Jude\'s. The clinic you woke up in, in the dream. Dr. Okafor was a voice on their helpline, once, at four in the morning. You hung up when she asked your name.' }, { text: 'They\'d want you sober. They\'d want the debt dealt with. Five hundred thousand pounds. You put the leaflet back under its magnet.' }]).then(async () => { if (await choose('0800 17 17 17. Your phone is on the bed, on four per cent.', [['ring', '📞 Ring the number'], ['no', 'Not tonight']]) === 'ring') await ring(); });
       if (c === 'list') return A.list();
       if (c === 'cards') { S().flags.cards = 1; mark('src_cards'); await say([{ text: 'A postcard of a paddle steamer, bought in a charity shop. A beer mat from a pub called the Rusty Spur, which closed in 2009. A calendar page with a lucky 17 on it.' }, { text: 'Sal sent you postcards, in the dream. Nobody has ever sent you a postcard.' }]); }
@@ -721,7 +752,7 @@ const L3 = (() => {
       const why = n < 2 ? '' : st.calm > 0 ? ' You took two not long ago. Any more and it\'s your liver, not your hands.' : !shaky ? ' Not yet. Save them for when the shakes come.' : '';
       const c = await choose(`The cabinet. A razor you don't use, a brown bottle of something prescribed to someone else, toothpaste rolled up to the end${n >= 2 ? `, and a box of paracetamol: ${n} left.` : '. The paracetamol box is empty.'}${why}`, [...(n >= 2 && shaky && !(st.calm > 0) ? [['take', '💊 Take two for the shakes']] : []), ['no', 'Close it']]);
       if (c === 'take') {
-        st.pills -= 2; st.calm = CALM; App.count('l3_pills'); App.save(); hud(); SFX.pills();
+        st.pills -= 2; st.calm = CALM; st.calmBy = 'pills'; App.count('l3_pills'); App.save(); hud(); SFX.pills();
         await say([{ text: pickOne(['Two, dry, with your head under the tap. They won\'t stop it. They take the edge off, for a while: long enough to think.', 'You swallow two and hold on to the basin until your hands are your own again. Nearly.']) }, { text: '*For a while the shakes are quieter, and the drink lasts longer.*' }]);
       }
       if (G && G.cab) G.cab.to = 0; setTimeout(() => SFX.latch(), 450);
@@ -757,13 +788,45 @@ const L3 = (() => {
       await say([{ text: 'A family on a beach, laughing: a woman with her hair blowing across her face, a girl of about nine, a little boy on his dad\'s shoulders.' }, { text: 'Nora. Ellie. Sam.' }, { text: 'There\'s a sticker in the corner: SAMPLE, FRAME £4.99. It\'s the photo the frame came with. You bought it on the market and never took the picture out. You gave them names. You gave them a whole life.' }, { text: 'Nobody died. Nobody was ever here.' }]);
     },
     async list() { openList(); },
+    // the microwave has blinked 12:00 since the power went off in the spring; set it and it keeps real time
+    async microwave() {
+      const st = S();
+      if (!st.flags.clock) {
+        const c = await choose('The microwave. 12:00, blinking. It has said 12:00 since the power went off in the spring.', [['set', '🕛 Set the clock'], ['no', 'Leave it']]);
+        if (c !== 'set') return;
+        st.flags.clock = 1; App.count('l3_clock'); App.save(); SFX.beep(2);
+        const d = new Date(), hr = d.getHours(), when = hr < 5 ? "It's the middle of the night. You knew that much." : hr < 12 ? "It's the morning. You hadn't known that." : hr < 18 ? "It's the afternoon. The day has been going on out there without you." : "It's the evening. It usually is, in here.";
+        return say([{ text: `*Beep. Beep.* ${hr}:${String(d.getMinutes()).padStart(2, '0')}. For the first time in months, something in this room knows what time it is.` }, { text: when }]);
+      }
+      const c = await choose('The microwave. The plate inside is spotted with something that was once food.', [['run', '▶ Run it, empty, for thirty seconds'], ['no', 'Leave it']]);
+      if (c !== 'run') return;
+      if (G) { G.mwRun = performance.now() + 30000; G.mwGlass.material.emissiveIntensity = .9; } SFX.beep(1); SFX.hum(30);
+      await say([{ text: 'Nothing in it. The plate goes round anyway, and the light comes on, and the whole room hums along with it for half a minute. You stand and watch it the way you would a fire.' }]);
+    },
+    // the kettle: a cup of tea, held in both hands until they stop
+    async kettle() {
+      const st = S(), n = st.tea || 0;
+      const c = await choose(n ? 'The kettle. The same teabag sits in the mug, squeezed grey.' : 'The kettle, furred white inside. One teabag left in the caddy. The milk is best not thought about.', [['tea', '☕ Make a cup of tea'], ['no', 'Not now']]);
+      if (c !== 'tea') return;
+      st.tea = n + 1; App.count('l3_tea'); App.save(); SFX.kettle(4);
+      if (G) { G.busy++; steam(RW - .45, 1.13, .9, 5, 4200); await wait(4200); G.busy = Math.max(0, G.busy - 1); }
+      st.calm = Math.max(st.calm || 0, Math.round(CALM * .4)); st.calmBy = 'tea'; App.save(); hud();
+      await say([{ text: n ? "The bag gives up what it has, which isn't much. Hot water with a memory of tea. You drink it anyway, standing up, looking at the wall." : "Black, no sugar, because there isn't any. You hold the mug in both hands until they stop. It's the first thing you've made for yourself in weeks that wasn't a bet." }]);
+    },
     async chair() {
       const c = await choose('The armchair. It has your shape worn into it.', [['sit', 'Sit and watch the television'], ['no', 'Not now']]);
       if (c !== 'sit') return; S().drink = Math.max(1, S().drink - 4); hud();
       await say([{ text: pickOne(['You sit. On the television, someone wins a car. The audience goes wild. You don\'t move for an hour.', 'You sit in the dent you\'ve made in it. The remote is where it always is. The channels are all the same people.', 'The springs complain. You look at the door for a long time, and then at the fridge, and then at the door.']) }]);
     },
     async calendar() { mark('src_calendar'); await say([{ text: 'October. Nothing in any of the squares except the 17th, circled so hard the pen went through. You can\'t remember why. You never could.' }]); },
-    async bed() { const c = await choose('The bed. The sheets haven\'t been changed since the summer.', [['lie', 'Lie down for a while'], ['no', 'Not yet']]); if (c !== 'lie') return; S().drink = Math.max(1, S().drink - 12); hud(); await say([{ text: 'The ceiling has a stain shaped like a river. You lie and look at it until it stops looking like anything, and you dream, for a minute, of a bright little town where everyone you never had is only missing.' }]); },
+    async bed() {
+      const c = await choose('The bed. The sheets haven\'t been changed since the summer.', [['lie', 'Lie down for a while'], ['no', 'Not yet']]); if (c !== 'lie') return;
+      S().drink = Math.max(1, S().drink - 12); hud();
+      // down on your back on the mattress, looking up at the bulb and the stain, then up again
+      const from = G ? { x: G.x, z: G.z, yaw: G.yaw, pitch: G.pitch, eye: 1.6 } : null; if (G) { G.busy++; const to = lookAt(.55, 1.35, 3, 2.2, 2.1, .62); to.pitch += .25; to.eye = .62; await glide(to, 1600); G.busy = Math.max(0, G.busy - 1); }
+      await say([{ text: 'The ceiling has a stain shaped like a river. You lie and look at it until it stops looking like anything, and you dream, for a minute, of a bright little town where everyone you never had is only missing.' }]);
+      if (G && from) { G.busy++; await glide(from, 1600); G.busy = Math.max(0, G.busy - 1); }
+    },
     async window() { mark('src_window'); await say([{ text: '*You lift one slat of the blind.* Across the road, the bookmaker\'s sign: MERIDIAN BETS. Rain on the glass. A bus going somewhere. You let the slat fall.' }]); },
     async books() { mark('src_books'); await say([{ text: 'Paperbacks. "Beat the Dealer". A darts annual from 1984 with a man called Mick on the cover. A thriller, dog-eared: "The Seventeenth Card". A book about grief you bought for someone you never knew.' }, { text: 'All the stories you borrowed.' }]); },
     async radio() {
@@ -869,6 +932,120 @@ const L3 = (() => {
     setTimeout(() => { if (App.state && App.state.l3 && S().order === 'coming') { S().order = 'here'; App.save(); hud(); toast('🚪 A knock at the door. By the time you get there, nobody is there. Only a carrier bag.'); } }, 55000);
   }
 
+  /* ---------- small machines: the microwave's clock, steam ---------- */
+  function drawClock(text) { if (!G || !G.mwCtx) return; const g = G.mwCtx; g.fillStyle = '#0a0c0a'; g.fillRect(0, 0, 96, 32); if (text) { g.fillStyle = '#46ff7a'; g.font = 'bold 22px "Courier New", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 48, 17); } G.mwTex.needsUpdate = true; }
+  // puffs of steam from a spout: little spheres that rise, spread and thin out
+  function steam(x, y, z, n, dur) {
+    if (!G) return; const mat = new THREE.MeshBasicMaterial({ color: 0xf0f0f0, transparent: true, opacity: .4, depthWrite: false });
+    for (let i = 0; i < n; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.03, 8, 6), mat.clone()); m.position.set(x, y, z); G.scene.add(m); const dx = (Math.random() - .5) * .06, dz = (Math.random() - .5) * .06;
+      G.fx.push({ m, t0: performance.now() + i * (dur / n) * .8, dur: dur * .45, fn: p => { if (p < 0) { m.visible = false; return; } m.visible = true; m.position.set(x + dx * p * 3, y + p * .5, z + dz * p * 3); const k = .5 + p * 2.5; m.scale.set(k, k, k); m.material.opacity = .4 * (1 - p); } }); }
+  }
+  /* ---------- the camera on rails ---------- */
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const tween = (ms, fn) => new Promise(res => { const t0 = performance.now(); const tick = now => { const p = Math.min(1, (now - t0) / ms), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; fn(e); if (p < 1 && G) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); });
+  // ease where you stand, where you look and how high your eyes are to a spot, over ms
+  function glide(to, ms = 1600) {
+    if (!G) return Promise.resolve(); const from = { x: G.x, z: G.z, yaw: G.yaw, pitch: G.pitch, eye: G.eye };
+    const wrap = a => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }, dyaw = to.yaw == null ? 0 : wrap(to.yaw - from.yaw);
+    return tween(ms, e => { if (!G) return; for (const k of ['x', 'z', 'pitch', 'eye']) if (to[k] != null) G[k] = from[k] + (to[k] - from[k]) * e; if (to.yaw != null) G.yaw = from.yaw + dyaw * e; });
+  }
+  // standing at (x, z), looking at the point (tx, ty, tz)
+  const lookAt = (x, z, tx, tz, ty = 1.2, eye = G ? G.eye : 1.6) => ({ x, z, yaw: Math.atan2(-(tx - x), -(tz - z)), pitch: Math.atan2(ty - eye, Math.hypot(tx - x, tz - z)) });
+
+  /* ---------- the good ending, played out in the room ---------- */
+  // a line over the picture: it moves on by itself after ms, or on a tap
+  function cue(text, ms) {
+    return new Promise(res => {
+      const o = h('div.l3-say.cue', h('div.l3-line', h('p', { html: UI.esc(text).replace(/\*([^*]+)\*/g, '<i>$1</i>') })), h('small', 'tap to skip ahead'));
+      let done = false; const go = () => { if (done) return; done = true; clearTimeout(tm); o.classList.add('out'); setTimeout(() => o.remove(), 360); document.removeEventListener('keydown', key); res(); };
+      const key = e => { if ([' ', 'Enter', 'e', 'E', 'Escape'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); go(); } };
+      const tm = setTimeout(go, ms); o.onclick = go; setTimeout(() => document.addEventListener('keydown', key), 120); document.body.append(o);
+    });
+  }
+  // the picture to black (or to white), or back: to is 0 or 1
+  function fade(to, ms, color = '#000') {
+    let f = document.querySelector('.l3-fade'); if (!f) { f = h('div.l3-fade'); document.body.append(f); }
+    f.style.transition = `opacity ${ms}ms ease`; f.style.background = color; requestAnimationFrame(() => { f.style.opacity = to; }); return wait(ms + 60);
+  }
+  // the laptop's screen while you pay them: every debt counted down to nothing, one after another
+  const DEBTS = [["Vinnie's Loans", 212000], ['Kessler Capital', 164000], ['Big Nico', 60000], ['the cards', 48500], ['the council', 15500]];
+  function drawPay(g, w, hh, sc) {
+    const st = S(); g.fillStyle = '#0c1424'; g.fillRect(0, 0, w, hh); g.fillStyle = '#ffd34d'; g.font = 'bold 26px Georgia'; g.textAlign = 'center'; g.fillText('LuckyStrike.bet', w / 2, 46);
+    const el = sc.pay ? (performance.now() - sc.pay) / 1000 : -1; let paid = 0;
+    DEBTS.forEach(([n, amt], i) => { const p = el < 0 ? 0 : Math.max(0, Math.min(1, (el - i * .85) / .8)), owe = amt * (1 - p), y = 92 + i * 34; paid += amt - owe;
+      g.textAlign = 'left'; g.font = '16px sans-serif'; g.fillStyle = p >= 1 ? '#5aff9a' : '#dde'; g.fillText(n, 60, y); g.textAlign = 'right'; g.fillText(p >= 1 ? 'PAID' : money(owe), w - 60, y);
+      if (p >= 1) { g.strokeStyle = 'rgba(90,255,154,.55)'; g.lineWidth = 2; g.beginPath(); g.moveTo(56, y - 6); g.lineTo(w - 56, y - 6); g.stroke(); } });
+    g.textAlign = 'center'; g.fillStyle = el < 0 ? '#9ab' : '#5aff9a'; g.font = el < 0 ? '15px sans-serif' : 'bold 15px sans-serif'; g.fillText(el < 0 ? 'Withdraw · Pay all' : paid >= GOAL - 1 ? 'Nothing owed' : 'Paying…', w / 2, hh - 58);
+    g.fillStyle = '#5aff9a'; g.font = 'bold 20px sans-serif'; g.fillText(`Balance ${money(Math.max(0, st.cash - paid))}`, w / 2, hh - 30);
+  }
+  // two weeks later: the room by daylight. The mess gone, the blind up, the bulb off, the sun in through the window; the TV off
+  function daylight() {
+    if (!G) return; const sc = G.scene, low = App.state.settings.gfx === 'low'; G.day = 1;
+    for (const m of G.mess) m.visible = false; for (const s of G.slats) s.visible = false; if (G.cord) G.cord.visible = false; if (G.letters) G.letters.visible = false;
+    G.bulb.intensity = 0; G.bulbMesh.material.color.set(0x7a7268); G.outside.intensity = 0; if (G.lapLight) G.lapLight.intensity = 0;
+    G.tvOff = 1; if (G.tvCtx) { G.tvCtx.fillStyle = '#0a0a0c'; G.tvCtx.fillRect(0, 0, 512, 300); G.tvTex.needsUpdate = true; } if (G.tvLight) G.tvLight.intensity = 0;
+    if (G.outC) { const g = G.outC.getContext('2d'), sky = g.createLinearGradient(0, 0, 0, 256); sky.addColorStop(0, '#9fb6cc'); sky.addColorStop(.6, '#d8e2ea'); sky.addColorStop(1, '#eef2f4'); g.fillStyle = sky; g.fillRect(0, 0, 256, 256);
+      g.fillStyle = '#8a8478'; g.fillRect(0, 128, 256, 128); g.fillStyle = '#6a6458'; for (let i = 0; i < 6; i++) g.fillRect(i * 44, 110 + (i % 2) * 10, 40, 30); // the roofs over the road, wet and pale
+      g.fillStyle = '#3a3a3a'; g.fillRect(40, 150, 176, 28); g.fillStyle = '#5a5a5a'; g.font = 'bold 18px sans-serif'; g.textAlign = 'center'; g.fillText('MERIDIAN BETS', 128, 171); // the sign, unlit
+      G.outTex.needsUpdate = true; }
+    sc.background = new THREE.Color(0xc8d4e0); sc.fog = new THREE.Fog(0xc8d4e0, 9, 22);
+    sc.add(new THREE.HemisphereLight(0xe8f0ff, 0x8a7a60, .6));
+    const sun = new THREE.DirectionalLight(0xfff1d8, 1.05); sun.position.set(-3, 2.8, 3.3); sun.target.position.set(3.5, .3, 2.0); sc.add(sun); sc.add(sun.target);
+    const win = new THREE.PointLight(0xeaf2ff, 1.3, 9, 1.6); win.position.set(.45, 1.6, 3.3); sc.add(win);
+    if (!low) { sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -.003; const c = sun.shadow.camera; c.left = c.bottom = -6; c.right = c.top = 6; c.near = .1; c.far = 16; G.renderer.shadowMap.needsUpdate = true; }
+    if (typeof Ambient !== 'undefined' && Ambient.refresh) Ambient.refresh();
+  }
+  // the landing beyond the front door: boards, a banister where the stairs go down, the stairwell window full of light
+  function landing() {
+    if (!G) return; const sc = G.scene, M2 = o => new THREE.MeshStandardMaterial({ roughness: .9, ...o }), mk = (geo, mat, x, y, z, ry = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; sc.add(m); return m; };
+    const z0 = RD, z1 = RD + 2.4, x0 = 4.2, x1 = 5.9, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    mk(new THREE.PlaneGeometry(x1 - x0, z1 - z0), M2({ color: 0x6a5a48 }), cx, 0, cz).rotation.x = -Math.PI / 2;
+    mk(new THREE.PlaneGeometry(x1 - x0, z1 - z0), M2({ color: 0x9a968a }), cx, RH, cz).rotation.x = Math.PI / 2;
+    mk(new THREE.PlaneGeometry(z1 - z0, RH), M2({ color: 0x746e62 }), x1, RH / 2, cz, -Math.PI / 2);
+    mk(new THREE.PlaneGeometry(x1 - x0, RH), M2({ color: 0x746e62 }), cx, RH / 2, z1, Math.PI);
+    mk(new THREE.PlaneGeometry(.9, 1.2), new THREE.MeshBasicMaterial({ color: 0xd2dce6 }), cx, 1.6, z1 - .01, Math.PI);
+    const l = new THREE.PointLight(0xeaf2ff, .55, 6, 1.6); l.position.set(cx, 1.7, z1 - .7); sc.add(l);
+    for (let i = 0; i < 6; i++) mk(new THREE.BoxGeometry(.03, .9, .03), M2({ color: 0xe0d8c8 }), x0 + .06, .45, z0 + .3 + i * .36);
+    mk(new THREE.BoxGeometry(.06, .05, z1 - z0 - .3), M2({ color: 0x4a2a16 }), x0 + .06, .95, cz);
+  }
+  async function goodEnding(st, lines) {
+    if (!G) return say(lines); // no room on the screen (no 3D): the plain telling
+    const name = (App.state.name || 'you').split(' ')[0];
+    G.cut = 1; G.root.classList.add('cut'); G.stare = 0; G.leanT = 0; G.lean = 0; document.querySelectorAll('.l3-laptop').forEach(n => n.remove());
+    const bars = h('div.l3-bars'); G.root.append(bars); requestAnimationFrame(() => bars.classList.add('on'));
+    // 1. at the laptop: the balance, then every debt paid down to nothing
+    await glide({ ...lookAt(2.7, 1.02, 2.7, .3, .92, 1.25), eye: 1.25 }, 1400);
+    G.lapScene = { t0: performance.now() };
+    await cue(`${money(st.cash)}. You look at it for an hour. You don't play another hand.`, 5000);
+    G.lapScene.pay = performance.now(); for (let i = 0; i < DEBTS.length; i++) setTimeout(() => SFX.cash(), 900 + i * 850);
+    await cue("You pay them. Vinnie's Loans, Kessler Capital, Big Nico, the cards, the council. One by one.", 6000);
+    G.lettersGone = performance.now();
+    await cue('Every one of them says £0.00, and the letters by the door say nothing at all.', 4500);
+    // 2. the fridge: the leaflet, the call
+    await glide({ ...lookAt(4.25, 2.05, RW - .6, 2.05, .95, 1.6), eye: 1.6 }, 1800); // back far enough to see the whole fridge door, the leaflet on it
+    await cue('Then you take the leaflet off the fridge and ring the number.', 4000);
+    SFX.ring(); setTimeout(() => SFX.ring(), 3000);
+    await cue('*It rings. It rings again.*', 5500);
+    await cue('A woman answers. Her voice is calm and unhurried, and she asks your name.', 4500);
+    await cue(`"${name}," you tell her. This time you tell her.`, 4500);
+    // 3. two weeks later: the room by daylight, and out of the door
+    await fade(1, 1400); daylight(); landing();
+    Object.assign(G, { ...lookAt(1.15, 1.5, .1, 3.3, 1.5, 1.2), eye: 1.2 });
+    await wait(300); await fade(0, 1800);
+    await cue('*Two weeks later. The rain has stopped.*', 5000);
+    await Promise.all([glide({ ...lookAt(5.05, 3.0, 5.05, RD, 1.2, 1.6), eye: 1.6 }, 2600), cue('You open the front door, all the way.', 3800)]);
+    SFX.creak(); tween(1600, e => { if (G) G.frontDoor.rotation.y = -1.75 * e; }); await wait(500); // it swings out onto the landing, so it doesn't sweep through you
+    await Promise.all([glide({ x: 5.05, z: RD + .55, pitch: 0 }, 3000), cue('You walk down the stairs with a holdall. The bus is the 14.', 4200)]);
+    await fade(1, 1500, '#fff');
+    // 4. the days
+    const days = h('div.l3-days', h('b'), h('p')); document.body.append(days);
+    for (const n of ['Day 1', 'Day 90', 'Day 365']) { days.querySelector('b').textContent = n; SFX.click(); days.classList.remove('tick'); void days.offsetWidth; days.classList.add('tick'); await wait(1100); }
+    await cue('You go to the meetings on Thursdays. You sit in the circle. You tell them about a town that never existed and the people in it, and somebody says: "It sounds like you loved them." You did.', 7000);
+    if (st.dry) await cue("In the dreams you'd already said no a thousand times: to every bar in the town, to every bottle in the city. It turns out that was practice.", 6000);
+    await cue('You keep the photo in the frame. You never did take it out. You just stopped needing it to be true.', 6000);
+    days.remove(); bars.remove(); setTimeout(() => { const f = document.querySelector('.l3-fade'); if (f) f.remove(); }, 2600); // the end card fades in over the white
+  }
+
   /* ---------- the three true endings ---------- */
   async function ending(kind) {
     const st = S(); if (st.ended) return; st.ended = kind; st.endings[kind] = 1; App.count('l3_end_' + kind); App.save(); Career.checkAchievements();
@@ -892,7 +1069,7 @@ const L3 = (() => {
         { text: 'You sit in the dark with the laptop open until the screen goes to sleep, and the only light in the room is the fridge, and then the fridge is empty too.' },
         { text: 'The letters keep coming. Nobody opens them. In the mirror the thing with your face waits, patient as a debt.' }] },
     }[kind];
-    await say(E.lines);
+    if (kind === 'rehab') await goodEnding(st, E.lines); else await say(E.lines);
     const o = h('div.l3-end' + (kind === 'rehab' ? '.good' : ''),
       h('div.l3-end-box', h('small', E.kind), h('h2', E.title),
         h('p', kind === 'rehab' ? 'You cleared the debt, made the call, and walked out of the door.' : kind === 'collapse' ? 'The drink ran out before the money did.' : 'The money ran out before the drink did.'),
@@ -921,7 +1098,7 @@ const L3 = (() => {
     build(root.querySelector('.l3-host')); G.root = root; G.stickEl = root.querySelector('.l3-stick');
     bindInput(root); hud(); G.raf = requestAnimationFrame(frame);
     setTimeout(() => { const h2 = root.querySelector('.l3-hint'); if (h2) h2.classList.add('out'); }, 9000);
-    if (st.ended) { setTimeout(() => ending(st.ended === 'rehab' ? 'rehab' : st.ended), 300); st.ended = null; return; }
+    if (st.ended) { const was = st.ended; st.ended = null; setTimeout(() => ending(was), 300); return; }
     if (!st.flags.intro) { st.flags.intro = 1; App.save(); setTimeout(() => say([
       { text: '*The rain stops being rain. It\'s the hum of a fridge.*' },
       { text: 'You\'re on the end of a bed in a room above a bookmaker\'s. The laptop is open. It\'s always open. The light from it is blue and the light from the bulb is yellow and there isn\'t any other light.' },
@@ -943,7 +1120,7 @@ const L3 = (() => {
   function unmount() {
     if (!G) return; savePos(); cancelAnimationFrame(G.raf); removeEventListener('keydown', G.kd); document.removeEventListener('click', G.ck, true); removeEventListener('keyup', G.ku); removeEventListener('resize', resize);
     try { G.renderer.dispose(); G.renderer.forceContextLoss && G.renderer.forceContextLoss(); } catch (_) { }
-    G = null; document.body.classList.remove('bedsit'); document.querySelectorAll('.l3-say,.l3-laptop,.l3-toast').forEach(n => n.remove());
+    G = null; document.body.classList.remove('bedsit'); document.querySelectorAll('.l3-say,.l3-laptop,.l3-toast,.l3-fade,.l3-days,.l3-bars').forEach(n => n.remove());
   }
   // the way in: the roof of the Meridian, a reflection in the black glass of the door
   async function begin() { if (!App.state.l3) App.state.l3 = fresh(); App.save(); Router.safeGo('bedsit'); } // safeGo: not from the middle of a hand // a room you've already woken in is as you left it (☰ starts it over)
