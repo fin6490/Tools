@@ -4,13 +4,13 @@
 // a bigger power-up set, an on-screen "spin the wheel" picker for the class,
 // and per-class + overall leaderboards. Works for any subject. Zero deps —
 // no KaTeX, a tiny maths renderer instead.
-import { getState, save } from "./storage.js?v=20261024a";
-import { STARTER_PACKS } from "./dojo-packs.js?v=20261024a";
-import { parseEntries } from "./wheel.js?v=20261024a";
-import { SUPPORT } from "./support.js?v=20261024a";
-import { generateSet, fitText } from "./quizkit.js?v=20261024a";
-import * as sound from "./sound.js?v=20261024a";
-import { isPremium, upsell } from "./account.js?v=20261024a";
+import { getState, save } from "./storage.js?v=20261109a";
+import { STARTER_PACKS } from "./dojo-packs.js?v=20261109a";
+import { parseEntries } from "./wheel.js?v=20261109a";
+import { SUPPORT } from "./support.js?v=20261109a";
+import { generateSet, fitText } from "./quizkit.js?v=20261109a";
+import * as sound from "./sound.js?v=20261109a";
+import { isPremium, upsell } from "./account.js?v=20261109a";
 
 /* ---------- crypto randomness ---------- */
 function rint(n) { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; }
@@ -71,8 +71,9 @@ const SVG = {
   soundOff: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
 };
 
-// Power-up catalogue. Each player is granted 3 at random per round, but only
-// ONE may be used per round — so it's a choice, not a free-for-all at the start.
+// Power-up catalogue. Each player is granted 3 at random per round; how many of
+// them may actually be used per round is set in the lobby ("Power-ups a turn",
+// default 1) — so it stays a choice, not a free-for-all at the start.
 const POWERS = {
   fifty:  { name: "50:50",  label: "50:50 — clear half your wrong answers", icon: SVG.fifty },
   heal:   { name: "Heal",   label: "Heal — restore one life", icon: SVG.heal },
@@ -97,6 +98,7 @@ export function initDojo(root) {
     if (!s.dojo) s.dojo = {};
     const d = s.dojo;
     if (typeof d.lives !== "number") d.lives = 3;
+    if (typeof d.powersPerRound !== "number") d.powersPerRound = 1;
     if (!Array.isArray(d.sets)) d.sets = [];
     if (!d.leaderboards) {
       d.leaderboards = {};
@@ -218,6 +220,15 @@ export function initDojo(root) {
     livesSel.addEventListener("change", () => { cfg().lives = +livesSel.value; save(); });
     livesRow.appendChild(livesSel);
     card.appendChild(livesRow);
+
+    // How many of your three granted power-ups you may use each round (default 1).
+    const powRow = el("div", "dojo-field dojo-field-inline");
+    powRow.appendChild(el("label", "dojo-lbl", "Power-ups a turn"));
+    const powSel = el("select", "dojo-select dojo-select-sm");
+    [1, 2, 3].forEach((n) => { const o = el("option"); o.value = n; o.textContent = n; if (n === (cfg().powersPerRound || 1)) o.selected = true; powSel.appendChild(o); });
+    powSel.addEventListener("change", () => { cfg().powersPerRound = +powSel.value; save(); });
+    powRow.appendChild(powSel);
+    card.appendChild(powRow);
 
     // Optional: pull the class roster from one of the user's saved wheels.
     const classRow = el("div", "dojo-field");
@@ -447,7 +458,7 @@ export function initDojo(root) {
     const mk = (name, side) => {
       const granted = shuffle(POWER_KEYS).slice(0, 3);
       const powers = {}; granted.forEach((k) => (powers[k] = 1));
-      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, powerUsed: false, shield: false, mirror: false, focus: false, trapped: false, blockedUntil: 0, poisoned: false, over: false };
+      return { name, side, lives: maxLives, opts: buildOptions(q, pool), granted, powers, powersUsed: 0, shield: false, mirror: false, focus: false, trapped: false, blockedUntil: 0, poisoned: false, over: false };
     };
     live.q = q;
     live.p1 = mk(live.champion, "p1");
@@ -554,7 +565,7 @@ export function initDojo(root) {
     p.granted.forEach((type) => {
       const b = el("button", "dojo-pow dojo-pow-" + type, POWERS[type].icon + `<span class="dojo-pow-name">${POWERS[type].name}</span>`);
       b.title = POWERS[type].label; b.setAttribute("aria-label", POWERS[type].label);
-      b.disabled = !p.powers[type] || p.powerUsed || p.trapped || live.roundOver;
+      b.disabled = !p.powers[type] || p.powersUsed >= (cfg().powersPerRound || 1) || p.trapped || live.roundOver;
       b.addEventListener("click", () => usePower(side, type));
       wrap.appendChild(b);
     });
@@ -562,9 +573,9 @@ export function initDojo(root) {
 
   function usePower(side, type) {
     const p = live[side];
-    if (live.roundOver || p.over || p.powerUsed || !p.powers[type] || Date.now() < p.blockedUntil) return;
+    if (live.roundOver || p.over || p.powersUsed >= (cfg().powersPerRound || 1) || !p.powers[type] || Date.now() < p.blockedUntil) return;
     p.powers[type] = 0;
-    p.powerUsed = true; // one power-up per round — locks the rest
+    p.powersUsed++; // power-ups per round is capped by the lobby option (default 1)
     const grid = panel.querySelector(side === "p1" ? "#djGrid1" : "#djGrid2");
     const o = live[side === "p1" ? "p2" : "p1"];
     const max = cfg().lives || 3;
