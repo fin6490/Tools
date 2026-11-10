@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oche · SpinDecks</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Private darts trainer with live camera scoring.">
+<meta name="theme-color" content="#0D1411">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Oche">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>try{var s=JSON.parse(localStorage.getItem("spindeck.v1"));if(s&&s.theme)document.documentElement.dataset.theme=s.theme;}catch(e){}</script>
+<link rel="stylesheet" href="css/app.css?v=20261110a">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/darts-coach/" aria-label="Oche home"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="var(--red)" stroke-width="2"/><circle cx="12" cy="12" r="1.8" fill="var(--red)"/></svg>OCHE <small>SpinDecks</small></a>
+  <span class="pill" id="pill" hidden></span>
+  <button class="iconbtn" id="setBtn" aria-label="Settings" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
+</div></header>
+
+<main class="wrap" id="main"><div class="gate"><p class="muted">Loading…</p></div></main>
+
+<nav class="tabs" id="tabs" aria-label="Sections" hidden><div class="in">
+  <button data-tab="train" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Train</button>
+  <button data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Stats</button>
+  <button data-tab="coach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 19l-5-3-5 3 1.4-6.2L4 9l5.8-.7z"/></svg>Coach</button>
+</div></nav>
+
+<input type="file" id="camIn" class="sr" accept="image/*" capture="environment" aria-label="Take a photo of the board">
+<input type="file" id="picIn" class="sr" accept="image/*" aria-label="Choose a photo of the board">
+<noscript>Oche needs JavaScript.</noscript>
+<script type="module" src="js/app.js?v=20261110a"></script>
+</body>
+</html>
