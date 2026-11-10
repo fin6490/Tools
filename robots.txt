@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /high-roller/play/
+Disallow: /darts-coach/
 
 Sitemap: https://spindecks.app/sitemap.xml
