@@ -67,15 +67,17 @@ export function nearWire(x, y, mm = 3) {
 
 /* ---------- the detector ---------- */
 export class Detector {
-  constructor({ w, h, H, dir = null, opts = {} }) {
+  // roi: the part of the full frame this detector sees, in normalised coords; dirFn(u,v): tip->flight direction
+  constructor({ w, h, H, dir = null, dirFn = null, roi = null, opts = {} }) {
     this.w = w; this.h = h; this.H = H; this.n = w * h;
-    this.dir = dir; // unit vector in pixel space, tip -> flight
-    this.o = { diff: 26, stableFrames: 3, ...opts };
-    this.roi = new Uint8Array(this.n);
+    this.dir = dir; this.dirFn = dirFn;
+    this.roi = roi || { x0: 0, y0: 0, x1: 1, y1: 1 };
+    this.o = { diff: 24, stableFrames: 3, ...opts };
+    this.mask0 = new Uint8Array(this.n);
     let c = 0;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const [bx, by] = project(H, (x + 0.5) / w, (y + 0.5) / h);
-      if (Math.hypot(bx, by) <= 182) { this.roi[y * w + x] = 1; c++; }
+      const [bx, by] = project(H, ...this.norm(x + 0.5, y + 0.5));
+      if (Math.hypot(bx, by) <= 182) { this.mask0[y * w + x] = 1; c++; }
     }
     this.roiCount = c;
     this.minDart = Math.max(10, c * 0.0004);
@@ -84,16 +86,17 @@ export class Detector {
     this.prev = this.ref = this.empty = null;
     this.still = 0; this.moving = false; this.quiet = 0;
   }
+  norm(x, y) { const r = this.roi; return [r.x0 + x / this.w * (r.x1 - r.x0), r.y0 + y / this.h * (r.y1 - r.y0)]; }
   setDir(d) { this.dir = d; }
   resetEmpty(g) { this.empty = g.slice(); this.ref = g.slice(); }
   count(a, b) {
-    const T = this.o.diff, roi = this.roi; let c = 0;
+    const T = this.o.diff, roi = this.mask0; let c = 0;
     for (let i = 0; i < this.n; i++) if (roi[i] && Math.abs(a[i] - b[i]) > T) c++;
     return c;
   }
   // changed pixels, with isolated specks removed (each must touch at least two changed neighbours)
   mask(a, b) {
-    const { w, h, n, roi } = this, T = this.o.diff, m = new Uint8Array(n), out = new Uint8Array(n);
+    const { w, h, n } = this, roi = this.mask0, T = this.o.diff, m = new Uint8Array(n), out = new Uint8Array(n);
     for (let i = 0; i < n; i++) if (roi[i] && Math.abs(a[i] - b[i]) > T) m[i] = 1;
     let c = 0;
     for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
@@ -125,14 +128,68 @@ export class Detector {
     let sx = 0, sy = 0; for (const i of px) { sx += i % this.w; sy += (i / this.w) | 0; }
     return [sx / px.length + 0.5, sy / px.length + 0.5];
   }
-  tip(px) {
-    const w = this.w;
+  // All the changed blobs that belong to the dart: the biggest, plus any near it (the shaft often
+  // vanishes against black, splitting barrel from flight).
+  dartPixels(m) {
+    const { w, h, n } = this, seen = new Uint8Array(n), q = new Int32Array(n), blobs = [];
+    for (let s = 0; s < n; s++) {
+      if (!m[s] || seen[s]) continue;
+      let qh = 0, qt = 0; q[qt++] = s; seen[s] = 1; const px = [];
+      while (qh < qt) {
+        const i = q[qh++]; px.push(i); const x = i % w, y = (i / w) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+          const j = yy * w + xx; if (m[j] && !seen[j]) { seen[j] = 1; q[qt++] = j; }
+        }
+      }
+      if (px.length >= 3) blobs.push(px);
+    }
+    if (!blobs.length) return [];
+    blobs.sort((a, b) => b.length - a.length);
+    const [cx, cy] = this.centroid(blobs[0]), R = 0.4 * Math.max(w, h);
+    let out = blobs[0];
+    for (const b of blobs.slice(1)) { const [bx, by] = this.centroid(b); if (Math.hypot(bx - cx, by - cy) < R) out = out.concat(b); }
+    return out;
+  }
+  axis(px) {
+    const w = this.w, [cx, cy] = this.centroid(px);
     let d = this.dir;
-    if (!d) d = [0, 1]; // uncalibrated guess: camera below the board, flights hang below their tips
-    let min = Infinity; const pr = px.map((i) => { const p = (i % w) * d[0] + ((i / w) | 0) * d[1]; if (p < min) min = p; return p; });
+    if (this.dirFn) d = this.dirFn(...this.norm(cx, cy));
+    if (!d) d = [0, 1]; // no idea: assume the camera is below the board, so flights hang below their tips
+    // a long thin blob gives its own axis; keep the predicted sense
+    let sxx = 0, syy = 0, sxy = 0;
+    for (const i of px) { const x = (i % w) + 0.5 - cx, y = ((i / w) | 0) + 0.5 - cy; sxx += x * x; syy += y * y; sxy += x * y; }
+    const tr = sxx + syy, df = Math.sqrt((sxx - syy) ** 2 + 4 * sxy * sxy), l1 = (tr + df) / 2, l2 = (tr - df) / 2;
+    if (l2 > 0 && l1 / l2 > 6) {
+      let e = Math.abs(sxy) > 1e-9 ? [sxy, l1 - sxx] : (sxx >= syy ? [1, 0] : [0, 1]);
+      const L = Math.hypot(...e); e = [e[0] / L, e[1] / L];
+      if (e[0] * d[0] + e[1] * d[1] < 0) e = [-e[0], -e[1]];
+      if (e[0] * d[0] + e[1] * d[1] > 0.6) d = e; // only if it roughly agrees with the board's pose
+    }
+    return d;
+  }
+  tip(px, g) {
+    const w = this.w, d = this.axis(px);
+    let min = Infinity, max = -Infinity; const pr = px.map((i) => { const p = (i % w) * d[0] + ((i / w) | 0) * d[1]; if (p < min) min = p; if (p > max) max = p; return p; });
     let sx = 0, sy = 0, k = 0;
     px.forEach((i, j) => { if (pr[j] <= min + 1.5) { sx += i % w; sy += (i / w) | 0; k++; } });
-    return [sx / k + 0.5, sy / k + 0.5];
+    let tx = sx / k + 0.5, ty = sy / k + 0.5;
+    // the steel point is thin and often low-contrast: follow the dart's line on past the blob while anything changed
+    if (g && this.ref) {
+      const lim = Math.max(4, 0.35 * (max - min)), T = Math.max(8, this.o.diff * 0.45), pxv = [-d[1], d[0]];
+      let miss = 0, last = 0;
+      for (let s = 1; s <= lim; s++) {
+        let hit = false;
+        for (const o of [-1, 0, 1]) {
+          const x = Math.floor(tx - d[0] * s + pxv[0] * o), y = Math.floor(ty - d[1] * s + pxv[1] * o);
+          if (x < 0 || y < 0 || x >= w || y >= this.h) continue;
+          const i = y * w + x; if (Math.abs(g[i] - this.ref[i]) > T) { hit = true; break; }
+        }
+        if (hit) { last = s; miss = 0; } else if (++miss > 2) break;
+      }
+      tx -= d[0] * last; ty -= d[1] * last;
+    }
+    return [tx, ty];
   }
   // Feed one grayscale frame (Uint8Array, w*h). Returns an event or null.
   feed(g) {
@@ -154,25 +211,26 @@ export class Detector {
     const e0 = this.count(g, this.empty), refE = this.count(this.ref, this.empty);
     if (e0 < Math.max(this.minDart * 3, this.maxDart * 0.08) && refE > e0 * 2) { this.ref = g.slice(); this.empty = g.slice(); return { type: "takeout" }; }
     if (c > this.maxDart) {
+      // something big is in the way (a hand, a person) or the camera moved: keep the old reference,
+      // so the next settled picture is still compared with the board as it was. The app re-finds the board if this persists.
       const e = this.count(g, this.empty);
-      this.ref = g.slice();
-      if (e < this.maxDart * 0.25) { this.empty = g.slice(); return { type: "takeout" }; }
+      if (e < this.maxDart * 0.25) { this.ref = g.slice(); this.empty = g.slice(); return { type: "takeout" }; }
       return { type: "big", changed: c };
     }
-    const blob = this.largestBlob(m);
+    const blob = this.dartPixels(m);
     if (blob.length < this.minDart) { this.ref = g.slice(); return { type: "none" }; }
-    const [tx, ty] = this.tip(blob);
+    const [tx, ty] = this.tip(blob, g);
     const [cx, cy] = this.centroid(blob);
     this.ref = g.slice();
-    const u = tx / this.w, v = ty / this.h;
+    const [u, v] = this.norm(tx, ty);
     const [bx, by] = project(this.H, u, v);
-    return { type: "dart", tip: [u, v], centroid: [cx / this.w, cy / this.h], board: [bx, by], size: blob.length };
+    return { type: "dart", tip: [u, v], centroid: this.norm(cx, cy), board: [bx, by], size: blob.length };
   }
 }
 // Direction (pixel space, tip -> flight) from a dart pushed into the bull.
 export function dirFromBull(ev, Hi, w, h) {
   const [bu, bv] = project(Hi, 0, 0);
-  const dx = (ev.centroid[0] - bu) * w, dy = (ev.centroid[1] - bv) * h, L = Math.hypot(dx, dy);
+  const dx = (ev.centroid[0] - bu) * w, dy = (ev.centroid[1] - bv) * h, L = Math.hypot(dx, dy); // w,h: frame aspect
   return L > 1.5 ? [dx / L, dy / L] : null;
 }
 
@@ -192,12 +250,32 @@ export class LiveCamera {
       if (caps.focusMode?.includes("continuous")) adv.focusMode = "continuous";
       if (Object.keys(adv).length) await t.applyConstraints({ advanced: [adv] });
     } catch {}
+    this.crop = null;
     this.w = 320; this.h = Math.round(320 * this.video.videoHeight / this.video.videoWidth);
     this.cv.width = this.w; this.cv.height = this.h;
-    return { w: this.w, h: this.h, aspect: this.video.videoWidth / this.video.videoHeight };
+    return { w: this.w, h: this.h, aspect: this.video.videoWidth / this.video.videoHeight, vw: this.video.videoWidth, vh: this.video.videoHeight };
+  }
+  // Watch only the board: crop to roi (normalised) at native resolution, capped at maxPx on the long side.
+  setROI(roi, maxPx = 560) {
+    const vw = this.video.videoWidth, vh = this.video.videoHeight;
+    if (!roi) roi = { x0: 0, y0: 0, x1: 1, y1: 1 };
+    const sw = (roi.x1 - roi.x0) * vw, sh = (roi.y1 - roi.y0) * vh, k = Math.min(1, maxPx / Math.max(sw, sh));
+    this.crop = { sx: roi.x0 * vw, sy: roi.y0 * vh, sw, sh };
+    this.w = Math.max(16, Math.round(sw * k)); this.h = Math.max(16, Math.round(sh * k));
+    this.cv.width = this.w; this.cv.height = this.h;
+    return { w: this.w, h: this.h, roi };
+  }
+  // The whole frame as ImageData, up to maxW wide (for finding the board).
+  image(maxW = 1920) {
+    const vw = this.video.videoWidth, vh = this.video.videoHeight, k = Math.min(1, maxW / vw);
+    const c = this.full || (this.full = document.createElement("canvas")); c.width = Math.round(vw * k); c.height = Math.round(vh * k);
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(this.video, 0, 0, c.width, c.height);
+    return x.getImageData(0, 0, c.width, c.height);
   }
   gray() {
-    this.cx.drawImage(this.video, 0, 0, this.w, this.h);
+    const cr = this.crop;
+    if (cr) this.cx.drawImage(this.video, cr.sx, cr.sy, cr.sw, cr.sh, 0, 0, this.w, this.h);
+    else this.cx.drawImage(this.video, 0, 0, this.w, this.h);
     const d = this.cx.getImageData(0, 0, this.w, this.h).data, g = new Uint8Array(this.w * this.h);
     for (let i = 0, j = 0; j < g.length; i += 4, j++) g[j] = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
     return g;
@@ -232,4 +310,11 @@ export function drawOverlay(ctx, Hi, w, h, { color = "rgba(255,255,255,.85)", ac
   SEG.forEach((s, i) => { const a = i * 18 * Math.PI / 180, [x, y] = P(188 * Math.sin(a), -188 * Math.cos(a)); ctx.fillText(String(s), x, y); });
   for (const [u, v] of tips) { ctx.beginPath(); ctx.arc(u * w, v * h, Math.max(5, w / 70), 0, 2 * Math.PI); ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.stroke(); ctx.lineWidth = 1.6; ctx.strokeStyle = accent; ctx.stroke(); }
   ctx.restore();
+}
+
+// The part of the frame the board (out to the number ring) covers, padded, in normalised coords.
+export function boardROI(Hi, pad = 0.02) {
+  let x0 = 1, y0 = 1, x1 = 0, y1 = 0;
+  for (let a = 0; a < 360; a += 6) { const t = a * Math.PI / 180, [u, v] = project(Hi, 195 * Math.sin(t), -195 * Math.cos(t)); x0 = Math.min(x0, u); x1 = Math.max(x1, u); y0 = Math.min(y0, v); y1 = Math.max(y1, v); }
+  return { x0: Math.max(0, x0 - pad), y0: Math.max(0, y0 - pad), x1: Math.min(1, x1 + pad), y1: Math.min(1, y1 + pad) };
 }

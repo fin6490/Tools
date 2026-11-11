@@ -5,8 +5,9 @@
 // and queued for upload when offline.
 import * as supa from "/js/supa.js?v=20261109a";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "/js/supa-config.js?v=20261109a";
-import * as E from "./engine.js?v=20261110a";
-import { LiveCamera, Detector, calibrate, CAL_NAMES, dirFromBull, drawOverlay, nearWire } from "./vision.js?v=20261110a";
+import * as E from "./engine.js?v=20261111a";
+import { LiveCamera, Detector, calibrate, CAL_NAMES, CAL_BOARD, project, drawOverlay, nearWire, boardROI } from "./vision.js?v=20261111a";
+import { findBoard, dartDirFn, mul, boardRot } from "./boardfind.js?v=20261111a";
 
 const FN = SUPABASE_URL + "/functions/v1/darts-coach";
 const $ = (s) => document.querySelector(s);
@@ -68,7 +69,7 @@ addEventListener("online", flush);
 /* ---------- settings + calibration ---------- */
 const SET = Object.assign({ check: "unsure", call: true }, ls.get("oche.settings", {}));
 const saveSet = () => ls.set("oche.settings", SET);
-let CAL = ls.get("oche.cal"); // { pts: [[u,v] x4], dir: [dx,dy] | null, at }
+let CAL = ls.get("oche.cal"); // { pts: [[u,v] x4] (where 20, 6, 3, 11 sit on the outer double wire), auto, rot, at }
 
 /* ---------- speech caller ---------- */
 const SAY = { T: "treble", D: "double", S: "" };
@@ -249,7 +250,7 @@ const LIVE = { cam: null, det: null, on: false, starting: false, err: "", el: nu
 function liveIntro() {
   if (LIVE.on) return `<div class="card liveoff"><span><b>Camera is live.</b><br><span class="small muted">Start a game and throw. Darts are scored as they land.</span></span><button class="btn sm ghost" id="liveStop">Stop</button></div>`;
   if (!CAL) return `<div class="card liveoff"><span><b>Live scoring</b><br><span class="small muted">Point your phone at the board and Oche scores each dart as it lands.</span></span><button class="btn sm go" id="liveSetup">Set up</button></div>`;
-  return `<div class="card liveoff"><span><b>Live scoring</b><br><span class="small muted">Camera set up ${new Date(CAL.at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}. Keep the phone where you calibrated it.</span></span><button class="btn sm go" id="liveGo">Start camera</button></div>${LIVE.err ? `<div class="banner">${esc(LIVE.err)}</div>` : ""}`;
+  return `<div class="card liveoff"><span><b>Live scoring</b><br><span class="small muted">${CAL.auto ? "Oche finds your board each time the camera starts." : "Lined up by hand. Keep the phone where it was."}</span></span><button class="btn sm go" id="liveGo">Start camera</button></div>${LIVE.err ? `<div class="banner">${esc(LIVE.err)}</div>` : ""}`;
 }
 function wireLiveIntro(m) {
   const a = m.querySelector("#liveSetup"), b = m.querySelector("#liveGo"), c = m.querySelector("#liveStop");
@@ -258,7 +259,7 @@ function wireLiveIntro(m) {
 function ensureLiveEl() {
   if (LIVE.el) return LIVE.el;
   const wrap = document.createElement("div");
-  wrap.innerHTML = `<div class="live"><video playsinline muted autoplay></video><canvas></canvas></div><div class="livebar"><span class="st" id="liveSt">Starting camera…</span><button class="btn sm ghost" id="liveRecal">Recalibrate</button><button class="btn sm ghost" id="liveOff">Stop camera</button></div>`;
+  wrap.innerHTML = `<div class="live"><video playsinline muted autoplay></video><canvas></canvas></div><div class="livebar"><span class="st" id="liveSt">Starting camera…</span><button class="btn sm ghost" id="liveRecal">Set up again</button><button class="btn sm ghost" id="liveOff">Stop camera</button></div>`;
   LIVE.el = wrap; LIVE.video = wrap.querySelector("video"); LIVE.ov = wrap.querySelector("canvas");
   wrap.querySelector("#liveRecal").onclick = () => { liveStop(); openSetup(); };
   wrap.querySelector("#liveOff").onclick = () => { liveStop(); render(); };
@@ -281,6 +282,22 @@ function drawLiveOverlay() {
   const { Hi } = calibrate(CAL.pts);
   drawOverlay(ctx, Hi, w, h, { color: "rgba(255,255,255,.35)", tips: (play?.visit || []).filter((d) => d.tip).map((d) => d.tip) });
 }
+const ptsFromHi = (Hi) => CAL_BOARD.map(([x, y]) => project(Hi, x, y).map(r2x));
+const r2x = (n) => Math.round(n * 100000) / 100000;
+// Build the dart watcher from the current calibration: crop to the board, flights' direction from the board's pose.
+function armDetector() {
+  const { H, Hi } = calibrate(CAL.pts), roi = boardROI(Hi), crop = LIVE.cam.setROI(roi);
+  LIVE.det = new Detector({ w: crop.w, h: crop.h, H, roi, dirFn: dartDirFn(Hi, LIVE.info.aspect) });
+}
+// Look for the board in the live picture; on success update the calibration. Returns true when found.
+async function refind(tries = 3) {
+  for (let i = 0; i < tries && LIVE.cam?.on; i++) {
+    const r = findBoard(LIVE.cam.image(1920), { rot: CAL?.rot || 0 });
+    if (r.ok) { CAL = { pts: ptsFromHi(r.Hi), auto: true, rot: CAL?.rot || 0, at: Date.now() }; ls.set("oche.cal", CAL); return true; }
+    await new Promise((res) => setTimeout(res, 350));
+  }
+  return false;
+}
 async function liveStart() {
   if (!CAL) return openSetup();
   if (LIVE.on || LIVE.starting) return;
@@ -289,8 +306,10 @@ async function liveStart() {
     ensureLiveEl(); if (!LIVE.cam) LIVE.cam = new LiveCamera(LIVE.video);
     ($("#liveSlot") || park).append(LIVE.el);
     LIVE.info = await LIVE.cam.start();
-    const { H } = calibrate(CAL.pts);
-    LIVE.det = new Detector({ w: LIVE.info.w, h: LIVE.info.h, H, dir: CAL.dir });
+    liveStatus("Finding the board…");
+    await new Promise((res) => setTimeout(res, 400)); // let exposure settle
+    if (CAL.auto && !(await refind())) toast("Couldn't spot the board just now, so using your last setup.");
+    armDetector();
     LIVE.cam.loop(onFrame);
     LIVE.on = true; showBoard = false;
     try { LIVE.wake = await navigator.wakeLock?.request("screen"); } catch {}
@@ -302,11 +321,23 @@ async function liveStart() {
 }
 function liveStop() { LIVE.cam?.stop(); LIVE.on = false; LIVE.det = null; try { LIVE.wake?.release(); } catch {} LIVE.wake = null; LIVE.el?.remove(); pill(); }
 document.addEventListener("visibilitychange", async () => { if (document.visibilityState === "visible" && LIVE.on && !LIVE.wake) { try { LIVE.wake = await navigator.wakeLock?.request("screen"); } catch {} } });
-let bigCount = 0;
+let refinding = false, lastRefind = 0;
+// A big settled change is usually a hand or a person in the way. Only if the board itself is now somewhere else
+// (the phone got knocked) do we re-aim; otherwise the watcher keeps its picture of the board.
+async function cameraMoved() {
+  if (refinding || !CAL?.auto || Date.now() - lastRefind < 2000) return;
+  refinding = true; lastRefind = Date.now();
+  const r = findBoard(LIVE.cam.image(1920), { rot: CAL.rot || 0 });
+  if (r.ok) {
+    const pts = ptsFromHi(r.Hi), shift = Math.max(...pts.map((p, i) => Math.hypot(p[0] - CAL.pts[i][0], p[1] - CAL.pts[i][1])));
+    if (shift > 0.004) { CAL = { ...CAL, pts, at: Date.now() }; ls.set("oche.cal", CAL); armDetector(); drawLiveOverlay(); toast("The camera moved, so Oche found the board again."); }
+  }
+  refinding = false;
+}
 function onFrame(g) {
+  if (refinding) return;
   const ev = LIVE.det?.feed(g); if (!ev) return;
   if (ev.type === "dart") {
-    bigCount = 0;
     if (!play || lastResult || view === "setup") return;
     if (E.full(play)) { liveStatus("Extra dart seen. Pull your darts to start the next visit."); return; }
     const [x, y] = ev.board;
@@ -318,9 +349,7 @@ function onFrame(g) {
     if (checking) { commitAfterCheck = true; return; }
     const n = play.visit.length; nextVisit();
     if (n < 3) toast(`Saw ${n} dart${n > 1 ? "s" : ""}, so ${3 - n > 1 ? "the other two" : "the third"} counted as a miss.`);
-  } else if (ev.type === "big") {
-    if (++bigCount >= 3) { toast("The picture keeps changing a lot. If the phone moved, recalibrate."); bigCount = 0; }
-  }
+  } else if (ev.type === "big") setTimeout(cameraMoved, 0);
 }
 
 /* ---------- Claude check of a visit ---------- */
@@ -383,92 +412,113 @@ $("#camIn").onchange = (e) => { readPhoto(e.target.files[0]); e.target.value = "
 $("#picIn").onchange = (e) => { readPhoto(e.target.files[0]); e.target.value = ""; };
 
 /* ---------- camera setup ---------- */
-const SU = { step: 1, pts: null, frame: null, cam: null, video: null, det: null, drag: -1, info: null, msg: "" };
-function openSetup() { view = "setup"; tab = "train"; SU.step = 1; SU.pts = CAL?.pts ? CAL.pts.map((p) => p.slice()) : [[0.5, 0.18], [0.78, 0.5], [0.5, 0.82], [0.22, 0.5]]; SU.frame = null; SU.msg = ""; render(); startSetupCam(); }
-function closeSetup() { SU.cam?.stop(); SU.cam = null; view = "main"; }
+// Main path: point the camera at the board from wherever suits you, and Oche finds it. Fallback: line it up by hand.
+const SU = { step: 1, pts: null, frame: null, cam: null, video: null, drag: -1, info: null, msg: "", base: null, rot: 0, misses: 0, timer: null, busy: false };
+function openSetup() {
+  view = "setup"; tab = "train"; SU.step = 1; SU.base = null; SU.rot = CAL?.rot || 0; SU.misses = 0; SU.msg = ""; SU.frame = null;
+  SU.pts = CAL?.pts ? CAL.pts.map((p) => p.slice()) : [[0.5, 0.18], [0.78, 0.5], [0.5, 0.82], [0.22, 0.5]];
+  render(); startSetupCam();
+}
+function closeSetup() { clearTimeout(SU.timer); SU.timer = null; SU.cam?.stop(); SU.cam = null; view = "main"; }
 async function startSetupCam() {
   if (!SU.video) { SU.video = document.createElement("video"); SU.video.playsInline = true; SU.video.muted = true; }
   if (!SU.cam) SU.cam = new LiveCamera(SU.video);
   try { SU.info = await SU.cam.start(); SU.msg = ""; }
   catch (e) { SU.msg = e?.name === "NotAllowedError" ? "Camera permission was refused. Allow it in your browser's site settings, then try again." : "Couldn't start the camera on this device."; }
-  if (view === "setup") render();
+  if (view !== "setup") return;
+  render(); scheduleFind(300);
+}
+const suHi = () => SU.base && mul(SU.base, boardRot(36 * SU.rot));
+function scheduleFind(ms = 700) { clearTimeout(SU.timer); SU.timer = setTimeout(findTick, ms); }
+function findTick() {
+  if (view !== "setup" || SU.step !== 1 || !SU.cam?.on) return;
+  const r = findBoard(SU.cam.image(1920));
+  if (r.ok) { SU.base = r.Hi; SU.misses = 0; }
+  else if (++SU.misses >= 3) SU.base = null;
+  setupStatus(); drawSetupOverlay();
+  scheduleFind(r.ok ? 1200 : 600);
+}
+function setupStatus() {
+  const st = $("#suSt"), use = $("#suUse"), rot = $("#suRot"); if (!st) return;
+  st.className = "vmsg" + (SU.base ? " good" : "");
+  st.textContent = SU.base ? "Found your board. Check 20 is at the top of the drawn board, the same as on yours." : SU.misses >= 3 ? "Can't see the board yet. Get all of it in view, darts out, and light it well." : "Looking for the board…";
+  if (use) use.disabled = !SU.base; if (rot) rot.hidden = !SU.base;
+}
+function drawSetupOverlay() {
+  const ov = $("#suOv"), p = $("#prev"); if (!ov || !p) return;
+  const r = p.getBoundingClientRect(), w = Math.round(r.width * devicePixelRatio), h = Math.round(r.height * devicePixelRatio); if (!w || !h) return;
+  ov.width = w; ov.height = h; const ctx = ov.getContext("2d"); ctx.clearRect(0, 0, w, h);
+  if (SU.base) drawOverlay(ctx, suHi(), w, h, { color: "rgba(120,255,170,.95)" });
 }
 function renderSetup(m) {
-  const steps = `<div class="steps">${[1, 2, 3].map((i) => `<i class="${i <= SU.step ? "on" : ""}"></i>`).join("")}</div>`;
   if (SU.step === 1) {
-    m.innerHTML = `<h2>Camera setup</h2>${steps}
+    m.innerHTML = `<h2>Camera setup</h2>
       <div class="stack small">
-        <div class="check"><b>1</b><span>Fix the phone so it can't move: a tripod or shelf about 1 to 1.5 m from the board, a little to one side, out of your throwing line.</span></div>
-        <div class="check"><b>2</b><span>Fill most of the picture with the board, all 20 numbers visible. Light the board evenly; a ring light or lamp above it is ideal.</span></div>
-        <div class="check"><b>3</b><span>Take the darts out, then freeze a frame.</span></div></div>
-      <div class="stage" id="prev" style="margin-top:12px"></div>
+        <div class="check"><b>1</b><span>Fix the phone so it can't move: a tripod, shelf or clamp about 1 to 1.5 m away. <strong>Off to one side is fine</strong>, out of your throwing line.</span></div>
+        <div class="check"><b>2</b><span>Get the whole board in the picture, darts out, and light it well. The closer it fills the frame, the more accurate the scoring.</span></div></div>
+      <div class="stage" id="prev" style="margin-top:12px"><canvas class="ov" id="suOv"></canvas></div>
+      <div class="vmsg" id="suSt" aria-live="polite"></div>
+      <div class="row2" id="suRot" hidden style="margin-bottom:8px"><button class="btn ghost" id="suL" aria-label="Turn the drawn board anticlockwise">◀ Turn</button><button class="btn ghost" id="suR" aria-label="Turn the drawn board clockwise">Turn ▶</button></div>
       ${SU.msg ? `<div class="banner">${esc(SU.msg)}</div>` : ""}
-      <div class="row2" style="margin-top:10px"><button class="btn ghost" id="suCancel">Cancel</button><button class="btn go" id="suFreeze" ${SU.info ? "" : "disabled"}>Freeze frame</button></div>`;
-    if (SU.info) { const p = $("#prev"); SU.video.style.width = "100%"; SU.video.style.display = "block"; p.append(SU.video); SU.video.play().catch(() => {}); }
+      <div class="row2" style="margin-top:4px"><button class="btn ghost" id="suCancel">Cancel</button><button class="btn go" id="suUse" disabled>Use this board</button></div>
+      <p class="small muted" style="text-align:center;margin-top:12px">Not finding it? <button class="linkish" id="suHand" ${SU.info ? "" : "disabled"}>Line it up by hand</button></p>`;
+    if (SU.info) { const p = $("#prev"); SU.video.style.width = "100%"; SU.video.style.display = "block"; p.prepend(SU.video); SU.video.play().catch(() => {}); }
+    setupStatus(); requestAnimationFrame(drawSetupOverlay);
     $("#suCancel").onclick = () => { closeSetup(); render(); };
-    $("#suFreeze").onclick = () => { const v = SU.video, c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext("2d").drawImage(v, 0, 0); SU.frame = c; SU.step = 2; render(); };
+    $("#suL").onclick = () => { SU.rot = (SU.rot + 9) % 10; drawSetupOverlay(); };
+    $("#suR").onclick = () => { SU.rot = (SU.rot + 1) % 10; drawSetupOverlay(); };
+    $("#suUse").onclick = () => { if (!SU.base) return; CAL = { pts: ptsFromHi(suHi()), auto: true, rot: SU.rot, at: Date.now() }; ls.set("oche.cal", CAL); finishSetup(); };
+    $("#suHand").onclick = () => {
+      clearTimeout(SU.timer);
+      const v = SU.video, c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext("2d").drawImage(v, 0, 0); SU.frame = c;
+      if (SU.base) SU.pts = ptsFromHi(suHi());
+      SU.step = 2; render();
+    };
     return;
   }
-  if (SU.step === 2) {
-    m.innerHTML = `<h2>Line up the wires</h2>${steps}
-      <p class="small muted">Drag each handle onto the <b>outer edge of the double ring</b>, in the middle of the numbered segment. The drawn wires should then sit on the board's wires.</p>
-      <div class="stage" id="stage"><canvas class="ov" id="suOv"></canvas><canvas class="zoom" id="suZoom" width="220" height="220" hidden></canvas></div>
-      <div class="row2" style="margin-top:10px"><button class="btn ghost" id="suBack">Retake frame</button><button class="btn go" id="suOk">Looks right</button></div>`;
-    const stage = $("#stage"), f = SU.frame; f.style.width = "100%"; f.style.display = "block"; stage.prepend(f);
-    const handles = SU.pts.map((p, i) => { const h = document.createElement("div"); h.className = "handle"; h.innerHTML = `<span>${CAL_NAMES[i]}</span>`; stage.append(h); return h; });
-    const place = () => handles.forEach((h, i) => { h.style.left = SU.pts[i][0] * 100 + "%"; h.style.top = SU.pts[i][1] * 100 + "%"; });
-    const ov = $("#suOv"), zoom = $("#suZoom");
-    const draw = () => {
-      const r = stage.getBoundingClientRect(), w = Math.round(r.width * devicePixelRatio), h = Math.round(r.height * devicePixelRatio);
-      ov.width = w; ov.height = h; const ctx = ov.getContext("2d"); ctx.clearRect(0, 0, w, h);
-      const c = calibrate(SU.pts); if (c) drawOverlay(ctx, c.Hi, w, h, { color: "rgba(255,255,255,.9)" });
-    };
-    const drawZoom = (i) => {
-      const [u, v] = SU.pts[i], zc = zoom.getContext("2d"), sx = u * f.width, sy = v * f.height, R = f.width / 14;
-      zc.clearRect(0, 0, 220, 220); zc.drawImage(f, sx - R, sy - R, 2 * R, 2 * R, 0, 0, 220, 220);
-      zc.strokeStyle = "#e35647"; zc.lineWidth = 2; zc.beginPath(); zc.moveTo(110, 90); zc.lineTo(110, 130); zc.moveTo(90, 110); zc.lineTo(130, 110); zc.stroke();
-      zoom.style.left = u > 0.5 ? "8px" : "auto"; zoom.style.right = u > 0.5 ? "auto" : "8px";
-    };
-    place(); requestAnimationFrame(draw);
-    handles.forEach((h, i) => {
-      h.addEventListener("pointerdown", (e) => { e.preventDefault(); h.setPointerCapture(e.pointerId); SU.drag = i; zoom.hidden = false; drawZoom(i); });
-      h.addEventListener("pointermove", (e) => { if (SU.drag !== i) return; const r = stage.getBoundingClientRect(); SU.pts[i] = [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))]; place(); draw(); drawZoom(i); });
-      const end = () => { SU.drag = -1; zoom.hidden = true; };
-      h.addEventListener("pointerup", end); h.addEventListener("pointercancel", end);
-    });
-    $("#suBack").onclick = () => { SU.step = 1; render(); };
-    $("#suOk").onclick = () => { if (!calibrate(SU.pts)) { toast("Those points don't make a board shape. Spread them out."); return; } SU.step = 3; SU.msg = ""; render(); startDirStep(); };
-    return;
-  }
-  m.innerHTML = `<h2>Teach it your darts</h2>${steps}
-    <p>Push one dart into the <b>bullseye</b> by hand, then step out of view.</p>
-    <p class="small muted">Oche learns which way the barrel and flight point from the camera's angle, so it can find each dart's tip. Then pull the dart out.</p>
-    <div class="stage" id="prev3"><canvas class="ov" id="suOv3"></canvas></div>
-    <div class="vmsg ${SU.msg.startsWith("Got") ? "good" : ""}" aria-live="polite">${esc(SU.msg || "Waiting for a dart in the bull…")}</div>
-    <div class="row2" style="margin-top:10px"><button class="btn ghost" id="suSkip">Skip this step</button><button class="btn go" id="suDone" ${SU.dir ? "" : "disabled"}>Save setup</button></div>`;
-  const p = $("#prev3"); p.prepend(SU.video); SU.video.play().catch(() => {});
-  requestAnimationFrame(() => { const ov = $("#suOv3"); if (!ov) return; const r = p.getBoundingClientRect(); ov.width = r.width * devicePixelRatio; ov.height = r.height * devicePixelRatio; const c = calibrate(SU.pts); if (c) drawOverlay(ov.getContext("2d"), c.Hi, ov.width, ov.height, { color: "rgba(255,255,255,.4)" }); });
-  $("#suSkip").onclick = () => finishSetup(null);
-  $("#suDone").onclick = () => finishSetup(SU.dir);
-}
-function startDirStep() {
-  SU.dir = null;
-  const { H, Hi } = calibrate(SU.pts);
-  const det = new Detector({ w: SU.info.w, h: SU.info.h, H });
-  SU.cam.loop((g) => {
-    const ev = det.feed(g); if (!ev) return;
-    if (ev.type === "dart" && !SU.dir) {
-      const d = dirFromBull(ev, Hi, SU.info.w, SU.info.h);
-      if (d) { SU.dir = d; SU.msg = "Got it. Pull the dart out, then save."; } else SU.msg = "That dart looks head-on to the camera. Move the phone a little more to the side, or skip.";
-      if (view === "setup") render();
-    }
+  m.innerHTML = `<h2>Line up the wires</h2>
+    <p class="small muted">Drag each handle onto the <b>outer edge of the double ring</b>, in the middle of its numbered segment. The drawn wires should then sit on the board's wires.</p>
+    <div class="stage" id="stage"><canvas id="suFrame"></canvas><canvas class="ov" id="suOv2"></canvas><canvas class="zoom" id="suZoom" width="220" height="220" hidden></canvas></div>
+    <div class="row2" style="margin-top:10px"><button class="btn ghost" id="suBack">Back</button><button class="btn go" id="suOk">Looks right</button></div>`;
+  const stage = $("#stage"), f = SU.frame, fw = f.width, fh = f.height;
+  // show the board large: crop the frozen frame round the handles, keeping its shape
+  const xs = SU.pts.map((p) => p[0] * fw), ys = SU.pts.map((p) => p[1] * fh);
+  const sc = Math.min(1, Math.max(0.3, 1.7 * Math.max((Math.max(...xs) - Math.min(...xs)) / fw, (Math.max(...ys) - Math.min(...ys)) / fh)));
+  const vw = sc, vh = sc, vx = Math.min(1 - vw, Math.max(0, (Math.max(...xs) + Math.min(...xs)) / 2 / fw - vw / 2)), vy = Math.min(1 - vh, Math.max(0, (Math.max(...ys) + Math.min(...ys)) / 2 / fh - vh / 2));
+  const toStage = ([u, v]) => [(u - vx) / vw, (v - vy) / vh], toFrame = ([x, y]) => [vx + x * vw, vy + y * vh];
+  const fc = $("#suFrame"); fc.width = Math.round(fw * vw); fc.height = Math.round(fh * vh);
+  fc.getContext("2d").drawImage(f, vx * fw, vy * fh, fw * vw, fh * vh, 0, 0, fc.width, fc.height);
+  const handles = SU.pts.map((p, i) => { const h = document.createElement("div"); h.className = "handle"; h.innerHTML = `<span>${CAL_NAMES[i]}</span>`; stage.append(h); return h; });
+  const place = () => handles.forEach((h, i) => { const [x, y] = toStage(SU.pts[i]); h.style.left = x * 100 + "%"; h.style.top = y * 100 + "%"; });
+  const ov = $("#suOv2"), zoom = $("#suZoom"), A = [1 / vw, 0, -vx / vw, 0, 1 / vh, -vy / vh, 0, 0, 1];
+  const draw = () => {
+    const r = stage.getBoundingClientRect(), w = Math.round(r.width * devicePixelRatio), h = Math.round(r.height * devicePixelRatio);
+    ov.width = w; ov.height = h; const ctx = ov.getContext("2d"); ctx.clearRect(0, 0, w, h);
+    const c = calibrate(SU.pts); if (c) drawOverlay(ctx, mul(A, c.Hi), w, h, { color: "rgba(255,255,255,.9)" });
+  };
+  const drawZoom = (i) => {
+    const [u, v] = SU.pts[i], zc = zoom.getContext("2d"), sx = u * fw, sy = v * fh, R = fw * vw / 12;
+    zc.clearRect(0, 0, 220, 220); zc.drawImage(f, sx - R, sy - R, 2 * R, 2 * R, 0, 0, 220, 220);
+    zc.strokeStyle = "#e35647"; zc.lineWidth = 2; zc.beginPath(); zc.moveTo(110, 90); zc.lineTo(110, 130); zc.moveTo(90, 110); zc.lineTo(130, 110); zc.stroke();
+    const [x] = toStage(SU.pts[i]); zoom.style.left = x > 0.5 ? "8px" : "auto"; zoom.style.right = x > 0.5 ? "auto" : "8px";
+  };
+  place(); requestAnimationFrame(draw);
+  handles.forEach((h, i) => {
+    let grab = [0, 0];
+    const at = (e) => { const r = stage.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+    h.addEventListener("pointerdown", (e) => { e.preventDefault(); h.setPointerCapture(e.pointerId); SU.drag = i; const [x, y] = at(e), [hx, hy] = toStage(SU.pts[i]); grab = [x - hx, y - hy]; zoom.hidden = false; drawZoom(i); });
+    h.addEventListener("pointermove", (e) => { if (SU.drag !== i) return; const [x, y] = at(e); SU.pts[i] = toFrame([Math.min(1, Math.max(0, x - grab[0])), Math.min(1, Math.max(0, y - grab[1]))]); place(); draw(); drawZoom(i); });
+    const end = () => { SU.drag = -1; zoom.hidden = true; };
+    h.addEventListener("pointerup", end); h.addEventListener("pointercancel", end);
   });
+  $("#suBack").onclick = () => { SU.step = 1; render(); scheduleFind(200); };
+  $("#suOk").onclick = () => {
+    if (!calibrate(SU.pts)) { toast("Those points don't make a board shape. Spread them out."); return; }
+    CAL = { pts: SU.pts.map((p) => p.map(r2x)), auto: false, rot: 0, at: Date.now() }; ls.set("oche.cal", CAL); finishSetup();
+  };
 }
-function finishSetup(dir) {
-  CAL = { pts: SU.pts.map((p) => p.map(r2x)), dir, at: Date.now() }; ls.set("oche.cal", CAL);
-  closeSetup(); toast("Camera set up. Starting live scoring."); render(); liveStart();
-}
-const r2x = (n) => Math.round(n * 10000) / 10000;
+function finishSetup() { closeSetup(); toast("Board set. Starting live scoring."); render(); liveStart(); }
+addEventListener("resize", () => { if (view === "setup" && SU.step === 1) drawSetupOverlay(); else if (LIVE.on) drawLiveOverlay(); });
 
 /* ---------- settings ---------- */
 function openSettings() {
@@ -476,7 +526,7 @@ function openSettings() {
   el.innerHTML = `<div class="in" role="dialog" aria-label="Settings"><h2 style="margin-top:0">Settings</h2>
     <div class="setrow"><span>Claude checks each visit<br><span class="small muted">Photo of the board after the third dart</span></span><select id="sChk"><option value="unsure">When a dart is near a wire</option><option value="always">Every visit</option><option value="off">Never</option></select></div>
     <div class="setrow"><span>Call out scores</span><button class="toggle" id="sCall" role="switch" aria-checked="${SET.call}" aria-label="Call out scores"></button></div>
-    <div class="setrow"><span>Camera calibration<br><span class="small muted">${CAL ? "Set " + new Date(CAL.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + (CAL.dir ? "" : ", dart direction not learned") : "Not set up"}</span></span><button class="btn sm" id="sCal">${CAL ? "Redo" : "Set up"}</button></div>
+    <div class="setrow"><span>Camera calibration<br><span class="small muted">${CAL ? (CAL.auto ? "Found automatically, " : "Lined up by hand, ") + new Date(CAL.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Not set up"}</span></span><button class="btn sm" id="sCal">${CAL ? "Redo" : "Set up"}</button></div>
     <div class="setrow"><span>Claude calls left today</span><b>${ST.status?.ai ? ST.status.left : "API key not set"}</b></div>
     <div class="setrow"><span class="small muted">Signed in as ${esc(ST.email || "you")}</span><button class="btn sm ghost" id="sOut">Sign out</button></div>
     <div class="row2" style="margin-top:14px"><a class="btn ghost" href="/">SpinDecks home</a><button class="btn" id="sClose">Done</button></div></div>`;
