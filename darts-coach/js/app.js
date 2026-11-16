@@ -3,8 +3,8 @@
 // Function) → games, live camera scoring, stats and an AI coach. Finished games
 // are stored in the darts_sessions table (RLS: own rows), cached on the device,
 // and queued for upload when offline.
-import * as supa from "/js/supa.js?v=20261109a";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "/js/supa-config.js?v=20261109a";
+import * as supa from "/js/supa.js?v=20261116a";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "/js/supa-config.js?v=20261116a";
 import * as E from "./engine.js?v=20261111a";
 import { LiveCamera, Detector, calibrate, CAL_NAMES, CAL_BOARD, project, drawOverlay, nearWire, boardROI } from "./vision.js?v=20261111a";
 import { findBoard, dartDirFn, mul, boardRot } from "./boardfind.js?v=20261111a";

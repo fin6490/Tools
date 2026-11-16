@@ -1,8 +1,9 @@
 // site.js — lightweight bootstrap for the hub and legal pages (which don't load
 // the full app.js). Wires the theme toggle and mounts the optional Account UI so
 // people can sign in and go premium from the landing page.
-import { getState, save } from "./storage.js?v=20261109a";
-import { initAccount } from "./account.js?v=20261109a";
+import { getState, save } from "./storage.js?v=20261116a";
+import { initAccount } from "./account.js?v=20261116a";
+import { isSiteOwner } from "./supa.js?v=20261116a";
 
 const state = getState();
 const applyTheme = () => { document.documentElement.dataset.theme = state.theme || "dark"; };
@@ -24,3 +25,8 @@ function toast(msg) {
 }
 
 initAccount(document, { toast });
+
+// High Roller is owner-only: the hub card ships hidden and is revealed only when
+// the signed-in user is confirmed (server-side) to be the site owner.
+const hrCard = document.getElementById("hrHubCard");
+if (hrCard) isSiteOwner().then((owner) => { if (owner) hrCard.hidden = false; }).catch(() => {});
