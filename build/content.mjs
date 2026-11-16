@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261116a",
+  token: "20261116b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -386,7 +386,7 @@ export const TOOLS = [
       ["Anyone", "a two-player quiz duel for revision, family quiz night or a team ice-breaker."],
     ],
     faq: [
-      ["Is it just for maths?", "No — it works for any subject. It ships with maths sets (times tables, fractions, BIDMAS…) plus a capital-cities example, and you can add your own set on any topic in the editor."],
+      ["Is it just for maths?", "No — it works for any subject. It ships with a big set of ready-made maths packs, including GCSE secondary-maths topics (standard form; fractions, decimals and percentages; ratio; laws of indices; expanding and factorising; solving equations; nth term; Pythagoras; circles; angles; averages; probability and more) alongside KS2/KS3 basics, plus English, science and geography examples — and you can add your own set on any topic in the editor. The same packs power Class quiz, Reveal cards and Quiz Dash too."],
       ["How do I make my own question set?", "Open the editor and type one question per line as <code>question | answer | wrong answers</code>. Wrong answers are optional — the board fills the rest from the other answers in your set. You can also import a set as JSON."],
       ["Can it show maths properly?", "Yes — a light markup renders fractions (<code>\\frac{3}{4}</code>), powers (<code>x^2</code>), roots and symbols like <code>\\times</code> and <code>\\div</code>, with no plugins to install."],
       ["What are the powerups?", "Each round both players are dealt three power-ups at random from a set of eleven: 50:50, Heal, Shield, Steal, Freeze, Poison, Jumble, Time bomb, Mirror, Focus and Trap. By default you may use one of your three each round, so there's a choice to make — but you can raise that to two or three with the “Power-ups a turn” option in the lobby for a more chaotic game."],
