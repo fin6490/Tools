@@ -826,6 +826,11 @@ ${simpleHeader()}
 <main class="static-main hub-main">
   <h1>${HUB.h1}</h1>
   <p class="lede">${HUB.intro}</p>
+  <a class="hub-card hr-feature cl-feature" href="/class-live/">
+    <span class="hr-badge cl-badge">Live · classroom</span>
+    <span class="hub-card-title">SpinDecks Live — whole-class quiz</span>
+    <span class="hub-card-desc">Host a quiz on the board; your class joins from their own phones or laptops with a PIN and races to answer. Works with every question pack — GCSE maths and any topic.</span>
+  </a>
   <a id="hrHubCard" class="hub-card hr-feature" href="/high-roller/" hidden>
     <span class="hr-badge">Premium</span>
     <span class="hub-card-title">High Roller — a casino story game</span>
