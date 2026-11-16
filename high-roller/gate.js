@@ -1,5 +1,9 @@
-// gate.js — The Meridian's teaser page: shows the right button for guests, free
-// accounts and premium accounts. The account UI itself comes from site.js.
+// gate.js — The Meridian's teaser page. High Roller is owner-only, so anyone
+// who isn't the signed-in site owner is sent back to the home page; the owner
+// sees the normal Play / sign-in CTA. Owner status is decided server-side
+// (highroller-chat Edge Function), so no owner email ships in the browser.
+import { isSiteOwner } from "/js/supa.js?v=20261116a";
+
 const cta = document.querySelector("#hrCta");
 const note = document.querySelector("#hrNote");
 const render = () => {
@@ -17,5 +21,10 @@ const render = () => {
   cta.appendChild(btn);
   if (new URLSearchParams(location.search).get("from") === "play" && plan !== "premium") note.textContent = "The Meridian needs a SpinDecks Premium account. " + note.textContent;
 };
-render();
-new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-plan"] });
+
+// Only the owner may see this page; everyone else goes home.
+isSiteOwner().then((owner) => {
+  if (!owner) { location.replace("/"); return; }
+  render();
+  new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-plan"] });
+}).catch(() => location.replace("/"));

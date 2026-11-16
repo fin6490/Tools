@@ -826,7 +826,7 @@ ${simpleHeader()}
 <main class="static-main hub-main">
   <h1>${HUB.h1}</h1>
   <p class="lede">${HUB.intro}</p>
-  <a class="hub-card hr-feature" href="/high-roller/">
+  <a id="hrHubCard" class="hub-card hr-feature" href="/high-roller/" hidden>
     <span class="hr-badge">Premium</span>
     <span class="hub-card-title">High Roller — a casino story game</span>
     <span class="hub-card-desc">Walk a neon town, play nine table games, slots, darts and poker, and solve the mystery of Sal's last hand. Every character talks back with AI.</span>

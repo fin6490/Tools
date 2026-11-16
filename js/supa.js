@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261109a";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261116a";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -51,6 +51,28 @@ async function accessToken() {
 
 // A fresh access token for calling our own Edge Functions (refreshes if expired).
 export const getAccessToken = accessToken;
+
+// Is the signed-in user the site owner? Decided server-side by the
+// highroller-chat Edge Function (its HIGHROLLER_OWNER_EMAILS secret), so no
+// owner email ever ships in the browser. Returns false when signed out or on
+// any error; the answer is cached for the page once resolved.
+let ownerResolved; // undefined until a definitive answer, then boolean
+export async function isSiteOwner() {
+  const token = await accessToken();
+  if (!token) return false;
+  if (ownerResolved !== undefined) return ownerResolved;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/highroller-chat`, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token, apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "status" }),
+    });
+    if (!res.ok) return false;
+    const s = await res.json();
+    ownerResolved = !!s.owner;
+    return ownerResolved;
+  } catch { return false; }
+}
 
 function authHeaders(token) {
   const h = { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" };
