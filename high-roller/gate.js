@@ -2,7 +2,7 @@
 // who isn't the signed-in site owner is sent back to the home page; the owner
 // sees the normal Play / sign-in CTA. Owner status is decided server-side
 // (highroller-chat Edge Function), so no owner email ships in the browser.
-import { isSiteOwner } from "/js/supa.js?v=20261116a";
+import { isSiteOwner } from "/js/supa.js?v=20261116b";
 
 const cta = document.querySelector("#hrCta");
 const note = document.querySelector("#hrNote");
