@@ -2105,3 +2105,5 @@ a.tab { display: block; }
 .reveal-gnum { position: absolute; left: 12px; top: 14px; width: 24px; height: 24px; border-radius: 999px; background: var(--accent, #3fd0c9); color: var(--accent-ink, #06231f); font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: .85rem; }
 .reveal-gq { font-size: clamp(1.05rem, 2vw, 1.4rem); font-weight: 700; }
 .reveal-ga { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line, #3a2e49); font-size: clamp(1.05rem, 2vw, 1.4rem); font-weight: 800; color: var(--accent, #3fd0c9); }
+.starter-badge { background: #e8b22a; color: #2b1a04; }
+.starter-feature .hub-card-title { color: var(--accent, #3fd0c9); }

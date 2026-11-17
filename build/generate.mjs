@@ -826,6 +826,11 @@ ${simpleHeader()}
 <main class="static-main hub-main">
   <h1>${HUB.h1}</h1>
   <p class="lede">${HUB.intro}</p>
+  <a class="hub-card hr-feature starter-feature" href="/reveal-cards/?starter=1">
+    <span class="hr-badge starter-badge">Starter</span>
+    <span class="hub-card-title">Lesson starter — questions on the board</span>
+    <span class="hub-card-desc">Pick a pack (GCSE maths and “aiming for grade” sets included) or generate a topic, put 4–10 questions on one board, and reveal the answers together. An instant Do Now, starter or plenary.</span>
+  </a>
   <a class="hub-card hr-feature cl-feature" href="/class-live/">
     <span class="hr-badge cl-badge">Live · classroom</span>
     <span class="hub-card-title">SpinDecks Live — whole-class quiz</span>
