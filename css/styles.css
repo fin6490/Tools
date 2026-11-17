@@ -2094,3 +2094,14 @@ a.tab { display: block; }
 @media (max-width: 440px) { .cl-optgrid { grid-template-columns: 1fr; } }
 .cl-badge { background: #35b36a; color: #06231f; }
 .cl-feature .hub-card-title { color: var(--accent, #3fd0c9); }
+
+/* ===================== Reveal cards — starter board ===================== */
+.reveal-gridwrap { width: 100%; }
+.reveal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 10px 0; }
+.reveal-gcard { position: relative; background: var(--card-2, #241a2e); border: 1px solid var(--line, #3a2e49); border-radius: 14px; padding: 16px 16px 16px 44px; min-height: 90px; cursor: pointer; transition: border-color .15s, transform .08s; }
+.reveal-gcard:hover { border-color: var(--accent, #3fd0c9); }
+.reveal-gcard:active { transform: scale(.995); }
+.reveal-gcard.shown { border-color: var(--accent, #3fd0c9); }
+.reveal-gnum { position: absolute; left: 12px; top: 14px; width: 24px; height: 24px; border-radius: 999px; background: var(--accent, #3fd0c9); color: var(--accent-ink, #06231f); font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: .85rem; }
+.reveal-gq { font-size: clamp(1.05rem, 2vw, 1.4rem); font-weight: 700; }
+.reveal-ga { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line, #3a2e49); font-size: clamp(1.05rem, 2vw, 1.4rem); font-weight: 800; color: var(--accent, #3fd0c9); }

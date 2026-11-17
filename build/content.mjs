@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261116c",
+  token: "20261117a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -386,7 +386,7 @@ export const TOOLS = [
       ["Anyone", "a two-player quiz duel for revision, family quiz night or a team ice-breaker."],
     ],
     faq: [
-      ["Is it just for maths?", "No — it works for any subject. It ships with a big set of ready-made maths packs, including GCSE secondary-maths topics (standard form; fractions, decimals and percentages; ratio; laws of indices; expanding and factorising; solving equations; nth term; Pythagoras; circles; angles; averages; probability and more) alongside KS2/KS3 basics, plus English, science and geography examples — and you can add your own set on any topic in the editor. The same packs power Class quiz, Reveal cards and Quiz Dash too."],
+      ["Is it just for maths?", "No — it works for any subject. It ships with a big set of ready-made maths packs, including GCSE secondary-maths topics (standard form; fractions, decimals and percentages; ratio; laws of indices; expanding and factorising; solving equations; nth term; Pythagoras; circles; angles; averages; probability and more) alongside KS2/KS3 basics, plus “GCSE aiming for Grade 3/5/7/9” packs that spread topics across a target grade, and English, science and geography examples — and you can add your own set on any topic in the editor. The same packs power Class quiz, Reveal cards, Quiz Dash and SpinDecks Live too."],
       ["How do I make my own question set?", "Open the editor and type one question per line as <code>question | answer | wrong answers</code>. Wrong answers are optional — the board fills the rest from the other answers in your set. You can also import a set as JSON."],
       ["Can it show maths properly?", "Yes — a light markup renders fractions (<code>\\frac{3}{4}</code>), powers (<code>x^2</code>), roots and symbols like <code>\\times</code> and <code>\\div</code>, with no plugins to install."],
       ["What are the powerups?", "Each round both players are dealt three power-ups at random from a set of eleven: 50:50, Heal, Shield, Steal, Freeze, Poison, Jumble, Time bomb, Mirror, Focus and Trap. By default you may use one of your three each round, so there's a choice to make — but you can raise that to two or three with the “Power-ups a turn” option in the lobby for a more chaotic game."],
@@ -404,12 +404,12 @@ export const TOOLS = [
       "A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline.",
     h1: "Reveal cards — classroom flashcards",
     intro:
-      "A dead-simple flashcard tool for the whiteboard. Show a question big on the board, reveal the answer when the class is ready, then move to the next card. Perfect as a low-stakes starter, recap or plenary — and it uses the same question sets as The BT Dojo, so anything you've made or generated is ready to go.",
+      "A dead-simple flashcard tool for the whiteboard. Show a question big on the board, reveal the answer when the class is ready, then move to the next card. Perfect as a low-stakes starter, recap or plenary — and it uses the same question sets as The BT Dojo, so anything you've made or generated is ready to go. Keep it to a short 4–10 question starter, or show every question at once on a single “starter board” and reveal the answers together.",
     steps: [
-      "Pick a question set — a built-in one, or one you made or generated in The BT Dojo.",
-      "Choose whether to shuffle, then press “Start”.",
-      "Read the question with the class. Click the card (or press Space) to reveal the answer.",
-      "Press Next (or →) for the next card. Go back with ← at any time.",
+      "Pick a question set — a built-in one (GCSE maths packs and “aiming for grade” sets included), or one you made or generated in The BT Dojo.",
+      "Choose how many questions (4–10 for a quick starter, or all), whether to shuffle, and whether to show them one at a time or all on one starter board.",
+      "Read the question(s) with the class. Click a card (or press Space) to reveal the answer — or “Reveal all” on the starter board.",
+      "Move through with Next (→) and Back (←), or reshuffle a new starter with “New questions”.",
     ],
     whoFor: [
       ["Teachers", "a no-fuss starter or plenary — key terms, times tables, definitions, vocabulary — paced by you."],
@@ -418,6 +418,8 @@ export const TOOLS = [
     ],
     faq: [
       ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus any set you make in the editor or generate with AI. Make it once, use it in both games."],
+      ["Can I make a short starter from a pack?", "Yes — set “How many questions” to 4–10 and you get a quick starter instead of the whole deck, from any pack or a generated topic. Tick “Starter board” to show them all on one screen and reveal the answers together, or leave it off for one-at-a-time flashcards."],
+      ["Can I aim at a GCSE grade?", "Yes — pick one of the “GCSE aiming for Grade 3/5/7/9” packs: a spread of topics pitched at that target grade, so you can set a starter at the right level. They also work in The BT Dojo, Class quiz, Quiz Dash and SpinDecks Live."],
       ["Can it show maths properly?", "Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed."],
       ["Can I use the keyboard?", "Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],

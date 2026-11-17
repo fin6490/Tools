@@ -380,6 +380,65 @@ const roundingGCSE = [
   { q: "Round 68500 to 2 significant figures", a: "69000", distractors: ["68000", "70000", "68500"] },
 ];
 
+/* ---- GCSE "aiming for grade" packs: a spread of topics pitched at a target
+   grade, so you can set work at the right level. Answers verified by hand. ---- */
+const gcseGrade3 = [
+  { q: "7 \\times 8", a: "56", distractors: ["54", "63", "48"] },
+  { q: "\\frac{1}{2} of 24", a: "12", distractors: ["6", "48", "8"] },
+  { q: "10\\% of 60", a: "6", distractors: ["10", "16", "600"] },
+  { q: "Perimeter of a 5 by 3 rectangle", a: "16", distractors: ["15", "8", "30"] },
+  { q: "Area of a 6 by 4 rectangle", a: "24", distractors: ["20", "10", "48"] },
+  { q: "Solve x + 5 = 12", a: "7", distractors: ["17", "5", "6"] },
+  { q: "-3 + 8", a: "5", distractors: ["-5", "11", "-11"] },
+  { q: "Round 47 to the nearest 10", a: "50", distractors: ["40", "45", "100"] },
+  { q: "Simplify the ratio 4:8", a: "1:2", distractors: ["2:1", "1:4", "2:4"] },
+  { q: "\\frac{1}{4} as a percentage", a: "25\\%", distractors: ["14\\%", "4\\%", "40\\%"] },
+  { q: "Mean of 2, 4, 6", a: "4", distractors: ["6", "3", "12"] },
+  { q: "12 \\div 4 + 1", a: "4", distractors: ["3", "2", "7"] },
+];
+const gcseGrade5 = [
+  { q: "Increase 80 by 15\\%", a: "92", distractors: ["95", "12", "68"] },
+  { q: "Solve 3x + 4 = 19", a: "5", distractors: ["7", "6", "4"] },
+  { q: "Right triangle, legs 6 and 8. Hypotenuse?", a: "10", distractors: ["14", "12", "48"] },
+  { q: "Area of a circle, radius 4 (in terms of \\pi)", a: "16\\pi", distractors: ["8\\pi", "4\\pi", "64\\pi"] },
+  { q: "nth term of 4, 7, 10, 13, …", a: "3n + 1", distractors: ["n + 3", "4n", "3n - 1"] },
+  { q: "Write 34000 in standard form", a: "3.4 \\times 10^4", distractors: ["34 \\times 10^3", "3.4 \\times 10^3", "3.4 \\times 10^5"] },
+  { q: "Share £60 in the ratio 2:3 — larger share", a: "36", distractors: ["24", "30", "20"] },
+  { q: "Expand 3(2x + 5)", a: "6x + 15", distractors: ["6x + 5", "5x + 15", "6x + 8"] },
+  { q: "Solve 2(x + 3) = 14", a: "4", distractors: ["7", "5", "8"] },
+  { q: "x^3 \\times x^2", a: "x^5", distractors: ["x^6", "x^1", "2x^5"] },
+  { q: "Mean of 5, 8, 11, 4, 7", a: "7", distractors: ["8", "6", "35"] },
+  { q: "P(not a 6) on a fair die", a: "\\frac{5}{6}", distractors: ["\\frac{1}{6}", "\\frac{4}{6}", "\\frac{6}{5}"] },
+];
+const gcseGrade7 = [
+  { q: "Expand (x + 3)(x - 2)", a: "x^2 + x - 6", distractors: ["x^2 - x - 6", "x^2 + 5x - 6", "x^2 - 6"] },
+  { q: "Factorise x^2 - 5x + 6", a: "(x - 2)(x - 3)", distractors: ["(x + 2)(x + 3)", "(x - 1)(x - 6)", "(x - 2)(x + 3)"] },
+  { q: "Solve x^2 - 7x + 12 = 0", a: "x = 3 or x = 4", distractors: ["x = -3 or x = -4", "x = 2 or x = 6", "x = 1 or x = 12"] },
+  { q: "(x^3)^4", a: "x^{12}", distractors: ["x^7", "x^{81}", "x^{64}"] },
+  { q: "Rearrange y = 2x + 3 to make x the subject", a: "x = \\frac{y - 3}{2}", distractors: ["x = \\frac{y + 3}{2}", "x = 2y - 3", "x = \\frac{y}{2} - 3"] },
+  { q: "Simplify \\sqrt{50}", a: "5\\sqrt{2}", distractors: ["25\\sqrt{2}", "2\\sqrt{5}", "5\\sqrt{5}"] },
+  { q: "£100 at 10\\% compound interest for 2 years", a: "£121", distractors: ["£120", "£110", "£102"] },
+  { q: "Solve: x + y = 10 and x - y = 4", a: "x = 7, y = 3", distractors: ["x = 3, y = 7", "x = 6, y = 4", "x = 5, y = 5"] },
+  { q: "cos 60\\deg", a: "0.5", distractors: ["1", "0.87", "0"] },
+  { q: "P(two heads) when flipping two fair coins", a: "\\frac{1}{4}", distractors: ["\\frac{1}{2}", "\\frac{1}{3}", "\\frac{3}{4}"] },
+  { q: "Two similar shapes, length scale factor 3. Area scale factor?", a: "9", distractors: ["3", "6", "27"] },
+  { q: "Solve the inequality 3x - 2 > 10", a: "x > 4", distractors: ["x < 4", "x > 12", "x > 8"] },
+];
+const gcseGrade9 = [
+  { q: "\\sqrt{8} + \\sqrt{2}", a: "3\\sqrt{2}", distractors: ["\\sqrt{10}", "2\\sqrt{2}", "4\\sqrt{2}"] },
+  { q: "Rationalise \\frac{6}{\\sqrt{3}}", a: "2\\sqrt{3}", distractors: ["3\\sqrt{3}", "6\\sqrt{3}", "\\sqrt{3}"] },
+  { q: "(2 + \\sqrt{3})(2 - \\sqrt{3})", a: "1", distractors: ["7", "4 - \\sqrt{3}", "-1"] },
+  { q: "Solve 3^x = 81", a: "4", distractors: ["3", "27", "9"] },
+  { q: "nth term of 2, 5, 10, 17, …", a: "n^2 + 1", distractors: ["2n + 1", "n^2 + n", "3n - 1"] },
+  { q: "Solve x^2 = 49", a: "x = 7 or x = -7", distractors: ["x = 7", "x = 24.5", "x = \\pm 24.5"] },
+  { q: "f(x) = x^2 - 1. Find f(4)", a: "15", distractors: ["7", "16", "8"] },
+  { q: "Exact value of sin 30\\deg", a: "\\frac{1}{2}", distractors: ["\\frac{\\sqrt{3}}{2}", "1", "\\frac{\\sqrt{2}}{2}"] },
+  { q: "Rearrange A = \\frac{1}{2}bh to make h the subject", a: "h = \\frac{2A}{b}", distractors: ["h = \\frac{A}{2b}", "h = 2Ab", "h = \\frac{b}{2A}"] },
+  { q: "Vector a = (3, -1). Find 2a", a: "(6, -2)", distractors: ["(5, 1)", "(6, 2)", "(3, -2)"] },
+  { q: "Solve x^2 - 6x + 9 = 0", a: "x = 3", distractors: ["x = 3 or x = -3", "x = -3", "x = 9"] },
+  { q: "Solve the inequality 2x + 1 \\ge 9", a: "x \\ge 4", distractors: ["x \\le 4", "x \\ge 5", "x \\ge 8"] },
+];
+
 export const STARTER_PACKS = [
   { id: "pk-times", name: "Times tables (2–12)", builtIn: true, questions: timesTables() },
   { id: "pk-powers", name: "Square & cube numbers", builtIn: true, questions: powers() },
@@ -410,6 +469,12 @@ export const STARTER_PACKS = [
   { id: "pk-angles", name: "GCSE: Angles (lines, triangles, points)", builtIn: true, questions: angles() },
   { id: "pk-averages", name: "GCSE: Averages & range", builtIn: true, questions: averages() },
   { id: "pk-prob", name: "GCSE: Probability", builtIn: true, questions: probability },
+
+  // ---- GCSE "aiming for grade" (mixed topics pitched at a target grade) ----
+  { id: "pk-g3", name: "GCSE aiming for Grade 3 (Foundation)", builtIn: true, questions: gcseGrade3 },
+  { id: "pk-g5", name: "GCSE aiming for Grade 5 (Foundation/crossover)", builtIn: true, questions: gcseGrade5 },
+  { id: "pk-g7", name: "GCSE aiming for Grade 7 (Higher)", builtIn: true, questions: gcseGrade7 },
+  { id: "pk-g9", name: "GCSE aiming for Grade 9 (Higher)", builtIn: true, questions: gcseGrade9 },
 
   { id: "pk-homophones", name: "Homophones (English)", builtIn: true, questions: homophones },
   { id: "pk-wordclass", name: "Word classes (English)", builtIn: true, questions: wordClasses },
