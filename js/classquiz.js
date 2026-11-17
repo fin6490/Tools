@@ -3,10 +3,10 @@
 // straight through or in rounds — and each round can be a different type
 // (mark as you go, a written round, or a double-points finale). Reuses the
 // Dojo's question sets. Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261117a";
-import { parseEntries } from "./wheel.js?v=20261117a";
-import { getState, save } from "./storage.js?v=20261117a";
-import * as sound from "./sound.js?v=20261117a";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261117b";
+import { parseEntries } from "./wheel.js?v=20261117b";
+import { getState, save } from "./storage.js?v=20261117b";
+import * as sound from "./sound.js?v=20261117b";
 
 // The round types the teacher can pick before each round.
 const ROUND_TYPES = {
@@ -30,6 +30,7 @@ export function initClassQuiz(root) {
     const s = getState();
     if (!s.classquiz) s.classquiz = { activeSetId: null, teamCount: 2, rosterWheelId: null, roundSize: 5 };
     if (typeof s.classquiz.roundSize !== "number") s.classquiz.roundSize = 5;
+    if (s.classquiz.count == null) s.classquiz.count = "all";
     return s.classquiz;
   };
   const activeSet = () => { const sets = allSets(); return sets.find((x) => x.id === cfg().activeSetId) || sets[0]; };
@@ -71,6 +72,15 @@ export function initClassQuiz(root) {
     card.appendChild(setRow);
 
     card.appendChild(makeGenerateRow((set) => { cfg().activeSetId = set.id; save(); renderLobby(`Generated “${set.name}” — ready.`); }));
+
+    // Starter size: use a short 4–10 question starter, or the whole set.
+    const cntRow = el("div", "dojo-field dojo-field-inline");
+    cntRow.appendChild(el("label", "dojo-lbl", "How many questions"));
+    const cntSel = el("select", "dojo-select dojo-select-sm");
+    [["all", "All"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"]].forEach(([v, t]) => { const o = el("option"); o.value = v; o.textContent = t; if (String(cfg().count) === v) o.selected = true; cntSel.appendChild(o); });
+    cntSel.addEventListener("change", () => { cfg().count = cntSel.value; save(); });
+    cntRow.appendChild(cntSel);
+    card.appendChild(cntRow);
 
     const nRow = el("div", "dojo-field dojo-field-inline");
     nRow.appendChild(el("label", "dojo-lbl", "Teams"));
@@ -143,7 +153,9 @@ export function initClassQuiz(root) {
     const names = roster();
     const teams = names.length ? splitTeams(names, cfg().teamCount || 2)
       : Array.from({ length: cfg().teamCount || 2 }, (_, i) => ({ name: teamName(i), members: [], score: 0 }));
-    const all = shuffle(set.questions);
+    let all = shuffle(set.questions);
+    const cap = parseInt(cfg().count, 10);
+    if (Number.isFinite(cap) && cap > 0) all = all.slice(0, cap);
     const size = cfg().roundSize || 0;
     const rounds = size > 0 ? chunk(all, size) : [all];
     live = { teams, rounds, ri: 0, rounded: size > 0, type: "standard", phase: "mark", qi: 0 };

@@ -1,5 +1,5 @@
 // timer.js — countdown + stopwatch. Drift-free (uses timestamps, not tick sums).
-import * as sound from "./sound.js?v=20261117a";
+import * as sound from "./sound.js?v=20261117b";
 
 export function initTimer(root) {
   const display = root.querySelector("#timerDisplay");

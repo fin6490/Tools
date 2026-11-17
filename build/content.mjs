@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261117a",
+  token: "20261117b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -492,7 +492,7 @@ export const TOOLS = [
     intro:
       "A team quiz for the whole class, run from the board. Split students into teams — from one of your saved wheels or just numbered teams — then work through a question set. Reveal each answer, tap the team that got it, and the scoreboard updates itself. It uses the same question sets as The BT Dojo.",
     steps: [
-      "Pick a question set and how many teams to play with.",
+      "Pick a question set, how many questions (4–10 for a quick starter, or all) and how many teams to play with.",
       "Optionally choose a saved class wheel — students are split into balanced teams automatically.",
       "Press “Start quiz”, read the question, then “Reveal answer”.",
       "Tap the team that got it right (or “No one”) and the score updates. Finish any time for the final standings.",
@@ -503,7 +503,8 @@ export const TOOLS = [
       ["Anyone", "a pub-style team quiz on any topic."],
     ],
     faq: [
-      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs plus anything you make in the editor or generate with AI."],
+      ["Where do the questions come from?", "The same sets as The BT Dojo — built-in packs (GCSE maths and “aiming for grade” sets included) plus anything you make in the editor or generate with AI."],
+      ["Can I run a short starter?", "Yes — set “How many questions” to 4–10 for a quick starter quiz instead of the whole set (the rounds setting then splits those questions up as usual). SpinDecks Live has the same option for the devices game."],
       ["How are teams made?", "Choose a saved wheel and the class is split into balanced teams automatically (sizes differ by at most one), or just play with numbered teams. Re-shuffle before you start if you like."],
       ["How is scoring handled?", "After you reveal each answer, tap the team that got it right to add a point. The scoreboard is always on screen, and the final standings show at the end."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],

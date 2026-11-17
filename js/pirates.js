@@ -7,11 +7,11 @@
 //    plus two live tools: a Wheel of Names for the random bomb target, and a
 //    5-category wheel + question generator for "answer a question to steal".
 // Zero deps beyond the shared Wheel. All original code.
-import { el, shuffle } from "./quizkit.js?v=20261117a";
-import { getState, save } from "./storage.js?v=20261117a";
-import { Wheel, parseEntries } from "./wheel.js?v=20261117a";
-import { SUPPORT } from "./support.js?v=20261117a";
-import * as sound from "./sound.js?v=20261117a";
+import { el, shuffle } from "./quizkit.js?v=20261117b";
+import { getState, save } from "./storage.js?v=20261117b";
+import { Wheel, parseEntries } from "./wheel.js?v=20261117b";
+import { SUPPORT } from "./support.js?v=20261117b";
+import * as sound from "./sound.js?v=20261117b";
 
 const rint = (n) => { const r = new Uint32Array(1); crypto.getRandomValues(r); return r[0] % n; };
 const colLetter = (i) => String.fromCharCode(65 + i);
