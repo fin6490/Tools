@@ -1,9 +1,9 @@
 // reveal.js — Reveal cards: a teacher-paced flashcard runner for the whiteboard.
 // Pick a question set, show a question big, click to reveal the answer, next.
 // Reuses the Dojo's question sets (starter packs + your saved sets). Zero deps.
-import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261116c";
-import { getState, save } from "./storage.js?v=20261116c";
-import * as sound from "./sound.js?v=20261116c";
+import { mathHtml, escapeHtml, shuffle, allSets, el, makeGenerateRow, fitBlock } from "./quizkit.js?v=20261117a";
+import { getState, save } from "./storage.js?v=20261117a";
+import * as sound from "./sound.js?v=20261117a";
 
 export function initReveal(root) {
   const panel = root.querySelector(".reveal-panel");
@@ -11,7 +11,9 @@ export function initReveal(root) {
 
   const cfg = () => {
     const s = getState();
-    if (!s.reveal) s.reveal = { activeSetId: null, shuffle: true };
+    if (!s.reveal) s.reveal = { activeSetId: null, shuffle: true, count: "all", grid: false };
+    if (s.reveal.count == null) s.reveal.count = "all";
+    if (typeof s.reveal.grid !== "boolean") s.reveal.grid = false;
     return s.reveal;
   };
   const activeSet = () => {
@@ -45,11 +47,27 @@ export function initReveal(root) {
 
     card.appendChild(makeGenerateRow((set) => { cfg().activeSetId = set.id; save(); renderLobby(`Generated “${set.name}” — ready.`); }));
 
+    // Starter size: a short 4–10 question set, or the whole deck.
+    const countRow = el("div", "dojo-field dojo-field-inline");
+    countRow.appendChild(el("label", "dojo-lbl", "How many questions"));
+    const countSel = el("select", "dojo-select dojo-select-sm");
+    [["all", "All"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"]].forEach(([v, t]) => { const o = el("option"); o.value = v; o.textContent = t; if (String(cfg().count) === v) o.selected = true; countSel.appendChild(o); });
+    countSel.addEventListener("change", () => { cfg().count = countSel.value; save(); });
+    countRow.appendChild(countSel);
+    card.appendChild(countRow);
+
     const shufRow = el("label", "reveal-check");
     const cb = el("input"); cb.type = "checkbox"; cb.checked = cfg().shuffle !== false;
     cb.addEventListener("change", () => { cfg().shuffle = cb.checked; save(); });
     shufRow.append(cb, document.createTextNode(" Shuffle the order"));
     card.appendChild(shufRow);
+
+    // Starter board: show all the questions on one screen, reveal answers together.
+    const gridRow = el("label", "reveal-check");
+    const gcb = el("input"); gcb.type = "checkbox"; gcb.checked = cfg().grid === true;
+    gcb.addEventListener("change", () => { cfg().grid = gcb.checked; save(); });
+    gridRow.append(gcb, document.createTextNode(" Starter board — show every question on one screen"));
+    card.appendChild(gridRow);
 
     const go = el("button", "btn primary dojo-begin", "Start");
     go.addEventListener("click", () => { cfg().activeSetId = sel.value; save(); startRun(); });
@@ -60,13 +78,64 @@ export function initReveal(root) {
   }
 
   /* ================= RUNNER ================= */
+  // Pick the questions in play: optionally shuffled, optionally capped to a
+  // short 4–10 question "starter".
+  function pickDeck() {
+    const set = activeSet();
+    let d = cfg().shuffle !== false ? shuffle(set.questions) : set.questions.slice();
+    const n = parseInt(cfg().count, 10);
+    if (Number.isFinite(n) && n > 0) d = d.slice(0, n);
+    return d;
+  }
+
   function startRun() {
     const set = activeSet();
     if (!set || !set.questions.length) return;
-    deck = cfg().shuffle !== false ? shuffle(set.questions) : set.questions.slice();
+    deck = pickDeck();
+    if (cfg().grid) return renderGrid();
     idx = 0; shown = false;
     buildShell();
     paint();
+  }
+
+  /* ================= STARTER BOARD (all on one screen) ================= */
+  function renderGrid() {
+    document.removeEventListener("keydown", onKey);
+    panel.innerHTML = "";
+    const wrap = el("div", "reveal-gridwrap");
+    wrap.appendChild(el("div", "dojo-toprow", `
+      <span class="dojo-set">${escapeHtml(activeSet().name)} · starter</span>
+      <span class="dojo-topbtns">
+        <button class="btn ghost" id="rvAll">Reveal all</button>
+        <button class="btn ghost" id="rvNew">New questions</button>
+        <button class="btn ghost" id="rvQuit">End</button>
+      </span>`));
+    const grid = el("div", "reveal-grid");
+    deck.forEach((q, i) => {
+      const cardEl = el("div", "reveal-gcard");
+      cardEl.innerHTML = `<span class="reveal-gnum">${i + 1}</span>`;
+      const qEl = el("div", "reveal-gq", mathHtml(q.q));
+      const aEl = el("div", "reveal-ga", answersHtml(q)); aEl.hidden = true;
+      cardEl.append(qEl, aEl);
+      cardEl.addEventListener("click", () => { aEl.hidden = !aEl.hidden; cardEl.classList.toggle("shown", !aEl.hidden); if (!aEl.hidden) fx(sound.tick); syncAllBtn(); });
+      grid.appendChild(cardEl);
+    });
+    wrap.appendChild(grid);
+    wrap.appendChild(el("p", "dojo-hint", "Tap a question to reveal its answer, or use “Reveal all”. Great as a lesson starter or plenary."));
+    panel.appendChild(wrap);
+
+    const allBtn = panel.querySelector("#rvAll");
+    const allShown = () => [...panel.querySelectorAll(".reveal-ga")].every((a) => !a.hidden);
+    function syncAllBtn() { allBtn.textContent = allShown() ? "Hide all" : "Reveal all"; }
+    allBtn.addEventListener("click", () => {
+      const reveal = !allShown();
+      panel.querySelectorAll(".reveal-gcard").forEach((c) => { c.querySelector(".reveal-ga").hidden = !reveal; c.classList.toggle("shown", reveal); });
+      if (reveal) fx(sound.beep);
+      syncAllBtn();
+    });
+    panel.querySelector("#rvNew").addEventListener("click", () => { deck = pickDeck(); renderGrid(); });
+    panel.querySelector("#rvQuit").addEventListener("click", () => renderLobby());
+    syncAllBtn();
   }
 
   function buildShell() {
