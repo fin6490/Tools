@@ -2,10 +2,10 @@
 // hosts on the whiteboard and students join from their own devices with a PIN.
 // Everything runs through the live-game Edge Function (polling, no sign-in).
 // Reuses the shared question packs (GCSE maths and any topic). Zero deps.
-import { el, shuffle, mathHtml, escapeHtml, norm, answersOf, allSets } from "./quizkit.js?v=20261117a";
-import { getState, save } from "./storage.js?v=20261117a";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supa-config.js?v=20261117a";
-import * as sound from "./sound.js?v=20261117a";
+import { el, shuffle, mathHtml, escapeHtml, norm, answersOf, allSets } from "./quizkit.js?v=20261117b";
+import { getState, save } from "./storage.js?v=20261117b";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supa-config.js?v=20261117b";
+import * as sound from "./sound.js?v=20261117b";
 
 const FN = `${SUPABASE_URL}/functions/v1/live-game`;
 const SHAPES = ["▲", "◆", "●", "■", "★", "✚"];
@@ -83,6 +83,17 @@ function renderHostSetup() {
   sets.forEach((s) => { const o = el("option"); o.value = s.id; o.textContent = `${s.name} (${s.questions.length})`; sel.appendChild(o); });
   field.appendChild(sel);
   card.appendChild(field);
+
+  // Starter size: a short 4–10 question game, or all (up to 20).
+  const live = getState().live || (getState().live = { count: "all" });
+  const cntField = el("div", "dojo-field dojo-field-inline");
+  cntField.appendChild(el("label", "dojo-lbl", "How many questions"));
+  const cntSel = el("select", "dojo-select dojo-select-sm");
+  [["all", "All (max 20)"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"]].forEach(([v, t]) => { const o = el("option"); o.value = v; o.textContent = t; if (String(live.count) === v) o.selected = true; cntSel.appendChild(o); });
+  cntSel.addEventListener("change", () => { live.count = cntSel.value; save(); });
+  cntField.appendChild(cntSel);
+  card.appendChild(cntField);
+
   card.appendChild(el("p", "dojo-hint", "Each question becomes four answer tiles. Students see the tiles on their own screen; the question shows big on the board."));
   const btns = el("div", "dojo-editbtns");
   const go = el("button", "btn primary", "Create game");
@@ -90,7 +101,7 @@ function renderHostSetup() {
   back.addEventListener("click", renderHome);
   go.addEventListener("click", async () => {
     const set = sets.find((x) => x.id === sel.value) || sets[0];
-    const questions = buildQuestions(set);
+    const questions = buildQuestions(set, parseInt(cntSel.value, 10));
     if (!questions.length) { alert("That set has no usable questions."); return; }
     go.disabled = true; go.textContent = "Creating…";
     try {
@@ -109,11 +120,12 @@ function renderHostSetup() {
 // uses a shuffled subset (big banks like times tables would run far too long),
 // but distractors are still drawn from the whole set.
 const MAX_LIVE_Q = 20;
-function buildQuestions(set) {
+function buildQuestions(set, count) {
+  const cap = Number.isFinite(count) && count > 0 ? Math.min(count, MAX_LIVE_Q) : MAX_LIVE_Q;
   const pool = []; const seenPool = new Set();
   set.questions.forEach((q) => [...answersOf(q), ...(q.distractors || [])].forEach((v) => { const k = norm(v); if (v != null && v !== "" && !seenPool.has(k)) { seenPool.add(k); pool.push(String(v)); } }));
   const usable = set.questions.filter((q) => q && q.q && answersOf(q)[0] != null);
-  return shuffle(usable).slice(0, MAX_LIVE_Q).map((q) => {
+  return shuffle(usable).slice(0, cap).map((q) => {
     const correctVal = String(answersOf(q)[0]);
     const accepted = new Set(answersOf(q).map(norm));
     const opts = [correctVal]; const used = new Set([norm(correctVal)]);
