@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="The classic letters, numbers and conundrum game for the whiteboard. Pick your letters, reach the target number, or crack the nine-letter conundrum — each with a 30-second clock. Free, no sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261117c" />
+<link rel="stylesheet" href="/css/styles.css?v=20261126a" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -127,6 +127,7 @@
         <div class="navgroup-menu">
           <a class="tab" data-view-btn="dojo" href="/bt-dojo/">Dojo</a>
           <a class="tab" data-view-btn="reveal" href="/reveal-cards/">Reveal cards</a>
+          <a class="tab" data-view-btn="deepdive" href="/deep-dive/">Deep Dive</a>
           <a class="tab" data-view-btn="pairs" href="/pairs/">Pairs</a>
           <a class="tab" data-view-btn="bingo" href="/bingo/">Bingo</a>
           <a class="tab" data-view-btn="classquiz" href="/class-quiz/">Class quiz</a>
@@ -595,6 +596,10 @@
   <main class="view view-dash" data-view-panel="dash" hidden>
     <section class="panel dash-panel" aria-label="Quiz Dash AI quiz runner"></section>
   </main>
+  <!-- DEEP DIVE (Krillion-style maths rarity game; deepdive.js builds the screens) -->
+  <main class="view view-deepdive" data-view-panel="deepdive" hidden>
+    <section class="panel deepdive-panel" aria-label="Deep Dive maths rarity game"></section>
+  </main>
   <!-- AXIOM (2–4 player equation board game; axiom.js builds the screens) -->
   <main class="view view-axiom" data-view-panel="axiom" hidden>
     <section class="panel axiom-panel" aria-label="Axiom equation board game"></section>
@@ -710,6 +715,7 @@
         <a href="/tournament-bracket/">Tournament bracket</a>
         <a href="/bt-dojo/">The BT Dojo</a>
         <a href="/reveal-cards/">Reveal cards</a>
+        <a href="/deep-dive/">Deep Dive</a>
         <a href="/pairs/">Pairs</a>
         <a href="/bingo/">Bingo</a>
         <a href="/class-quiz/">Class quiz</a>
@@ -748,8 +754,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261117c"></script>
-<script type="module" src="/js/app.js?v=20261117c"></script>
+  <script type="module" src="/js/suggest.js?v=20261126a"></script>
+<script type="module" src="/js/app.js?v=20261126a"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

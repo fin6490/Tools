@@ -70,6 +70,11 @@ export const ROUTES = {
     "title": "Reveal Cards — Free Classroom Flashcards for the Whiteboard | SpinDecks",
     "description": "A teacher-paced flashcard runner for the interactive whiteboard. Show a question, reveal the answer when the class is ready, move on. Uses any question set. Free, no sign-up, works offline."
   },
+  "deepdive": {
+    "slug": "deep-dive",
+    "title": "Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks",
+    "description": "A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline."
+  },
   "pairs": {
     "slug": "pairs",
     "title": "Pairs — Free Classroom Matching & Memory Game | SpinDecks",

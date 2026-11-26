@@ -4,7 +4,7 @@
 // chats they have left today. AI chat goes through the highroller-chat Edge Function,
 // which holds the Anthropic key. High Roller is owner-only: anyone who isn't the
 // signed-in site owner is sent to the home page.
-import * as supa from "/js/supa.js?v=20261117c";
+import * as supa from "/js/supa.js?v=20261126a";
 
 const H = window.HR_HOST;
 const OK_KEY = "spindeck.hr.ok"; // last confirmed premium check, for playing offline

@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261117c",
+  token: "20261126a",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -423,6 +423,36 @@ export const TOOLS = [
       ["Can it show maths properly?", "Yes — fractions, powers, roots and symbols render with a light markup, no plugins needed."],
       ["Can I use the keyboard?", "Yes — Space (or Enter) reveals the answer, → moves to the next card, and ← goes back. Ideal for a clicker or whiteboard pen."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your sets stay in your browser. It works offline once loaded."],
+    ],
+  },
+  {
+    slug: "deep-dive",
+    view: "deepdive",
+    nav: "Deep Dive",
+    title: "Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks",
+    description:
+      "A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline.",
+    h1: "Deep Dive — the maths rarity game",
+    hubDesc: "A Krillion-style maths game: seven open prompts where every right answer scores, but the rarer and cleverer it is, the deeper you dive.",
+    intro:
+      "A fast, addictive maths game in the style of Krillion. You get seven prompts — “Name a factor of 24”, “Name a multiple of 7”, “Make 24”, “Name a Pythagorean triple” — with 25 seconds each. Almost every prompt has lots of correct answers, and that's the twist: the obvious ones (1, 2, 7) barely get you wet, while the rare, clever answers sink you right down to the trench floor. Your score is your depth in metres across six rarity tiers, from Plankton to One in a krillion. A Daily dive gives your whole class the same seven prompts to compare; Random gives seven fresh ones every time. It rewards really knowing your number facts — not just one right answer, but the whole set.",
+    steps: [
+      "Press Begin descent. Pick Daily (same prompts for everyone today) or Random.",
+      "Read each prompt and type one answer within 25 seconds. A wrong answer isn't punished — the clock just keeps running, so try another.",
+      "The rarer and less obvious your correct answer, the higher the tier and the deeper you sink (10 m up to 1000 m per prompt).",
+      "After seven prompts, see your total depth, the zone you reached and a breakdown — then try to beat it.",
+    ],
+    whoFor: [
+      ["Teachers", "a brilliant number-fluency starter — it pushes students past the first obvious answer to recall the whole set of factors, multiples or primes."],
+      ["Students", "a quick, competitive brain-teaser where knowing more maths literally takes you deeper."],
+      ["Anyone", "a moreish daily maths puzzle you can share and compare."],
+    ],
+    faq: [
+      ["How does scoring work?", "Every correct answer scores, but it's placed in one of six rarity tiers — Plankton (10 m), Too clever (15 m), Schooler (30 m), Rare (60 m), Deep cut (85 m) and One in a krillion (100 m). The more obvious the answer, the shallower the tier; the rarer and cleverer, the deeper. Your score is your total depth in metres, so a perfect run reaches the 7000 m trench floor."],
+      ["How is “rarity” decided?", "From the maths itself — how obvious an answer is for that prompt (for “a factor of 24”, saying 1 is Plankton but 8 or 12 dives deeper). It's worked out in your browser, so it's deterministic and fair, with no account or player base needed."],
+      ["What kinds of prompt are there?", "Factors, multiples, times tables, prime numbers, square and cube numbers, prime factors, ways to make a target number with a calculation, Pythagorean triples, fractions equal to a half, quadrilaterals and more — pitched around KS2–GCSE number work."],
+      ["What's the Daily dive?", "Everyone who plays on the same day gets the same seven prompts, so a class (or you and a friend) can compare depths. Random gives seven fresh prompts every time."],
+      ["Is it free and private?", "Completely — no ads, no sign-up, and your best depth stays in your browser. It works offline once loaded. (Inspired by the game Krillion; this is an independent maths version.)"],
     ],
   },
   {
