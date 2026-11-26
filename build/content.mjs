@@ -9,7 +9,7 @@ export const SITE = {
   name: "SpinDecks",
   contactEmail: "hello@spindecks.app",
   // Bump alongside the JS import token when shipping JS/CSS changes.
-  token: "20261126a",
+  token: "20261126b",
 };
 
 // The seven existing tools, in nav order. `view` matches app.js data-view names.
@@ -452,6 +452,7 @@ export const TOOLS = [
       ["How is “rarity” decided?", "From the maths itself — how obvious an answer is for that prompt (for “a factor of 24”, saying 1 is Plankton but 8 or 12 dives deeper). It's worked out in your browser, so it's deterministic and fair, with no account or player base needed."],
       ["What kinds of prompt are there?", "Factors, multiples, times tables, prime numbers, square and cube numbers, prime factors, ways to make a target number with a calculation, Pythagorean triples, fractions equal to a half, quadrilaterals and more — pitched around KS2–GCSE number work."],
       ["What's the Daily dive?", "Everyone who plays on the same day gets the same seven prompts, so a class (or you and a friend) can compare depths. Random gives seven fresh prompts every time."],
+      ["Is there a leaderboard?", "Yes — post your dive to a global board with a name of your choice and see the deepest divers, no account needed. Between prompts and on the results screen you'll also get little maths facts and history to read — and our Lobster Pots mascot takes the plunge with you."],
       ["Is it free and private?", "Completely — no ads, no sign-up, and your best depth stays in your browser. It works offline once loaded. (Inspired by the game Krillion; this is an independent maths version.)"],
     ],
   },

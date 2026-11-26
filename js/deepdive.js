@@ -5,11 +5,59 @@
 // your depth in metres. Rarity is worked out from the maths (how obvious the
 // answer is), so it's deterministic and fair — no player base needed. A Daily
 // dive gives everyone the same 7 prompts to compare. Zero deps, local only.
-import { el, escapeHtml } from "./quizkit.js?v=20261126a";
-import { getState, save } from "./storage.js?v=20261126a";
-import * as sound from "./sound.js?v=20261126a";
+import { el, escapeHtml } from "./quizkit.js?v=20261126b";
+import { getState, save } from "./storage.js?v=20261126b";
+import * as sound from "./sound.js?v=20261126b";
+import { SUPABASE_ENABLED } from "./supa-config.js?v=20261126b";
+import { topDiveScores, submitDiveScore } from "./supa.js?v=20261126b";
 
 const N_PROMPTS = 7, SECS = 25;
+
+// Our Lobster Pots mascot, drawn as an inline SVG so we can animate and tint it.
+const LOBSTER = `<svg viewBox="0 0 72 88" class="dd-lob-svg" aria-hidden="true">
+  <path d="M30 22 C22 10 16 6 11 3" fill="none" stroke="#b5392c" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M42 22 C50 10 56 6 61 3" fill="none" stroke="#b5392c" stroke-width="2.6" stroke-linecap="round"/>
+  <g fill="#e2574c" stroke="#9e2b22" stroke-width="2" stroke-linejoin="round">
+    <path d="M26 33 C15 30 5 34 5 42 C5 50 13 52 20 49 L24 41 Z"/>
+    <path d="M46 33 C57 30 67 34 67 42 C67 50 59 52 52 49 L48 41 Z"/>
+  </g>
+  <path d="M5 42 l-3 -4 M5 42 l-4 4" fill="none" stroke="#9e2b22" stroke-width="2" stroke-linecap="round"/>
+  <path d="M67 42 l3 -4 M67 42 l4 4" fill="none" stroke="#9e2b22" stroke-width="2" stroke-linecap="round"/>
+  <path d="M36 15 C44 15 49 21 49 29 C49 37 46 41 45 49 C44 57 47 63 43 71 C41 78 31 78 29 71 C25 63 28 57 27 49 C26 41 23 37 23 29 C23 21 28 15 36 15 Z" fill="#e2574c" stroke="#9e2b22" stroke-width="2"/>
+  <path d="M29 41 H43 M28 49 H44 M29 57 H43 M30 65 H42" fill="none" stroke="#9e2b22" stroke-width="1.5" stroke-linecap="round" opacity=".45"/>
+  <path d="M29 71 C27 79 25 82 23 85 M43 71 C45 79 47 82 49 85 M36 73 V86" fill="none" stroke="#c0392b" stroke-width="2.2" stroke-linecap="round"/>
+  <g stroke="#9e2b22" stroke-width="1.6" stroke-linecap="round"><path d="M27 44 l-6 3M27 52 l-6 4M45 44 l6 3M45 52 l6 4"/></g>
+  <circle cx="31" cy="25" r="3.3" fill="#fff" stroke="#9e2b22" stroke-width="1"/><circle cx="41" cy="25" r="3.3" fill="#fff" stroke="#9e2b22" stroke-width="1"/>
+  <circle cx="31" cy="25.6" r="1.4" fill="#2b0b09"/><circle cx="41" cy="25.6" r="1.4" fill="#2b0b09"/>
+</svg>`;
+
+// Little maths facts & history, shown while you dive and on the results screen.
+const FACTS = [
+  "The equals sign (=) was invented in 1557 by Welsh mathematician Robert Recorde — two parallel lines, because “no two things can be more equal”.",
+  "Zero was first used as a number in India, around 628 AD, by the mathematician Brahmagupta.",
+  "A “googol” is 1 followed by 100 zeros. The search engine Google is named after a misspelling of it.",
+  "Our number symbols (0–9) are called Hindu-Arabic numerals — they reached Europe from India via the Arab world.",
+  "A prime number has exactly two factors: 1 and itself. That's why 1 isn't prime — it only has one factor.",
+  "0.999… recurring is exactly equal to 1. Not nearly — exactly.",
+  "The angles inside any triangle always add up to 180°, no matter its shape.",
+  "π (pi) is the ratio of a circle's circumference to its diameter — about 3.14159, and the digits never repeat.",
+  "A “googolplex” is 1 followed by a googol of zeros — more zeros than there are atoms in the universe.",
+  "The Fibonacci sequence (1, 1, 2, 3, 5, 8, 13…) appears in sunflowers, pinecones and spiral shells.",
+  "Any even number bigger than 2 can (it's believed) be written as the sum of two primes — this is Goldbach's conjecture, still unproven.",
+  "A number is divisible by 3 if its digits add up to a multiple of 3. Try it: 1+2+3 = 6, and 123 ÷ 3 = 41.",
+  "The Ancient Egyptians were using fractions over 3,600 years ago — but only ones like 1/2, 1/3 and 1/4.",
+  "A “perfect number” equals the sum of its factors (not itself). 6 = 1 + 2 + 3. The next one is 28.",
+  "Multiplying any number by 9, the digits of the answer add up to 9 (or a multiple of it). 9×7 = 63, 6+3 = 9.",
+  "In a room of just 23 people, there's a better-than-even chance two share a birthday.",
+  "A “prime” that's one less than a power of two (like 3, 7, 31) is called a Mersenne prime — the biggest known has over 41 million digits.",
+  "The number 1,000,000,000,000 is a trillion in the UK and US today — but it used to mean different things on each side of the Atlantic.",
+  "Negative numbers were once called “absurd” by European mathematicians — they only became accepted a few hundred years ago.",
+  "A “right angle” is 90°. Four of them make 360° — all the way around a point.",
+  "The word “algebra” comes from the Arabic “al-jabr”, meaning “the reunion of broken parts”.",
+  "There are more ways to shuffle a deck of 52 cards than there are atoms on Earth — about 8 × 10^67.",
+  "Squared numbers are the gaps between them: the difference between consecutive squares goes 3, 5, 7, 9… the odd numbers.",
+  "Roman numerals have no symbol for zero — which made arithmetic with them famously painful.",
+];
 // Six rarity tiers (points; depth = points × 10 m).
 const TIERS = [
   { name: "Plankton", pts: 10, cls: "t0" },
@@ -90,9 +138,26 @@ export const DD_TEST = { FACTORIES, TIERS, evalExpr, factorsOf, isPrime, mulberr
 export function initDeepDive(root) {
   const panel = root.querySelector(".deepdive-panel");
   if (!panel) return;
-  const cfg = () => { const s = getState(); if (!s.deepdive) s.deepdive = { best: 0, daily: true }; if (typeof s.deepdive.best !== "number") s.deepdive.best = 0; if (typeof s.deepdive.daily !== "boolean") s.deepdive.daily = true; return s.deepdive; };
+  const cfg = () => { const s = getState(); if (!s.deepdive) s.deepdive = { best: 0, daily: true, name: "" }; if (typeof s.deepdive.best !== "number") s.deepdive.best = 0; if (typeof s.deepdive.daily !== "boolean") s.deepdive.daily = true; if (typeof s.deepdive.name !== "string") s.deepdive.name = ""; return s.deepdive; };
   let soundOn = getState().soundOn !== false;
   const fx = (fn) => { if (soundOn) try { fn(); } catch {} };
+  const randFact = () => FACTS[Math.floor(Math.random() * FACTS.length)];
+
+  // Global leaderboard (deepest dives). Fails quietly so the game works offline.
+  async function fillBoard(container, highlight) {
+    const rows = await topDiveScores(12);
+    container.querySelector(".dd-boardload")?.remove();
+    const old = container.querySelector(".dd-boardlist"); if (old) old.remove();
+    const list = el("ol", "dd-boardlist");
+    if (!rows.length) list.appendChild(el("li", "muted", "No dives yet — be the first!"));
+    rows.forEach((r) => {
+      const li = el("li", "dd-boardrow");
+      if (highlight && r.name === highlight.name && r.depth === highlight.depth) li.classList.add("you");
+      li.innerHTML = `<span class="dd-brank"></span><span class="dd-bname">${escapeHtml(r.name)}</span><span class="dd-bmode muted">${r.mode === "daily" ? "daily" : ""}</span><span class="dd-bdepth">${r.depth} m</span>`;
+      list.appendChild(li);
+    });
+    container.appendChild(list);
+  }
 
   let game = null, timer = null;
   const stopTimer = () => { if (timer) { clearInterval(timer); timer = null; } };
@@ -123,7 +188,7 @@ export function initDeepDive(root) {
     card.appendChild(modeRow);
 
     const go = el("button", "btn primary dojo-begin", "▼ Begin descent ▼");
-    go.addEventListener("click", () => { game = buildDive(cfg().daily); fx(sound.beep); renderPrompt(); });
+    go.addEventListener("click", () => { game = buildDive(cfg().daily); fx(sound.beep); renderIntro(renderPrompt); });
     card.appendChild(go);
 
     card.appendChild(el("p", "dojo-hint", `Best depth: ${cfg().best} m. There's always more than one right answer — reach for the one no one else would.`));
@@ -132,7 +197,35 @@ export function initDeepDive(root) {
     leg.appendChild(el("p", "dd-legend-ttl", "The deeper, the rarer"));
     TIERS.forEach((t) => { const r = el("div", "dd-leg " + t.cls); r.innerHTML = `<span class="dd-leg-name">${t.name}</span><span class="dd-leg-pts">${t.pts * 10} m</span>`; leg.appendChild(r); });
     card.appendChild(leg);
+
+    if (SUPABASE_ENABLED) {
+      const board = el("div", "dd-board");
+      board.innerHTML = `<p class="dd-board-ttl">🏆 Deepest dives</p><p class="muted dd-boardload">Loading…</p>`;
+      card.appendChild(board);
+      fillBoard(board);
+    }
     panel.appendChild(card);
+  }
+
+  /* ---------- the dive animation (lobster + a maths fact) ---------- */
+  function renderIntro(then) {
+    stopTimer();
+    panel.innerHTML = "";
+    const sc = el("div", "dd-intro");
+    sc.innerHTML = `
+      <div class="dd-intro-sea">
+        <div class="dd-bubbles">${"<span></span>".repeat(7)}</div>
+        <div class="dd-intro-lob">${LOBSTER}</div>
+      </div>
+      <p class="dd-intro-ttl">Down we go…</p>
+      <p class="dd-fact"><b>Did you know?</b> ${escapeHtml(randFact())}</p>`;
+    const skip = el("button", "btn ghost dd-skip", "Start diving ▸");
+    sc.appendChild(skip);
+    panel.appendChild(sc);
+    let went = false;
+    const go = () => { if (went) return; went = true; clearTimeout(t); then(); };
+    skip.addEventListener("click", go);
+    const t = setTimeout(go, 2300);
   }
 
   /* ---------- a prompt ---------- */
@@ -211,12 +304,16 @@ export function initDeepDive(root) {
     wrap.appendChild(el("p", "dd-final", `${m} m`));
     wrap.appendChild(el("p", "dd-zone", `${zone.name}${isBest ? " · new personal best!" : ""}`));
 
-    // depth map
+    // depth map — the lobster sinks to your depth
     const map = el("div", "dd-map");
-    const frac = Math.max(0.02, Math.min(1, m / 7000));
-    map.innerHTML = `<div class="dd-map-fill" style="height:${(frac * 100).toFixed(1)}%"></div><div class="dd-diver" style="top:calc(${(frac * 100).toFixed(1)}% - 10px)">▼</div>`;
+    const target = Math.max(2, Math.min(100, m / 7000 * 100));
+    map.innerHTML = `<div class="dd-map-fill"></div><div class="dd-diver">${LOBSTER}</div>`;
     ZONES.forEach((z) => { const tick = el("div", "dd-map-tick"); tick.style.top = (z.m / 7000 * 100) + "%"; tick.innerHTML = `<span>${z.m} m</span>`; map.appendChild(tick); });
     const mapWrap = el("div", "dd-mapwrap"); mapWrap.appendChild(map); wrap.appendChild(mapWrap);
+    const fill = map.querySelector(".dd-map-fill"), diver = map.querySelector(".dd-diver");
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.height = target.toFixed(1) + "%"; diver.style.top = `calc(${target.toFixed(1)}% - 16px)`; }));
+
+    wrap.appendChild(el("p", "dd-fact", `<b>Did you know?</b> ${escapeHtml(randFact())}`));
 
     const list = el("div", "dd-breakdown");
     g.results.forEach((r, i) => {
@@ -228,6 +325,29 @@ export function initDeepDive(root) {
       list.appendChild(row);
     });
     wrap.appendChild(list);
+
+    // global leaderboard — post your dive and see the deepest
+    if (SUPABASE_ENABLED && m > 0) {
+      const sub = el("div", "dd-submit");
+      const nameIn = el("input", "dojo-input dd-nameinput"); nameIn.placeholder = "Your name"; nameIn.maxLength = 24; nameIn.value = cfg().name || "";
+      const send = el("button", "btn", "Add to leaderboard");
+      const board = el("div", "dd-board");
+      const doSubmit = async () => {
+        const nm = nameIn.value.trim(); if (!nm) { nameIn.focus(); return; }
+        cfg().name = nm; save(); send.disabled = true; nameIn.disabled = true; send.textContent = "Posting…";
+        try {
+          await submitDiveScore({ name: nm, depth: m, mode: g.daily ? "daily" : "random" });
+          send.textContent = "Posted ✓";
+          board.innerHTML = `<p class="dd-board-ttl">🏆 Deepest dives</p>`;
+          fillBoard(board, { name: nm, depth: m });
+        } catch (e) { send.disabled = false; nameIn.disabled = false; send.textContent = "Add to leaderboard"; }
+      };
+      send.addEventListener("click", doSubmit);
+      nameIn.addEventListener("keydown", (e) => { if (e.key === "Enter") doSubmit(); });
+      const r = el("div", "dd-submitrow"); r.append(nameIn, send);
+      sub.append(r, board);
+      wrap.appendChild(sub);
+    }
 
     const row = el("div", "dojo-editbtns");
     const again = el("button", "btn primary", g.daily ? "Random dive" : "Dive again");
