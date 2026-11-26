@@ -5,11 +5,11 @@
 // your depth in metres. Rarity is worked out from the maths (how obvious the
 // answer is), so it's deterministic and fair — no player base needed. A Daily
 // dive gives everyone the same 7 prompts to compare. Zero deps, local only.
-import { el, escapeHtml } from "./quizkit.js?v=20261126b";
-import { getState, save } from "./storage.js?v=20261126b";
-import * as sound from "./sound.js?v=20261126b";
-import { SUPABASE_ENABLED } from "./supa-config.js?v=20261126b";
-import { topDiveScores, submitDiveScore } from "./supa.js?v=20261126b";
+import { el, escapeHtml } from "./quizkit.js?v=20261126c";
+import { getState, save } from "./storage.js?v=20261126c";
+import * as sound from "./sound.js?v=20261126c";
+import { SUPABASE_ENABLED } from "./supa-config.js?v=20261126c";
+import { topDiveScores, submitDiveScore } from "./supa.js?v=20261126c";
 
 const N_PROMPTS = 7, SECS = 25;
 
@@ -93,47 +93,148 @@ function evalExpr(raw) {
   try { const v = Function('"use strict";return (' + s + ")")(); return typeof v === "number" && isFinite(v) ? v : null; } catch { return null; }
 }
 const opCount = (raw) => (String(raw).match(/[-+*/×÷]/g) || []).length;
+const gcdN = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; };
+// Normalise a typed answer: lowercase, trimmed, trailing full-stop/comma gone.
+const normA = (s) => String(s).trim().toLowerCase().replace(/[.,]+$/g, "").replace(/\s+/g, " ");
+// Curated "name one of these" prompt — rarity is how obscure the answer is, not
+// how big. groups = [[tier, "comma,separated,accepted,answers"], …].
+const L = (text, example, groups, extra = {}) => () => {
+  const map = new Map();
+  groups.forEach(([tier, words]) => words.split(",").forEach((w) => { const k = normA(w); if (k) map.set(k, tier); }));
+  return { text, example, score: (raw) => { const v = map.get(normA(raw)); return v == null ? -1 : v; }, ...extra };
+};
 
-/* ---------- prompt factories: rng -> { text, example, score(raw) -> tierIdx | -1 } ---------- */
+// True/false maths facts — [statement, isTrue, the fact to reveal afterwards].
+const TF = [
+  ["True or false: zero is an even number.", true, "True — zero is even. It's a multiple of 2 and sits between two odd numbers."],
+  ["True or false: every prime number is odd.", false, "False — 2 is prime and even. It's the only even prime."],
+  ["True or false: the angles inside a triangle always add up to 180°.", true, "True on flat paper — in ordinary (Euclidean) geometry a triangle's angles total 180°."],
+  ["True or false: 1 is a prime number.", false, "False — a prime has exactly two factors. 1 has only one, so it's not prime."],
+  ["True or false: 0.999… (going on forever) is exactly equal to 1.", true, "True — they are two ways of writing the very same number."],
+  ["True or false: a square is also a rectangle.", true, "True — a square is a rectangle that happens to have all sides equal."],
+  ["True or false: multiplying two negative numbers gives a negative.", false, "False — two negatives multiply to a positive."],
+  ["True or false: pi is exactly equal to 22/7.", false, "False — 22/7 is just a handy approximation. Pi never ends or repeats."],
+  ["True or false: there is a largest prime number.", false, "False — Euclid proved over 2000 years ago that the primes never run out."],
+  ["True or false: all squares are rhombuses.", true, "True — a rhombus has four equal sides, and so does a square."],
+  ["True or false: apart from 5 itself, a prime number can end in a 5.", false, "False — anything else ending in 5 divides by 5, so it can't be prime."],
+  ["True or false: a googol (1 followed by 100 zeros) is bigger than the number of atoms in the observable universe.", true, "True — a googol is about 10^100, well past the roughly 10^80 atoms out there."],
+];
+// Quick recall — [question, [accepted answers], the fact, tier]. One shot.
+const RECALL = [
+  ["How many degrees are there in a full turn?", ["360"], "A full turn is 360°.", 2],
+  ["How many sides does a hexagon have?", ["6", "six"], "A hexagon has 6 sides.", 1],
+  ["What is pi to the nearest whole number?", ["3"], "Pi ≈ 3.14159…, which rounds to 3.", 2],
+  ["Each angle of an equilateral triangle is how many degrees?", ["60"], "180 ÷ 3 = 60° in each corner.", 2],
+  ["How many faces does a cube have?", ["6", "six"], "A cube has 6 square faces.", 1],
+  ["What is the only even prime number?", ["2", "two"], "2 — every other even number divides by 2.", 2],
+  ["The angles inside a quadrilateral add up to how many degrees?", ["360"], "Any four-sided shape's angles total 360°.", 2],
+  ["How many millimetres are there in one metre?", ["1000"], "1000 mm make a metre.", 2],
+  ["What is the name for the longest side of a right-angled triangle?", ["hypotenuse"], "The hypotenuse — always opposite the right angle.", 3],
+  ["How many lines of symmetry does a regular pentagon have?", ["5", "five"], "A regular pentagon has 5 lines of symmetry.", 3],
+];
+
+/* ---------- prompt factories: rng -> { text, example, score(raw) -> tierIdx | -1 }
+   The rarer / cleverer the answer, the deeper it sinks — and rarity is almost
+   never just "the biggest number". Most prompts reward breadth of knowledge or a
+   bit of insight; a couple are one-shot maths facts. ---------- */
 const FACTORIES = [
-  (rng) => { const N = pick(rng, [12, 18, 20, 24, 28, 30, 36, 40, 48, 60]); const inner = factorsOf(N).filter((f) => f !== 1 && f !== 2 && f !== N).sort((a, b) => a - b);
-    return { text: `Name a factor of ${N}`, example: `a whole number that divides exactly into ${N}`,
-      score(raw) { const n = numOf(raw); if (!Number.isInteger(n) || n < 1 || N % n !== 0) return -1; if (n === 1 || n === 2) return 0; if (n === N) return 1; return spread(inner.indexOf(n), inner.length); } }; },
-  (rng) => { const N = pick(rng, [3, 4, 6, 7, 8, 9, 11, 12]); const LIM = 100, count = Math.floor(LIM / N);
-    return { text: `Name a multiple of ${N} (up to ${LIM})`, example: `e.g. ${N}, ${2 * N}, ${3 * N}…`,
-      score(raw) { const n = numOf(raw); if (!Number.isInteger(n) || n < N || n > LIM || n % N !== 0) return -1; return rankTier((n / N - 1) / Math.max(1, count - 1)); } }; },
-  (rng) => { const N = pick(rng, [6, 7, 8, 9, 12]); const LIM = 12 * N;
-    return { text: `Name a number in the ${N} times table`, example: `e.g. ${N}, ${2 * N}, … up to ${LIM}`,
-      score(raw) { const n = numOf(raw); if (!Number.isInteger(n) || n < N || n > LIM || n % N !== 0) return -1; return rankTier((n / N - 1) / 11); } }; },
-  (rng) => { const LIM = pick(rng, [50, 60, 100]); const primes = primesUnder(LIM);
-    return { text: `Name a prime number under ${LIM}`, example: "e.g. 2, 3, 5, 7, 11…",
-      score(raw) { const n = numOf(raw); if (!isPrime(n) || n >= LIM) return -1; return rankTier(primes.indexOf(n) / Math.max(1, primes.length - 1)); } }; },
-  (rng) => { const LIM = pick(rng, [144, 200, 400]); const sq = []; for (let i = 1; i * i <= LIM; i++) sq.push(i * i);
-    return { text: `Name a square number (up to ${LIM})`, example: "e.g. 1, 4, 9, 16, 25…",
-      score(raw) { const n = numOf(raw); const r = Math.round(Math.sqrt(n)); if (n < 1 || n > LIM || r * r !== n) return -1; return rankTier(sq.indexOf(n) / Math.max(1, sq.length - 1)); } }; },
-  () => { const cu = []; for (let i = 1; i * i * i <= 1000; i++) cu.push(i * i * i);
-    return { text: "Name a cube number (up to 1000)", example: "e.g. 1, 8, 27, 64…",
-      score(raw) { const n = numOf(raw); const r = Math.round(Math.cbrt(n)); if (n < 1 || n > 1000 || r * r * r !== n) return -1; return rankTier(cu.indexOf(n) / Math.max(1, cu.length - 1)); } }; },
-  (rng) => { const N = pick(rng, [12, 16, 20, 24, 30, 36, 48, 100]);
-    return { text: `Make ${N} — type a calculation that equals ${N}`, example: "e.g. 6 + 6, 3 × 8, 2 × 3 × 4",
+  // ===== Breadth of knowledge — the deepest answer is the most obscure one =====
+  L("Name a famous mathematician", "e.g. Pythagoras, Newton, Ada Lovelace…", [
+    [0, "pythagoras, newton, isaac newton, einstein, albert einstein"],
+    [1, "euclid, archimedes, galileo, fibonacci"],
+    [2, "pascal, blaise pascal, descartes, rene descartes, ada lovelace, lovelace, alan turing, turing, florence nightingale, nightingale, katherine johnson"],
+    [3, "gauss, carl gauss, euler, leonhard euler, leibniz, fermat, pierre de fermat, napier, john napier, mandelbrot, benoit mandelbrot, babbage, charles babbage"],
+    [4, "hypatia, ramanujan, srinivasa ramanujan, cantor, georg cantor, riemann, bernhard riemann, al-khwarizmi, al khwarizmi, hilbert, david hilbert, bernoulli, laplace, sophie germain, germain"],
+    [5, "emmy noether, noether, godel, gödel, kurt godel, maryam mirzakhani, mirzakhani, galois, evariste galois, andrew wiles, wiles, grothendieck"],
+  ]),
+  L("Name a 2D shape", "e.g. triangle, square, hexagon…", [
+    [0, "triangle, square, circle"],
+    [1, "rectangle, pentagon, hexagon, oval, star"],
+    [2, "octagon, rhombus, trapezium, parallelogram, kite, ellipse, semicircle, diamond"],
+    [3, "heptagon, nonagon, decagon, quadrilateral, trapezoid, crescent"],
+    [4, "hendecagon, dodecagon, undecagon, scalene triangle, isosceles triangle, equilateral triangle"],
+    [5, "icosagon, chiliagon, reuleaux triangle, annulus"],
+  ]),
+  L("Name a 3D shape (a solid)", "e.g. cube, sphere, cylinder…", [
+    [0, "cube, sphere, cylinder"],
+    [1, "cone, pyramid, cuboid, prism"],
+    [2, "triangular prism, square-based pyramid, square based pyramid, hemisphere, tetrahedron"],
+    [3, "octahedron, torus, pentagonal prism, hexagonal prism"],
+    [4, "dodecahedron, icosahedron, frustum, ellipsoid"],
+    [5, "icosidodecahedron, rhombicuboctahedron, stellated dodecahedron"],
+  ]),
+  L("Name a type of number", "e.g. even, odd, prime, square…", [
+    [0, "even, odd, prime, whole"],
+    [1, "square, negative, decimal, fraction, positive, integer, cube"],
+    [2, "multiple, factor, rational, mixed number, improper fraction, natural, real"],
+    [3, "irrational, triangular, fibonacci, factorial, surd, recurring, imaginary"],
+    [4, "perfect, palindromic, abundant, deficient, complex, transcendental, happy"],
+    [5, "mersenne, mersenne prime, amicable, narcissistic, catalan, pronic"],
+  ]),
+  L("Name a unit of length", "e.g. metre, centimetre, mile…", [
+    [0, "metre, meter, centimetre, centimeter, cm, kilometre, kilometer, km"],
+    [1, "millimetre, millimeter, mm, mile, inch, foot, feet"],
+    [2, "yard, micrometre, micron, hand"],
+    [3, "nanometre, nautical mile, light year, lightyear, chain"],
+    [4, "furlong, fathom, cubit, league, rod, pole, perch"],
+    [5, "angstrom, parsec, astronomical unit, planck length, picometre, femtometre"],
+  ]),
+  L("Name a maths symbol or operation", "e.g. plus, minus, equals…", [
+    [0, "plus, +, minus, -, times, ×, multiply, divide, ÷, add, subtract"],
+    [1, "equals, =, percent, %, percentage, square root, √, root, decimal point, point"],
+    [2, "pi, π, infinity, ∞, degree, degrees, °, less than, <, greater than, >, squared, power, index"],
+    [3, "sigma, σ, sum, factorial, !, plus minus, ±, plus-minus, theta, θ, delta, δ, not equal, ≠, approximately, ≈"],
+    [4, "integral, ∫, therefore, ∴, proportional, ∝, congruent, ≅, intersection, ∩, union, ∪, nabla, ∇"],
+    [5, "aleph, ℵ, partial, ∂, contour integral, ∮, for all, ∀, there exists, ∃"],
+  ]),
+  L("Name a branch of maths you could study", "e.g. algebra, geometry, statistics…", [
+    [0, "algebra, geometry, arithmetic, fractions, shape"],
+    [1, "trigonometry, statistics, probability, ratio, measures, number, graphs, data"],
+    [2, "calculus, sequences, vectors, mensuration, coordinate geometry"],
+    [3, "mechanics, matrices, differentiation, integration, logarithms, surds"],
+    [4, "topology, number theory, set theory, combinatorics, game theory, graph theory"],
+    [5, "group theory, chaos theory, cryptography, non-euclidean geometry, measure theory, abstract algebra"],
+  ]),
+  // ===== Insight-based numbers — the clever answer is NOT the biggest one =====
+  (rng) => { const N = pick(rng, [16, 18, 20, 24, 28, 30, 36, 40, 42, 48, 60]); const facs = factorsOf(N);
+    return { text: `Name a factor of ${N}`, example: `divides exactly into ${N} — the factors people forget run deepest`,
+      score(raw) { const n = numOf(raw); if (!Number.isInteger(n) || n < 1 || N % n !== 0) return -1;
+        if (n === 1 || n === 2) return 0;                 // everyone says these
+        if (n === N || n === N / 2) return 1;             // the whole thing, and half — cheeky
+        if (n === 3 || n === 5 || n === 10) return 2;     // the easy small ones
+        const inner = facs.filter((f) => ![1, 2, 3, 5, 10, N, N / 2].includes(f)).sort((a, b) => Math.abs(a - Math.sqrt(N)) - Math.abs(b - Math.sqrt(N)));
+        const i = inner.indexOf(n); if (i < 0) return 3;
+        return Math.min(5, 3 + Math.round((i / Math.max(1, inner.length - 1)) * 2));
+      } }; },
+  (rng) => { const N = pick(rng, [12, 16, 20, 24, 36, 40, 48, 100]);
+    return { text: `Make ${N} — type a calculation that equals ${N}`, example: "cleverer sums sink deeper: 2 × 3 × 4 beats 50 − 2",
       score(raw) { const v = evalExpr(raw); if (v === null || Math.abs(v - N) > 1e-9) return -1; const c = opCount(raw); let t = c <= 1 ? 0 : c === 2 ? 2 : c === 3 ? 3 : c === 4 ? 4 : 5; if (/[*/×÷]/.test(String(raw))) t = Math.min(5, t + 1); return t; } }; },
-  () => ({ text: "Name a Pythagorean triple — three whole numbers where a² + b² = c²", example: "e.g. 3, 4, 5",
-    score(raw) { const parts = String(raw).split(/[\s,]+/).map(Number).filter((x) => Number.isInteger(x) && x > 0); if (parts.length !== 3) return -1; const [a, b, c] = parts.slice().sort((x, y) => x - y); if (a * a + b * b !== c * c) return -1; return rankTier(Math.min(1, (c - 5) / 26)); } }),
-  (rng) => { const K = pick(rng, [7, 8, 9, 10, 11]); const valid = []; for (let n = 10; n <= 99; n++) if (Math.floor(n / 10) + n % 10 === K) valid.push(n);
-    return { text: `Name a 2-digit number whose digits add up to ${K}`, example: `e.g. for 9: 18, 27, 36…`,
-      score(raw) { const n = numOf(raw); const i = valid.indexOf(n); return i < 0 ? -1 : rankTier(i / Math.max(1, valid.length - 1)); } }; },
-  (rng) => { const N = pick(rng, [24, 36, 60, 72, 90, 120]); const pf = primesUnder(N + 1).filter((p) => N % p === 0).sort((a, b) => a - b);
-    return { text: `Name a prime factor of ${N}`, example: `a prime number that divides into ${N}`,
-      score(raw) { const n = numOf(raw); const i = pf.indexOf(n); return i < 0 ? -1 : rankTier(i / Math.max(1, pf.length - 1)); } }; },
-  () => ({ text: "Name a fraction equal to a half — type it as a/b", example: "e.g. 2/4, 3/6, 50/100",
-    score(raw) { const m = String(raw).trim().match(/^(\d+)\s*\/\s*(\d+)$/); if (!m) return -1; const a = +m[1], b = +m[2]; if (a < 1 || a * 2 !== b || a === 1) return -1; return rankTier(Math.min(1, (b - 4) / 96)); } }),
-  () => { const map = new Map([["square", 0], ["rectangle", 0], ["oblong", 1], ["rhombus", 2], ["diamond", 1], ["parallelogram", 2], ["trapezium", 3], ["trapezoid", 3], ["kite", 3], ["quadrilateral", 1], ["arrowhead", 4], ["delta", 4]]);
-    return { text: "Name a quadrilateral — a 2D shape with four straight sides", example: "e.g. square, rhombus, kite…",
-      score(raw) { const s = String(raw).trim().toLowerCase(); return map.has(s) ? map.get(s) : -1; } }; },
+  () => ({ text: "Name a Pythagorean triple — whole numbers where a² + b² = c²", example: "3, 4, 5 is the famous one; the rarer triples go deeper",
+    score(raw) { const parts = String(raw).split(/[\s,]+/).map(Number).filter((x) => Number.isInteger(x) && x > 0); if (parts.length !== 3) return -1; const s = parts.slice().sort((x, y) => x - y); const [a, b, c] = s; if (a * a + b * b !== c * c) return -1; const g = gcdN(a, gcdN(b, c)); if (a / g === 3 && b / g === 4 && c / g === 5) return g === 1 ? 0 : 1; return Math.min(5, 2 + Math.round(Math.min(1, (c / g - 13) / 30) * 3)); } }),
+  () => { const m = new Map([[4, 0], [16, 1], [36, 2], [64, 4]]);
+    return { text: "Name a number that is both square and even (under 100)", example: "e.g. 4, 16…",
+      score(raw) { const n = numOf(raw); return m.has(n) ? m.get(n) : -1; } }; },
+  () => { const m = new Map([[1, 1], [64, 3], [729, 5]]);
+    return { text: "Name a number that is both a square and a cube (under 1000)", example: "trickier than it looks — e.g. 1, 64…",
+      score(raw) { const n = numOf(raw); return m.has(n) ? m.get(n) : -1; } }; },
+  () => { const m = new Map([[12, 0], [24, 1], [36, 2], [48, 2], [60, 3], [72, 3], [84, 4], [96, 5]]);
+    return { text: "Name a number that is a multiple of both 3 and 4 (under 100)", example: "e.g. 12, 24…",
+      score(raw) { const n = numOf(raw); return m.has(n) ? m.get(n) : -1; } }; },
+  (rng) => { const K = pick(rng, [6, 8, 12, 18]); const vals = []; for (let n = 10; n <= 99; n++) { const t = Math.floor(n / 10), u = n % 10; if (t * u === K) vals.push(n); }
+    const m = new Map(vals.map((v, i) => [v, Math.min(5, 1 + Math.round((i / Math.max(1, vals.length - 1)) * 4))]));
+    return { text: `Name a 2-digit number whose digits multiply to ${K}`, example: `e.g. for 6: 16, 23, 32…`,
+      score(raw) { const n = numOf(raw); return m.has(n) ? m.get(n) : -1; } }; },
+  // ===== Maths facts — one guess, no second try =====
+  (rng) => { const [q, ans, reveal] = pick(rng, TF);
+    return { text: q, example: "Type true or false — one shot, so think it through", oneShot: true, reveal,
+      score(raw) { const s = normA(raw); const t = s === "true" || s === "t" || s === "yes"; const f = s === "false" || s === "f" || s === "no"; if (!t && !f) return -2; return ((t && ans) || (f && !ans)) ? 2 : -1; } }; },
+  (rng) => { const [q, ans, reveal, tier] = pick(rng, RECALL);
+    return { text: q, example: "One answer — there's no second try", oneShot: true, reveal,
+      score(raw) { const s = normA(raw).replace(/[°\s]/g, ""); return ans.some((a) => normA(a).replace(/[°\s]/g, "") === s) ? tier : -1; } }; },
 ];
 
 // Exposed for unit tests (scoring correctness).
-export const DD_TEST = { FACTORIES, TIERS, evalExpr, factorsOf, isPrime, mulberry32 };
+export const DD_TEST = { FACTORIES, TIERS, evalExpr, factorsOf, isPrime, mulberry32, gcdN, normA };
 
 export function initDeepDive(root) {
   const panel = root.querySelector(".deepdive-panel");
@@ -176,7 +277,7 @@ export function initDeepDive(root) {
     const card = el("div", "dd-lobby");
     card.appendChild(el("p", "dojo-eyebrow", "Maths · Krillion-style"));
     card.appendChild(el("h2", "dojo-title", "Deep Dive"));
-    card.appendChild(el("p", "dojo-lede", "Seven maths prompts, 25 seconds each. Every correct answer scores — but the rarer and less obvious it is, the deeper you sink. Your score is your depth. How far down can you get?"));
+    card.appendChild(el("p", "dojo-lede", "Seven maths prompts, 25 seconds each — numbers, shapes, famous names, true-or-false facts and more. Every right answer scores, but the rarer and cleverer it is, the deeper you sink. Your score is your depth. How far down can you get?"));
     if (flash) card.appendChild(el("p", "dojo-flash", flash));
 
     const modeRow = el("div", "dojo-field dojo-field-inline");
@@ -258,24 +359,35 @@ export function initDeepDive(root) {
     setTimeout(() => input.focus(), 30);
 
     let done = false; // locked once this prompt is scored/passed
-    const finish = (res, msg, cls) => {
+    const finish = (res, msg, cls, hold) => {
       if (done) return; done = true; stopTimer();
       g.results.push(res); if (res.tier >= 0) g.depth += TIERS[res.tier].pts * 10;
       fb.className = "dd-feedback " + (cls || ""); fb.innerHTML = msg;
       input.disabled = dive.disabled = pass.disabled = true;
       const d = panel.querySelector("#ddDepth"); if (d) d.textContent = g.depth + " m";
-      setTimeout(() => { g.i++; if (g.i >= N_PROMPTS) renderResults(); else renderPrompt(); }, res.tier >= 0 ? 1250 : 850);
+      const wait = hold != null ? hold : (res.tier >= 0 ? 1250 : 850);
+      setTimeout(() => { g.i++; if (g.i >= N_PROMPTS) renderResults(); else renderPrompt(); }, wait);
     };
     const submit = () => {
       if (done) return;
       const raw = input.value.trim(); if (!raw) { input.focus(); return; }
       const tier = p.score(raw);
-      if (tier < 0) { // refused, not punished — clock keeps running
+      if (tier === -2) { // couldn't read the answer — let them retry, clock runs on
+        fb.className = "dd-feedback bad"; fb.textContent = p.oneShot ? "Type “true” or “false”." : "Not a valid answer — try another.";
+        input.classList.remove("shake"); void input.offsetWidth; input.classList.add("shake"); input.select(); fx(sound.buzz); return;
+      }
+      if (tier < 0) {
+        if (p.oneShot) { // one guess only — a wrong answer is final, but we teach the fact
+          finish({ answer: raw, tier: -1, prompt: p.text, reveal: p.reveal }, p.reveal ? `<b>Not this time.</b> ${escapeHtml(p.reveal)}` : "Not quite · 0 m", "dim", 2100);
+          fx(sound.buzz); return;
+        }
+        // refused, not punished — clock keeps running
         fb.className = "dd-feedback bad"; fb.textContent = "Not a valid answer — the clock's still running, try another.";
         input.classList.remove("shake"); void input.offsetWidth; input.classList.add("shake"); input.select(); fx(sound.buzz); return;
       }
       const t = TIERS[tier];
-      finish({ answer: raw, tier, prompt: p.text }, `<b class="dd-${t.cls}">${t.name}</b> · +${t.pts * 10} m`, t.cls);
+      const extra = p.oneShot && p.reveal ? ` · <span class="muted">${escapeHtml(p.reveal)}</span>` : "";
+      finish({ answer: raw, tier, prompt: p.text, reveal: p.reveal }, `<b class="dd-${t.cls}">${t.name}</b> · +${t.pts * 10} m${extra}`, t.cls, p.oneShot && p.reveal ? 2100 : undefined);
       fx(tier >= 3 ? sound.fanfare : sound.beep);
     };
     dive.addEventListener("click", submit);
