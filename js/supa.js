@@ -2,7 +2,7 @@
 // Just fetch() against the Auth (GoTrue), REST (PostgREST) and RPC endpoints —
 // no SDK, in keeping with the project's zero-deps rule. Only what we need:
 // email magic-link sign-in, session persistence/refresh, and a few table calls.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261126a";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ENABLED } from "./supa-config.js?v=20261126b";
 
 const SESSION_KEY = "spindeck.supa.session";
 let session = load();
@@ -257,5 +257,35 @@ export async function submitDashScore({ name, score, topic, level }) {
     body: JSON.stringify(row),
   });
   if (!res.ok) { let d = {}; try { d = await res.json(); } catch {} throw new Error(d.message || "Couldn't post your score."); }
+  return true;
+}
+
+/* ---------- Deep Dive global leaderboard (no sign-in needed) ---------- */
+
+// Deepest dives, deepest first. Returns [] on any error so the UI can shrug.
+export async function topDiveScores(limit = 12) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/dive_scores?select=name,depth,mode,created_at&order=depth.desc,created_at.desc&limit=${Math.max(1, Math.min(50, limit | 0))}`, {
+      headers: { apikey: SUPABASE_ANON_KEY },
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch { return []; }
+}
+
+// Post a dive to the board. Clamps/sanitises so a bad value can't 400 the user.
+export async function submitDiveScore({ name, depth, mode }) {
+  const row = {
+    name: String(name || "Anon").trim().slice(0, 24) || "Anon",
+    depth: Math.max(0, Math.min(7000, Math.round(+depth || 0))),
+    mode: mode === "daily" ? "daily" : "random",
+    device_id: deviceId(),
+  };
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/dive_scores`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify(row),
+  });
+  if (!res.ok) { let d = {}; try { d = await res.json(); } catch {} throw new Error(d.message || "Couldn't post your dive."); }
   return true;
 }
