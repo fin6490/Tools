@@ -1,8 +1,8 @@
 // slots.js — multiple vertical reels side by side, spun together (slot machine).
-import { parseEntries } from "./wheel.js?v=20261126b";
-import { getState, save } from "./storage.js?v=20261126b";
-import * as sound from "./sound.js?v=20261126b";
-import { burst } from "./confetti.js?v=20261126b";
+import { parseEntries } from "./wheel.js?v=20261126c";
+import { getState, save } from "./storage.js?v=20261126c";
+import * as sound from "./sound.js?v=20261126c";
+import { burst } from "./confetti.js?v=20261126c";
 
 class SlotReel {
   constructor(canvas) {

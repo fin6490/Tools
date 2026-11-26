@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks</title>
-<meta name="description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline." />
+<meta name="description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each — numbers, shapes, famous mathematicians, true-or-false facts and more — where the rarer and cleverer your answer, the deeper you sink. No sign-up, works offline." />
 <meta name="author" content="SpinDecks" />
 <meta name="theme-color" content="#17131d" />
 <link rel="canonical" href="https://spindecks.app/deep-dive/" />
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="SpinDecks" />
 <meta property="og:title" content="Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks" />
-<meta property="og:description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline." />
+<meta property="og:description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each — numbers, shapes, famous mathematicians, true-or-false facts and more — where the rarer and cleverer your answer, the deeper you sink. No sign-up, works offline." />
 <meta property="og:url" content="https://spindecks.app/deep-dive/" />
 <meta property="og:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 <meta property="og:image:width" content="1200" />
@@ -20,10 +20,10 @@
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks" />
-<meta name="twitter:description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline." />
+<meta name="twitter:description" content="A free Krillion-style maths game. Seven prompts, 25 seconds each — numbers, shapes, famous mathematicians, true-or-false facts and more — where the rarer and cleverer your answer, the deeper you sink. No sign-up, works offline." />
 <meta name="twitter:image" content="https://spindecks.app/assets/og-image.png?v=4" />
 
-<link rel="stylesheet" href="/css/styles.css?v=20261126b" />
+<link rel="stylesheet" href="/css/styles.css?v=20261126c" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='.6' y='.6' width='30.8' height='30.8' rx='7' fill='%231b0f12'/%3E%3Cg transform='rotate(-27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%233fd0c9' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Cg transform='rotate(27 16 25)'%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ffcf4d' stroke='%23150c0e' stroke-width='.9'/%3E%3C/g%3E%3Crect x='12' y='7.4' width='8' height='16.2' rx='1.7' fill='%23ff5b52' stroke='%23150c0e' stroke-width='.9'/%3E%3Ccircle cx='16' cy='12.4' r='1.5' fill='%232b0b09'/%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
@@ -67,7 +67,7 @@
       "name": "How is “rarity” decided?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "From the maths itself — how obvious an answer is for that prompt (for “a factor of 24”, saying 1 is Plankton but 8 or 12 dives deeper). It's worked out in your browser, so it's deterministic and fair, with no account or player base needed."
+        "text": "From the maths and knowledge itself — how obvious an answer is for that prompt, worked out in your browser so it's deterministic and fair, with no account or player base needed. The key design choice is that deeper rarely means bigger: for “a factor of 24”, saying 1 or 24 is shallow but the forgotten 8 dives deepest; for “a famous mathematician”, Pythagoras is Plankton while Emmy Noether is One in a krillion; for a Pythagorean triple, 3-4-5 barely gets you wet and a scaled 6-8-10 is just “too clever”, but a primitive like 9-40-41 plunges you to the trench floor."
       }
     },
     {
@@ -75,7 +75,7 @@
       "name": "What kinds of prompt are there?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Factors, multiples, times tables, prime numbers, square and cube numbers, prime factors, ways to make a target number with a calculation, Pythagorean triples, fractions equal to a half, quadrilaterals and more — pitched around KS2–GCSE number work."
+        "text": "A real mix, so it's never just “name the biggest number”: breadth-of-knowledge prompts (name a mathematician, a 2D or 3D shape, a type of number, a unit of length, a maths symbol, a branch of maths), insight prompts (factors, Pythagorean triples, ways to make a target number, numbers that are both square and cube, digit puzzles) and one-shot maths facts (true-or-false statements and quick recall, where you get a single guess and we reveal the fact). Pitched around KS2–GCSE."
       }
     },
     {
@@ -670,14 +670,14 @@
 </div>
 <section class="tool-copy">
       <h1>Deep Dive — the maths rarity game</h1>
-      <p class="tool-intro">A fast, addictive maths game in the style of Krillion. You get seven prompts — “Name a factor of 24”, “Name a multiple of 7”, “Make 24”, “Name a Pythagorean triple” — with 25 seconds each. Almost every prompt has lots of correct answers, and that's the twist: the obvious ones (1, 2, 7) barely get you wet, while the rare, clever answers sink you right down to the trench floor. Your score is your depth in metres across six rarity tiers, from Plankton to One in a krillion. A Daily dive gives your whole class the same seven prompts to compare; Random gives seven fresh ones every time. It rewards really knowing your number facts — not just one right answer, but the whole set.</p>
+      <p class="tool-intro">A fast, addictive maths game in the style of Krillion. You get seven prompts — “Name a factor of 24”, “Name a famous mathematician”, “Name a 3D shape”, “Make 24”, “Name a Pythagorean triple”, true-or-false facts and quick recall — with 25 seconds each. Most prompts have lots of correct answers, and that's the twist: the obvious ones (1, a triangle, Pythagoras) barely get you wet, while the rare, clever, less-remembered answers sink you right down to the trench floor. Crucially, deeper almost never just means bigger — a forgotten factor beats the biggest one, an obscure mathematician beats a famous one. Your score is your depth in metres across six rarity tiers, from Plankton to One in a krillion. A Daily dive gives your whole class the same seven prompts to compare; Random gives seven fresh ones every time.</p>
       <details class="tool-more">
         <summary>How to use it, who it's for &amp; FAQ</summary>
         <div class="tool-more-body">
           <h2>How to use it</h2>
           <ol class="tool-steps">
             <li>Press Begin descent. Pick Daily (same prompts for everyone today) or Random.</li>
-        <li>Read each prompt and type one answer within 25 seconds. A wrong answer isn't punished — the clock just keeps running, so try another.</li>
+        <li>Read each prompt and type one answer within 25 seconds. On the open prompts a wrong answer isn't punished — the clock just keeps running, so try another. The maths-fact prompts give you a single guess, then reveal the answer.</li>
         <li>The rarer and less obvious your correct answer, the higher the tier and the deeper you sink (10 m up to 1000 m per prompt).</li>
         <li>After seven prompts, see your total depth, the zone you reached and a breakdown — then try to beat it.</li>
           </ol>
@@ -695,11 +695,11 @@
         </details>
         <details>
           <summary>How is “rarity” decided?</summary>
-          <p>From the maths itself — how obvious an answer is for that prompt (for “a factor of 24”, saying 1 is Plankton but 8 or 12 dives deeper). It's worked out in your browser, so it's deterministic and fair, with no account or player base needed.</p>
+          <p>From the maths and knowledge itself — how obvious an answer is for that prompt, worked out in your browser so it's deterministic and fair, with no account or player base needed. The key design choice is that deeper rarely means bigger: for “a factor of 24”, saying 1 or 24 is shallow but the forgotten 8 dives deepest; for “a famous mathematician”, Pythagoras is Plankton while Emmy Noether is One in a krillion; for a Pythagorean triple, 3-4-5 barely gets you wet and a scaled 6-8-10 is just “too clever”, but a primitive like 9-40-41 plunges you to the trench floor.</p>
         </details>
         <details>
           <summary>What kinds of prompt are there?</summary>
-          <p>Factors, multiples, times tables, prime numbers, square and cube numbers, prime factors, ways to make a target number with a calculation, Pythagorean triples, fractions equal to a half, quadrilaterals and more — pitched around KS2–GCSE number work.</p>
+          <p>A real mix, so it's never just “name the biggest number”: breadth-of-knowledge prompts (name a mathematician, a 2D or 3D shape, a type of number, a unit of length, a maths symbol, a branch of maths), insight prompts (factors, Pythagorean triples, ways to make a target number, numbers that are both square and cube, digit puzzles) and one-shot maths facts (true-or-false statements and quick recall, where you get a single guess and we reveal the fact). Pitched around KS2–GCSE.</p>
         </details>
         <details>
           <summary>What's the Daily dive?</summary>
@@ -778,8 +778,8 @@
     </div>
     <p class="footer-legal muted">© 2026 SpinDecks · no ads · no accounts · your data stays in your browser</p>
   </footer>
-  <script type="module" src="/js/suggest.js?v=20261126b"></script>
-<script type="module" src="/js/app.js?v=20261126b"></script>
+  <script type="module" src="/js/suggest.js?v=20261126c"></script>
+<script type="module" src="/js/app.js?v=20261126c"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}</script>
 </body>
 </html>

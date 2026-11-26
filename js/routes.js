@@ -73,7 +73,7 @@ export const ROUTES = {
   "deepdive": {
     "slug": "deep-dive",
     "title": "Deep Dive — Maths Rarity Game (Krillion-Style) | SpinDecks",
-    "description": "A free Krillion-style maths game. Seven prompts, 25 seconds each, and lots of right answers — but the rarer and less obvious your answer, the deeper you sink. Factors, multiples, primes, ways to make a number and more. No sign-up, works offline."
+    "description": "A free Krillion-style maths game. Seven prompts, 25 seconds each — numbers, shapes, famous mathematicians, true-or-false facts and more — where the rarer and cleverer your answer, the deeper you sink. No sign-up, works offline."
   },
   "pairs": {
     "slug": "pairs",
