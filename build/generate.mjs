@@ -72,7 +72,7 @@ ${ld}`;
 const TAB_GROUPS = [
   { label: "Pick", slugs: ["wheel-of-names", "slot-machine", "dice-roller", "first-player-picker", "random-number-generator", "random-team-generator", "tournament-bracket"] },
   { label: "Score & time", slugs: ["scorepad", "darts-scoreboard", "chess-clock", "countdown-timer", "tally-counter"] },
-  { label: "Quiz games", slugs: ["bt-dojo", "reveal-cards", "pairs", "bingo", "class-quiz", "grid-claim"] },
+  { label: "Quiz games", slugs: ["bt-dojo", "reveal-cards", "deep-dive", "pairs", "bingo", "class-quiz", "grid-claim"] },
   { label: "Games", slugs: ["countdown", "hangman", "noughts-and-crosses", "lexicon", "numberwang", "maths-pirates", "lobster-pots", "great-elf-game", "quiz-dash", "axiom"] },
 ];
 const TOOL_BY_SLUG = Object.fromEntries(TOOLS.map((t) => [t.slug, t]));
@@ -180,6 +180,7 @@ function footer() {
     "tournament-bracket": "Tournament bracket",
     "bt-dojo": "The BT Dojo",
     "reveal-cards": "Reveal cards",
+    "deep-dive": "Deep Dive",
     "pairs": "Pairs",
     "bingo": "Bingo",
     "class-quiz": "Class quiz",
@@ -656,6 +657,10 @@ const PANELS = String.raw`  <!-- WHEEL -->
   <!-- QUIZ DASH (geometry-dash-style AI quiz runner; dash.js builds the screens) -->
   <main class="view view-dash" data-view-panel="dash" hidden>
     <section class="panel dash-panel" aria-label="Quiz Dash AI quiz runner"></section>
+  </main>
+  <!-- DEEP DIVE (Krillion-style maths rarity game; deepdive.js builds the screens) -->
+  <main class="view view-deepdive" data-view-panel="deepdive" hidden>
+    <section class="panel deepdive-panel" aria-label="Deep Dive maths rarity game"></section>
   </main>
   <!-- AXIOM (2–4 player equation board game; axiom.js builds the screens) -->
   <main class="view view-axiom" data-view-panel="axiom" hidden>

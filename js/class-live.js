@@ -2,10 +2,10 @@
 // hosts on the whiteboard and students join from their own devices with a PIN.
 // Everything runs through the live-game Edge Function (polling, no sign-in).
 // Reuses the shared question packs (GCSE maths and any topic). Zero deps.
-import { el, shuffle, mathHtml, escapeHtml, norm, answersOf, allSets } from "./quizkit.js?v=20261117c";
-import { getState, save } from "./storage.js?v=20261117c";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supa-config.js?v=20261117c";
-import * as sound from "./sound.js?v=20261117c";
+import { el, shuffle, mathHtml, escapeHtml, norm, answersOf, allSets } from "./quizkit.js?v=20261126a";
+import { getState, save } from "./storage.js?v=20261126a";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supa-config.js?v=20261126a";
+import * as sound from "./sound.js?v=20261126a";
 
 const FN = `${SUPABASE_URL}/functions/v1/live-game`;
 const SHAPES = ["▲", "◆", "●", "■", "★", "✚"];
